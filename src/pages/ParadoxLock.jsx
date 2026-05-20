@@ -385,6 +385,9 @@ export default function ParadoxLock() {
         </CardContent>
       </Card>
 
+      {/* ── Paradox Simulator (always visible for testing) ── */}
+      <InternalParadoxSimulator threats={challengedThreats} onClose={() => {}} />
+
       {/* ── Internal Admin Panel (locked) ── */}
       <div className="border border-border/40 rounded-xl overflow-hidden">
         <button
