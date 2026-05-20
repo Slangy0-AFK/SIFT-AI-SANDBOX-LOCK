@@ -1,0 +1,36 @@
+{
+  "name": "WorkflowExecution",
+  "type": "object",
+  "properties": {
+    "policy_id": {
+      "type": "string"
+    },
+    "policy_name": {
+      "type": "string"
+    },
+    "trigger_data": {
+      "type": "string",
+      "description": "JSON of the event that triggered this execution"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "success",
+        "failed",
+        "skipped"
+      ],
+      "default": "running"
+    },
+    "actions_log": {
+      "type": "string",
+      "description": "JSON array of action results"
+    },
+    "error": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "policy_id"
+  ]
+}

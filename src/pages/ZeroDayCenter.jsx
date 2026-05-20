@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import GuardianRing from '../components/agents/GuardianRing';
 import ZeroDayFeed from '../components/zeroday/ZeroDayFeed';
 import { motion } from 'framer-motion';
+import { runPoliciesAgainstEvent } from '../lib/workflowEngine';
 
 const ANOMALY_TYPES = ['behavioral', 'polymorphic', 'memory_injection', 'side_channel', 'supply_chain', 'ai_adversarial', 'fileless', 'firmware', 'unknown'];
 const SEVERITIES = ['info', 'warning', 'critical', 'fatal'];
@@ -54,9 +55,16 @@ export default function ZeroDayCenter() {
       });
       return Promise.all(creates);
     },
-    onSuccess: (results) => {
+    onSuccess: async (results) => {
       queryClient.invalidateQueries({ queryKey: ['zero-day'] });
       toast.success(`${results.length} zero-day anomal${results.length > 1 ? 'ies' : 'y'} detected & logged`);
+      // Auto-run workflow policies against each new anomaly
+      for (const anomaly of results) {
+        const fired = await runPoliciesAgainstEvent(anomaly, 'zero_day_detected');
+        if (fired.length > 0) toast.info(`${fired.length} policy${fired.length > 1 ? 's' : ''} auto-fired`);
+      }
+      queryClient.invalidateQueries({ queryKey: ['workflow-policies'] });
+      queryClient.invalidateQueries({ queryKey: ['workflow-executions'] });
       setTimeout(() => setScanning(false), 1000);
     },
     onError: () => setScanning(false),
