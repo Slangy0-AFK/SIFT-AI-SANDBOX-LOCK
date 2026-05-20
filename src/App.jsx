@@ -5,7 +5,13 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-// Add page imports here
+import Dashboard from './pages/Dashboard';
+import BaseChain from './pages/BaseChain';
+import ParadoxLock from './pages/ParadoxLock';
+import MirrorEnvironment from './pages/MirrorEnvironment';
+import ThreatLog from './pages/ThreatLog';
+import SettingsPage from './pages/SettingsPage';
+import AppLayout from './components/layout/AppLayout';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -33,7 +39,14 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/base-chain" element={<BaseChain />} />
+        <Route path="/paradox-lock" element={<ParadoxLock />} />
+        <Route path="/mirror-env" element={<MirrorEnvironment />} />
+        <Route path="/threat-log" element={<ThreatLog />} />
+        <Route path="/settings" element={<SettingsPage />} />
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

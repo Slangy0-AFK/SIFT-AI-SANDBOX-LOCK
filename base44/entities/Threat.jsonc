@@ -1,0 +1,76 @@
+{
+  "name": "Threat",
+  "type": "object",
+  "properties": {
+    "source_ip": {
+      "type": "string",
+      "description": "IP address of the threat actor"
+    },
+    "threat_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "detected",
+        "challenged",
+        "cycle_1",
+        "cycle_2",
+        "cycle_3",
+        "locked",
+        "destroyed",
+        "cleared"
+      ],
+      "default": "detected"
+    },
+    "paradox_response": {
+      "type": "string",
+      "description": "Response to the paradox lock question"
+    },
+    "paradox_passed": {
+      "type": "boolean",
+      "default": false
+    },
+    "qrng_cycle": {
+      "type": "number",
+      "default": 0
+    },
+    "base_chain_signature": {
+      "type": "string",
+      "description": "The computed base chain hash"
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "mirror",
+        "honeypot",
+        "tarpit"
+      ],
+      "default": "production"
+    },
+    "agent_type": {
+      "type": "string",
+      "enum": [
+        "human",
+        "bot",
+        "autonomous_agent",
+        "unknown"
+      ],
+      "default": "unknown"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "source_ip"
+  ]
+}

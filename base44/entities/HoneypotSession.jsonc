@@ -1,0 +1,44 @@
+{
+  "name": "HoneypotSession",
+  "type": "object",
+  "properties": {
+    "session_type": {
+      "type": "string",
+      "enum": [
+        "honeypot",
+        "tarpit"
+      ],
+      "default": "honeypot"
+    },
+    "source_ip": {
+      "type": "string"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "default": 0
+    },
+    "interactions": {
+      "type": "number",
+      "default": 0
+    },
+    "data_captured": {
+      "type": "string",
+      "description": "Summary of data captured from the attacker"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "escaped"
+      ],
+      "default": "active"
+    },
+    "threat_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "source_ip"
+  ]
+}

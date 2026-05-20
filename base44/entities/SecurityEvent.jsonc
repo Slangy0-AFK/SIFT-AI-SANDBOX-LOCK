@@ -1,0 +1,63 @@
+{
+  "name": "SecurityEvent",
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "base_chain_compute",
+        "paradox_challenge",
+        "qrng_cycle",
+        "honeypot_trigger",
+        "tarpit_engage",
+        "threat_locked",
+        "threat_destroyed",
+        "mirror_redirect",
+        "access_granted"
+      ],
+      "description": "Type of security event"
+    },
+    "threat_id": {
+      "type": "string",
+      "description": "Associated threat ID"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical",
+        "fatal"
+      ],
+      "default": "info"
+    },
+    "details": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "mirror",
+        "honeypot",
+        "tarpit"
+      ],
+      "default": "production"
+    },
+    "base_chain_step": {
+      "type": "string",
+      "enum": [
+        "base1",
+        "base0",
+        "base12",
+        "base60",
+        "pi",
+        "qrng"
+      ],
+      "description": "Which step in the base chain this event relates to"
+    }
+  },
+  "required": [
+    "event_type"
+  ]
+}
