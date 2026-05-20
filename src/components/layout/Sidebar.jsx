@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Shield, Activity, Lock, Layers, Bug, FileText, Settings, Swords, CreditCard, Radiation, GitBranch } from 'lucide-react';
+import NotificationBell from '../notifications/NotificationBell';
 
 const navItems = [
   { path: '/', icon: Activity, label: 'Command Center' },
@@ -21,16 +22,17 @@ export default function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-card border-r border-border flex flex-col z-50">
       {/* Logo */}
-      <div className="p-6 border-b border-border">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center gap-3">
           <div className="relative">
             <Shield className="w-8 h-8 text-primary" />
             <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="font-mono text-sm font-bold text-foreground tracking-wider">AEGIS</h1>
             <p className="font-mono text-[10px] text-muted-foreground tracking-widest">QUANTUM SHIELD</p>
           </div>
+          <NotificationBell />
         </div>
       </div>
 

@@ -7,6 +7,7 @@ import ThreatCounter from '../components/dashboard/ThreatCounter';
 import LiveEventFeed from '../components/dashboard/LiveEventFeed';
 import QRNGCycleDisplay from '../components/dashboard/QRNGCycleDisplay';
 import MirrorStatus from '../components/dashboard/MirrorStatus';
+import RealTimeTracker from '../components/dashboard/RealTimeTracker';
 
 export default function Dashboard() {
   const { data: threats = [] } = useQuery({
@@ -62,6 +63,9 @@ export default function Dashboard() {
         <ThreatCounter label="Destroyed" value={destroyedThreats.length} color="text-destructive" icon={Skull} />
         <ThreatCounter label="Total Monitored" value={threats.length} color="text-primary" icon={Eye} />
       </div>
+
+      {/* Real-Time Tracker */}
+      <RealTimeTracker />
 
       {/* Main Grid */}
       <div className="grid grid-cols-2 gap-6">
