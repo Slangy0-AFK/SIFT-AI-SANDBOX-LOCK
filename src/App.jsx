@@ -19,7 +19,6 @@ import WorkflowEngine from './pages/WorkflowEngine';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import ComplianceChecklist from './pages/ComplianceChecklist';
-import SecurityBenchmarks from './pages/SecurityBenchmarks';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -61,7 +60,6 @@ const AuthenticatedApp = () => {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/compliance" element={<ComplianceChecklist />} />
-        <Route path="/benchmarks" element={<SecurityBenchmarks />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
