@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Shield, Check, X, Smartphone, Key, RefreshCw, Copy } from 'lucide-react';
 import { toast } from 'sonner';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function MFASetup() {
   const [mfaCode, setMfaCode] = useState('');
@@ -184,7 +184,7 @@ export default function MFASetup() {
 
             <div className="flex justify-center p-4 bg-white rounded-lg">
               {otpauthUrl && (
-                <QRCode value={otpauthUrl} size={200} />
+               <QRCodeSVG value={otpauthUrl} size={200} />
               )}
             </div>
 
