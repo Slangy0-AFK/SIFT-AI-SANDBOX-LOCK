@@ -26,7 +26,7 @@ const CHECKLIST = [
       { label: 'Data collection declared: App interactions (analytics)', status: 'action', note: 'Declare usage/analytics events' },
       { label: 'Data collection declared: Financial info (purchase tokens)', status: 'action', note: 'Declare Google Play purchase token storage' },
       { label: 'Data encryption in transit confirmed (HTTPS)', status: 'pass', note: 'All API calls use HTTPS/TLS' },
-      { label: 'Data deletion option available to users', status: 'action', note: 'Implement account deletion flow or provide email-based deletion request' },
+      { label: 'Data deletion option available to users', status: 'pass', note: 'Data deletion request available in Settings → Account Management' },
     ],
   },
   {
@@ -61,7 +61,7 @@ const CHECKLIST = [
     category: 'Authentication & Account Management',
     items: [
       { label: 'Users can create and manage accounts', status: 'pass', note: 'Auth handled by Base44 platform' },
-      { label: 'Account deletion mechanism available', status: 'action', note: 'Google requires apps to offer in-app account deletion. Add a "Delete Account" option in Settings' },
+      { label: 'Account deletion mechanism available', status: 'pass', note: 'Account deletion available in Settings → Account Management' },
       { label: 'Login is secure and not storing plain-text passwords', status: 'pass', note: 'Auth managed by Base44 — no password storage in app' },
     ],
   },
