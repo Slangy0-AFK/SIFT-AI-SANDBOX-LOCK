@@ -55,7 +55,9 @@
     "trigger_event"
   ],
   "rls": {
-    "create": {},
+    "create": {
+      "created_by": "{{user.email}}"
+    },
     "read": {
       "$or": [
         {
