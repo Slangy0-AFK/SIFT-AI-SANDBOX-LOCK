@@ -300,7 +300,7 @@ export default function ParadoxLock() {
   const [adminError, setAdminError] = useState(false);
   const [simOpen, setSimOpen] = useState(false);
 
-  const ADMIN_PIN = 'AEGIS'; // internal access code
+  const ADMIN_PIN = import.meta.env.VITE_ADMIN_PIN || 'AEGIS';
 
   const { data: threats = [] } = useQuery({
     queryKey: ['threats-paradox'],
