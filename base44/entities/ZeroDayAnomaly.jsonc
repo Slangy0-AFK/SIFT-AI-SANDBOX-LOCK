@@ -77,8 +77,16 @@
     "anomaly_signature"
   ],
   "rls": {
-    "create": {},
-    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
     "update": {
       "user_condition": {
         "role": "admin"
