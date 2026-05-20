@@ -8,7 +8,6 @@ const navItems = [
   { path: '/zero-day', icon: Radiation, label: 'Zero-Day Center', highlight: true },
   { path: '/workflow', icon: GitBranch, label: 'Workflow Engine' },
   { path: '/attack-sim', icon: Swords, label: 'Attack Simulator' },
-  { path: '/base-chain', icon: Layers, label: 'Base Chain' },
   { path: '/paradox-lock', icon: Lock, label: 'Paradox Lock' },
   { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
   { path: '/threat-log', icon: FileText, label: 'Threat Log' },
