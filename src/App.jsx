@@ -13,6 +13,7 @@ import ThreatLog from './pages/ThreatLog';
 import SettingsPage from './pages/SettingsPage';
 import AppLayout from './components/layout/AppLayout';
 import AttackSimulator from './pages/AttackSimulator';
+import SubscriptionPage from './pages/SubscriptionPage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -48,6 +49,7 @@ const AuthenticatedApp = () => {
         <Route path="/threat-log" element={<ThreatLog />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/attack-sim" element={<AttackSimulator />} />
+        <Route path="/subscription" element={<SubscriptionPage />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

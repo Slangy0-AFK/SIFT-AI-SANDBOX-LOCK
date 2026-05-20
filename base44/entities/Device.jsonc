@@ -1,0 +1,43 @@
+{
+  "name": "Device",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "device_name": {
+      "type": "string"
+    },
+    "device_type": {
+      "type": "string",
+      "enum": [
+        "android",
+        "ios",
+        "desktop",
+        "tablet",
+        "other"
+      ],
+      "default": "android"
+    },
+    "device_fingerprint": {
+      "type": "string",
+      "description": "Unique device identifier"
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "removed"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "user_id",
+    "device_name"
+  ]
+}

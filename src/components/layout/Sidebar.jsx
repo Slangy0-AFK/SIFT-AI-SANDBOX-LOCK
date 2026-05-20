@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, Activity, Lock, Layers, Bug, FileText, Settings, Swords } from 'lucide-react';
+import { Shield, Activity, Lock, Layers, Bug, FileText, Settings, Swords, CreditCard } from 'lucide-react';
 
 const navItems = [
   { path: '/', icon: Activity, label: 'Command Center' },
@@ -9,6 +9,7 @@ const navItems = [
   { path: '/paradox-lock', icon: Lock, label: 'Paradox Lock' },
   { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
   { path: '/threat-log', icon: FileText, label: 'Threat Log' },
+  { path: '/subscription', icon: CreditCard, label: 'Subscription' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
