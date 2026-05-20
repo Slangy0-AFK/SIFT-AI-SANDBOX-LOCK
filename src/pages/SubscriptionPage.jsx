@@ -37,22 +37,30 @@ export default function SubscriptionPage() {
   const currentPlan = currentSub?.plan || 'free';
 
   const upgradeMutation = useMutation({
-    mutationFn: async (planKey) => {
-      if (currentSub) {
-        return base44.entities.Subscription.update(currentSub.id, { plan: planKey, billing_cycle: billingCycle, status: 'active' });
-      }
-      return base44.entities.Subscription.create({ user_id: user?.id || 'me', plan: planKey, billing_cycle: billingCycle, status: 'active' });
+    mutationFn: async ({ planKey, price }) => {
+      const response = await base44.functions.invoke('stripeCheckout', {
+        plan: planKey,
+        billing_cycle: billingCycle,
+        price: billingCycle === 'annual' ? PLANS[planKey].price.annual : PLANS[planKey].price.monthly,
+      });
+      return response.data;
     },
-    onSuccess: (_, planKey) => {
-      queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
-      toast.success(`Upgraded to ${PLANS[planKey].name} plan!`);
+    onSuccess: (data) => {
+      if (data.url) {
+        window.open(data.url, '_blank');
+      }
+      setUpgrading(false);
+    },
+    onError: (error) => {
+      toast.error('Failed to initiate checkout: ' + error.message);
       setUpgrading(false);
     },
   });
 
   const handleSelectPlan = (planKey) => {
     setUpgrading(true);
-    upgradeMutation.mutate(planKey);
+    const price = billingCycle === 'annual' ? PLANS[planKey].price.annual : PLANS[planKey].price.monthly;
+    upgradeMutation.mutate({ planKey, price });
   };
 
   const planColor = currentPlan === 'enterprise' ? 'text-amber-400' : currentPlan === 'pro' ? 'text-primary' : 'text-muted-foreground';

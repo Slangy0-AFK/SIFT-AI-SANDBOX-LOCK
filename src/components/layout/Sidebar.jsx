@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, Activity, Lock, Layers, Bug, FileText, Settings, Swords, CreditCard, Radiation, GitBranch, Menu, X } from 'lucide-react';
+import { Shield, Activity, Lock, Layers, Bug, FileText, Settings, Swords, CreditCard, Radiation, GitBranch, Menu, X, User } from 'lucide-react';
 import NotificationBell from '../notifications/NotificationBell';
 
 const navItems = [
-  { path: '/', icon: Activity, label: 'Command Center' },
+  { path: '/dashboard', icon: Activity, label: 'Command Center' },
   { path: '/zero-day', icon: Radiation, label: 'Zero-Day Center', highlight: true },
   { path: '/workflow', icon: GitBranch, label: 'Workflow Engine' },
   { path: '/firewall', icon: Shield, label: 'Firewall' },
@@ -12,6 +12,7 @@ const navItems = [
   { path: '/paradox-lock', icon: Lock, label: 'Paradox Lock' },
   { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
   { path: '/threat-log', icon: FileText, label: 'Threat Log' },
+  { path: '/profile', icon: User, label: 'Profile' },
   { path: '/subscription', icon: CreditCard, label: 'Subscription' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
