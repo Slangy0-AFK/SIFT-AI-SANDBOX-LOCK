@@ -98,17 +98,13 @@ Deno.serve(async (req) => {
 
     // Log firewall event (called when traffic matches a rule)
     if (action === 'log_event') {
-      if (user?.role !== 'admin') {
-        return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-      }
-
-      const log = await base44.entities.FirewallLog.create(rule_data);
+      const log = await base44.asServiceRole.entities.FirewallLog.create(rule_data);
       
       // Update rule hit count
       if (rule_data.rule_id) {
-        const rule = await base44.entities.FirewallRule.filter({ id: rule_data.rule_id });
+        const rule = await base44.asServiceRole.entities.FirewallRule.filter({ id: rule_data.rule_id });
         if (rule.length > 0) {
-          await base44.entities.FirewallRule.update(rule_data.rule_id, {
+          await base44.asServiceRole.entities.FirewallRule.update(rule_data.rule_id, {
             hit_count: (rule[0].hit_count || 0) + 1,
             last_hit: new Date().toISOString(),
           });
