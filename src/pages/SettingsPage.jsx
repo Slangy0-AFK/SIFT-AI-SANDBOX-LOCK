@@ -10,7 +10,9 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import AuditLogExport from '../components/settings/AuditLogExport';
-import MFASetup from '../components/settings/MFASetup';
+import MFASetup from '../components/security/MFASetup';
+import EncryptionTool from '../components/security/EncryptionTool';
+import PasswordReset from '../components/security/PasswordReset';
 
 export default function SettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState('');
@@ -156,11 +158,16 @@ export default function SettingsPage() {
         </Card>
       </div>
 
-      {/* MFA Setup */}
-      <MFASetup />
+      {/* Security Tools */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <MFASetup />
+        <EncryptionTool />
+      </div>
 
-      {/* Audit Log Export */}
-      <AuditLogExport />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <PasswordReset />
+        <AuditLogExport />
+      </div>
 
       {/* Account Management — Google Play Required */}
       <Card className="border-amber-400/20">
@@ -261,7 +268,12 @@ export default function SettingsPage() {
           </Link>
           <Link to="/compliance">
             <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-amber-400/10 border-amber-400/30 hover:bg-amber-400/20 transition-colors font-mono text-[11px] text-amber-400">
-              <ClipboardList className="w-3.5 h-3.5" /> Google Play Compliance Checklist
+              <ClipboardList className="w-3.5 h-3.5" /> Google Play Compliance
+            </button>
+          </Link>
+          <Link to="/saas-checklist">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-primary/10 border-primary/30 hover:bg-primary/20 transition-colors font-mono text-[11px] text-primary">
+              <Shield className="w-3.5 h-3.5" /> SaaS Feature Checklist
             </button>
           </Link>
         </CardContent>
