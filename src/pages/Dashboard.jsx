@@ -9,6 +9,7 @@ import QRNGCycleDisplay from '../components/dashboard/QRNGCycleDisplay';
 import MirrorStatus from '../components/dashboard/MirrorStatus';
 import RealTimeTracker from '../components/dashboard/RealTimeTracker';
 import PredictiveRiskScore from '../components/dashboard/PredictiveRiskScore';
+import VirusTotalScanner from '../components/security/VirusTotalScanner';
 
 function CollapsiblePanel({ title, icon: Icon, children, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -88,6 +89,9 @@ export default function Dashboard() {
 
       {/* Real-Time Tracker */}
       <RealTimeTracker />
+
+      {/* VirusTotal Scanner */}
+      <VirusTotalScanner />
 
       {/* Live Event Feed — always visible */}
       <LiveEventFeed events={events} />
