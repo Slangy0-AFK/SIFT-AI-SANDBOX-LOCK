@@ -1,0 +1,79 @@
+{
+  "name": "ZeroDayAnomaly",
+  "type": "object",
+  "properties": {
+    "anomaly_signature": {
+      "type": "string",
+      "description": "Auto-generated unique signature hash"
+    },
+    "anomaly_type": {
+      "type": "string",
+      "enum": [
+        "behavioral",
+        "polymorphic",
+        "memory_injection",
+        "side_channel",
+        "supply_chain",
+        "ai_adversarial",
+        "fileless",
+        "firmware",
+        "unknown"
+      ],
+      "default": "unknown"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical",
+        "fatal"
+      ],
+      "default": "warning"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "detected",
+        "analyzing",
+        "contained",
+        "neutralized",
+        "escalated"
+      ],
+      "default": "detected"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Which guardian agent detected this"
+    },
+    "source_ip": {
+      "type": "string"
+    },
+    "payload_hash": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "mirror",
+        "honeypot",
+        "tarpit"
+      ],
+      "default": "production"
+    },
+    "confidence_score": {
+      "type": "number",
+      "description": "0-100 confidence score of anomaly detection"
+    },
+    "mitigation_applied": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "anomaly_signature"
+  ]
+}

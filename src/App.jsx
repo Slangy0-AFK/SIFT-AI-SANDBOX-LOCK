@@ -14,6 +14,7 @@ import SettingsPage from './pages/SettingsPage';
 import AppLayout from './components/layout/AppLayout';
 import AttackSimulator from './pages/AttackSimulator';
 import SubscriptionPage from './pages/SubscriptionPage';
+import ZeroDayCenter from './pages/ZeroDayCenter';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -50,6 +51,7 @@ const AuthenticatedApp = () => {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/attack-sim" element={<AttackSimulator />} />
         <Route path="/subscription" element={<SubscriptionPage />} />
+        <Route path="/zero-day" element={<ZeroDayCenter />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

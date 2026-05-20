@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, Activity, Lock, Layers, Bug, FileText, Settings, Swords, CreditCard } from 'lucide-react';
+import { Shield, Activity, Lock, Layers, Bug, FileText, Settings, Swords, CreditCard, Radiation } from 'lucide-react';
 
 const navItems = [
   { path: '/', icon: Activity, label: 'Command Center' },
-  { path: '/attack-sim', icon: Swords, label: 'Attack Simulator', highlight: true },
+  { path: '/zero-day', icon: Radiation, label: 'Zero-Day Center', highlight: true },
+  { path: '/attack-sim', icon: Swords, label: 'Attack Simulator' },
   { path: '/base-chain', icon: Layers, label: 'Base Chain' },
   { path: '/paradox-lock', icon: Lock, label: 'Paradox Lock' },
   { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
