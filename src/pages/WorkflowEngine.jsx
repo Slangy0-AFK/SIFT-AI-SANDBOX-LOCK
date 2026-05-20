@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { GitBranch, Plus, Play, Trash2, ToggleLeft, ToggleRight, Clock, Zap } from 'lucide-react';
+import { GitBranch, Plus, Play, Trash2, ToggleLeft, ToggleRight, Clock, Zap, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import PolicyBuilder from '../components/workflow/PolicyBuilder';
 import ExecutionLog from '../components/workflow/ExecutionLog';
+import IncidentResponseTemplates from '../components/workflow/IncidentResponseTemplates';
 
 const PRIORITY_COLORS = {
   low: 'text-muted-foreground border-border',
@@ -30,6 +31,7 @@ export default function WorkflowEngine() {
   const [showBuilder, setShowBuilder] = useState(false);
   const [editingPolicy, setEditingPolicy] = useState(null);
   const [tab, setTab] = useState('policies');
+  const [showTemplates, setShowTemplates] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: policies = [] } = useQuery({
@@ -95,6 +97,14 @@ export default function WorkflowEngine() {
     setEditingPolicy({ ...p, conditions, actions });
     setShowBuilder(true);
   };
+  const selectTemplate = (templatePolicy) => {
+    let conditions = [], actions = [];
+    try { conditions = JSON.parse(JSON.stringify(templatePolicy.conditions || [])); } catch {}
+    try { actions = JSON.parse(JSON.stringify(templatePolicy.actions || [])); } catch {}
+    setEditingPolicy({ ...templatePolicy, conditions, actions });
+    setShowBuilder(true);
+    setShowTemplates(false);
+  };
 
   const activePolicies = policies.filter(p => p.enabled).length;
   const totalExecutions = executions.length;
@@ -142,17 +152,54 @@ export default function WorkflowEngine() {
 
       {/* Policies Tab */}
       {tab === 'policies' && (
-        <div className="space-y-3">
-          {policies.length === 0 ? (
+        <div className="space-y-4">
+          <AnimatePresence>
+            {showTemplates && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <Card className="border-primary/30 bg-primary/5">
+                  <CardContent className="p-6">
+                    <IncidentResponseTemplates onSelectTemplate={selectTemplate} />
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {!showTemplates && policies.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
                 <GitBranch className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
                 <p className="font-mono text-sm text-muted-foreground">No policies yet</p>
                 <p className="font-mono text-[10px] text-muted-foreground mt-1">Create your first IF-THEN security policy</p>
-                <Button className="font-mono text-xs mt-4" onClick={openNew}><Plus className="w-3 h-3 mr-1" /> Create Policy</Button>
+                <div className="flex gap-2 justify-center mt-4">
+                  <Button className="font-mono text-xs" onClick={() => setShowTemplates(true)}>
+                    <Zap className="w-3 h-3 mr-1" /> Use Template
+                  </Button>
+                  <Button className="font-mono text-xs" variant="outline" onClick={openNew}>
+                    <Plus className="w-3 h-3 mr-1" /> Create Custom
+                  </Button>
+                </div>
               </CardContent>
             </Card>
-          ) : (
+          )}
+
+          {policies.length > 0 && (
+            <Button
+              variant="outline"
+              className="font-mono text-xs border-primary/20 text-primary"
+              onClick={() => setShowTemplates(!showTemplates)}
+            >
+              <Zap className="w-3 h-3 mr-1" />
+              {showTemplates ? 'Hide' : 'Show'} Templates
+            </Button>
+          )}
+
+          <div className="space-y-3">
+            {policies.length > 0 && (
             <AnimatePresence>
               {policies.map(policy => {
                 let conditions = [], actions = [];
@@ -235,7 +282,8 @@ export default function WorkflowEngine() {
                 );
               })}
             </AnimatePresence>
-          )}
+            )}
+          </div>
         </div>
       )}
 
