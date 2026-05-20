@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Shield, CreditCard, Smartphone, RefreshCw, CheckCircle } from 'lucide-react';
+import { Shield, CreditCard, Smartphone, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import PlanCard, { PLANS } from '../components/subscription/PlanCard';
 import DeviceManager from '../components/subscription/DeviceManager';
@@ -37,30 +37,22 @@ export default function SubscriptionPage() {
   const currentPlan = currentSub?.plan || 'free';
 
   const upgradeMutation = useMutation({
-    mutationFn: async ({ planKey, price }) => {
-      const response = await base44.functions.invoke('stripeCheckout', {
-        plan: planKey,
-        billing_cycle: billingCycle,
-        price: billingCycle === 'annual' ? PLANS[planKey].price.annual : PLANS[planKey].price.monthly,
-      });
-      return response.data;
-    },
-    onSuccess: (data) => {
-      if (data.url) {
-        window.open(data.url, '_blank');
+    mutationFn: async (planKey) => {
+      if (currentSub) {
+        return base44.entities.Subscription.update(currentSub.id, { plan: planKey, billing_cycle: billingCycle, status: 'active' });
       }
-      setUpgrading(false);
+      return base44.entities.Subscription.create({ user_id: user?.email, plan: planKey, billing_cycle: billingCycle, status: 'active' });
     },
-    onError: (error) => {
-      toast.error('Failed to initiate checkout: ' + error.message);
+    onSuccess: (_, planKey) => {
+      queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+      toast.success(`Upgraded to ${PLANS[planKey].name} plan!`);
       setUpgrading(false);
     },
   });
 
   const handleSelectPlan = (planKey) => {
     setUpgrading(true);
-    const price = billingCycle === 'annual' ? PLANS[planKey].price.annual : PLANS[planKey].price.monthly;
-    upgradeMutation.mutate({ planKey, price });
+    upgradeMutation.mutate(planKey);
   };
 
   const planColor = currentPlan === 'enterprise' ? 'text-amber-400' : currentPlan === 'pro' ? 'text-primary' : 'text-muted-foreground';
@@ -76,13 +68,7 @@ export default function SubscriptionPage() {
             PLANS · DEVICES · GOOGLE PLAY BILLING
           </p>
         </div>
-        {/* Google Play badge */}
-        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary border border-border">
-          <div className="w-5 h-5 rounded bg-gradient-to-br from-green-400 via-blue-400 to-red-400 flex items-center justify-center">
-            <span className="text-[8px] font-bold text-white">▶</span>
-          </div>
-          <span className="font-mono text-[10px] text-muted-foreground">Google Play Billing</span>
-        </div>
+
       </div>
 
       {/* Current plan status */}
@@ -179,21 +165,7 @@ export default function SubscriptionPage() {
       {/* Support Center */}
       <SupportCenter />
 
-      {/* Google Play notice */}
-      <Card className="border-border bg-secondary/30">
-        <CardContent className="pt-4 pb-4">
-          <div className="flex items-start gap-3">
-            <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-            <div className="space-y-1">
-              <p className="font-mono text-[11px] font-semibold text-foreground">Google Play Store Billing</p>
-              <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
-                Subscriptions are managed through Google Play. Payments, renewals, and cancellations are handled securely via your Google account. 
-                Your purchase token is stored for license verification on each device.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   );
 }
