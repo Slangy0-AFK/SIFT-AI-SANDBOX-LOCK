@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Shield, AlertTriangle, Lock, Skull, Eye, ChevronDown, ChevronUp, Atom, Bug } from 'lucide-react';
-import BaseChainVisual from '../components/dashboard/BaseChainVisual';
+
 import ThreatCounter from '../components/dashboard/ThreatCounter';
 import LiveEventFeed from '../components/dashboard/LiveEventFeed';
 import QRNGCycleDisplay from '../components/dashboard/QRNGCycleDisplay';
@@ -74,19 +74,6 @@ export default function Dashboard() {
         <ThreatCounter label="Locked Out" value={lockedThreats.length} color="text-amber-400" icon={Lock} />
         <ThreatCounter label="Destroyed" value={destroyedThreats.length} color="text-destructive" icon={Skull} />
         <ThreatCounter label="Total Monitored" value={threats.length} color="text-primary" icon={Eye} />
-      </div>
-
-      {/* Base Chain — collapsible on mobile */}
-      <div className="md:hidden">
-        <CollapsiblePanel title="Security Chain Pipeline" icon={Shield}>
-          <BaseChainVisual compact />
-        </CollapsiblePanel>
-      </div>
-      <div className="hidden md:block bg-card border border-border rounded-xl p-5">
-        <h3 className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase mb-4 text-center">
-          SECURITY CHAIN PIPELINE
-        </h3>
-        <BaseChainVisual />
       </div>
 
       {/* Real-Time Tracker */}
