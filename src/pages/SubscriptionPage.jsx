@@ -8,6 +8,7 @@ import { Shield, CreditCard, Smartphone, RefreshCw, CheckCircle } from 'lucide-r
 import { toast } from 'sonner';
 import PlanCard, { PLANS } from '../components/subscription/PlanCard';
 import DeviceManager from '../components/subscription/DeviceManager';
+import SupportCenter from '../components/support/SupportCenter';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function SubscriptionPage() {
@@ -166,6 +167,9 @@ export default function SubscriptionPage() {
           ))}
         </div>
       </div>
+
+      {/* Support Center */}
+      <SupportCenter />
 
       {/* Google Play notice */}
       <Card className="border-border bg-secondary/30">
