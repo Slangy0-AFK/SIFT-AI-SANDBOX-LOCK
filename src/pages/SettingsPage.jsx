@@ -22,6 +22,7 @@ export default function SettingsPage() {
   });
 
   const handleDeleteData = async () => {
+    if (!user) return;
     setDeletingData(true);
     // Send deletion request email
     await base44.integrations.Core.SendEmail({
@@ -35,6 +36,7 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAccount = async () => {
+    if (!user) return;
     if (deleteConfirm.toUpperCase() !== 'DELETE') {
       toast.error('Please type DELETE to confirm');
       return;

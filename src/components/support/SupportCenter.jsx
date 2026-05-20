@@ -28,6 +28,8 @@ const severityStyle = {
 };
 
 export default function SupportCenter() {
+  const [user, setUser] = useState(null);
+  useEffect(() => { base44.auth.me().then(setUser).catch(() => {}); }, []);
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState([
     { role: 'assistant', content: 'Hello! I\'m the AEGIS AI assistant. Ask me anything about your security setup, threats, or how to use the platform.' }
@@ -44,7 +46,7 @@ export default function SupportCenter() {
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!input.trim() || loading) return;
+    if (!input.trim() || loading || !user) return;
     const userMsg = input.trim();
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
@@ -57,7 +59,7 @@ export default function SupportCenter() {
   };
 
   const submitFeedback = async () => {
-    if (!feedback.trim()) return;
+    if (!feedback.trim() || !user) return;
     await base44.integrations.Core.SendEmail({
       to: 'support@aegis-shield.app',
       subject: 'AEGIS User Feedback',

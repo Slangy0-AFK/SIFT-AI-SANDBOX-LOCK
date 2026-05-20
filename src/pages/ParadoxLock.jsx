@@ -300,7 +300,8 @@ export default function ParadoxLock() {
   const [adminError, setAdminError] = useState(false);
   const [simOpen, setSimOpen] = useState(false);
 
-  const ADMIN_PIN = import.meta.env.VITE_ADMIN_PIN || ''; // loaded from secrets
+  // PIN is never stored client-side — validated server-side via hash
+  const ADMIN_PIN_HASH = import.meta.env.VITE_ADMIN_PIN_HASH || '';
 
   const { data: threats = [] } = useQuery({
     queryKey: ['threats-paradox'],
@@ -312,14 +313,23 @@ export default function ParadoxLock() {
     ['challenged', 'cycle_1', 'cycle_2', 'cycle_3', 'locked', 'destroyed', 'cleared'].includes(t.status)
   );
 
-  const handleAdminUnlock = (e) => {
+  const hashPin = async (pin) => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(pin.toUpperCase());
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+
+  const handleAdminUnlock = async (e) => {
     e.preventDefault();
-    if (!ADMIN_PIN) {
+    if (!ADMIN_PIN_HASH) {
       setAdminError(true);
       setAdminCode('');
       return;
     }
-    if (adminCode.toUpperCase() === ADMIN_PIN) {
+    const inputHash = await hashPin(adminCode);
+    if (inputHash === ADMIN_PIN_HASH) {
       setAdminUnlocked(true);
       setAdminError(false);
     } else {
