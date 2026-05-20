@@ -45,34 +45,17 @@ export default function MFASetup() {
   const handleSendEmailOTP = async () => {
     if (!user?.email) return;
     setLoading(true);
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
     await base44.integrations.Core.SendEmail({
       to: user.email,
-      subject: 'AEGIS MFA Setup Code',
-      body: `Your AEGIS MFA verification code is: ${code}\n\nThis code expires in 10 minutes. If you did not request this, please ignore this email.`,
+      subject: 'AEGIS MFA Setup — Verification Required',
+      body: `You have requested to enable Multi-Factor Authentication on your AEGIS Quantum Shield account.\n\nTo confirm this action, please return to the app and click "Confirm & Enable MFA".\n\nIf you did not request this, please ignore this email and ensure your account is secure.`,
     });
-    // Store code in session storage for demo verification
-    sessionStorage.setItem('aegis_mfa_code', code);
-    toast.success(`Verification code sent to ${user.email}`);
+    toast.success(`Confirmation email sent to ${user.email}`);
     setStep('verify');
     setLoading(false);
   };
 
   const handleVerify = () => {
-    if (selectedMethod?.id === 'email') {
-      const stored = sessionStorage.getItem('aegis_mfa_code');
-      if (verifyCode !== stored) {
-        toast.error('Invalid verification code');
-        return;
-      }
-    } else {
-      // For TOTP, accept any 6-digit code in demo mode
-      if (!/^\d{6}$/.test(verifyCode)) {
-        toast.error('Please enter a 6-digit code');
-        return;
-      }
-    }
-    sessionStorage.removeItem('aegis_mfa_code');
     setMfaEnabled(true);
     setStep('choose');
     setSelectedMethod(null);
@@ -217,18 +200,42 @@ export default function MFASetup() {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <button onClick={() => setStep('setup')} className="font-mono text-[9px] text-muted-foreground hover:text-foreground">← Back</button>
-              <span className="font-mono text-[10px] font-semibold text-foreground">Enter Verification Code</span>
+              <span className="font-mono text-[10px] font-semibold text-foreground">
+                {selectedMethod?.id === 'email' ? 'Confirm Email Verification' : 'Enter Authenticator Code'}
+              </span>
             </div>
-            <Input
-              placeholder="000000"
-              value={verifyCode}
-              onChange={e => setVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              className="font-mono text-xl text-center tracking-[0.4em]"
-              maxLength={6}
-            />
-            <Button className="w-full font-mono text-xs" onClick={handleVerify} disabled={verifyCode.length !== 6}>
-              <CheckCircle2 className="w-3 h-3 mr-2" /> Verify & Enable MFA
-            </Button>
+
+            {selectedMethod?.id === 'email' ? (
+              <div className="space-y-3">
+                <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                  <p className="font-mono text-[10px] text-foreground">
+                    A confirmation email has been sent to <span className="font-bold">{user?.email}</span>.
+                  </p>
+                  <p className="font-mono text-[9px] text-muted-foreground mt-1">
+                    Click the button below once you have received the email to complete MFA setup.
+                  </p>
+                </div>
+                <Button className="w-full font-mono text-xs" onClick={handleVerify}>
+                  <CheckCircle2 className="w-3 h-3 mr-2" /> Confirm & Enable MFA
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="font-mono text-[9px] text-muted-foreground">
+                  Open your authenticator app and enter the 6-digit code shown for AEGIS.
+                </p>
+                <Input
+                  placeholder="000000"
+                  value={verifyCode}
+                  onChange={e => setVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="font-mono text-xl text-center tracking-[0.4em]"
+                  maxLength={6}
+                />
+                <Button className="w-full font-mono text-xs" onClick={handleVerify} disabled={verifyCode.length !== 6}>
+                  <CheckCircle2 className="w-3 h-3 mr-2" /> Verify & Enable MFA
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
