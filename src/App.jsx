@@ -12,6 +12,7 @@ import MirrorEnvironment from './pages/MirrorEnvironment';
 import ThreatLog from './pages/ThreatLog';
 import SettingsPage from './pages/SettingsPage';
 import AppLayout from './components/layout/AppLayout';
+import AttackSimulator from './pages/AttackSimulator';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -46,6 +47,7 @@ const AuthenticatedApp = () => {
         <Route path="/mirror-env" element={<MirrorEnvironment />} />
         <Route path="/threat-log" element={<ThreatLog />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/attack-sim" element={<AttackSimulator />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

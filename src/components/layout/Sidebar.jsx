@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, Activity, Lock, Layers, Bug, FileText, Settings } from 'lucide-react';
+import { Shield, Activity, Lock, Layers, Bug, FileText, Settings, Swords } from 'lucide-react';
 
 const navItems = [
   { path: '/', icon: Activity, label: 'Command Center' },
+  { path: '/attack-sim', icon: Swords, label: 'Attack Simulator', highlight: true },
   { path: '/base-chain', icon: Layers, label: 'Base Chain' },
   { path: '/paradox-lock', icon: Lock, label: 'Paradox Lock' },
   { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
@@ -32,7 +33,7 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 p-4 space-y-1">
-        {navItems.map(({ path, icon: Icon, label }) => {
+        {navItems.map(({ path, icon: Icon, label, highlight }) => {
           const isActive = location.pathname === path;
           return (
             <Link
@@ -41,6 +42,8 @@ export default function Sidebar() {
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-mono text-xs tracking-wide transition-all duration-200 ${
                 isActive
                   ? 'bg-primary/10 text-primary border border-primary/20'
+                  : highlight
+                  ? 'text-accent border border-accent/20 hover:bg-accent/10'
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
               }`}
             >
