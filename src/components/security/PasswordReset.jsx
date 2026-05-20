@@ -6,11 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Mail, Key, Check, ArrowRight } from 'lucide-react';
+import { Mail, Key, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function PasswordReset() {
-  const [step, setStep] = useState(1); // 1: request, 2: reset
   const [email, setEmail] = useState('');
   const [resetToken, setResetToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -25,8 +24,8 @@ export default function PasswordReset() {
       return response.data;
     },
     onSuccess: () => {
-      setStep(2);
-      toast.success('Password reset email sent. Check your inbox.');
+      toast.success('Password reset email sent. Check your inbox for the reset link.');
+      setEmail('');
     },
     onError: (error) => {
       toast.error(`Failed: ${error.message}`);
@@ -44,8 +43,6 @@ export default function PasswordReset() {
     },
     onSuccess: () => {
       toast.success('Password reset successfully!');
-      setStep(1);
-      setEmail('');
       setResetToken('');
       setNewPassword('');
       setConfirmPassword('');
@@ -65,7 +62,7 @@ export default function PasswordReset() {
 
   const handleReset = () => {
     if (!resetToken) {
-      toast.error('Please enter the reset token');
+      toast.error('Please enter the reset token from your email');
       return;
     }
     if (newPassword.length < 8) {
@@ -89,42 +86,40 @@ export default function PasswordReset() {
         <CardDescription>Reset your password securely via email</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {step === 1 ? (
-          <div className="space-y-4">
-            <Alert>
-              <Mail className="w-4 h-4" />
-              <AlertTitle>Request Password Reset</AlertTitle>
-              <AlertDescription>
-                Enter your email address and we'll send you a secure reset link.
-              </AlertDescription>
-            </Alert>
+        <div className="space-y-4">
+          <Alert>
+            <Mail className="w-4 h-4" />
+            <AlertTitle>Request Password Reset</AlertTitle>
+            <AlertDescription>
+              Enter your email address and we'll send you a secure reset link with a token.
+            </AlertDescription>
+          </Alert>
 
-            <div className="space-y-2">
-              <Label>Email Address</Label>
-              <Input
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            <Button onClick={handleRequestReset} disabled={requestResetMutation.isPending}>
-              <Mail className="w-4 h-4 mr-2" />
-              Send Reset Link
-            </Button>
+          <div className="space-y-2">
+            <Label>Email Address</Label>
+            <Input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
-        ) : (
-          <div className="space-y-4">
+
+          <Button onClick={handleRequestReset} disabled={requestResetMutation.isPending}>
+            <Mail className="w-4 h-4 mr-2" />
+            Send Reset Link
+          </Button>
+
+          <div className="pt-4 border-t border-border">
             <Alert className="bg-blue-500/10 border-blue-500/20">
-              <ArrowRight className="w-4 h-4 text-blue-500" />
-              <AlertTitle className="text-blue-500">Enter Reset Details</AlertTitle>
+              <Key className="w-4 h-4 text-blue-500" />
+              <AlertTitle className="text-blue-500">Reset Your Password</AlertTitle>
               <AlertDescription>
-                Check your email for the reset link or token.
+                Paste the reset token from your email and enter your new password below.
               </AlertDescription>
             </Alert>
 
-            <div className="space-y-2">
+            <div className="space-y-2 mt-4">
               <Label>Reset Token</Label>
               <Input
                 placeholder="Paste token from email"
@@ -153,17 +148,12 @@ export default function PasswordReset() {
               />
             </div>
 
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep(1)}>
-                Back
-              </Button>
-              <Button onClick={handleReset} disabled={resetPasswordMutation.isPending}>
-                <Check className="w-4 h-4 mr-2" />
-                Reset Password
-              </Button>
-            </div>
+            <Button onClick={handleReset} disabled={resetPasswordMutation.isPending}>
+              <Check className="w-4 h-4 mr-2" />
+              Reset Password
+            </Button>
           </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );
