@@ -3,13 +3,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
-    // Validate authentication token
-    const authHeader = req.headers.get('Authorization');
-    const expectedToken = Deno.env.get('ADMIN_PIN');
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== expectedToken) {
-      return Response.json({ error: 'Unauthorized: Invalid or missing authentication token' }, { status: 401 });
+    const user = await base44.auth.me();
+
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (user?.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
     const entities = [
