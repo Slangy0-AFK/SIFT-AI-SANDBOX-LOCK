@@ -7,6 +7,7 @@ const navItems = [
   { path: '/', icon: Activity, label: 'Command Center' },
   { path: '/zero-day', icon: Radiation, label: 'Zero-Day Center', highlight: true },
   { path: '/workflow', icon: GitBranch, label: 'Workflow Engine' },
+  { path: '/firewall', icon: Shield, label: 'Firewall' },
   { path: '/attack-sim', icon: Swords, label: 'Attack Simulator' },
   { path: '/paradox-lock', icon: Lock, label: 'Paradox Lock' },
   { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
