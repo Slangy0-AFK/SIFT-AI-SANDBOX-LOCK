@@ -314,7 +314,7 @@ export default function ParadoxLock() {
 
   const handleAdminUnlock = (e) => {
     e.preventDefault();
-    if (adminCode.toUpperCase() === ADMIN_PIN) {
+    if (ADMIN_PIN && adminCode.toUpperCase() === ADMIN_PIN) {
       setAdminUnlocked(true);
       setAdminError(false);
     } else {
