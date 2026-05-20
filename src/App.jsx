@@ -20,6 +20,9 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import ComplianceChecklist from './pages/ComplianceChecklist';
 import SaaSChecklist from './pages/SaaSChecklist';
+import FirewallDashboard from './pages/FirewallDashboard';
+import FirewallRules from './pages/FirewallRules';
+import FirewallLogs from './pages/FirewallLogs';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -62,6 +65,9 @@ const AuthenticatedApp = () => {
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/compliance" element={<ComplianceChecklist />} />
         <Route path="/saas-checklist" element={<SaaSChecklist />} />
+        <Route path="/firewall" element={<FirewallDashboard />} />
+        <Route path="/firewall/rules" element={<FirewallRules />} />
+        <Route path="/firewall/logs" element={<FirewallLogs />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
