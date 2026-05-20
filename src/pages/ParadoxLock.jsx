@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Lock, ShieldAlert, ShieldCheck, Brain, Bot, User, AlertTriangle,
   Loader2, ScanLine, CheckCircle2, XCircle, Cpu, Wifi, HardDrive,
-  ShieldX, ChevronDown, ChevronUp, KeyRound
+  ShieldX
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -295,10 +295,7 @@ function DeviceScanner() {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function ParadoxLock() {
-  const [adminUnlocked, setAdminUnlocked] = useState(false);
-  const [adminCode, setAdminCode] = useState('');
-  const [adminError, setAdminError] = useState(false);
-  const [simOpen, setSimOpen] = useState(false);
+
 
   const { data: threats = [] } = useQuery({
     queryKey: ['threats-paradox'],
@@ -310,12 +307,7 @@ export default function ParadoxLock() {
     ['challenged', 'cycle_1', 'cycle_2', 'cycle_3', 'locked', 'destroyed', 'cleared'].includes(t.status)
   );
 
-  const handleAdminUnlock = async (e) => {
-    e.preventDefault();
-    setAdminError(true);
-    setAdminCode('');
-    // PIN validation must be handled server-side via a backend function
-  };
+
 
   return (
     <div className="p-4 md:p-6 space-y-4 md:space-y-6 max-w-3xl mx-auto">
@@ -382,55 +374,7 @@ export default function ParadoxLock() {
       {/* ── Paradox Simulator (always visible for testing) ── */}
       <InternalParadoxSimulator threats={challengedThreats} onClose={() => {}} />
 
-      {/* ── Internal Admin Panel (locked) ── */}
-      <div className="border border-border/40 rounded-xl overflow-hidden">
-        <button
-          onClick={() => { if (adminUnlocked) setAdminUnlocked(false); }}
-          className="w-full flex items-center justify-between px-5 py-3 bg-muted/30 hover:bg-muted/50 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <KeyRound className="w-4 h-4 text-muted-foreground" />
-            <span className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase">Internal Admin Access</span>
-          </div>
-          <Lock className="w-3.5 h-3.5 text-muted-foreground/50" />
-        </button>
 
-        {!adminUnlocked ? (
-          <form onSubmit={handleAdminUnlock} className="px-5 py-4 flex items-center gap-3">
-            <input
-              type="password"
-              placeholder="Admin access code"
-              value={adminCode}
-              onChange={e => { setAdminCode(e.target.value); setAdminError(false); }}
-              className={`flex-1 bg-background border rounded-lg px-3 py-2 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-colors ${
-                adminError ? 'border-destructive' : 'border-border'
-              }`}
-            />
-            <Button type="submit" size="sm" variant="outline" className="font-mono text-xs">
-              Unlock
-            </Button>
-            {adminError && <span className="font-mono text-[9px] text-destructive">Invalid code</span>}
-          </form>
-        ) : (
-          <div className="px-5 py-4 space-y-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="font-mono text-xs border-primary/30 text-primary"
-              onClick={() => setSimOpen(o => !o)}
-            >
-              <Brain className="w-3 h-3 mr-2" />
-              {simOpen ? 'Hide' : 'Open'} Paradox Simulator
-              {simOpen ? <ChevronUp className="w-3 h-3 ml-2" /> : <ChevronDown className="w-3 h-3 ml-2" />}
-            </Button>
-            <AnimatePresence>
-              {simOpen && (
-                <InternalParadoxSimulator threats={challengedThreats} onClose={() => setSimOpen(false)} />
-              )}
-            </AnimatePresence>
-          </div>
-        )}
-      </div>
 
     </div>
   );
