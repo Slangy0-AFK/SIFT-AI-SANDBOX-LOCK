@@ -113,7 +113,7 @@ export default function Sidebar() {
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileMenuOpen(false)} />
           {/* Drawer */}
-          <div className="relative ml-auto w-72 h-full bg-card border-l border-border flex flex-col">
+          <div className="relative ml-auto w-80 h-full bg-card border-l border-border flex flex-col">
             <div className="p-4 border-b border-border flex items-center justify-between">
               <span className="font-mono text-xs font-bold text-foreground tracking-wider">NAVIGATION</span>
               <button onClick={() => setMobileMenuOpen(false)} className="p-1 rounded hover:bg-secondary">
