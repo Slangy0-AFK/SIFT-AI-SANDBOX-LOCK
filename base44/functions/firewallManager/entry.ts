@@ -15,6 +15,12 @@ Deno.serve(async (req) => {
 
     const { action, rule_data } = await req.json();
 
+    // List firewall rules
+    if (action === 'list_rules') {
+      const rules = await base44.asServiceRole.entities.FirewallRule.filter({});
+      return Response.json({ success: true, rules });
+    }
+
     // Create firewall rule
     if (action === 'create_rule') {
       const rule = await base44.entities.FirewallRule.create({
