@@ -4,8 +4,9 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Shield, Layers, Lock, Bug, Clock, Atom, Save } from 'lucide-react';
+import { Shield, Layers, Lock, Bug, Clock, Atom, Save, FileText, ClipboardList } from 'lucide-react';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
@@ -111,6 +112,32 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Legal & Compliance */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
+            <FileText className="w-4 h-4 text-primary" /> LEGAL & COMPLIANCE
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-3">
+          <Link to="/privacy-policy">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-secondary hover:bg-muted transition-colors font-mono text-[11px] text-foreground">
+              <Shield className="w-3.5 h-3.5 text-primary" /> Privacy Policy
+            </button>
+          </Link>
+          <Link to="/terms">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-secondary hover:bg-muted transition-colors font-mono text-[11px] text-foreground">
+              <FileText className="w-3.5 h-3.5 text-primary" /> Terms of Service
+            </button>
+          </Link>
+          <Link to="/compliance">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-amber-400/10 border-amber-400/30 hover:bg-amber-400/20 transition-colors font-mono text-[11px] text-amber-400">
+              <ClipboardList className="w-3.5 h-3.5" /> Google Play Compliance Checklist
+            </button>
+          </Link>
+        </CardContent>
+      </Card>
     </div>
   );
 }

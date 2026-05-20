@@ -16,6 +16,9 @@ import AttackSimulator from './pages/AttackSimulator';
 import SubscriptionPage from './pages/SubscriptionPage';
 import ZeroDayCenter from './pages/ZeroDayCenter';
 import WorkflowEngine from './pages/WorkflowEngine';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import ComplianceChecklist from './pages/ComplianceChecklist';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -54,6 +57,9 @@ const AuthenticatedApp = () => {
         <Route path="/subscription" element={<SubscriptionPage />} />
         <Route path="/zero-day" element={<ZeroDayCenter />} />
         <Route path="/workflow" element={<WorkflowEngine />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/compliance" element={<ComplianceChecklist />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
