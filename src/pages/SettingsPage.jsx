@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import AuditLogExport from '../components/settings/AuditLogExport';
+import MFASetup from '../components/settings/MFASetup';
 
 export default function SettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState('');
@@ -153,6 +155,12 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* MFA Setup */}
+      <MFASetup />
+
+      {/* Audit Log Export */}
+      <AuditLogExport />
 
       {/* Account Management — Google Play Required */}
       <Card className="border-amber-400/20">

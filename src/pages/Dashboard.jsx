@@ -8,6 +8,7 @@ import LiveEventFeed from '../components/dashboard/LiveEventFeed';
 import QRNGCycleDisplay from '../components/dashboard/QRNGCycleDisplay';
 import MirrorStatus from '../components/dashboard/MirrorStatus';
 import RealTimeTracker from '../components/dashboard/RealTimeTracker';
+import PredictiveRiskScore from '../components/dashboard/PredictiveRiskScore';
 
 function CollapsiblePanel({ title, icon: Icon, children, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -47,6 +48,12 @@ export default function Dashboard() {
     initialData: [],
   });
 
+  const { data: anomalies = [] } = useQuery({
+    queryKey: ['anomalies-risk'],
+    queryFn: () => base44.entities.ZeroDayAnomaly.list('-created_date', 50),
+    initialData: [],
+  });
+
   const activeThreats = threats.filter(t => !['locked', 'destroyed', 'cleared'].includes(t.status));
   const lockedThreats = threats.filter(t => t.status === 'locked');
   const destroyedThreats = threats.filter(t => t.status === 'destroyed');
@@ -75,6 +82,9 @@ export default function Dashboard() {
         <ThreatCounter label="Destroyed" value={destroyedThreats.length} color="text-destructive" icon={Skull} />
         <ThreatCounter label="Total Monitored" value={threats.length} color="text-primary" icon={Eye} />
       </div>
+
+      {/* Predictive Risk Score */}
+      <PredictiveRiskScore threats={threats} events={events} anomalies={anomalies} />
 
       {/* Real-Time Tracker */}
       <RealTimeTracker />
