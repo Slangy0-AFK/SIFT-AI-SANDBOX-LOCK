@@ -95,7 +95,6 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-5">
             {[
-              { key: 'baseChainEnabled', label: 'Base Chain Pipeline', desc: 'Multi-base cryptographic verification', icon: Layers },
               { key: 'paradoxLockEnabled', label: 'Paradox Lock Gate', desc: 'Theological paradox authentication', icon: Lock },
               { key: 'qrngEnabled', label: 'QRNG Cycles', desc: 'Quantum random number threat cycles', icon: Atom },
               { key: 'mirrorEnabled', label: 'Mirror Environment', desc: 'Mirrored deception environment', icon: Shield },
