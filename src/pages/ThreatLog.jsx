@@ -63,6 +63,18 @@ export default function ThreatLog() {
     onError: (error) => toast.error('Failed to neutralize threat: ' + error.message),
   });
 
+  const neutralizeAllMutation = useMutation({
+    mutationFn: async () => {
+      const unresolved = filteredThreats.filter(t => !['cleared', 'destroyed'].includes(t.status));
+      await Promise.all(unresolved.map(t => base44.entities.Threat.update(t.id, { status: 'destroyed' })));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['threats-log'] });
+      toast.success('All threats neutralized');
+    },
+    onError: (error) => toast.error('Failed to neutralize threats: ' + error.message),
+  });
+
   const filteredThreats = threats.filter(t => {
     const matchSearch = !searchTerm || t.source_ip?.includes(searchTerm) || t.notes?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchStatus = statusFilter === 'all' || t.status === statusFilter;
@@ -130,7 +142,19 @@ export default function ThreatLog() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="font-mono text-xs tracking-wider">THREAT REGISTRY</CardTitle>
-            <span className="font-mono text-[10px] text-muted-foreground">{filteredThreats.length} threats</span>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] text-muted-foreground">{filteredThreats.length} threats</span>
+              <Button
+                size="sm"
+                variant="destructive"
+                className="h-7 px-3 font-mono text-[8px]"
+                onClick={() => neutralizeAllMutation.mutate()}
+                disabled={neutralizeAllMutation.isPending || !filteredThreats.some(t => !['cleared', 'destroyed'].includes(t.status))}
+                title="Neutralize all active threats"
+              >
+                {neutralizeAllMutation.isPending ? 'Neutralizing...' : 'NEUTRALIZE ALL'}
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
