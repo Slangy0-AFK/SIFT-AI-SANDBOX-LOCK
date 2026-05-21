@@ -4,6 +4,23 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
+    // Authenticate user
+    const user = await base44.auth.me();
+    if (!user) {
+      return Response.json({
+        error: 'Unauthorized - Authentication required',
+        allowed: false
+      }, { status: 401 });
+    }
+
+    // Admin-only authorization
+    if (user.role !== 'admin') {
+      return Response.json({
+        error: 'Forbidden - Admin access required',
+        allowed: false
+      }, { status: 403 });
+    }
+    
     // Get client IP from headers
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 
                req.headers.get('cf-connecting-ip') ||
@@ -14,7 +31,9 @@ Deno.serve(async (req) => {
     return Response.json({
       ip,
       allowed: true,
-      warning: null
+      warning: null,
+      user: user.email,
+      role: user.role
     });
   } catch (error) {
     console.error('IP Access check error:', error);
