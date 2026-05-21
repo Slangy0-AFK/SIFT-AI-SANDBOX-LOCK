@@ -61,8 +61,9 @@ Deno.serve(async (req) => {
     }
 
     // Update invitation with user ID if not already set
+    // Use service role to update invitation since user may not have permission under new RLS
     if (!invitation.accepted_by_user_id) {
-      await base44.entities.Invitation.update(invitation.id, {
+      await base44.asServiceRole.entities.Invitation.update(invitation.id, {
         accepted_by_user_id: user.id,
         status: 'accepted',
         accepted_at: new Date().toISOString(),
