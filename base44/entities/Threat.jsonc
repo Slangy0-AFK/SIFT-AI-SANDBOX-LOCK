@@ -94,10 +94,22 @@
   ],
   "rls": {
     "create": {
-      "created_by": "{{user.email}}"
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     },
     "read": {
       "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
         {
           "created_by": "{{user.email}}"
         },
@@ -111,6 +123,9 @@
     "update": {
       "$or": [
         {
+          "data.user_id": "{{user.id}}"
+        },
+        {
           "created_by": "{{user.email}}"
         },
         {
@@ -121,16 +136,9 @@
       ]
     },
     "delete": {
-      "$or": [
-        {
-          "created_by": "{{user.email}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
