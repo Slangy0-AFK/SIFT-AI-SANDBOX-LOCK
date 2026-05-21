@@ -198,7 +198,9 @@ Deno.serve(async (req) => {
     // ── AGENT CORRIDOR ─────────────────────────────────────────────────────────
     // External agents must provide ZKP — no simple Yes/No accepted
     if (action === 'agent_authenticate') {
-      if (!user) {
+      // Ensure user is authenticated before proceeding
+      const authUser = await base44.auth.me().catch(() => null);
+      if (!authUser) {
         return Response.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });
       }
 
