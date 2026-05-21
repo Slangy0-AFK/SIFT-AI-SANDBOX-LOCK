@@ -148,18 +148,18 @@ export default function SubscriptionPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          {['free', 'pro', 'enterprise'].map(planKey => (
-            <PlanCard
-              key={planKey}
-              planKey={planKey}
-              billingCycle={billingCycle}
-              currentPlan={currentPlan}
-              onSelect={handleSelectPlan}
-              loading={upgradeMutation.isPending}
-            />
-          ))}
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+           {['free', 'pro', 'enterprise'].map(planKey => (
+             <PlanCard
+               key={planKey}
+               planKey={planKey}
+               billingCycle={billingCycle}
+               currentPlan={currentPlan}
+               onSelect={handleSelectPlan}
+               loading={upgradeMutation.isPending}
+             />
+           ))}
+         </div>
       </div>
 
       {/* Support Center */}
