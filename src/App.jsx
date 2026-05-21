@@ -12,7 +12,6 @@ import MirrorEnvironment from './pages/MirrorEnvironment';
 import ThreatLog from './pages/ThreatLog';
 import SettingsPage from './pages/SettingsPage';
 import AppLayout from './components/layout/AppLayout';
-import AttackSimulator from './pages/AttackSimulator';
 import SubscriptionPage from './pages/SubscriptionPage';
 import ZeroDayCenter from './pages/ZeroDayCenter';
 import WorkflowEngine from './pages/WorkflowEngine';
@@ -26,7 +25,6 @@ import FirewallRules from './pages/FirewallRules';
 import FirewallLogs from './pages/FirewallLogs';
 import UserProfile from './pages/UserProfile';
 import Welcome from './pages/Welcome';
-import ParadoxSimulator from './pages/ParadoxSimulator';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -63,7 +61,6 @@ const AuthenticatedApp = () => {
         <Route path="/mirror-env" element={<MirrorEnvironment />} />
         <Route path="/threat-log" element={<ThreatLog />} />
         <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/attack-sim" element={<AttackSimulator />} />
         <Route path="/subscription" element={<SubscriptionPage />} />
         <Route path="/zero-day" element={<ZeroDayCenter />} />
         <Route path="/workflow" element={<WorkflowEngine />} />
@@ -75,7 +72,6 @@ const AuthenticatedApp = () => {
         <Route path="/firewall" element={<FirewallDashboard />} />
         <Route path="/firewall/rules" element={<FirewallRules />} />
         <Route path="/firewall/logs" element={<FirewallLogs />} />
-        <Route path="/paradox-sim" element={<ParadoxSimulator />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

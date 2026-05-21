@@ -219,7 +219,6 @@ Deno.serve(async (req) => {
       },
       environment: {
         sensitive_vars_exposed: envFindings.length,
-        vars: envFindings.map(e => e.key),
       },
       base_chain: {
         verified: baseChainResults.every(r => r.verified),
