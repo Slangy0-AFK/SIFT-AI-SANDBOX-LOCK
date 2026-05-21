@@ -66,6 +66,25 @@
       ],
       "default": "unknown"
     },
+    "encoding_method": {
+      "type": "string",
+      "enum": [
+        "none",
+        "base64",
+        "base60",
+        "base32",
+        "hex",
+        "unicode",
+        "mixed"
+      ],
+      "default": "none",
+      "description": "Encoding method detected in threat payload"
+    },
+    "obfuscation_detected": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether obfuscation techniques were detected"
+    },
     "notes": {
       "type": "string"
     }
@@ -75,12 +94,12 @@
   ],
   "rls": {
     "create": {
-      "data.user_id": "{{user.id}}"
+      "created_by": "{{user.email}}"
     },
     "read": {
       "$or": [
         {
-          "data.user_id": "{{user.id}}"
+          "created_by": "{{user.email}}"
         },
         {
           "user_condition": {
@@ -92,7 +111,7 @@
     "update": {
       "$or": [
         {
-          "data.user_id": "{{user.id}}"
+          "created_by": "{{user.email}}"
         },
         {
           "user_condition": {
@@ -102,9 +121,16 @@
       ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     }
   }
 }

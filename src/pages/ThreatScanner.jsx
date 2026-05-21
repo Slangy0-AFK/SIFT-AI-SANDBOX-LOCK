@@ -18,10 +18,12 @@ import {
   Loader2,
   RefreshCw,
   Eye,
-  Trash2
+  Trash2,
+  Code
 } from 'lucide-react';
 import { format } from 'date-fns';
 import GmailConnection from '@/components/scanner/GmailConnection';
+import EncodingDetector from '@/components/scanner/EncodingDetector';
 
 export default function ThreatScanner() {
   const [smsText, setSmsText] = useState('');
@@ -119,14 +121,18 @@ export default function ThreatScanner() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="email" className="flex items-center gap-2">
               <Mail className="w-4 h-4" />
-              Email Scanner
+              Email
             </TabsTrigger>
             <TabsTrigger value="sms" className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
-              SMS & Phone Checker
+              SMS/Phone
+            </TabsTrigger>
+            <TabsTrigger value="encoding" className="flex items-center gap-2">
+              <Code className="w-4 h-4" />
+              Encoding Detector
             </TabsTrigger>
           </TabsList>
 
@@ -313,6 +319,11 @@ export default function ThreatScanner() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Encoding Detector Tab */}
+          <TabsContent value="encoding" className="space-y-6">
+            <EncodingDetector />
           </TabsContent>
         </Tabs>
       </div>
