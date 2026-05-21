@@ -216,7 +216,7 @@ export default function SettingsPage() {
       <div className="grid grid-cols-2 gap-6">
         {/* Defense Modules — Permanently Active */}
         <Card className="border-primary/20">
-          <CardHeader className="pb-4">
+          <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-primary" />
               <CardTitle className="font-mono text-xs tracking-wider">DEFENSE MODULES</CardTitle>
@@ -225,24 +225,21 @@ export default function SettingsPage() {
                 <span className="font-mono text-[8px] text-green-400 tracking-widest">ACTIVE</span>
               </div>
             </div>
-            <p className="font-mono text-[9px] text-muted-foreground mt-2">System-locked. Core security architecture permanently enforced.</p>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { label: 'Paradox Lock', icon: Lock, color: 'text-primary' },
-                { label: 'QRNG Cycles', icon: Atom, color: 'text-primary' },
-                { label: 'Mirror Env', icon: Shield, color: 'text-primary' },
-                { label: 'Honeypots', icon: Bug, color: 'text-amber-400' },
-                { label: 'Tarpits', icon: Clock, color: 'text-accent' },
-              ].map(({ label, icon: Icon, color }) => (
-                <div key={label} className="flex items-center gap-2 p-2.5 rounded-lg bg-secondary/30 border border-border/50">
-                  <Icon className={`w-3.5 h-3.5 ${color} flex-shrink-0`} />
-                  <span className="font-mono text-[10px] text-foreground flex-1">{label}</span>
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
-                </div>
-              ))}
-            </div>
+          <CardContent className="space-y-2">
+            {[
+              { label: 'Paradox Lock', icon: Lock, color: 'text-primary' },
+              { label: 'QRNG Cycles', icon: Atom, color: 'text-primary' },
+              { label: 'Mirror Environment', icon: Shield, color: 'text-primary' },
+              { label: 'Honeypots', icon: Bug, color: 'text-amber-400' },
+              { label: 'Tarpits', icon: Clock, color: 'text-accent' },
+            ].map(({ label, icon: Icon, color }) => (
+              <div key={label} className="flex items-center gap-2 p-2 rounded bg-secondary/20 border border-border/30">
+                <Icon className={`w-3 h-3 ${color} flex-shrink-0`} />
+                <span className="font-mono text-[10px] text-foreground flex-1">{label}</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
+              </div>
+            ))}
           </CardContent>
         </Card>
 
