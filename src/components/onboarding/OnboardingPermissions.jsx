@@ -24,6 +24,7 @@ const EMAIL_PROVIDERS = [
 
 const DEVICE_PERMISSIONS = [
   { id: 'storage', name: 'Storage Access', icon: HardDrive, desc: 'Scan files for malware & threats', required: true },
+  { id: 'files', name: 'Files & Media', icon: FileText, desc: 'Access documents, photos & media for scanning', required: true },
   { id: 'network', name: 'Network Interfaces', icon: Wifi, desc: 'Monitor active connections', required: true },
   { id: 'memory', name: 'Memory Scan', icon: Database, desc: 'Check RAM for injected processes', required: true },
   { id: 'apps', name: 'Installed Apps', icon: Smartphone, desc: 'Detect malicious applications', required: false },
