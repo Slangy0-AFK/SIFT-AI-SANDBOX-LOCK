@@ -1,17 +1,50 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
-import { Shield, CheckCircle, Lock, Wifi } from 'lucide-react';
+import { Shield, CheckCircle, Lock, Wifi, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Logout() {
   const navigate = useNavigate();
+  const [loggingOut, setLoggingOut] = useState(true);
 
   useEffect(() => {
-    // Clear local storage and session storage
-    localStorage.clear();
-    sessionStorage.clear();
+    const performLogout = async () => {
+      try {
+        // Clear local storage and session storage
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Stop background services
+        window.dispatchEvent(new CustomEvent('before-logout'));
+        
+        // Use SDK logout which handles token cleanup
+        await base44.auth.logout('/');
+      } catch (error) {
+        console.error('Logout error:', error);
+        // Force redirect even if SDK logout fails
+        window.location.href = '/';
+      }
+    };
+    
+    performLogout();
   }, []);
+
+  if (loggingOut) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
+          <p className="font-mono text-sm text-muted-foreground">Logging out securely...</p>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
