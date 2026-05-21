@@ -25,6 +25,7 @@ import FirewallRules from './pages/FirewallRules';
 import FirewallLogs from './pages/FirewallLogs';
 import UserProfile from './pages/UserProfile';
 import Welcome from './pages/Welcome';
+import ThreatScanner from './pages/ThreatScanner';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -72,6 +73,7 @@ const AuthenticatedApp = () => {
         <Route path="/firewall" element={<FirewallDashboard />} />
         <Route path="/firewall/rules" element={<FirewallRules />} />
         <Route path="/firewall/logs" element={<FirewallLogs />} />
+        <Route path="/threat-scanner" element={<ThreatScanner />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

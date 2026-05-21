@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, Activity, Lock, Bug, FileText, Settings, CreditCard, Radiation, GitBranch, Menu, X, User, ShieldAlert, LogOut } from 'lucide-react';
+import { Shield, Activity, Lock, Bug, FileText, Settings, CreditCard, Radiation, GitBranch, Menu, X, User, ShieldAlert, LogOut, Mail } from 'lucide-react';
 import NotificationBell from '../notifications/NotificationBell';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -11,6 +11,7 @@ const allNavItems = [
   { path: '/workflow', icon: GitBranch, label: 'Workflow Engine' },
   { path: '/threat-intel', icon: ShieldAlert, label: 'Threat Intel', highlight: true },
   { path: '/firewall', icon: Shield, label: 'Firewall' },
+  { path: '/threat-scanner', icon: Mail, label: 'Threat Scanner', highlight: true },
 
   { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
   { path: '/threat-log', icon: FileText, label: 'Threat Log' },

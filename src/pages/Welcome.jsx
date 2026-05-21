@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Zap, Lock, Bug, Skull, CheckCircle, ArrowRight, LogOut } from 'lucide-react';
+import { Shield, Zap, Lock, Bug, Skull, CheckCircle, ArrowRight, LogOut, Mail } from 'lucide-react';
 import DeviceScanner from '@/components/security/DeviceScanner';
 
 const features = [
@@ -13,6 +13,7 @@ const features = [
   { icon: Lock, title: 'Paradox Lock', desc: 'Human vs AI detection', color: 'text-accent' },
   { icon: Zap, title: 'QRNG Cycles', desc: 'True random destruction', color: 'text-amber-400' },
   { icon: Bug, title: 'Honeypots', desc: 'Attacker intelligence', color: 'text-green-400' },
+  { icon: Mail, title: 'Email & SMS Scanner', desc: 'Real-time threat detection', color: 'text-blue-400' },
 ];
 
 const steps = [
