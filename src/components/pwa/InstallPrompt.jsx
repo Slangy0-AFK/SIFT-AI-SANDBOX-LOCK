@@ -43,18 +43,23 @@ export default function InstallPrompt() {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       
+      // Always dismiss the prompt after user interaction
+      setShowPrompt(false);
+      
       if (outcome === 'accepted') {
         setInstalled(true);
-        setShowPrompt(false);
       }
       setDeferredPrompt(null);
     } else {
-      // Show manual instructions modal
+      // For Android Chrome without prompt, show simple instructions then dismiss
       setShowInstructions(true);
     }
   };
 
-  const closeInstructions = () => setShowInstructions(false);
+  const closeInstructions = () => {
+    setShowInstructions(false);
+    setShowPrompt(false); // Dismiss install prompt after showing instructions
+  };
 
   if (installed || !showPrompt) return null;
 
@@ -131,7 +136,7 @@ export default function InstallPrompt() {
             <Card className="border-primary/30 bg-card">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="font-mono text-sm tracking-wider">INSTALL INSTRUCTIONS</CardTitle>
+                  <CardTitle className="font-mono text-sm tracking-wider">INSTALL AEGIS APP</CardTitle>
                   <button onClick={closeInstructions} className="text-muted-foreground hover:text-foreground">
                     <X className="w-4 h-4" />
                   </button>
@@ -144,9 +149,9 @@ export default function InstallPrompt() {
                       <span className="font-mono text-[10px] font-bold text-primary">1</span>
                     </div>
                     <div>
-                      <p className="font-mono text-xs font-semibold text-foreground">Tap the Share button</p>
+                      <p className="font-mono text-xs font-semibold text-foreground">Open Chrome Menu</p>
                       <p className="font-mono text-[10px] text-muted-foreground mt-0.5">
-                        Look for the square with arrow icon (📤) in Safari or your browser toolbar
+                        Tap the three dots (⋮) in the top-right corner of your browser
                       </p>
                     </div>
                   </div>
@@ -156,9 +161,9 @@ export default function InstallPrompt() {
                       <span className="font-mono text-[10px] font-bold text-primary">2</span>
                     </div>
                     <div>
-                      <p className="font-mono text-xs font-semibold text-foreground">Select "Add to Home Screen"</p>
+                      <p className="font-mono text-xs font-semibold text-foreground">Tap "Install app"</p>
                       <p className="font-mono text-[10px] text-muted-foreground mt-0.5">
-                        Scroll down in the share menu and tap this option
+                        Look for "Install app" or "Add to Home screen" in the menu
                       </p>
                     </div>
                   </div>
@@ -168,9 +173,9 @@ export default function InstallPrompt() {
                       <span className="font-mono text-[10px] font-bold text-primary">3</span>
                     </div>
                     <div>
-                      <p className="font-mono text-xs font-semibold text-foreground">Tap "Add"</p>
+                      <p className="font-mono text-xs font-semibold text-foreground">Confirm Install</p>
                       <p className="font-mono text-[10px] text-muted-foreground mt-0.5">
-                        Confirm and the app will appear on your home screen
+                        Tap "Install" and the AEGIS app will be added to your home screen
                       </p>
                     </div>
                   </div>
@@ -180,10 +185,10 @@ export default function InstallPrompt() {
                   <div className="flex items-center gap-2 mb-3">
                     <CheckCircle className="w-3 h-3 text-green-400" />
                     <span className="font-mono text-[9px] text-muted-foreground">
-                      Works on iPhone, iPad, Android, and desktop browsers
+                      Free · No App Store Required · Instant Access
                     </span>
                   </div>
-                  <Button className="w-full font-mono text-xs" onClick={closeInstructions}>
+                  <Button className="w-full font-mono text-xs bg-primary hover:bg-primary/90" onClick={closeInstructions}>
                     Got It
                   </Button>
                 </div>
