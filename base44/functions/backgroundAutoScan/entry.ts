@@ -122,7 +122,13 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Use service role for all operations - no user auth required
+    // Verify only admins can trigger background scans
+    const user = await base44.auth.me();
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+    
+    // Use service role for all operations
     const base44Service = base44.asServiceRole;
     
     console.log('[AUTO-SCAN] Starting background auto-scan cycle...');

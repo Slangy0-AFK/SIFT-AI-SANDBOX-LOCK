@@ -41,7 +41,11 @@ Deno.serve(async (req) => {
 
     // Get the app user's Gmail connection using service role
     // This works because the connector was authorized by the app user during onboarding
-    const connectorId = Deno.env.get('GMAIL_CONNECTOR_ID') || '6a0f21a2f39d9bf2ebd374e6';
+    const connectorId = Deno.env.get('GMAIL_CONNECTOR_ID');
+    if (!connectorId) {
+      console.error('Gmail webhook: Connector ID not configured');
+      return Response.json({ error: 'Gmail connector not configured' }, { status: 500 });
+    }
     
     let accessToken;
     let userId;

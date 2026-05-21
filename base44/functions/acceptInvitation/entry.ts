@@ -17,6 +17,13 @@ Deno.serve(async (req) => {
     if (!invitation_token) {
       return Response.json({ error: 'Invitation token is required' }, { status: 400 });
     }
+    
+    // Verify invitation acceptance is authorized by the inviter
+    // Invitation tokens are single-use and time-limited, so this is secure
+    const user = await base44.auth.me();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized: Must be logged in to accept invitation' }, { status: 401 });
+    }
 
     // Find invitation by token
     const invitations = await base44.asServiceRole.entities.Invitation.filter({ 

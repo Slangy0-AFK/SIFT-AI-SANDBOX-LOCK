@@ -11,7 +11,10 @@ Deno.serve(async (req) => {
 
     // Check if this is just a connection test
     const body = await req.json().catch(() => ({}));
-    const connectorId = Deno.env.get('GMAIL_CONNECTOR_ID') || '6a0f21a2f39d9bf2ebd374e6';
+    const connectorId = Deno.env.get('GMAIL_CONNECTOR_ID');
+    if (!connectorId) {
+      return Response.json({ error: 'Gmail connector not configured' }, { status: 500 });
+    }
     
     if (body.test_connection === true) {
       // Just test the connection

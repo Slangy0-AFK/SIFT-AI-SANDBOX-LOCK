@@ -10,17 +10,22 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Get the app user's Outlook connection
+    const connectorId = Deno.env.get('OUTLOOK_CONNECTOR_ID');
+    if (!connectorId) {
+      return Response.json({ error: 'Outlook connector not configured' }, { status: 500 });
+    }
+    
     // Check if this is a test connection call
     const body = await req.json().catch(() => ({}));
     if (body.testConnection) {
-      // Just verify connection exists
-      const connectorId = '6a0f2325e2853c72f54ef687';
-      await base44.asServiceRole.connectors.getCurrentAppUserConnection(connectorId);
-      return Response.json({ connected: true });
+      try {
+        await base44.asServiceRole.connectors.getCurrentAppUserConnection(connectorId);
+        return Response.json({ connected: true });
+      } catch (err) {
+        return Response.json({ connected: false, error: err.message }, { status: 401 });
+      }
     }
-    
-    // Get the app user's Outlook connection
-    const connectorId = Deno.env.get('OUTLOOK_CONNECTOR_ID') || '6a0f2325e2853c72f54ef687';
     
     let accessToken;
     try {
