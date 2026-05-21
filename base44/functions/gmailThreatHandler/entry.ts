@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
     }
 
     // Get the app user's Gmail connection
-    const connectorId = 'GMAIL_CONNECTOR_ID'; // Will be replaced after registration
+    const connectorId = '6a0f21a2f39d9bf2ebd374e6';
     const { accessToken } = await base44.asServiceRole.connectors.getCurrentAppUserConnection(connectorId);
     const authHeader = { Authorization: `Bearer ${accessToken}` };
 
