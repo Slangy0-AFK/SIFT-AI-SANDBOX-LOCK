@@ -4,18 +4,22 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
+    // Get authenticated user first
+    const user = await base44.auth.me();
+    if (!user) {
+      console.warn('Gmail webhook: No authenticated user');
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
     // Verify webhook authenticity using history ID from payload
-    const body = await req.json();
-    const historyId = body.data?.historyId;
+    const payload = await req.json();
+    const historyId = payload.data?.historyId;
     
     if (!historyId) {
       console.warn('Gmail webhook: Missing historyId - potential spoofed request');
       return Response.json({ error: 'Invalid webhook payload' }, { status: 400 });
     }
 
-    // Webhooks don't have authenticated user sessions - verify via webhook authenticity instead
-    // The historyId validation above is sufficient for webhook authenticity
-    
     // Get the app user's Gmail connection
     const connectorId = '6a0f21a2f39d9bf2ebd374e6';
     
@@ -30,7 +34,7 @@ Deno.serve(async (req) => {
     }
     
     const authHeader = { Authorization: `Bearer ${accessToken}` };
-    const messageIds = body.data?.new_message_ids || [];
+    const messageIds = payload.data?.new_message_ids || [];
     
     if (messageIds.length === 0) {
       return Response.json({ status: 'ok', processed: 0 });
@@ -93,7 +97,7 @@ Return JSON:
 
         if (analysis.is_threat) {
           await base44.asServiceRole.entities.EmailThreat.create({
-            user_id: body.user_id,
+            user_id: user.id,
             message_id: messageId,
             from_address: from,
             subject,
