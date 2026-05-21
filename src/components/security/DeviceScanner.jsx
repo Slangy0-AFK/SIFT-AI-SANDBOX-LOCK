@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import {
 import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { DeviceScanService } from '@/lib/DeviceScanService';
 
 const SCAN_STEPS = [
   { id: 'memory', label: 'Memory Scan', icon: Cpu, detail: 'Scanning RAM for injected processes...' },
@@ -43,21 +44,27 @@ export default function DeviceScanner() {
   const [stepIndex, setStepIndex] = useState(-1);
   const [results, setResults] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
-  const [autoScanActive, setAutoScanActive] = useState(false);
-  const intervalRef = useRef(null);
+  const [autoScanActive, setAutoScanActive] = useState(DeviceScanService.isActive());
+
+  // Sync autoScanActive state with global service
+  useEffect(() => {
+    const updateState = () => setAutoScanActive(DeviceScanService.isActive());
+    updateState();
+    const interval = setInterval(updateState, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Persist prefs on change
   useEffect(() => { savePrefs(prefs); }, [prefs]);
 
-  // Auto-scan every 5 min when active
+  // Toggle global service based on autoScanActive
   useEffect(() => {
     if (autoScanActive) {
-      intervalRef.current = setInterval(() => runScan(true), 5 * 60 * 1000);
+      DeviceScanService.start();
     } else {
-      clearInterval(intervalRef.current);
+      DeviceScanService.stop();
     }
-    return () => clearInterval(intervalRef.current);
-  }, [autoScanActive, prefs]);
+  }, [autoScanActive]);
 
   const updatePref = (key, value) => {
     setPrefs(prev => ({ ...prev, [key]: value }));

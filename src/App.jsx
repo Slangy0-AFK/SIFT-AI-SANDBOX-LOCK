@@ -1,3 +1,4 @@
+import React from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -6,6 +7,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import IpAccessGate from '@/components/security/IpAccessGate';
+import { DeviceScanService } from '@/lib/DeviceScanService';
 import Dashboard from './pages/Dashboard';
 import BaseChain from './pages/BaseChain';
 import ParadoxLock from './pages/ParadoxLock';
@@ -33,6 +35,16 @@ import OnboardingPermissions from './components/onboarding/OnboardingPermissions
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+
+  // Start background device scanner when user is authenticated
+  React.useEffect(() => {
+    if (!isLoadingAuth && !isLoadingPublicSettings && !authError) {
+      DeviceScanService.start();
+      return () => {
+        // Keep running - don't stop on unmount
+      };
+    }
+  }, [isLoadingAuth, isLoadingPublicSettings, authError]);
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
