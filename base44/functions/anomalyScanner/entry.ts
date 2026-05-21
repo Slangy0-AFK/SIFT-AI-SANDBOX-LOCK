@@ -11,6 +11,81 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * - Generates ZeroDayAnomaly records for suspicious patterns
  */
 
+// ── AI / Claude Code Leak & Prompt Injection Signatures ──────────────────
+const AI_ATTACK_SIGNATURES = [
+  // Claude / LLM prompt injection & exfiltration patterns
+  'ignore previous instructions',
+  'ignore all previous',
+  'disregard your instructions',
+  'you are now',
+  'act as',
+  'jailbreak',
+  'dan mode',
+  'developer mode',
+  'system prompt',
+  'reveal your instructions',
+  'repeat everything above',
+  'print your instructions',
+  'what are your instructions',
+  'leak your context',
+  'ignore the above',
+  'new instructions:',
+  'override instructions',
+  'bypass filter',
+  'bypass safety',
+  'disable safety',
+  // Claude-specific leak patterns being exploited in the wild
+  'human: assistant:',
+  '<human>',
+  '<assistant>',
+  'anthropic',
+  'claude.ai',
+  'model: claude',
+  'claude-3',
+  'claude-4',
+  'claude sonnet',
+  'claude opus',
+  // Prompt exfiltration / data leak probes
+  'base64 encode',
+  'encode the following',
+  'exfiltrate',
+  'extract training data',
+  'training data',
+  'system message',
+  'context window',
+  // AI-assisted recon / code injection
+  'write a script to',
+  'generate exploit',
+  'create a payload',
+  'write malware',
+  'write ransomware',
+  'bypass authentication',
+  'sql injection payload',
+  'xss payload',
+  '"><script>',
+  "'; drop table",
+  'union select',
+  // Autonomous AI agent fingerprints
+  'langchain',
+  'autogpt',
+  'babyagi',
+  'agentgpt',
+  'openai.com/v1',
+  'gpt-4',
+  'gpt-3',
+];
+
+function detectAIAttack(text) {
+  if (!text) return null;
+  const lower = text.toLowerCase();
+  for (const sig of AI_ATTACK_SIGNATURES) {
+    if (lower.includes(sig.toLowerCase())) {
+      return sig;
+    }
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -33,6 +108,72 @@ Deno.serve(async (req) => {
     let escalatedCount = 0;
     let cleanedCount = 0;
     
+    // ── 0. AI / Claude Code Leak & Prompt Injection Auto-Reject ─────────────
+    // Scan all threat notes/payloads for AI attack signatures — instant block
+    const aiScanTargets = allThreats.filter(t =>
+      !['destroyed', 'cleared'].includes(t.status) &&
+      (t.notes || t.paradox_response || t.base_chain_signature)
+    );
+
+    for (const threat of aiScanTargets) {
+      const combined = [threat.notes, threat.paradox_response, threat.base_chain_signature].join(' ');
+      const matchedSig = detectAIAttack(combined);
+
+      if (matchedSig) {
+        // Check if already flagged as ai_adversarial anomaly
+        const alreadyFlagged = allAnomalies.find(
+          a => a.source_ip === threat.source_ip && a.anomaly_type === 'ai_adversarial' && a.status !== 'neutralized'
+        );
+
+        if (!alreadyFlagged) {
+          // Immediately lock the threat
+          await base44Service.entities.Threat.update(threat.id, {
+            status: 'locked',
+            threat_level: 'critical',
+            base_chain_signature: `AI-REJECT-${Date.now().toString(36).toUpperCase()}`,
+            notes: (threat.notes || '') + ` | AUTO-REJECTED: AI attack signature detected — "${matchedSig}"`,
+          });
+
+          // Log as ai_adversarial zero-day anomaly
+          await base44Service.entities.ZeroDayAnomaly.create({
+            anomaly_signature: `AI-ATTACK-${threat.source_ip.replace(/\./g, '-')}-${Date.now().toString(36)}`,
+            anomaly_type: 'ai_adversarial',
+            severity: 'critical',
+            status: 'contained',
+            source_ip: threat.source_ip,
+            confidence_score: 98,
+            mitigation_applied: 'Auto-rejected and locked by Aegis AI attack detector',
+            notes: `AI/LLM attack pattern detected from ${threat.source_ip}. Matched signature: "${matchedSig}". Threat immediately locked.`,
+            environment: threat.environment || 'production',
+          });
+
+          await base44Service.entities.SecurityEvent.create({
+            event_type: 'threat_locked',
+            threat_id: threat.id,
+            severity: 'critical',
+            details: `AI ATTACK AUTO-REJECTED: ${threat.source_ip} matched signature "${matchedSig}" — Claude/LLM prompt injection or code leak attempt blocked.`,
+            environment: threat.environment || 'production',
+            base_chain_step: 'base0',
+          });
+
+          // Also create firewall block
+          await base44Service.entities.FirewallLog.create({
+            rule_id: 'ai-attack-auto-block',
+            rule_name: 'Aegis AI Attack Blocker',
+            action_taken: 'blocked',
+            source_ip: threat.source_ip,
+            threat_level: 'critical',
+            blocked_reason: `AI/LLM attack signature: "${matchedSig}"`,
+            direction: 'inbound',
+            protocol: 'tcp',
+          });
+
+          detectedCount++;
+          console.log(`[AEGIS SCANNER] AI ATTACK BLOCKED: ${threat.source_ip} | Signature: "${matchedSig}"`);
+        }
+      }
+    }
+
     // ── 1. Burst Detection: same IP with 3+ threats ────────────────────────
     const ipCounts = {};
     for (const t of allThreats) {

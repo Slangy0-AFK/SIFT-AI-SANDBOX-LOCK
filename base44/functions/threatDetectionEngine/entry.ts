@@ -16,6 +16,30 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * - Updates threat status through paradox cycle
  */
 
+// ── AI / Prompt Injection / Claude Leak Signatures ───────────────────────
+const AI_ATTACK_SIGNATURES = [
+  'ignore previous instructions','ignore all previous','disregard your instructions',
+  'you are now','act as','jailbreak','dan mode','developer mode','system prompt',
+  'reveal your instructions','repeat everything above','print your instructions',
+  'what are your instructions','leak your context','ignore the above','new instructions:',
+  'override instructions','bypass filter','bypass safety','disable safety',
+  'human: assistant:','<human>','<assistant>','anthropic','claude.ai','model: claude',
+  'claude-3','claude-4','claude sonnet','claude opus','base64 encode','encode the following',
+  'exfiltrate','extract training data','training data','system message','context window',
+  'write a script to','generate exploit','create a payload','write malware','write ransomware',
+  'bypass authentication','sql injection payload','xss payload','"><script>',"'; drop table",
+  'union select','langchain','autogpt','babyagi','agentgpt','openai.com/v1','gpt-4','gpt-3',
+];
+
+function detectAIAttack(text) {
+  if (!text) return null;
+  const lower = text.toLowerCase();
+  for (const sig of AI_ATTACK_SIGNATURES) {
+    if (lower.includes(sig.toLowerCase())) return sig;
+  }
+  return null;
+}
+
 const THREAT_ESCALATION_THRESHOLDS = {
   critical: 3,   // After 3 QRNG cycles → lock
   high: 5,
@@ -150,7 +174,54 @@ Deno.serve(async (req) => {
 
 async function processThreat(threat, base44Service) {
   console.log(`[AEGIS] Processing threat: ${threat.id} | IP: ${threat.source_ip} | Level: ${threat.threat_level} | Status: ${threat.status}`);
-  
+
+  // ── AI Attack Auto-Reject ──────────────────────────────────────────────
+  const combined = [threat.notes, threat.paradox_response, threat.base_chain_signature].join(' ');
+  const aiSig = detectAIAttack(combined);
+  if (aiSig) {
+    const sig = `AI-ATTACK-${threat.source_ip.replace(/\./g, '-')}-${Date.now().toString(36)}`;
+    await Promise.all([
+      base44Service.entities.Threat.update(threat.id, {
+        status: 'locked',
+        threat_level: 'critical',
+        agent_type: 'autonomous_agent',
+        base_chain_signature: `AI-REJECT-${Date.now().toString(36).toUpperCase()}`,
+        notes: (threat.notes || '') + ` | AUTO-REJECTED: AI attack — "${aiSig}"`,
+      }),
+      base44Service.entities.ZeroDayAnomaly.create({
+        anomaly_signature: sig,
+        anomaly_type: 'ai_adversarial',
+        severity: 'critical',
+        status: 'contained',
+        source_ip: threat.source_ip,
+        confidence_score: 98,
+        mitigation_applied: 'Auto-rejected by Aegis AI attack detector',
+        notes: `Matched AI attack signature: "${aiSig}" from ${threat.source_ip}`,
+        environment: threat.environment || 'production',
+      }),
+      base44Service.entities.SecurityEvent.create({
+        event_type: 'threat_locked',
+        threat_id: threat.id,
+        severity: 'critical',
+        details: `AI ATTACK AUTO-REJECTED: matched "${aiSig}" — Claude/LLM prompt injection blocked from ${threat.source_ip}`,
+        environment: threat.environment || 'production',
+        base_chain_step: 'base0',
+      }),
+      base44Service.entities.FirewallLog.create({
+        rule_id: 'ai-attack-auto-block',
+        rule_name: 'Aegis AI Attack Blocker',
+        action_taken: 'blocked',
+        source_ip: threat.source_ip,
+        threat_level: 'critical',
+        blocked_reason: `AI/LLM attack signature: "${aiSig}"`,
+        direction: 'inbound',
+        protocol: 'tcp',
+      }),
+    ]);
+    console.log(`[AEGIS] AI ATTACK BLOCKED: ${threat.source_ip} | Sig: "${aiSig}"`);
+    return { threat_id: threat.id, source_ip: threat.source_ip, old_status: threat.status, new_status: 'locked', action: 'ai_attack_rejected', threat_score: 100, agent_type: 'autonomous_agent' };
+  }
+
   // Get anomalies for context
   const recentAnomalies = await base44Service.entities.ZeroDayAnomaly.filter({ source_ip: threat.source_ip });
   
