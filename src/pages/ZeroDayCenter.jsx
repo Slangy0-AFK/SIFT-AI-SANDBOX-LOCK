@@ -16,13 +16,7 @@ const ANOMALY_TYPES = ['behavioral', 'polymorphic', 'memory_injection', 'side_ch
 const SEVERITIES = ['info', 'warning', 'critical', 'fatal'];
 const AGENTS = ['SENTINEL', 'CIPHER', 'PHANTOM', 'ORACLE', 'WRAITH', 'BASTION', 'NEXUS', 'SPECTER', 'FORGE', 'MIRAGE', 'VORTEX', 'AEGIS-X'];
 
-function randomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function randomScore() { return Math.floor(Math.random() * 40 + 60); }
-function randomIp() { return `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`; }
-function randomHash() { return Math.random().toString(36).slice(2, 10).toUpperCase(); }
-
 export default function ZeroDayCenter() {
-  const [scanning, setScanning] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: anomalies = [] } = useQuery({
@@ -30,38 +24,6 @@ export default function ZeroDayCenter() {
     queryFn: () => base44.entities.ZeroDayAnomaly.list('-created_date', 50),
     initialData: [],
     refetchInterval: 5000,
-  });
-
-  const simulateMutation = useMutation({
-    mutationFn: async () => {
-      setScanning(true);
-      const count = Math.floor(Math.random() * 3) + 1;
-      const creates = Array.from({ length: count }).map(() => {
-        const type = randomItem(ANOMALY_TYPES);
-        const severity = randomItem(SEVERITIES);
-        const agentIdx = Math.floor(Math.random() * 12) + 1;
-        return base44.entities.ZeroDayAnomaly.create({
-          anomaly_signature: `ZD-${randomHash()}-${Date.now()}`,
-          anomaly_type: type,
-          severity,
-          status: 'detected',
-          agent_id: String(agentIdx),
-          source_ip: randomIp(),
-          payload_hash: `0x${randomHash()}${randomHash()}`,
-          environment: randomItem(['production', 'mirror', 'honeypot']),
-          confidence_score: randomScore(),
-          mitigation_applied: null,
-          notes: `Detected by Agent ${agentIdx} (${AGENTS[agentIdx - 1]})`,
-        }, { data_env: 'dev' });
-      });
-      return Promise.all(creates);
-    },
-    onSuccess: async (results) => {
-      queryClient.invalidateQueries({ queryKey: ['zero-day'] });
-      toast.success(`${results.length} zero-day anomal${results.length > 1 ? 'ies' : 'y'} simulated (Test DB)`);
-      setTimeout(() => setScanning(false), 1000);
-    },
-    onError: () => setScanning(false),
   });
 
   const containMutation = useMutation({
@@ -110,19 +72,12 @@ export default function ZeroDayCenter() {
             ANOMALY DETECTION · GUARDIAN AGENTS · THREAT CONTAINMENT
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {stats.active > 0 && (
-            <Button size="sm" variant="outline" className="font-mono text-[10px] border-red-400/30 text-red-400 hover:bg-red-400/10"
-              onClick={() => neutralizeAll.mutate()} disabled={neutralizeAll.isPending}>
-              <Shield className="w-3 h-3 mr-1" /> Neutralize All ({stats.active})
-            </Button>
-          )}
-          <Button size="sm" className="font-mono text-[10px]"
-            onClick={() => simulateMutation.mutate()} disabled={scanning || simulateMutation.isPending}>
-            {scanning ? <RefreshCw className="w-3 h-3 mr-1 animate-spin" /> : <Zap className="w-3 h-3 mr-1" />}
-            {scanning ? 'Scanning...' : 'Simulate Anomaly'}
-          </Button>
-        </div>
+        {stats.active > 0 && (
+           <Button size="sm" variant="outline" className="font-mono text-[10px] border-red-400/30 text-red-400 hover:bg-red-400/10"
+             onClick={() => neutralizeAll.mutate()} disabled={neutralizeAll.isPending}>
+             <Shield className="w-3 h-3 mr-1" /> Neutralize All ({stats.active})
+           </Button>
+         )}
       </div>
 
       {/* Stats */}
