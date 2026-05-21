@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import speakeasy from 'npm:speakeasy@2.0.0';
 
 // ── Config ────────────────────────────────────────────────────────────────────
-const HARDWARE_PRODUCTION_MODE = false; // Set true on physical PiBand hardware
+const HARDWARE_PRODUCTION_MODE = Deno.env.get('HARDWARE_PRODUCTION_MODE') === 'true';
 const MAX_INPUT_LENGTH = 512;
 const ALLOWED_INPUT_PATTERN = /^[\x20-\x7E\t\n\r]*$/; // standard UTF-8 printable only
 
