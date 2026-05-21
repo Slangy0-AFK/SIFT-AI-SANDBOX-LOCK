@@ -98,7 +98,17 @@
 [data-base44-clone],
 [class*="base44-clone"],
 .base44-clone-link,
-[class*="clone-app"] {
+[class*="clone-app"],
+[data-base44-modal],
+.base44-modal,
+[class*="base44-promo"],
+[class*="built-with-base44"] {
+  display: none !important;
+}
+
+/* Hide Base44 iframe overlays and dialogs */
+iframe[src*="base44"],
+iframe[src*="built-with"] {
   display: none !important;
 }
 
