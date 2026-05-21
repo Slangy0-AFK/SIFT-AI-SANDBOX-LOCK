@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 
 const EMAIL_PROVIDERS = [
   { id: 'gmail', name: 'Gmail', icon: Mail, color: 'text-red-500', connectorId: '6a0f21a2f39d9bf2ebd374e6' },
-  { id: 'outlook', name: 'Outlook/Hotmail', icon: Mail, color: 'text-blue-500', connectorId: null, integrationType: 'outlook' },
+  { id: 'outlook', name: 'Outlook/Hotmail', icon: Mail, color: 'text-blue-500', connectorId: '6a0f2325e2853c72f54ef687' },
   { id: 'yahoo', name: 'Yahoo Mail', icon: Mail, color: 'text-purple-500', connectorId: null },
   { id: 'icloud', name: 'iCloud Mail', icon: Mail, color: 'text-sky-500', connectorId: null },
   { id: 'aol', name: 'AOL Mail', icon: Mail, color: 'text-orange-500', connectorId: null },
