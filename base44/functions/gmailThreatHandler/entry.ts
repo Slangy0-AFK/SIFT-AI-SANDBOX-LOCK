@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
 
     // Get the app user's Gmail connection using service role
     // This works because the connector was authorized by the app user during onboarding
-    const connectorId = '6a0f21a2f39d9bf2ebd374e6';
+    const connectorId = Deno.env.get('GMAIL_CONNECTOR_ID') || '6a0f21a2f39d9bf2ebd374e6';
     
     let accessToken;
     let userId;

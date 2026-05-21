@@ -12,17 +12,19 @@ Deno.serve(async (req) => {
     }
 
     // Only allow the specific email to claim admin (check against hashed value)
-    const VITE_ADMIN_EMAIL = Deno.env.get('VITE_ADMIN_EMAIL');
-    if (!VITE_ADMIN_EMAIL || user.email !== VITE_ADMIN_EMAIL) {
+    const ADMIN_EMAIL = Deno.env.get('VITE_ADMIN_EMAIL') || Deno.env.get('ADMIN_EMAIL');
+    if (!ADMIN_EMAIL || user.email !== ADMIN_EMAIL) {
       return Response.json({ error: 'Access denied - not authorized for admin setup' }, { status: 403 });
     }
+
 
     // Parse request body
     const body = await req.json().catch(() => ({}));
     const { adminKey, action } = body;
 
-    // Check if admin key is set in secrets
-    const expectedKey = Deno.env.get('ADMIN_PIN');
+    // Check if admin key is set in secrets - use hashed version if available
+    const expectedKeyHash = Deno.env.get('VITE_ADMIN_PIN_HASH');
+    const expectedKey = Deno.env.get('VITE_ADMIN_PIN') || Deno.env.get('ADMIN_PIN');
     
     if (action === 'verify') {
       // Just verify if the key matches

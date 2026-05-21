@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
     }
     
     // Get the app user's Outlook connection
-    const connectorId = '6a0f2325e2853c72f54ef687';
+    const connectorId = Deno.env.get('OUTLOOK_CONNECTOR_ID') || '6a0f2325e2853c72f54ef687';
     
     let accessToken;
     try {

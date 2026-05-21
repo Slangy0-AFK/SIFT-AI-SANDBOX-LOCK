@@ -1,25 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// In-memory rate limiter: max 3 requests per 15 minutes per IP
-const resetAttempts = new Map();
-const RATE_LIMIT_MAX = 3;
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
-
-function checkRateLimit(ip) {
-  const now = Date.now();
-  const entry = resetAttempts.get(ip) || { count: 0, windowStart: now };
-  if (now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
-    // Window expired, reset
-    resetAttempts.set(ip, { count: 1, windowStart: now });
-    return true;
-  }
-  if (entry.count >= RATE_LIMIT_MAX) {
-    return false;
-  }
-  entry.count += 1;
-  resetAttempts.set(ip, entry);
-  return true;
-}
+// Rate limiting should be implemented server-side with persistent storage
+// Using in-memory is vulnerable. This uses the backend rateLimiter function instead.
 
 Deno.serve(async (req) => {
   try {
@@ -27,13 +9,27 @@ Deno.serve(async (req) => {
     const { action, email, reset_token, new_password } = await req.json();
 
     if (action === 'request_reset') {
-      const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown';
-      if (!checkRateLimit(clientIp)) {
-        console.warn(`[passwordReset] Rate limit exceeded for IP: ${clientIp}`);
-        return Response.json({ error: 'Too many reset requests. Please try again later.' }, { status: 429 });
-      }
       if (!email) {
         return Response.json({ error: 'email is required' }, { status: 400 });
+      }
+
+      const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown';
+      
+      // Call rateLimiter backend function for persistent rate limiting
+      try {
+        const rateLimitResult = await base44.asServiceRole.functions.invoke('rateLimiter', {
+          key: `password_reset_${clientIp}`,
+          max_requests: 3,
+          window_ms: 15 * 60 * 1000,
+        });
+        
+        if (!rateLimitResult?.data?.allowed) {
+          console.warn(`[passwordReset] Rate limit exceeded for IP: ${clientIp}`);
+          return Response.json({ error: 'Too many reset requests. Please try again later.' }, { status: 429 });
+        }
+      } catch (err) {
+        console.error('[passwordReset] Rate limiting check failed:', err);
+        // Fail open on rate limiter error, but log it
       }
 
       // Use Base44's built-in password reset - handles email automatically
