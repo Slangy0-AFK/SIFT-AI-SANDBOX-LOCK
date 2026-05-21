@@ -50,6 +50,11 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'decrypt') {
+      // Only admins can decrypt — prevents multi-tenancy isolation violations
+      if (user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden: decrypt action requires admin role' }, { status: 403 });
+      }
+
       if (!data) {
         return Response.json({ error: 'data is required' }, { status: 400 });
       }

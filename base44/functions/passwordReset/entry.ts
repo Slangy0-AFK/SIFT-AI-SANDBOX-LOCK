@@ -1,11 +1,37 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// In-memory rate limiter: max 3 requests per 15 minutes per IP
+const resetAttempts = new Map();
+const RATE_LIMIT_MAX = 3;
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const entry = resetAttempts.get(ip) || { count: 0, windowStart: now };
+  if (now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    // Window expired, reset
+    resetAttempts.set(ip, { count: 1, windowStart: now });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT_MAX) {
+    return false;
+  }
+  entry.count += 1;
+  resetAttempts.set(ip, entry);
+  return true;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const { action, email, reset_token, new_password } = await req.json();
 
     if (action === 'request_reset') {
+      const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown';
+      if (!checkRateLimit(clientIp)) {
+        console.warn(`[passwordReset] Rate limit exceeded for IP: ${clientIp}`);
+        return Response.json({ error: 'Too many reset requests. Please try again later.' }, { status: 429 });
+      }
       if (!email) {
         return Response.json({ error: 'email is required' }, { status: 400 });
       }
