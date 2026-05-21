@@ -74,8 +74,6 @@ Deno.serve(async (req) => {
       return Response.json({
         success: true,
         message: 'Code sent. Check your email for the OTP (test mode).',
-        // Return code in test mode so Google Play reviewers can verify the flow
-        test_code: otp,
       });
     }
 
