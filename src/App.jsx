@@ -21,6 +21,7 @@ import TermsOfService from './pages/TermsOfService';
 import ComplianceChecklist from './pages/ComplianceChecklist';
 import SaaSChecklist from './pages/SaaSChecklist';
 import FirewallDashboard from './pages/FirewallDashboard';
+import ThreatIntelligence from './pages/ThreatIntelligence';
 import FirewallRules from './pages/FirewallRules';
 import FirewallLogs from './pages/FirewallLogs';
 import UserProfile from './pages/UserProfile';
@@ -69,6 +70,7 @@ const AuthenticatedApp = () => {
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/compliance" element={<ComplianceChecklist />} />
         <Route path="/saas-checklist" element={<SaaSChecklist />} />
+        <Route path="/threat-intel" element={<ThreatIntelligence />} />
         <Route path="/firewall" element={<FirewallDashboard />} />
         <Route path="/firewall/rules" element={<FirewallRules />} />
         <Route path="/firewall/logs" element={<FirewallLogs />} />
