@@ -5,14 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function InstallPrompt() {
-  const [showPrompt, setShowPrompt] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [installed, setInstalled] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(true);
 
   useEffect(() => {
     // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setInstalled(true);
+      setShowPrompt(false);
       return;
     }
 
@@ -20,23 +21,9 @@ export default function InstallPrompt() {
     const handleBeforeInstall = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      
-      // Show prompt after 3 seconds if not dismissed before
-      const timer = setTimeout(() => {
-        setShowPrompt(true);
-      }, 3000);
-      
-      return () => clearTimeout(timer);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
-
-    // Check if user dismissed before
-    const dismissed = localStorage.getItem('install-prompt-dismissed');
-    if (dismissed && Date.now() - parseInt(dismissed) < 7 * 24 * 60 * 60 * 1000) {
-      // Don't show if dismissed within last 7 days
-      setShowPrompt(false);
-    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
@@ -44,22 +31,19 @@ export default function InstallPrompt() {
   }, []);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
-    
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      setInstalled(true);
-      setShowPrompt(false);
-      localStorage.removeItem('install-prompt-dismissed');
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        setInstalled(true);
+        setShowPrompt(false);
+      }
+      setDeferredPrompt(null);
+    } else {
+      // Manual install instructions for browsers without prompt
+      alert('To install this app:\n\n1. Click the share icon in your browser\n2. Select "Add to Home Screen"\n3. Tap "Add" to install');
     }
-    setDeferredPrompt(null);
-  };
-
-  const handleDismiss = () => {
-    setShowPrompt(false);
-    localStorage.setItem('install-prompt-dismissed', Date.now().toString());
   };
 
   if (installed || !showPrompt) return null;
@@ -103,29 +87,15 @@ export default function InstallPrompt() {
                   </div>
                 </div>
               </div>
-              <button
-                onClick={handleDismiss}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
+
             </div>
             
-            <div className="flex gap-2">
-              <Button
-                className="flex-1 font-mono text-xs"
-                onClick={handleInstall}
-              >
-                <Download className="w-3 h-3 mr-2" /> Install Now
-              </Button>
-              <Button
-                variant="outline"
-                className="font-mono text-xs"
-                onClick={handleDismiss}
-              >
-                Later
-              </Button>
-            </div>
+            <Button
+              className="w-full font-mono text-xs"
+              onClick={handleInstall}
+            >
+              <Download className="w-3 h-3 mr-2" /> Install App Now
+            </Button>
             
             <div className="flex items-center gap-2 pt-2 border-t border-border">
               <CheckCircle className="w-3 h-3 text-green-400" />
