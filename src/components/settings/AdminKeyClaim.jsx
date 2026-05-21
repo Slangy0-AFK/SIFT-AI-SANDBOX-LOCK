@@ -53,9 +53,9 @@ export default function AdminKeyClaim() {
     setVerifying(false);
   };
 
-  // Only show for admin email
-  const ADMIN_EMAIL = 'dougleslie00@gmail.com';
-  if (!user || user.email !== ADMIN_EMAIL) {
+  // Only show for admin email from environment
+  const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || '';
+  if (!user || !ADMIN_EMAIL || user.email !== ADMIN_EMAIL) {
     return null;
   }
 
