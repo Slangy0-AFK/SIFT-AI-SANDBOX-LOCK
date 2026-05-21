@@ -30,16 +30,19 @@ export default function ThreatLog() {
   const { isPro } = useSubscription();
   const queryClient = useQueryClient();
 
-  const { data: threats = [] } = useQuery({
+  // Auto-refresh every 10 seconds to keep threat registry active
+  const { data: threats = [], refetch } = useQuery({
     queryKey: ['threats-log'],
     queryFn: () => base44.entities.Threat.list('-created_date', isPro ? 100 : 10),
     initialData: [],
+    refetchInterval: 10000, // Refresh every 10 seconds
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ['events-log'],
     queryFn: () => base44.entities.SecurityEvent.list('-created_date', 100),
     initialData: [],
+    refetchInterval: 10000, // Refresh every 10 seconds
   });
 
   const resolveThreatMutation = useMutation({
@@ -78,11 +81,21 @@ export default function ThreatLog() {
             {isPro ? 'COMPLETE THREAT REGISTRY & EVENT TIMELINE' : 'LAST 10 THREATS — UPGRADE FOR FULL LOG'}
           </p>
         </div>
-        {!isPro && (
-          <Link to="/subscription" className="font-mono text-[9px] text-primary border border-primary/30 px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors">
-            Upgrade for full log
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => refetch()}
+            className="font-mono text-[9px] text-primary border border-primary/30 px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors flex items-center gap-2"
+            title="Refresh threat data"
+          >
+            <Zap className="w-3 h-3" />
+            Refresh
+          </button>
+          {!isPro && (
+            <Link to="/subscription" className="font-mono text-[9px] text-primary border border-primary/30 px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors">
+              Upgrade for full log
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Filters */}
