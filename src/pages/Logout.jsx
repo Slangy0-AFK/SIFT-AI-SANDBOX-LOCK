@@ -8,15 +8,9 @@ export default function Logout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Clear any remaining state
-    const cleanup = async () => {
-      try {
-        await import('@/api/base44Client').then(({ base44 }) => base44.auth.logout());
-      } catch (error) {
-        console.error('[Logout Page] Cleanup error:', error);
-      }
-    };
-    cleanup();
+    // Clear local storage and session storage
+    localStorage.clear();
+    sessionStorage.clear();
   }, []);
 
   return (
