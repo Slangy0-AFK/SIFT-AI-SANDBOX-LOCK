@@ -13,13 +13,13 @@ Deno.serve(async (req) => {
       // Use Base44's built-in password reset - handles email automatically
       await base44.auth.resetPasswordRequest(email);
 
-      // Log the security event
-      await base44.entities.SecurityEvent.create({
+      // Log the security event (service role — unauthenticated flow by design)
+      await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',
         details: `Password reset requested for ${email}`,
         environment: 'production',
-      });
+      }).catch(() => {});
 
       return Response.json({
         success: true,
@@ -38,16 +38,13 @@ Deno.serve(async (req) => {
         newPassword: new_password,
       });
 
-      // Find user to log the event
-      const users = await base44.entities.User.filter({ email: email });
-      if (users.length > 0) {
-        await base44.entities.SecurityEvent.create({
-          event_type: 'access_granted',
-          severity: 'warning',
-          details: `Password reset completed for ${email}`,
-          environment: 'production',
-        });
-      }
+      // Log the event (service role — unauthenticated flow by design)
+      await base44.asServiceRole.entities.SecurityEvent.create({
+        event_type: 'access_granted',
+        severity: 'warning',
+        details: `Password reset completed for ${email || 'unknown'}`,
+        environment: 'production',
+      }).catch(() => {});
 
       return Response.json({
         success: true,
