@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import FeatureGate from '@/components/subscription/FeatureGate';
 import AuditLogExport from '../components/settings/AuditLogExport';
 import MFASetup from '../components/security/MFASetup';
 import EncryptionTool from '../components/security/EncryptionTool';
@@ -294,6 +295,8 @@ export default function SettingsPage() {
 
         {/* ── Paradox Lock Tab ── */}
         <TabsContent value="paradox" className="space-y-4 mt-4">
+          <FeatureGate requiredPlan="pro" featureName="Paradox Lock Configuration">
+            <div className="space-y-4">
 
           {/* Read-only lock banner */}
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-400/10 border border-amber-400/30">
@@ -399,6 +402,8 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
+            </div>
+          </FeatureGate>
         </TabsContent>
       </Tabs>
     </div>
