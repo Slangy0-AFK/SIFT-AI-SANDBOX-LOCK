@@ -9,16 +9,16 @@ const RATE_LIMITS = {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
 
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const { action, endpoint, user_id, user_email } = await req.json();
+
+    // Use provided user info (from backend caller) rather than auth check
+    if (!user_id || !user_email) {
+      return Response.json({ error: 'user_id and user_email required' }, { status: 400 });
     }
 
-    const { action, endpoint } = await req.json();
-
     if (action === 'check_rate_limit') {
-      const subscriptions = await base44.entities.Subscription.filter({ user_id: user.id, status: 'active' });
+      const subscriptions = await base44.asServiceRole.entities.Subscription.filter({ user_id, status: 'active' });
       const plan = subscriptions[0]?.plan || 'free';
       const limits = RATE_LIMITS[plan];
 
@@ -26,8 +26,8 @@ Deno.serve(async (req) => {
       const oneMinuteAgo = new Date(now.getTime() - 60 * 1000);
       const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
 
-      const recentCalls = await base44.entities.AnalyticsEvent.filter({
-        user_email: user.email,
+      const recentCalls = await base44.asServiceRole.entities.AnalyticsEvent.filter({
+        user_email,
         event_name: 'api_call',
       });
 
@@ -52,10 +52,10 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'log_api_call') {
-      await base44.entities.AnalyticsEvent.create({
+      await base44.asServiceRole.entities.AnalyticsEvent.create({
         event_name: 'api_call',
-        user_email: user.email,
-        user_id: user.id,
+        user_email,
+        user_id,
         properties: JSON.stringify({ endpoint }),
         timestamp: new Date().toISOString(),
       });
