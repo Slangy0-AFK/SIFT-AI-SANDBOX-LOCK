@@ -8,11 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Lock, ShieldAlert, ShieldCheck, Brain, Bot, User, AlertTriangle,
-  Loader2, ScanLine, CheckCircle2, XCircle, Cpu, Wifi, HardDrive,
-  ShieldX
+  Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import TheologicalGateway from '@/components/paradox/TheologicalGateway';
+import DeviceScanner from '@/components/security/DeviceScanner.jsx';
 
 // ── Internal simulation (hidden from customers) ──────────────────────────────
 function InternalParadoxSimulator({ threats, onClose }) {
@@ -155,146 +155,6 @@ function InternalParadoxSimulator({ threats, onClose }) {
   );
 }
 
-// ── Scan steps shown to customers ────────────────────────────────────────────
-const SCAN_STEPS = [
-  { id: 'memory', label: 'Memory Scan', icon: Cpu, detail: 'Scanning RAM for injected processes...' },
-  { id: 'network', label: 'Network Interfaces', icon: Wifi, detail: 'Checking active connections & DNS...' },
-  { id: 'storage', label: 'Storage Integrity', icon: HardDrive, detail: 'Verifying file system checksums...' },
-  { id: 'threats', label: 'Threat Signatures', icon: ShieldX, detail: 'Matching known threat patterns...' },
-  { id: 'chain', label: 'Base Chain Verify', icon: Lock, detail: 'Validating cryptographic pipeline...' },
-];
-
-function DeviceScanner() {
-  const [scanning, setScanning] = useState(false);
-  const [stepIndex, setStepIndex] = useState(-1);
-  const [results, setResults] = useState(null);
-
-  const startScan = async () => {
-    setScanning(true);
-    setResults(null);
-    setStepIndex(0);
-
-    for (let i = 0; i < SCAN_STEPS.length; i++) {
-      setStepIndex(i);
-      await new Promise(r => setTimeout(r, 900 + Math.random() * 600));
-    }
-
-    // Deterministic clean result for customer-facing scan
-    setResults({
-      threats: 0,
-      warnings: 0,
-      clean: true,
-      timestamp: new Date(),
-    });
-    setStepIndex(SCAN_STEPS.length); // all done
-    setScanning(false);
-  };
-
-  const reset = () => {
-    setStepIndex(-1);
-    setResults(null);
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
-          <ScanLine className="w-4 h-4 text-primary" /> DEVICE SCAN & CLEAN
-        </CardTitle>
-        <p className="font-mono text-[9px] text-muted-foreground tracking-wide mt-1">
-          Run a full security sweep of your device at any time
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-4">
-
-        {/* Steps */}
-        <div className="space-y-2">
-          {SCAN_STEPS.map((step, i) => {
-            const Icon = step.icon;
-            const done = stepIndex > i;
-            const active = stepIndex === i;
-            const pending = stepIndex < i;
-            return (
-              <motion.div
-                key={step.id}
-                animate={{ opacity: pending && stepIndex >= 0 ? 0.4 : 1 }}
-                className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
-                  active ? 'bg-primary/10 border-primary/30' :
-                  done ? 'bg-green-500/5 border-green-500/20' :
-                  'bg-secondary/30 border-border/50'
-                }`}
-              >
-                <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-primary' : done ? 'text-green-400' : 'text-muted-foreground'}`} />
-                <div className="flex-1 min-w-0">
-                  <span className={`font-mono text-[11px] font-semibold ${active ? 'text-primary' : done ? 'text-green-400' : 'text-muted-foreground'}`}>
-                    {step.label}
-                  </span>
-                  {active && (
-                    <p className="font-mono text-[9px] text-muted-foreground mt-0.5 truncate">{step.detail}</p>
-                  )}
-                </div>
-                {active && <Loader2 className="w-4 h-4 text-primary animate-spin flex-shrink-0" />}
-                {done && <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />}
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Result */}
-        <AnimatePresence>
-          {results && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className={`rounded-xl p-4 border text-center ${
-                results.clean
-                  ? 'bg-green-500/10 border-green-500/30'
-                  : 'bg-destructive/10 border-destructive/30'
-              }`}
-            >
-              {results.clean ? (
-                <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2" />
-              ) : (
-                <XCircle className="w-8 h-8 text-destructive mx-auto mb-2" />
-              )}
-              <p className={`font-mono text-sm font-bold ${results.clean ? 'text-green-400' : 'text-destructive'}`}>
-                {results.clean ? 'DEVICE IS CLEAN' : `${results.threats} THREAT(S) FOUND`}
-              </p>
-              <p className="font-mono text-[9px] text-muted-foreground mt-1">
-                Scan completed · {format(results.timestamp, 'MMM d, yyyy HH:mm:ss')}
-              </p>
-              {results.clean && (
-                <p className="font-mono text-[9px] text-muted-foreground mt-1">
-                  All {SCAN_STEPS.length} checks passed · No threats detected · Base Chain verified
-                </p>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div className="flex gap-2">
-          <Button
-            className="flex-1 font-mono text-xs"
-            onClick={startScan}
-            disabled={scanning}
-          >
-            {scanning ? (
-              <><Loader2 className="w-3 h-3 mr-2 animate-spin" />Scanning...</>
-            ) : (
-              <><ScanLine className="w-3 h-3 mr-2" />{results ? 'Scan Again' : 'Start Device Scan'}</>
-            )}
-          </Button>
-          {results && !scanning && (
-            <Button variant="outline" size="sm" className="font-mono text-xs" onClick={reset}>
-              Reset
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function ParadoxLock() {
 
@@ -312,17 +172,31 @@ export default function ParadoxLock() {
 
 
   return (
-    <FeatureGate requiredPlan="pro" featureName="Paradox Lock Gate">
     <div className="p-4 md:p-6 space-y-4 md:space-y-6 max-w-3xl mx-auto">
       <div>
-        <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">SECURITY GATEWAY</h1>
+        <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">SECURITY COMMAND CENTER</h1>
         <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
           DEVICE PROTECTION & AUTHENTICATION LAYER
         </p>
       </div>
 
-      {/* ── Customer: Device Scan ── */}
-      <DeviceScanner />
+      {/* ── FREE: Device Scan & Clean ── */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase">Free Feature</span>
+          <span className="font-mono text-[8px] bg-green-500/15 text-green-400 border border-green-500/30 px-2 py-0.5 rounded-full">Available on all plans</span>
+        </div>
+        <DeviceScanner />
+      </div>
+
+      {/* ── PRO: Paradox Lock Gate ── */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase">Pro Features</span>
+          <span className="font-mono text-[8px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full">Pro & Enterprise</span>
+        </div>
+        <FeatureGate requiredPlan="pro" featureName="Paradox Lock Gate">
+        <div className="space-y-4">
 
       {/* ── Challenge History ── */}
       <Card>
@@ -380,7 +254,10 @@ export default function ParadoxLock() {
       {/* ── Paradox Simulator (always visible for testing) ── */}
       <InternalParadoxSimulator threats={challengedThreats} onClose={() => {}} />
 
+        </div>
+        </FeatureGate>
+      </div>
+
     </div>
-    </FeatureGate>
   );
 }
