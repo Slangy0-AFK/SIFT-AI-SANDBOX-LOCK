@@ -4,15 +4,6 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Validate webhook source with shared secret token
-    const webhookToken = req.headers.get('x-webhook-token');
-    const expectedToken = Deno.env.get('GMAIL_WEBHOOK_TOKEN');
-    
-    if (!expectedToken || webhookToken !== expectedToken) {
-      console.warn('Gmail webhook: Invalid or missing webhook token');
-      return Response.json({ error: 'Unauthorized webhook' }, { status: 401 });
-    }
-    
     const payload = await req.json();
     
     // Validate Google Pub/Sub message structure
