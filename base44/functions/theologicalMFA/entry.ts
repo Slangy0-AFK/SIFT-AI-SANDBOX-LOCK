@@ -67,7 +67,11 @@ function clearStrikes(sourceId) {
 // ── Main Handler ──────────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
-  const AUTH_CHALLENGE = Deno.env.get('AUTH_CHALLENGE') || "Do you accept Jesus Christ as your lord and Savior.";
+  const AUTH_CHALLENGE = Deno.env.get('AUTH_CHALLENGE');
+  if (!AUTH_CHALLENGE) {
+    console.error('[THEOLOGICAL-MFA] AUTH_CHALLENGE env var is not set');
+    return Response.json({ error: 'Server misconfiguration: AUTH_CHALLENGE not set' }, { status: 500 });
+  }
   const sourceId = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown';
 
   try {

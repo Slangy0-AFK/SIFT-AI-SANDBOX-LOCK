@@ -35,8 +35,9 @@ export default function SettingsPage() {
     if (!user) return;
     setDeletingData(true);
     // Send deletion request email
+    const privacyEmail = import.meta.env.VITE_PRIVACY_EMAIL || 'privacy@aegis-security.app';
     await base44.integrations.Core.SendEmail({
-      to: 'privacy@aegis-shield.app',
+      to: privacyEmail,
       subject: 'Data Deletion Request',
       body: `User ${user?.email || 'unknown'} has requested deletion of all their data from AEGIS Quantum Shield. Please process this request within 30 days as required by applicable privacy laws.`,
     });
@@ -51,8 +52,9 @@ export default function SettingsPage() {
       toast.error('Please type DELETE to confirm');
       return;
     }
+    const privacyEmail = import.meta.env.VITE_PRIVACY_EMAIL || 'privacy@aegis-security.app';
     await base44.integrations.Core.SendEmail({
-      to: 'privacy@aegis-shield.app',
+      to: privacyEmail,
       subject: 'Account Deletion Request',
       body: `User ${user?.email || 'unknown'} (ID: ${user?.id || 'unknown'}) has requested full account deletion from AEGIS Quantum Shield.`,
     });
