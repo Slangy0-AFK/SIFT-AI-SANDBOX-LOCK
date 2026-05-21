@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import crypto from 'node:crypto';
 
 Deno.serve(async (req) => {
   try {
@@ -69,8 +68,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Generate a secure admin key (one-time setup)
-    const newKey = crypto.randomBytes(16).toString('hex').toUpperCase();
+    // Generate a secure admin key using Web Crypto API
+    const buf = new Uint8Array(16);
+    crypto.getRandomValues(buf);
+    const newKey = Array.from(buf).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
     
     return Response.json({ 
       message: 'Admin key verification required',
