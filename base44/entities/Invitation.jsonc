@@ -79,6 +79,9 @@
           "data.accepted_by_user_id": "{{user.id}}"
         },
         {
+          "data.invitee_email": "{{user.email}}"
+        },
+        {
           "user_condition": {
             "role": "admin"
           }
@@ -91,7 +94,7 @@
           "data.subscriber_id": "{{user.id}}"
         },
         {
-          "data.accepted_by_user_id": "{{user.id}}"
+          "data.invitee_email": "{{user.email}}"
         },
         {
           "user_condition": {
