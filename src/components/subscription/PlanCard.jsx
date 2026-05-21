@@ -25,31 +25,19 @@ const PLANS = {
   },
   pro: {
     name: 'Pro',
-    price: { monthly: 15, annual: 12 },
+    price: { monthly: 99, annual: 79 },
     color: 'text-primary',
     border: 'border-primary/40',
-    badge: 'Most Popular',
-    devices: 3,
+    badge: 'Best Value',
+    devices: 10,
     features: [
-      { label: 'Base Chain Pipeline', included: true },
+      { label: 'Everything in Free', included: true },
       { label: 'Paradox Lock Gate', included: true },
-      { label: 'QRNG Cycles (3 cycles)', included: true },
+      { label: 'QRNG Cycles (unlimited)', included: true },
       { label: 'Mirror Environment', included: true },
       { label: 'Honeypots & Tarpits', included: true },
       { label: 'Attack Simulator', included: true },
       { label: 'Full Threat Log', included: true },
-      { label: 'Up to 3 devices', included: true },
-    ],
-  },
-  enterprise: {
-    name: 'Enterprise',
-    price: { monthly: 99, annual: 79 },
-    color: 'text-amber-400',
-    border: 'border-amber-400/40',
-    badge: 'Best Value',
-    devices: 10,
-    features: [
-      { label: 'Everything in Pro', included: true },
       { label: 'Multiple users', included: true },
       { label: '10 devices per user', included: true },
       { label: 'Priority threat response', included: true },
@@ -67,7 +55,7 @@ export default function PlanCard({ planKey, billingCycle, currentPlan, onSelect,
   const plan = PLANS[planKey];
   const price = plan.price[billingCycle];
   const isCurrentPlan = currentPlan === planKey;
-  const isUpgrade = ['free', 'pro', 'enterprise'].indexOf(planKey) > ['free', 'pro', 'enterprise'].indexOf(currentPlan);
+  const isUpgrade = ['free', 'pro'].indexOf(planKey) > ['free', 'pro'].indexOf(currentPlan);
 
   return (
     <motion.div
@@ -77,7 +65,7 @@ export default function PlanCard({ planKey, billingCycle, currentPlan, onSelect,
     >
       {plan.badge && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge className={`font-mono text-[9px] px-3 ${planKey === 'pro' ? 'bg-primary text-primary-foreground' : 'bg-amber-400 text-black'}`}>
+          <Badge className="font-mono text-[9px] px-3 bg-primary text-primary-foreground">
             {plan.badge}
           </Badge>
         </div>
@@ -99,7 +87,7 @@ export default function PlanCard({ planKey, billingCycle, currentPlan, onSelect,
           )}
         </div>
         <p className="font-mono text-[10px] text-muted-foreground mt-1">
-          Up to {plan.devices} device{plan.devices > 1 ? 's' : ''}{planKey === 'enterprise' ? ' per user' : ''}
+          Up to {plan.devices} device{plan.devices > 1 ? 's' : ''}{planKey === 'pro' ? ' per user' : ''}
         </p>
       </div>
 
