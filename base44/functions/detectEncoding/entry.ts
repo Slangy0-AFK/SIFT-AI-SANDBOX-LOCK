@@ -151,10 +151,10 @@ Deno.serve(async (req) => {
     results.obfuscation_level = Math.min(obfuscationLevel, 10);
     results.confidence = confidence;
     
-    // Log detected encoding threat if significant
+    // Log detected encoding threat if significant (using service role)
     if (confidence > 60 && obfuscationLevel >= 5) {
       try {
-        await base44.entities.ZeroDayAnomaly.create({
+        await base44.asServiceRole.entities.ZeroDayAnomaly.create({
           anomaly_signature: `ENC-${encodingFound}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           anomaly_type: encodingFound === 'base64' ? 'base64_obfuscation' : encodingFound === 'base60' ? 'base60_anomaly' : 'encoded_payload',
           severity: obfuscationLevel >= 8 ? 'critical' : obfuscationLevel >= 6 ? 'warning' : 'info',

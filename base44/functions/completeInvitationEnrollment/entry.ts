@@ -69,9 +69,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create device record - linked to subscriber's account
-    const device = await base44.entities.Device.create({
+    // Create device record - linked to subscriber's account (using service role)
+    const device = await base44.asServiceRole.entities.Device.create({
       user_id: invitation.subscriber_id, // Device counts against subscriber's limit
+      subscriber_id: invitation.subscriber_id,
       device_name: device_name || `${user.email}'s Device`,
       device_type,
       device_fingerprint: `inv-${invitation_token.slice(0, 8)}-${Date.now()}`,

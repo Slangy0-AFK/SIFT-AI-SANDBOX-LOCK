@@ -5,6 +5,10 @@
     "user_id": {
       "type": "string"
     },
+    "subscriber_id": {
+      "type": "string",
+      "description": "ID of the subscription owner (for family devices)"
+    },
     "device_name": {
       "type": "string"
     },
@@ -37,17 +41,21 @@
     }
   },
   "required": [
-    "user_id",
     "device_name"
   ],
   "rls": {
     "create": {
-      "data.user_id": "{{user.id}}"
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "read": {
       "$or": [
         {
           "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.subscriber_id": "{{user.id}}"
         },
         {
           "user_condition": {
@@ -62,6 +70,9 @@
           "data.user_id": "{{user.id}}"
         },
         {
+          "data.subscriber_id": "{{user.id}}"
+        },
+        {
           "user_condition": {
             "role": "admin"
           }
@@ -72,6 +83,9 @@
       "$or": [
         {
           "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.subscriber_id": "{{user.id}}"
         },
         {
           "user_condition": {

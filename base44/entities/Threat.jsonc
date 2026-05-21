@@ -2,6 +2,10 @@
   "name": "Threat",
   "type": "object",
   "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID associated with this threat"
+    },
     "source_ip": {
       "type": "string",
       "description": "IP address of the threat actor"
@@ -94,24 +98,14 @@
   ],
   "rls": {
     "create": {
-      "$or": [
-        {
-          "data.user_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "read": {
       "$or": [
         {
           "data.user_id": "{{user.id}}"
-        },
-        {
-          "created_by": "{{user.email}}"
         },
         {
           "user_condition": {
