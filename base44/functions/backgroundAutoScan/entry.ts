@@ -162,15 +162,30 @@ Deno.serve(async (req) => {
       base_chain_step: 'base1',
     });
 
-    // If threats found, log ZeroDayAnomaly and notify device owners
+    // If threats found, create Threat and ZeroDayAnomaly records
     const scanId = `AUTO-SCAN-${Date.now().toString(36).toUpperCase()}`;
     if (totalThreats > 0 || malwareFindings.length > 0) {
+      // Create Threat record for dashboard visibility
+      const threat = await base44Service.entities.Threat.create({
+        user_id: activeDevices[0]?.user_id || 'system',
+        source_ip: '127.0.0.1',
+        threat_level: totalThreats > 0 ? 'critical' : 'medium',
+        status: 'detected',
+        agent_type: 'unknown',
+        environment: 'production',
+        notes: `Auto-scan: ${totalThreats} threats, ${warnings} warnings across ${activeDevices.length} devices. ${malwareFindings.map(f => f.reason).join('; ')}`,
+        encoding_method: 'none',
+        obfuscation_detected: malwareFindings.length > 0,
+      });
+
+      // Create ZeroDayAnomaly for detailed tracking
       await base44Service.entities.ZeroDayAnomaly.create({
         anomaly_signature: `AUTO-SCAN-${Date.now().toString(36)}`,
         anomaly_type: malwareFindings.length > 0 ? 'fileless' : 'behavioral',
         severity: totalThreats > 0 ? 'critical' : 'warning',
         status: 'detected',
         source_ip: '127.0.0.1',
+        threat_id: threat.id,
         confidence_score: totalThreats > 0 ? 95 : 70,
         mitigation_applied: 'Background scan logged - review required',
         notes: `Auto-scan found ${totalThreats} threats across ${activeDevices.length} active devices`,

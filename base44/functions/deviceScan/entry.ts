@@ -175,15 +175,30 @@ Deno.serve(async (req) => {
       base_chain_step: 'base1',
     });
 
-    // If threats found, log a ZeroDayAnomaly and notify
+    // If threats found, log Threat and ZeroDayAnomaly records
     const scanId = `SCAN-${Date.now().toString(36).toUpperCase()}`;
     if (totalThreats > 0 || malwareFindings.length > 0) {
+      // Create Threat record for dashboard visibility
+      const threat = await base44.asServiceRole.entities.Threat.create({
+        user_id: user.id,
+        source_ip: '127.0.0.1',
+        threat_level: totalThreats > 0 ? 'critical' : 'medium',
+        status: 'detected',
+        agent_type: 'unknown',
+        environment: 'production',
+        notes: `Device scan: ${totalThreats} threats, ${warnings} warnings. ${malwareFindings.map(f => f.reason).join('; ')}`,
+        encoding_method: 'none',
+        obfuscation_detected: malwareFindings.length > 0,
+      });
+
+      // Create ZeroDayAnomaly for detailed tracking
       await base44.asServiceRole.entities.ZeroDayAnomaly.create({
         anomaly_signature: `DEVICE-SCAN-${user.email.split('@')[0]}-${Date.now().toString(36)}`,
         anomaly_type: malwareFindings.length > 0 ? 'fileless' : 'behavioral',
         severity: totalThreats > 0 ? 'critical' : 'warning',
         status: autoEncrypt ? 'contained' : 'detected',
         source_ip: '127.0.0.1',
+        threat_id: threat.id,
         confidence_score: totalThreats > 0 ? 95 : 70,
         mitigation_applied: autoEncrypt ? 'AES-256 auto-encryption triggered' : null,
         notes: `Device scan found ${totalThreats} threats and ${warnings} warnings for ${user.email}${autoEncrypt ? ' — auto-encryption applied' : ''}`,
