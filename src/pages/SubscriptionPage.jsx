@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,18 @@ export default function SubscriptionPage() {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [upgrading, setUpgrading] = useState(false);
   const queryClient = useQueryClient();
+
+  // Check for successful checkout
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    if (sessionId) {
+      toast.success('Payment successful! Your Pro plan is now active.');
+      queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+      // Clean URL
+      window.history.replaceState({}, document.title, '/subscription');
+    }
+  }, []);
 
   const { data: user } = useQuery({
     queryKey: ['me'],
