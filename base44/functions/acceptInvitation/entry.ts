@@ -57,10 +57,10 @@ Deno.serve(async (req) => {
       existingUser = users[0];
     }
 
-    // Update invitation as accepted (using service role for authorization)
+    // Update invitation status
     const updateData = {
-      status: 'accepted',
-      accepted_at: new Date().toISOString(),
+      status: existingUser ? 'accepted' : 'pending',
+      accepted_at: existingUser ? new Date().toISOString() : null,
     };
 
     if (existingUser) {
@@ -68,6 +68,8 @@ Deno.serve(async (req) => {
     }
 
     await base44.asServiceRole.entities.Invitation.update(invitation.id, updateData);
+
+    console.log(`[ACCEPT] Invitation ${invitation.id} validated for ${invitation.invitee_email}`);
 
     return Response.json({
       success: true,
@@ -78,7 +80,8 @@ Deno.serve(async (req) => {
       },
       user_exists: !!existingUser,
       existing_user_email: existingUser?.email || null,
-      message: 'Invitation validated successfully'
+      next_step: existingUser ? 'enroll_device' : 'register_first',
+      message: existingUser ? 'Invitation accepted. Proceed to device enrollment.' : 'Invitation validated. Please complete registration first.'
     });
 
   } catch (error) {

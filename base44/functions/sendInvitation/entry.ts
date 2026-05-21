@@ -29,25 +29,38 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Device slots must be between 1 and 10' }, { status: 400 });
     }
 
-    // Get subscriber's subscription
-    const subscriptions = await base44.entities.Subscription.filter({ user_id: user.id });
+    // Get subscriber's subscription - check both user_id and subscriber_id
+    let subscriptions = await base44.entities.Subscription.filter({ user_id: user.id });
+    if (!subscriptions || subscriptions.length === 0) {
+      subscriptions = await base44.entities.Subscription.filter({ subscriber_id: user.id });
+    }
     const subscription = subscriptions[0];
 
     if (!subscription || subscription.status !== 'active') {
+      console.error(`[INVITE] No active subscription found for user ${user.id}`);
       return Response.json({ 
         error: 'You need an active subscription to send invitations' 
       }, { status: 403 });
     }
+    
+    console.log(`[INVITE] Found subscription: ${subscription.plan} (${subscription.status})`);
 
-    // Check device limit
-    const existingDevices = await base44.entities.Device.filter({ user_id: user.id, status: 'active' });
+    // Check device limit - count devices allocated to this subscriber
+    // Devices can be owned by user_id OR allocated via subscriber_id
+    const allActiveDevices = await base44.entities.Device.filter({ status: 'active' });
+    const subscriberDevices = allActiveDevices.filter(d => 
+      d.user_id === user.id || d.subscriber_id === user.id
+    );
+    
     const existingInvites = await base44.entities.Invitation.filter({ 
       subscriber_id: user.id, 
       status: 'pending' 
     });
     
-    const totalCommitted = existingDevices.length + existingInvites.reduce((sum, inv) => sum + (inv.device_slots || 1), 0);
+    const totalCommitted = subscriberDevices.length + existingInvites.reduce((sum, inv) => sum + (inv.device_slots || 1), 0);
     const maxDevices = subscription.plan === 'pro' ? 5 : 1;
+
+    console.log(`[INVITE] Device check: ${subscriberDevices.length} devices, ${existingInvites.length} pending invites, total: ${totalCommitted}/${maxDevices}`);
 
     if (totalCommitted + device_slots > maxDevices) {
       return Response.json({ 
