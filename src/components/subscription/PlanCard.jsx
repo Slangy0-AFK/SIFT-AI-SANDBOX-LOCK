@@ -29,7 +29,7 @@ const PLANS = {
     color: 'text-primary',
     border: 'border-primary/40',
     badge: 'Most Popular',
-    devices: 5,
+    devices: 3,
     features: [
       { label: 'Base Chain Pipeline', included: true },
       { label: 'Paradox Lock Gate', included: true },
@@ -38,7 +38,7 @@ const PLANS = {
       { label: 'Honeypots & Tarpits', included: true },
       { label: 'Attack Simulator', included: true },
       { label: 'Full Threat Log', included: true },
-      { label: 'Up to 5 devices', included: true },
+      { label: 'Up to 3 devices', included: true },
     ],
   },
   enterprise: {
@@ -47,11 +47,11 @@ const PLANS = {
     color: 'text-amber-400',
     border: 'border-amber-400/40',
     badge: 'Best Value',
-    devices: 5,
+    devices: 10,
     features: [
       { label: 'Everything in Pro', included: true },
       { label: 'Multiple users', included: true },
-      { label: '5 devices per user', included: true },
+      { label: '10 devices per user', included: true },
       { label: 'Priority threat response', included: true },
       { label: 'Custom QRNG parameters', included: true },
       { label: 'Admin dashboard', included: true },
