@@ -33,7 +33,8 @@ const DEVICE_PERMISSIONS = [
 
 export default function OnboardingPermissions() {
   const [step, setStep] = useState(0);
-  const [emailProviders, setEmailProviders] = useState([]);
+  // Gmail is pre-connected via shared connector
+  const [emailProviders, setEmailProviders] = useState(['gmail']);
   const [devicePermissions, setDevicePermissions] = useState(
     DEVICE_PERMISSIONS.filter(p => p.required).map(p => p.id)
   );
@@ -164,14 +165,14 @@ export default function OnboardingPermissions() {
                       <motion.div
                         key={provider.id}
                         whileHover={{ scale: 1.02 }}
-                        className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                        className={`p-4 rounded-xl border transition-all ${
                           isConnected
                             ? 'bg-green-500/10 border-green-500/30'
                             : provider.connectorId
-                              ? 'bg-card border-border hover:border-primary/30'
+                              ? 'bg-card border-border hover:border-primary/30 cursor-pointer'
                               : 'bg-secondary/30 border-border/50 opacity-60'
                         }`}
-                        onClick={() => provider.connectorId && handleConnectEmail(provider)}
+                        onClick={() => !isConnected && provider.connectorId && handleConnectEmail(provider)}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
@@ -179,7 +180,7 @@ export default function OnboardingPermissions() {
                             <div>
                               <p className="font-mono text-xs font-semibold">{provider.name}</p>
                               <p className="font-mono text-[9px] text-muted-foreground">
-                                {isConnected ? 'Connected' : provider.connectorId ? 'Click to connect' : 'Coming soon'}
+                                {isConnected ? 'Connected (Shared)' : provider.connectorId ? 'Click to connect' : 'Coming soon'}
                               </p>
                             </div>
                           </div>
@@ -191,14 +192,15 @@ export default function OnboardingPermissions() {
                   })}
                 </div>
 
-                <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
                   <div className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-mono text-[10px] font-semibold text-blue-400">Supported Email Providers</p>
+                      <p className="font-mono text-[10px] font-semibold text-green-400">Gmail Connected</p>
                       <p className="font-mono text-[9px] text-muted-foreground mt-1">
-                        Gmail is fully supported with automated threat scanning. Outlook/Hotmail support is available for manual email access. 
-                        Other providers (Yahoo, iCloud, AOL, ProtonMail) can be used with manual forwarding or the SMS/Phone scanner.
+                        Gmail is connected and ready for automated threat scanning. All users can scan emails immediately.
+                        Outlook/Hotmail requires individual connection. Other providers (Yahoo, iCloud, AOL, ProtonMail) 
+                        can be used with manual forwarding or the SMS/Phone scanner.
                       </p>
                     </div>
                   </div>
