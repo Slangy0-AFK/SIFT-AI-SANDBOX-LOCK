@@ -11,6 +11,7 @@ import {
   ShieldX
 } from 'lucide-react';
 import { format } from 'date-fns';
+import TheologicalGateway from '@/components/paradox/TheologicalGateway';
 
 // ── Internal simulation (hidden from customers) ──────────────────────────────
 function InternalParadoxSimulator({ threats, onClose }) {
@@ -370,6 +371,9 @@ export default function ParadoxLock() {
           )}
         </CardContent>
       </Card>
+
+      {/* ── Theological MFA Gateway ── */}
+      <TheologicalGateway />
 
       {/* ── Paradox Simulator (always visible for testing) ── */}
       <InternalParadoxSimulator threats={challengedThreats} onClose={() => {}} />
