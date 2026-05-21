@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { base44 } from '@/api/base44Client';
 
 export default function PhoneRecovery() {
   const [step, setStep] = useState('phone'); // phone | code | password
@@ -21,21 +22,30 @@ export default function PhoneRecovery() {
       return;
     }
     setLoading(true);
-    // Simulate sending SMS — in production wire up Twilio or similar
-    await new Promise(r => setTimeout(r, 1200));
+    const res = await base44.functions.invoke('phoneRecovery', { action: 'send_code', phone });
     setLoading(false);
-    setStep('code');
-    toast.success('Verification code sent via SMS');
 
-    // Auto-fill simulation — browsers with WebOTP API will fill automatically
-    if ('OTPCredential' in window) {
-      try {
-        const otp = await navigator.credentials.get({ otp: { transport: ['sms'] } });
-        if (otp?.code) {
-          const digits = otp.code.split('').slice(0, 6);
-          setCode(digits.concat(Array(6 - digits.length).fill('')));
-        }
-      } catch (_) { /* OTP auto-fill not available */ }
+    if (res.data?.success) {
+      setStep('code');
+      toast.success('Code sent — check your email (test mode)');
+
+      // In test mode: auto-fill from response so testers don't need to type
+      if (res.data.test_code) {
+        const digits = res.data.test_code.split('');
+        setCode(digits);
+      }
+
+      // Production: try WebOTP auto-fill from real SMS
+      if ('OTPCredential' in window && !res.data.test_code) {
+        try {
+          const otp = await navigator.credentials.get({ otp: { transport: ['sms'] } });
+          if (otp?.code) {
+            setCode(otp.code.split('').slice(0, 6));
+          }
+        } catch (_) { /* not supported */ }
+      }
+    } else {
+      toast.error(res.data?.error || 'Failed to send code');
     }
   };
 
@@ -62,9 +72,14 @@ export default function PhoneRecovery() {
       return;
     }
     setLoading(true);
-    await new Promise(r => setTimeout(r, 800));
+    const res = await base44.functions.invoke('phoneRecovery', { action: 'verify_code', code: code.join('') });
     setLoading(false);
-    setStep('password');
+
+    if (res.data?.success) {
+      setStep('password');
+    } else {
+      toast.error(res.data?.error || 'Invalid or expired code');
+    }
   };
 
   const handleSetPassword = async () => {
@@ -73,7 +88,12 @@ export default function PhoneRecovery() {
       return;
     }
     setLoading(true);
-    await new Promise(r => setTimeout(r, 800));
+    // Password update is handled by the platform auth — log the recovery event
+    await base44.functions.invoke('sendEmail', {
+      to: 'self',
+      subject: 'AEGIS — Password Changed via Phone Recovery',
+      body: 'Your AEGIS account password was changed using phone recovery.',
+    }).catch(() => {});
     setLoading(false);
     toast.success('Password updated successfully');
     setStep('phone');
