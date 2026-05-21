@@ -26,6 +26,7 @@ import FirewallRules from './pages/FirewallRules';
 import FirewallLogs from './pages/FirewallLogs';
 import UserProfile from './pages/UserProfile';
 import Welcome from './pages/Welcome';
+import ParadoxSimulator from './pages/ParadoxSimulator';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -74,6 +75,7 @@ const AuthenticatedApp = () => {
         <Route path="/firewall" element={<FirewallDashboard />} />
         <Route path="/firewall/rules" element={<FirewallRules />} />
         <Route path="/firewall/logs" element={<FirewallLogs />} />
+        <Route path="/paradox-sim" element={<ParadoxSimulator />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

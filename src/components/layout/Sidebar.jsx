@@ -12,6 +12,7 @@ const allNavItems = [
   { path: '/threat-intel', icon: ShieldAlert, label: 'Threat Intel', highlight: true },
   { path: '/firewall', icon: Shield, label: 'Firewall' },
   { path: '/attack-sim', icon: Swords, label: 'Attack Simulator', adminOnly: true },
+  { path: '/paradox-sim', icon: Lock, label: 'Paradox Simulator', adminOnly: true },
   { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
   { path: '/threat-log', icon: FileText, label: 'Threat Log' },
   { path: '/profile', icon: User, label: 'Profile' },
