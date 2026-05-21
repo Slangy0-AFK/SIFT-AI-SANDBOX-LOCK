@@ -27,23 +27,8 @@ export default function PhoneRecovery() {
 
     if (res.data?.success) {
       setStep('code');
-      toast.success('Code sent — check your email (test mode)');
-
-      // In test mode: auto-fill from response so testers don't need to type
-      if (res.data.test_code) {
-        const digits = res.data.test_code.split('');
-        setCode(digits);
-      }
-
-      // Production: try WebOTP auto-fill from real SMS
-      if ('OTPCredential' in window && !res.data.test_code) {
-        try {
-          const otp = await navigator.credentials.get({ otp: { transport: ['sms'] } });
-          if (otp?.code) {
-            setCode(otp.code.split('').slice(0, 6));
-          }
-        } catch (_) { /* not supported */ }
-      }
+      toast.success('Code sent — check your email');
+      // Don't auto-fill - wait for user to open email and enter code manually
     } else {
       toast.error(res.data?.error || 'Failed to send code');
     }
