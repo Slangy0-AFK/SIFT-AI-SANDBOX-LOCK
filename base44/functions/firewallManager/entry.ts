@@ -96,9 +96,18 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, enabled: !rule[0].enabled });
     }
 
-    // Log firewall event (called when traffic matches a rule)
+    // Log firewall event — admin-only (enforced by guard above)
     if (action === 'log_event') {
-      const log = await base44.asServiceRole.entities.FirewallLog.create(rule_data);
+      // Sanitize: only allow known FirewallLog fields to prevent log flooding
+      const allowedFields = ['rule_id', 'rule_name', 'action_taken', 'source_ip', 'destination_ip', 'destination_port', 'protocol', 'direction', 'bytes_transferred', 'packets_count', 'threat_level', 'geo_location', 'user_agent', 'payload_snippet', 'blocked_reason'];
+      const sanitized = {};
+      for (const key of allowedFields) {
+        if (rule_data[key] !== undefined) sanitized[key] = rule_data[key];
+      }
+      if (!sanitized.action_taken || !sanitized.source_ip) {
+        return Response.json({ error: 'Missing required fields: action_taken, source_ip' }, { status: 400 });
+      }
+      const log = await base44.asServiceRole.entities.FirewallLog.create(sanitized);
       
       // Update rule hit count
       if (rule_data.rule_id) {
