@@ -69,9 +69,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create device record - linked to subscriber's account (using service role)
+    // Create device record - linked to invitee's account (not subscriber)
+    // This allows the invitee to see/manage only their own device in the dashboard
     const device = await base44.asServiceRole.entities.Device.create({
-      user_id: invitation.subscriber_id, // Device counts against subscriber's limit
+      user_id: user.id, // Device assigned to invitee, not subscriber
       subscriber_id: invitation.subscriber_id,
       device_name: device_name || `${user.email}'s Device`,
       device_type,

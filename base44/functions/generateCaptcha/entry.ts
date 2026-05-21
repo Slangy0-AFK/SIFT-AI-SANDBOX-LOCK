@@ -26,12 +26,21 @@ Deno.serve(async (req) => {
       user_id: user.id
     };
 
-    // Base64 encode the token (Deno-compatible)
+    // Create cryptographically signed token using HMAC-SHA256
     const encoder = new TextEncoder();
     const jsonString = JSON.stringify(tokenData);
-    const uint8Array = encoder.encode(jsonString);
-    const binaryString = Array.from(uint8Array, byte => String.fromCharCode(byte)).join('');
-    const captcha_token = btoa(binaryString);
+    const secret = Deno.env.get('AUTH_CHALLENGE');
+    
+    if (!secret) {
+      return Response.json({ error: 'CAPTCHA signing not configured' }, { status: 500 });
+    }
+    
+    const encoder_key = encoder.encode(secret);
+    const encoder_data = encoder.encode(jsonString);
+    const key = await crypto.subtle.importKey('raw', encoder_key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const signature = await crypto.subtle.sign('HMAC', key, encoder_data);
+    const sig_hex = Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
+    const captcha_token = btoa(JSON.stringify({ data: jsonString, sig: sig_hex }));
 
     // Generate visual representation (simple ASCII art style)
     const visualChallenge = {

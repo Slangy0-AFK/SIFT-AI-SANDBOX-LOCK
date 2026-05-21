@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     const { action, endpoint } = await req.json();
 
     if (action === 'check_rate_limit') {
-      const subscriptions = await base44.entities.Subscription.filter({ user_id: user.email, status: 'active' });
+      const subscriptions = await base44.entities.Subscription.filter({ user_id: user.id, status: 'active' });
       const plan = subscriptions[0]?.plan || 'free';
       const limits = RATE_LIMITS[plan];
 
