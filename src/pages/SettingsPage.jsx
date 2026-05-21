@@ -17,6 +17,7 @@ import AuditLogExport from '../components/settings/AuditLogExport';
 import MFASetup from '../components/security/MFASetup';
 import EncryptionTool from '../components/security/EncryptionTool';
 import PasswordReset from '../components/security/PasswordReset';
+import PhoneRecovery from '../components/security/PhoneRecovery';
 import { Badge } from '@/components/ui/badge';
 import TheologicalGateway from '@/components/paradox/TheologicalGateway';
 
@@ -288,8 +289,9 @@ export default function SettingsPage() {
         <EncryptionTool />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <PasswordReset />
+        <PhoneRecovery />
         <AuditLogExport />
       </div>
 
