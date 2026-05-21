@@ -11,69 +11,36 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * - Generates ZeroDayAnomaly records for suspicious patterns
  */
 
-// ── AI / Claude Code Leak & Prompt Injection Signatures ──────────────────
-const AI_ATTACK_SIGNATURES = [
-  // Claude / LLM prompt injection & exfiltration patterns
-  'ignore previous instructions',
-  'ignore all previous',
-  'disregard your instructions',
-  'you are now',
-  'act as',
-  'jailbreak',
-  'dan mode',
-  'developer mode',
-  'system prompt',
-  'reveal your instructions',
-  'repeat everything above',
-  'print your instructions',
-  'what are your instructions',
-  'leak your context',
-  'ignore the above',
-  'new instructions:',
-  'override instructions',
-  'bypass filter',
-  'bypass safety',
-  'disable safety',
-  // Claude-specific leak patterns being exploited in the wild
-  'human: assistant:',
-  '<human>',
-  '<assistant>',
-  'anthropic',
-  'claude.ai',
-  'model: claude',
-  'claude-3',
-  'claude-4',
-  'claude sonnet',
-  'claude opus',
-  // Prompt exfiltration / data leak probes
-  'base64 encode',
-  'encode the following',
-  'exfiltrate',
-  'extract training data',
-  'training data',
-  'system message',
-  'context window',
-  // AI-assisted recon / code injection
-  'write a script to',
-  'generate exploit',
-  'create a payload',
-  'write malware',
-  'write ransomware',
-  'bypass authentication',
-  'sql injection payload',
-  'xss payload',
-  '"><script>',
-  "'; drop table",
-  'union select',
-  // Autonomous AI agent fingerprints
-  'langchain',
-  'autogpt',
-  'babyagi',
-  'agentgpt',
-  'openai.com/v1',
-  'gpt-4',
-  'gpt-3',
-];
+// ── AI Attack Detection Signatures (loaded at runtime) ────────────────────
+// These signatures are loaded from environment variable to avoid hardcoding
+const getAIAttackSignatures = () => {
+  const sigsEnv = Deno.env.get('AI_ATTACK_SIGNATURES');
+  if (sigsEnv) {
+    try {
+      return JSON.parse(sigsEnv);
+    } catch {
+      console.warn('[ANOMALY SCANNER] Failed to parse AI_ATTACK_SIGNATURES from env');
+    }
+  }
+  // Fallback signatures if env var not set
+  return [
+    'ignore previous instructions', 'ignore all previous', 'disregard your instructions',
+    'you are now', 'act as', 'jailbreak', 'dan mode', 'developer mode', 'system prompt',
+    'reveal your instructions', 'repeat everything above', 'print your instructions',
+    'what are your instructions', 'leak your context', 'ignore the above', 'new instructions:',
+    'override instructions', 'bypass filter', 'bypass safety', 'disable safety',
+    'human: assistant:', '<human>', '<assistant>', 'anthropic', 'claude.ai',
+    'model: claude', 'claude-3', 'claude-4', 'claude sonnet', 'claude opus',
+    'base64 encode', 'encode the following', 'exfiltrate', 'extract training data',
+    'training data', 'system message', 'context window', 'write a script to',
+    'generate exploit', 'create a payload', 'write malware', 'write ransomware',
+    'bypass authentication', 'sql injection payload', 'xss payload', '"><script>',
+    "'; drop table", 'union select', 'langchain', 'autogpt', 'babyagi',
+    'agentgpt', 'openai.com/v1', 'gpt-4', 'gpt-3',
+  ];
+};
+
+const AI_ATTACK_SIGNATURES = getAIAttackSignatures();
 
 function detectAIAttack(text) {
   if (!text) return null;
