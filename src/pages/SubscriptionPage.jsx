@@ -34,7 +34,9 @@ export default function SubscriptionPage() {
   });
 
   const currentSub = subscriptions[0];
-  const currentPlan = currentSub?.plan || 'free';
+  // Normalize plan to known keys; legacy 'enterprise' falls back to 'pro'
+  const rawPlan = currentSub?.plan || 'free';
+  const currentPlan = PLANS[rawPlan] ? rawPlan : (rawPlan === 'enterprise' ? 'pro' : 'free');
 
   const upgradeMutation = useMutation({
     mutationFn: async (planKey) => {
