@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Shield, AlertTriangle, Lock, Skull, CheckCircle, Filter } from 'lucide-react';
+import { Search, Shield, AlertTriangle, Lock, Skull, CheckCircle, Filter, Zap } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 const statusConfig = {
   detected: { color: 'text-blue-400 bg-blue-400/10 border-blue-400/20', icon: Shield },
@@ -27,6 +28,7 @@ export default function ThreatLog() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const { isPro } = useSubscription();
+  const queryClient = useQueryClient();
 
   const { data: threats = [] } = useQuery({
     queryKey: ['threats-log'],
@@ -40,11 +42,32 @@ export default function ThreatLog() {
     initialData: [],
   });
 
+  const resolveThreatMutation = useMutation({
+    mutationFn: (threatId) => base44.entities.Threat.update(threatId, { status: 'cleared' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['threats-log'] });
+      toast.success('Threat resolved and cleared');
+    },
+    onError: (error) => toast.error('Failed to resolve threat: ' + error.message),
+  });
+
+  const neutralizeThreatMutation = useMutation({
+    mutationFn: (threatId) => base44.entities.Threat.update(threatId, { status: 'destroyed' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['threats-log'] });
+      toast.success('Threat neutralized');
+    },
+    onError: (error) => toast.error('Failed to neutralize threat: ' + error.message),
+  });
+
   const filteredThreats = threats.filter(t => {
     const matchSearch = !searchTerm || t.source_ip?.includes(searchTerm) || t.notes?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchStatus = statusFilter === 'all' || t.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  const isResolving = (threatId) => resolveThreatMutation.isPending && resolveThreatMutation.variables === threatId;
+  const isNeutralizing = (threatId) => neutralizeThreatMutation.isPending && neutralizeThreatMutation.variables === threatId;
 
   return (
     <div className="p-6 space-y-6">
@@ -64,22 +87,22 @@ export default function ThreatLog() {
 
       {/* Filters */}
       <div className="flex gap-3">
-        <div className="relative flex-1">
+        <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search IP or notes..."
+            placeholder="Search IP..."
             className="pl-10 font-mono text-xs"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-48 font-mono text-xs">
+          <SelectTrigger className="w-40 font-mono text-xs">
             <Filter className="w-3 h-3 mr-2" />
-            <SelectValue placeholder="Filter by status" />
+            <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all" className="font-mono text-xs">All Statuses</SelectItem>
+            <SelectItem value="all" className="font-mono text-xs">All</SelectItem>
             <SelectItem value="detected" className="font-mono text-xs">Detected</SelectItem>
             <SelectItem value="challenged" className="font-mono text-xs">Challenged</SelectItem>
             <SelectItem value="locked" className="font-mono text-xs">Locked</SelectItem>
@@ -102,18 +125,16 @@ export default function ThreatLog() {
             <TableHeader>
               <TableRow className="bg-secondary/50">
                 <TableHead className="font-mono text-[10px]">IP ADDRESS</TableHead>
-                <TableHead className="font-mono text-[10px]">AGENT TYPE</TableHead>
                 <TableHead className="font-mono text-[10px]">STATUS</TableHead>
-                <TableHead className="font-mono text-[10px]">THREAT LEVEL</TableHead>
-                <TableHead className="font-mono text-[10px]">QRNG CYCLE</TableHead>
-                <TableHead className="font-mono text-[10px]">ENVIRONMENT</TableHead>
-                <TableHead className="font-mono text-[10px]">TIMESTAMP</TableHead>
+                <TableHead className="font-mono text-[10px]">LEVEL</TableHead>
+                <TableHead className="font-mono text-[10px]">TIME</TableHead>
+                <TableHead className="font-mono text-[10px] text-right">ACTION</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredThreats.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12">
+                  <TableCell colSpan={5} className="text-center py-12">
                     <Shield className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
                     <p className="font-mono text-xs text-muted-foreground">No threats found</p>
                   </TableCell>
@@ -121,16 +142,10 @@ export default function ThreatLog() {
               ) : (
                 filteredThreats.map((threat) => {
                   const config = statusConfig[threat.status] || statusConfig.detected;
+                  const isUnresolved = !['cleared', 'destroyed'].includes(threat.status);
                   return (
                     <TableRow key={threat.id} className="hover:bg-secondary/30 transition-colors">
                       <TableCell className="font-mono text-[11px] font-medium">{threat.source_ip}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`font-mono text-[8px] ${
-                          threat.agent_type === 'human' ? 'text-green-400 border-green-400/30' : 'text-accent border-accent/30'
-                        }`}>
-                          {threat.agent_type?.toUpperCase() || 'UNKNOWN'}
-                        </Badge>
-                      </TableCell>
                       <TableCell>
                         <Badge className={`font-mono text-[8px] border ${config.color}`}>
                           {threat.status?.toUpperCase()}
@@ -146,16 +161,32 @@ export default function ThreatLog() {
                           {threat.threat_level?.toUpperCase()}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-mono text-[10px] text-muted-foreground">
-                        {threat.qrng_cycle || 0} / 3
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-mono text-[9px] text-muted-foreground">
-                          {threat.environment?.toUpperCase() || 'PRODUCTION'}
-                        </span>
-                      </TableCell>
                       <TableCell className="font-mono text-[9px] text-muted-foreground">
-                        {threat.created_date ? format(new Date(threat.created_date), 'MMM d, HH:mm:ss') : '--'}
+                        {threat.created_date ? format(new Date(threat.created_date), 'MMM d, HH:mm') : '--'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {isUnresolved && (
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 px-2 font-mono text-[8px] border-green-400/30 text-green-400 hover:bg-green-400/10"
+                              onClick={() => resolveThreatMutation.mutate(threat.id)}
+                              disabled={isResolving(threat.id) || isNeutralizing(threat.id)}
+                            >
+                              {isResolving(threat.id) ? 'Resolving...' : 'Resolve'}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 px-2 font-mono text-[8px] border-destructive/30 text-destructive hover:bg-destructive/10"
+                              onClick={() => neutralizeThreatMutation.mutate(threat.id)}
+                              disabled={isResolving(threat.id) || isNeutralizing(threat.id)}
+                            >
+                              {isNeutralizing(threat.id) ? 'Neutralizing...' : <Zap className="w-3 h-3" />}
+                            </Button>
+                          </div>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
