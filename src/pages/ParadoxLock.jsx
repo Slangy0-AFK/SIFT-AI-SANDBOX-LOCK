@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import FeatureGate from '@/components/subscription/FeatureGate';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -311,6 +312,7 @@ export default function ParadoxLock() {
 
 
   return (
+    <FeatureGate requiredPlan="pro" featureName="Paradox Lock Gate">
     <div className="p-4 md:p-6 space-y-4 md:space-y-6 max-w-3xl mx-auto">
       <div>
         <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">SECURITY GATEWAY</h1>
@@ -378,8 +380,7 @@ export default function ParadoxLock() {
       {/* ── Paradox Simulator (always visible for testing) ── */}
       <InternalParadoxSimulator threats={challengedThreats} onClose={() => {}} />
 
-
-
     </div>
+    </FeatureGate>
   );
 }

@@ -1,4 +1,5 @@
 import React from 'react';
+import FeatureGate from '@/components/subscription/FeatureGate';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Shield, AlertTriangle, Globe, Lock, Zap, Eye } from 'lucide-react';
@@ -6,6 +7,7 @@ import { Link } from 'react-router-dom';
 
 export default function FirewallDashboard() {
   return (
+    <FeatureGate requiredPlan="pro" featureName="Firewall Command Center">
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -154,5 +156,6 @@ export default function FirewallDashboard() {
         </CardContent>
       </Card>
     </div>
+    </FeatureGate>
   );
 }

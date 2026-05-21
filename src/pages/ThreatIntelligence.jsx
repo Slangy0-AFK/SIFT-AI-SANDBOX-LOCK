@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import FeatureGate from '@/components/subscription/FeatureGate';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -262,6 +263,7 @@ function UrlAnalyzer() {
 
 export default function ThreatIntelligence() {
   return (
+    <FeatureGate requiredPlan="pro" featureName="Threat Intelligence & Phishing Analysis">
     <div className="p-4 md:p-6 space-y-4 md:space-y-6 max-w-4xl mx-auto">
       <div>
         <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">THREAT INTELLIGENCE</h1>
@@ -277,5 +279,6 @@ export default function ThreatIntelligence() {
         <UrlAnalyzer />
       </div>
     </div>
+    </FeatureGate>
   );
 }

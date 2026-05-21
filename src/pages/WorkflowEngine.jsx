@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import FeatureGate from '@/components/subscription/FeatureGate';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -111,6 +112,7 @@ export default function WorkflowEngine() {
   const successfulExecutions = executions.filter(e => e.status === 'success').length;
 
   return (
+    <FeatureGate requiredPlan="pro" featureName="Workflow Automation Engine">
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
@@ -316,5 +318,6 @@ export default function WorkflowEngine() {
         </DialogContent>
       </Dialog>
     </div>
+    </FeatureGate>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import FeatureGate from '@/components/subscription/FeatureGate';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -58,6 +59,7 @@ export default function MirrorEnvironment() {
   const tarpitCount = sessions.filter(s => s.session_type === 'tarpit').length;
 
   return (
+    <FeatureGate requiredPlan="pro" featureName="Mirror Environment & Honeypots">
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -234,5 +236,6 @@ export default function MirrorEnvironment() {
         </CardContent>
       </Card>
     </div>
+    </FeatureGate>
   );
 }

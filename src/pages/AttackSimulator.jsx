@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import FeatureGate from '@/components/subscription/FeatureGate';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -246,6 +247,7 @@ export default function AttackSimulator() {
   };
 
   return (
+    <FeatureGate requiredPlan="pro" featureName="Attack Simulator">
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -343,5 +345,6 @@ export default function AttackSimulator() {
         </div>
       </div>
     </div>
+    </FeatureGate>
   );
 }

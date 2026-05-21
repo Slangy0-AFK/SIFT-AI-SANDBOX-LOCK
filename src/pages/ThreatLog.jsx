@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,10 +26,11 @@ const statusConfig = {
 export default function ThreatLog() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const { isPro } = useSubscription();
 
   const { data: threats = [] } = useQuery({
     queryKey: ['threats-log'],
-    queryFn: () => base44.entities.Threat.list('-created_date', 100),
+    queryFn: () => base44.entities.Threat.list('-created_date', isPro ? 100 : 10),
     initialData: [],
   });
 
@@ -45,11 +48,18 @@ export default function ThreatLog() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">THREAT LOG</h1>
-        <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
-          COMPLETE THREAT REGISTRY & EVENT TIMELINE
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">THREAT LOG</h1>
+          <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+            {isPro ? 'COMPLETE THREAT REGISTRY & EVENT TIMELINE' : 'LAST 10 THREATS — UPGRADE FOR FULL LOG'}
+          </p>
+        </div>
+        {!isPro && (
+          <Link to="/subscription" className="font-mono text-[9px] text-primary border border-primary/30 px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors">
+            Upgrade for full log
+          </Link>
+        )}
       </div>
 
       {/* Filters */}
