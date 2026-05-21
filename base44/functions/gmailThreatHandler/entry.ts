@@ -4,16 +4,19 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Webhook validation - Google Pub/Sub doesn't send app session tokens
-    // Validate using webhook signature or token instead of user session
+    // Validate webhook source with shared secret token
+    const webhookToken = req.headers.get('x-webhook-token');
+    const expectedToken = Deno.env.get('GMAIL_WEBHOOK_TOKEN');
+    
+    if (!expectedToken || webhookToken !== expectedToken) {
+      console.warn('Gmail webhook: Invalid or missing webhook token');
+      return Response.json({ error: 'Unauthorized webhook' }, { status: 401 });
+    }
+    
     const payload = await req.json();
     
-    // Check for Google Pub/Sub message structure
-    const message = payload.message?.data ? atob(payload.message.data) : null;
-    const subscription = payload.subscription || '';
-    
-    // Validate this is a legitimate Gmail webhook
-    if (!message && !payload.data?.historyId) {
+    // Validate Google Pub/Sub message structure
+    if (!payload.message?.data && !payload.data?.historyId) {
       console.warn('Gmail webhook: Invalid payload structure');
       return Response.json({ error: 'Invalid webhook payload' }, { status: 400 });
     }
