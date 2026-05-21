@@ -40,14 +40,31 @@ export default function SubscriptionPage() {
 
   const upgradeMutation = useMutation({
     mutationFn: async (planKey) => {
+      const renewalDate = planKey === 'free' 
+        ? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        : currentSub?.renewal_date;
+      
       if (currentSub) {
-        return base44.entities.Subscription.update(currentSub.id, { plan: planKey, billing_cycle: billingCycle, status: 'active' });
+        return base44.entities.Subscription.update(currentSub.id, { 
+          plan: planKey, 
+          billing_cycle: billingCycle, 
+          status: planKey === 'free' ? 'trial' : 'active',
+          renewal_date: renewalDate
+        });
       }
-      return base44.entities.Subscription.create({ user_id: user?.email, plan: planKey, billing_cycle: billingCycle, status: 'active' });
+      return base44.entities.Subscription.create({ 
+        user_id: user?.email, 
+        plan: planKey, 
+        billing_cycle: billingCycle, 
+        status: planKey === 'free' ? 'trial' : 'active',
+        renewal_date: renewalDate
+      });
     },
     onSuccess: (_, planKey) => {
       queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
-      toast.success(`Upgraded to ${PLANS[planKey].name} plan!`);
+      toast.success(planKey === 'free' 
+        ? '14-day trial started! You will move to Free plan after trial ends.'
+        : `Upgraded to ${PLANS[planKey].name} plan!`);
       setUpgrading(false);
     },
   });
@@ -86,8 +103,13 @@ export default function SubscriptionPage() {
                   <span className="font-mono text-sm font-bold text-foreground">
                     {PLANS[currentPlan].name} Plan
                   </span>
+                  {currentSub?.status === 'trial' && currentSub?.renewal_date && (
+                    <span className="font-mono text-[9px] text-primary mr-2">
+                      Trial ends {new Date(currentSub.renewal_date).toLocaleDateString()}
+                    </span>
+                  )}
                   <Badge className={`font-mono text-[8px] ${currentPlan === 'pro' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-secondary text-muted-foreground'} border`}>
-                    {currentSub?.status?.toUpperCase() || 'FREE'}
+                    {currentSub?.status === 'trial' ? 'TRIAL' : (currentSub?.status?.toUpperCase() || 'FREE')}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-3 mt-1">
