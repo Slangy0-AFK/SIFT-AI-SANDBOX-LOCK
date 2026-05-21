@@ -21,11 +21,13 @@ import {
   Trash2
 } from 'lucide-react';
 import { format } from 'date-fns';
+import GmailConnection from '@/components/scanner/GmailConnection';
 
 export default function ThreatScanner() {
   const [smsText, setSmsText] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [activeTab, setActiveTab] = useState('email');
+  const [isGmailConnected, setIsGmailConnected] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -47,6 +49,12 @@ export default function ThreatScanner() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['emailThreats'] });
       alert(`Scan complete! Found ${data.threats_found} threats in ${data.scanned} emails.`);
+    },
+    onError: (error) => {
+      if (error.message?.includes('not connected')) {
+        alert('Please connect your Gmail account first.');
+        setActiveTab('email');
+      }
     }
   });
 
@@ -124,36 +132,40 @@ export default function ThreatScanner() {
 
           {/* Email Scanner Tab */}
           <TabsContent value="email" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-primary" />
-                  Gmail Threat Scan
-                </CardTitle>
-                <CardDescription>
-                  Scan your Gmail inbox for phishing, scams, and malicious emails
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button
-                  onClick={handleScanGmail}
-                  disabled={scanGmailMutation.isPending}
-                  className="w-full"
-                >
-                  {scanGmailMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Scanning...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Scan Gmail Inbox
-                    </>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
+            <GmailConnection onConnected={() => setIsGmailConnected(true)} />
+            
+            {isGmailConnected && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Mail className="w-5 h-5 text-primary" />
+                    Gmail Threat Scan
+                  </CardTitle>
+                  <CardDescription>
+                    Scan your Gmail inbox for phishing, scams, and malicious emails
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    onClick={handleScanGmail}
+                    disabled={scanGmailMutation.isPending}
+                    className="w-full"
+                  >
+                    {scanGmailMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Scanning...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Scan Gmail Inbox
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
             {emailThreats && emailThreats.length > 0 && (
               <Card>
