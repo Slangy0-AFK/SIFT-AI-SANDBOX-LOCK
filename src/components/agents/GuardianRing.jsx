@@ -29,14 +29,14 @@ export default function GuardianRing({ anomalies = [] }) {
     return () => clearInterval(interval);
   }, []);
 
-  const cx = 200, cy = 200, radius = 150;
+  const cx = 120, cy = 120, radius = 90;
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <div className="flex gap-4 items-start">
         {/* SVG Ring */}
         <div className="relative flex-shrink-0">
-          <svg width="300" height="300" className="overflow-visible">
+          <svg width="240" height="240" className="overflow-hidden">
             {/* Orbit rings */}
             <circle cx={cx} cy={cy} r={radius} fill="none" stroke="hsl(215 25% 18%)" strokeWidth="1" strokeDasharray="4 4" />
             <circle cx={cx} cy={cy} r={radius - 30} fill="none" stroke="hsl(215 25% 14%)" strokeWidth="0.5" />
