@@ -33,10 +33,10 @@ export default function GuardianRing({ anomalies = [] }) {
 
   return (
     <div className="relative">
-      <div className="flex gap-6 items-start">
+      <div className="flex gap-4 items-start">
         {/* SVG Ring */}
         <div className="relative flex-shrink-0">
-          <svg width="400" height="400" className="overflow-visible">
+          <svg width="300" height="300" className="overflow-visible">
             {/* Orbit rings */}
             <circle cx={cx} cy={cy} r={radius} fill="none" stroke="hsl(215 25% 18%)" strokeWidth="1" strokeDasharray="4 4" />
             <circle cx={cx} cy={cy} r={radius - 30} fill="none" stroke="hsl(215 25% 14%)" strokeWidth="0.5" />
@@ -69,9 +69,9 @@ export default function GuardianRing({ anomalies = [] }) {
             })}
 
             {/* Center Core */}
-            <circle cx={cx} cy={cy} r={22} fill="hsl(187 100% 50% / 0.08)" stroke="hsl(187 100% 50% / 0.4)" strokeWidth="1.5" />
-            <circle cx={cx} cy={cy} r={14} fill="hsl(222 47% 8%)" stroke="hsl(187 100% 50% / 0.6)" strokeWidth="1" />
-            <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="middle" fill="hsl(187 100% 50%)" fontSize="7" fontFamily="monospace" fontWeight="bold">CORE</text>
+            <circle cx={cx} cy={cy} r={18} fill="hsl(187 100% 50% / 0.08)" stroke="hsl(187 100% 50% / 0.4)" strokeWidth="1.5" />
+            <circle cx={cx} cy={cy} r={12} fill="hsl(222 47% 8%)" stroke="hsl(187 100% 50% / 0.6)" strokeWidth="1" />
+            <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="middle" fill="hsl(187 100% 50%)" fontSize="6" fontFamily="monospace" fontWeight="bold">CORE</text>
 
             {/* Agent Nodes */}
             {AGENTS.map((agent) => {
@@ -109,34 +109,34 @@ export default function GuardianRing({ anomalies = [] }) {
         </div>
 
         {/* Agent Info Panel */}
-        <div className="flex-1 space-y-3">
+        <div className="flex-1 space-y-2">
           <AnimatePresence mode="wait">
             {activeAgent ? (
               <motion.div key={activeAgent.id}
                 initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
-                className="p-4 rounded-xl border bg-card/80"
+                className="p-3 rounded-xl border bg-card/80"
                 style={{ borderColor: `${activeAgent.color}40` }}
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-mono text-xs font-bold"
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center font-mono text-[10px] font-bold"
                     style={{ background: `${activeAgent.color}15`, color: activeAgent.color, border: `1px solid ${activeAgent.color}40` }}>
                     {activeAgent.id}
                   </div>
                   <div>
-                    <div className="font-mono text-sm font-bold" style={{ color: activeAgent.color }}>{activeAgent.name}</div>
-                    <div className="font-mono text-[10px] text-muted-foreground">{activeAgent.role}</div>
+                    <div className="font-mono text-xs font-bold" style={{ color: activeAgent.color }}>{activeAgent.name}</div>
+                    <div className="font-mono text-[8px] text-muted-foreground">{activeAgent.role}</div>
                   </div>
-                  <div className="ml-auto flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                    <span className="font-mono text-[9px] text-green-400">ACTIVE</span>
+                  <div className="ml-auto flex items-center gap-1">
+                    <div className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />
+                    <span className="font-mono text-[8px] text-green-400">ACTIVE</span>
                   </div>
                 </div>
-                <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">{activeAgent.desc}</p>
+                <p className="font-mono text-[9px] text-muted-foreground leading-relaxed">{activeAgent.desc}</p>
               </motion.div>
             ) : (
               <motion.div key="hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="p-4 rounded-xl border border-border bg-secondary/30">
-                <p className="font-mono text-[10px] text-muted-foreground text-center">
+                className="p-3 rounded-xl border border-border bg-secondary/30">
+                <p className="font-mono text-[9px] text-muted-foreground text-center">
                   Click any agent node to view details
                 </p>
               </motion.div>
@@ -144,19 +144,19 @@ export default function GuardianRing({ anomalies = [] }) {
           </AnimatePresence>
 
           {/* Agent list */}
-          <div className="grid grid-cols-2 gap-1.5 max-h-64 overflow-y-auto pr-1">
+          <div className="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto pr-1">
             {AGENTS.map(agent => (
               <button key={agent.id} onClick={() => setActiveAgent(activeAgent?.id === agent.id ? null : agent)}
-                className={`text-left px-2.5 py-2 rounded-lg border transition-all ${activeAgent?.id === agent.id ? 'bg-card border-opacity-60' : 'border-border hover:border-opacity-50 hover:bg-secondary/30'}`}
+                className={`text-left px-2 py-1.5 rounded-lg border transition-all ${activeAgent?.id === agent.id ? 'bg-card border-opacity-60' : 'border-border hover:border-opacity-50 hover:bg-secondary/30'}`}
                 style={{ borderColor: activeAgent?.id === agent.id ? `${agent.color}50` : undefined }}>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded flex items-center justify-center font-mono text-[8px] font-bold flex-shrink-0"
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3.5 h-3.5 rounded flex items-center justify-center font-mono text-[7px] font-bold flex-shrink-0"
                     style={{ background: `${agent.color}15`, color: agent.color }}>
                     {agent.id}
                   </div>
-                  <span className="font-mono text-[9px] font-semibold" style={{ color: agent.color }}>{agent.name}</span>
+                  <span className="font-mono text-[8px] font-semibold" style={{ color: agent.color }}>{agent.name}</span>
                 </div>
-                <div className="font-mono text-[8px] text-muted-foreground mt-0.5 ml-6">{agent.role}</div>
+                <div className="font-mono text-[7px] text-muted-foreground mt-0.5 ml-5">{agent.role}</div>
               </button>
             ))}
           </div>
