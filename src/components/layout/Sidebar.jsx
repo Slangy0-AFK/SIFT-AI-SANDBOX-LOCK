@@ -4,6 +4,7 @@ import { Shield, Activity, Lock, Bug, FileText, Settings, CreditCard, Radiation,
 import NotificationBell from '../notifications/NotificationBell';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
 
 const allNavItems = [
   { path: '/dashboard', icon: Activity, label: 'Command Center' },
@@ -88,7 +89,14 @@ export default function Sidebar() {
             <span className="font-mono text-[10px] text-muted-foreground tracking-wider">QRNG ACTIVE</span>
           </div>
           <button
-            onClick={() => base44.auth.logout()}
+            onClick={async () => {
+              try {
+                await base44.auth.logout();
+              } catch (error) {
+                console.error('[Logout Error]:', error);
+                toast.error('Logout failed. Please try again.');
+              }
+            }}
             className="mt-2 w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
           >
             <LogOut className="w-3.5 h-3.5" />
@@ -161,7 +169,14 @@ export default function Sidebar() {
                 <span className="font-mono text-[10px] text-muted-foreground tracking-wider">SYSTEM ONLINE</span>
               </div>
               <button
-                onClick={() => base44.auth.logout()}
+                onClick={async () => {
+                  try {
+                    await base44.auth.logout();
+                  } catch (error) {
+                    console.error('[Logout Error]:', error);
+                    toast.error('Logout failed. Please try again.');
+                  }
+                }}
                 className="mt-2 w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
               >
                 <LogOut className="w-3.5 h-3.5" />
