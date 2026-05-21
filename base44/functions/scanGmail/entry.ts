@@ -9,9 +9,24 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Check if this is just a connection test
+    const body = await req.json().catch(() => ({}));
+    if (body.test_connection === true) {
+      // Just test the connection
+      const connectorId = '6a0f21a2f39d9bf2ebd374e6';
+      await base44.asServiceRole.connectors.getCurrentAppUserConnection(connectorId);
+      return Response.json({ connected: true });
+    }
+
     // Get the app user's Gmail connection (each user connects their own)
     const connectorId = '6a0f21a2f39d9bf2ebd374e6';
-    const { accessToken } = await base44.asServiceRole.connectors.getCurrentAppUserConnection(connectorId);
+    let accessToken;
+    try {
+      const connection = await base44.asServiceRole.connectors.getCurrentAppUserConnection(connectorId);
+      accessToken = connection.accessToken;
+    } catch (err) {
+      throw new Error('Gmail not connected. Please connect your Gmail account first.');
+    }
     const authHeader = { Authorization: `Bearer ${accessToken}` };
 
     // Fetch recent messages (last 50)
