@@ -114,16 +114,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = (shouldRedirect = true) => {
-    setUser(null);
-    setIsAuthenticated(false);
-    
-    if (shouldRedirect) {
+  const logout = async (shouldRedirect = true) => {
+    try {
+      // Clear local state first to prevent any post-logout operations
+      setUser(null);
+      setIsAuthenticated(false);
+      setAuthChecked(false);
+      
+      // Stop any background services before logout
+      window.dispatchEvent(new CustomEvent('before-logout'));
+      
       // Use the SDK's logout method which handles token cleanup and redirect
-      base44.auth.logout(window.location.href);
-    } else {
-      // Just remove the token without redirect
-      base44.auth.logout();
+      // Wrap in try-catch to handle any edge cases
+      if (shouldRedirect) {
+        await base44.auth.logout(window.location.href);
+      } else {
+        await base44.auth.logout();
+      }
+    } catch (error) {
+      console.error('[AuthContext] Logout error:', error);
+      // Even if logout fails, clear local state and redirect
+      setUser(null);
+      setIsAuthenticated(false);
+      setAuthChecked(false);
+      // Force reload to clear any stale state
+      window.location.href = '/';
     }
   };
 

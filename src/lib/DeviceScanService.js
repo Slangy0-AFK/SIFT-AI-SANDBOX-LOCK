@@ -17,6 +17,11 @@ function loadPrefs() {
 }
 
 async function runBackgroundScan() {
+  // Don't run if not active or user logged out
+  if (!isActive) {
+    return;
+  }
+  
   const prefs = loadPrefs();
   
   try {
@@ -42,6 +47,12 @@ async function runBackgroundScan() {
     
     console.log('[Background Scan] Complete - Threats:', data.summary?.threats || 0, 'Warnings:', data.summary?.warnings || 0);
   } catch (err) {
+    // Silently ignore auth errors (user logged out)
+    if (err.status === 401 || err.status === 403) {
+      console.log('[Background Scan] Stopped - user logged out');
+      DeviceScanService.stop();
+      return;
+    }
     console.error('[Background Scan] Error:', err.message);
   }
 }
@@ -80,5 +91,15 @@ export const DeviceScanService = {
 
   isActive() {
     return isActive;
+  },
+  
+  // Listen for logout events to stop scans immediately
+  init() {
+    window.addEventListener('before-logout', () => {
+      DeviceScanService.stop();
+    });
   }
 };
+
+// Initialize logout listener
+DeviceScanService.init();

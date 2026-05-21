@@ -41,7 +41,7 @@ const AuthenticatedApp = () => {
     if (!isLoadingAuth && !isLoadingPublicSettings && !authError) {
       DeviceScanService.start();
       return () => {
-        // Keep running - don't stop on unmount
+        // Cleanup on unmount only - don't stop scans
       };
     }
   }, [isLoadingAuth, isLoadingPublicSettings, authError]);
