@@ -220,8 +220,8 @@ export default function SubscriptionPage() {
         </CardHeader>
         <CardContent>
           <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
-            All Pro features are currently free during beta testing. Select a plan below to set your preference - 
-            no payment required. Your account is ready to go live when we launch.
+            Pro plan is currently free during beta testing. Your account has full access to all features - 
+            no payment required. Ready to go live when we launch.
           </p>
         </CardContent>
       </Card>
@@ -232,19 +232,16 @@ export default function SubscriptionPage() {
           Select Plan (Beta Access)
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-           {['free', 'pro'].map(planKey => (
-             <PlanCard
-               key={planKey}
-               planKey={planKey}
-               billingCycle={billingCycle}
-               currentPlan={currentPlan}
-               onSelect={handleSelectPlan}
-               loading={false}
-               betaMode={true}
-             />
-           ))}
-         </div>
+        <div className="grid grid-cols-1 gap-4">
+          <PlanCard
+            planKey="pro"
+            billingCycle={billingCycle}
+            currentPlan={currentPlan}
+            onSelect={handleSelectPlan}
+            loading={false}
+            betaMode={true}
+          />
+        </div>
       </div>
 
       {/* Support Center */}
