@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Shield, CreditCard, Smartphone, RefreshCw } from 'lucide-react';
+import { Shield, CreditCard, Smartphone, RefreshCw, ToggleLeft, ToggleRight } from 'lucide-react';
 import { toast } from 'sonner';
 import PlanCard, { PLANS } from '../components/subscription/PlanCard';
 import DeviceManager from '../components/subscription/DeviceManager';
@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function SubscriptionPage() {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [upgrading, setUpgrading] = useState(false);
+  const [togglingAutoPay, setTogglingAutoPay] = useState(false);
   const queryClient = useQueryClient();
 
   // Check for successful checkout
@@ -102,6 +103,30 @@ export default function SubscriptionPage() {
     },
   });
 
+  const autoPayMutation = useMutation({
+    mutationFn: async (enabled) => {
+      if (!currentSub) return;
+      return base44.entities.Subscription.update(currentSub.id, { 
+        auto_pay: enabled 
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+      toast.success('Auto-pay preference updated');
+      setTogglingAutoPay(false);
+    },
+    onError: (error) => {
+      toast.error('Failed to update auto-pay: ' + error.message);
+      setTogglingAutoPay(false);
+    },
+  });
+
+  const handleToggleAutoPay = () => {
+    setTogglingAutoPay(true);
+    const newValue = !currentSub?.auto_pay;
+    autoPayMutation.mutate(newValue);
+  };
+
   const handleSelectPlan = (planKey, priceId) => {
     setUpgrading(true);
     
@@ -160,6 +185,25 @@ export default function SubscriptionPage() {
                       <RefreshCw className="w-3 h-3 inline mr-1" />
                       Renews {new Date(currentSub.renewal_date).toLocaleDateString()}
                     </span>
+                  )}
+                  {currentPlan !== 'free' && (
+                    <button
+                      onClick={handleToggleAutoPay}
+                      disabled={togglingAutoPay}
+                      className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-secondary/50 hover:bg-secondary border border-border transition-colors"
+                    >
+                      {currentSub?.auto_pay === false ? (
+                        <>
+                          <ToggleLeft className="w-3.5 h-3.5 text-muted-foreground" />
+                          <span className="font-mono text-[9px] text-muted-foreground">Auto-pay Off</span>
+                        </>
+                      ) : (
+                        <>
+                          <ToggleRight className="w-3.5 h-3.5 text-primary" />
+                          <span className="font-mono text-[9px] text-primary">Auto-pay On</span>
+                        </>
+                      )}
+                    </button>
                   )}
                 </div>
               </div>
