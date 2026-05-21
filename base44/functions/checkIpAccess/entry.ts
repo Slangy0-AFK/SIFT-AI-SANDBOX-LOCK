@@ -4,7 +4,13 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Get client IP from headers (works without authentication)
+    // Require authentication
+    const user = await base44.auth.me();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    // Get client IP from headers
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 
                req.headers.get('cf-connecting-ip') ||
                'unknown';
@@ -19,8 +25,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('IP Access check error:', error);
     return Response.json({
-      ip: 'unknown',
-      allowed: true
-    });
+      error: error.message
+    }, { status: 500 });
   }
 });
