@@ -102,13 +102,23 @@
 [data-base44-modal],
 .base44-modal,
 [class*="base44-promo"],
-[class*="built-with-base44"] {
+[class*="built-with-base44"],
+button[aria-label*="Edit"],
+a[href*="base44"],
+[class*="edit-button"],
+.base44-toolbar {
   display: none !important;
 }
 
 /* Hide Base44 iframe overlays and dialogs */
 iframe[src*="base44"],
 iframe[src*="built-with"] {
+  display: none !important;
+}
+
+/* Hide any floating buttons from Base44 */
+div[style*="position: fixed"][style*="bottom"],
+div[style*="position: fixed"][style*="right"] {
   display: none !important;
 }
 
