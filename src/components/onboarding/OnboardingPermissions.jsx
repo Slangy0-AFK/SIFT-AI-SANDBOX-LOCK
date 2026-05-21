@@ -88,7 +88,9 @@ export default function OnboardingPermissions() {
       // Save preferences and complete onboarding
       localStorage.setItem('aegis_onboarding_complete', 'true');
       localStorage.setItem('aegis_device_permissions', JSON.stringify(devicePermissions));
-      toast.success('Setup complete! Welcome to AEGIS Quantum Shield.');
+      toast.success('Setup complete! Redirecting...');
+      // Navigate to welcome page
+      window.location.href = '/';
     }
   };
 

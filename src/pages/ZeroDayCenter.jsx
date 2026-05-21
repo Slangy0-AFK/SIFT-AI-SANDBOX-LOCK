@@ -52,20 +52,13 @@ export default function ZeroDayCenter() {
           confidence_score: randomScore(),
           mitigation_applied: null,
           notes: `Detected by Agent ${agentIdx} (${AGENTS[agentIdx - 1]})`,
-        });
+        }, { data_env: 'dev' });
       });
       return Promise.all(creates);
     },
     onSuccess: async (results) => {
       queryClient.invalidateQueries({ queryKey: ['zero-day'] });
-      toast.success(`${results.length} zero-day anomal${results.length > 1 ? 'ies' : 'y'} detected & logged`);
-      // Auto-run workflow policies against each new anomaly
-      for (const anomaly of results) {
-        const fired = await runPoliciesAgainstEvent(anomaly, 'zero_day_detected');
-        if (fired.length > 0) toast.info(`${fired.length} policy${fired.length > 1 ? 's' : ''} auto-fired`);
-      }
-      queryClient.invalidateQueries({ queryKey: ['workflow-policies'] });
-      queryClient.invalidateQueries({ queryKey: ['workflow-executions'] });
+      toast.success(`${results.length} zero-day anomal${results.length > 1 ? 'ies' : 'y'} simulated (Test DB)`);
       setTimeout(() => setScanning(false), 1000);
     },
     onError: () => setScanning(false),
