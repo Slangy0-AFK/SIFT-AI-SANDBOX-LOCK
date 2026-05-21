@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Shield, AlertTriangle, Lock, Skull, Eye, ChevronDown, ChevronUp, Atom, Bug } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Shield, AlertTriangle, Lock, Skull, Eye, ChevronDown, ChevronUp, Atom, Bug, Radiation, GitBranch, ShieldAlert, FileText, LogOut } from 'lucide-react';
 
 import ThreatCounter from '../components/dashboard/ThreatCounter';
 import LiveEventFeed from '../components/dashboard/LiveEventFeed';
@@ -30,7 +31,17 @@ function CollapsiblePanel({ title, icon: Icon, children, defaultOpen = false }) 
   );
 }
 
+const quickLinks = [
+  { path: '/zero-day', icon: Radiation, label: 'Zero-Day', color: 'text-accent' },
+  { path: '/threat-intel', icon: ShieldAlert, label: 'Threat Intel', color: 'text-accent' },
+  { path: '/firewall', icon: Shield, label: 'Firewall', color: 'text-primary' },
+  { path: '/threat-log', icon: FileText, label: 'Threat Log', color: 'text-primary' },
+  { path: '/workflow', icon: GitBranch, label: 'Workflows', color: 'text-primary' },
+  { path: '/mirror-env', icon: Bug, label: 'Mirror Env', color: 'text-green-400' },
+];
+
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { data: threats = [] } = useQuery({
     queryKey: ['threats'],
     queryFn: () => base44.entities.Threat.list('-created_date', 50),
@@ -70,10 +81,32 @@ export default function Dashboard() {
             AEGIS QUANTUM SHIELD — ENTERPRISE SECURITY MATRIX
           </p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/20 self-start sm:self-auto">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="font-mono text-[9px] text-green-400 font-semibold tracking-wider">ALL SYSTEMS OPERATIONAL</span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/20">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="font-mono text-[9px] text-green-400 font-semibold tracking-wider">ALL SYSTEMS OPERATIONAL</span>
+          </div>
+          <button
+            onClick={() => base44.auth.logout()}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border hover:bg-secondary transition-colors font-mono text-[9px] text-muted-foreground hover:text-foreground"
+          >
+            <LogOut className="w-3 h-3" /> LOGOUT
+          </button>
         </div>
+      </div>
+
+      {/* Quick Nav Tabs */}
+      <div className="flex flex-wrap gap-2">
+        {quickLinks.map(({ path, icon: Icon, label, color }) => (
+          <button
+            key={path}
+            onClick={() => navigate(path)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border hover:border-primary/40 hover:bg-secondary transition-all font-mono text-[10px] tracking-wide text-muted-foreground hover:text-foreground"
+          >
+            <Icon className={`w-3.5 h-3.5 ${color}`} />
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* Stats — 2x2 on mobile, 4-col on desktop */}

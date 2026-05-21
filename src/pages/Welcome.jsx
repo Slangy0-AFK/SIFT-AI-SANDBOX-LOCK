@@ -5,7 +5,8 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Zap, Lock, Bug, Skull, CheckCircle, ArrowRight, Play } from 'lucide-react';
+import { Shield, Zap, Lock, Bug, Skull, CheckCircle, ArrowRight, LogOut } from 'lucide-react';
+import DeviceScanner from '@/components/security/DeviceScanner';
 
 const features = [
   { icon: Shield, title: 'Base Chain Pipeline', desc: '6-step quantum verification', color: 'text-primary' },
@@ -16,9 +17,9 @@ const features = [
 
 const steps = [
   { title: 'Explore Dashboard', desc: 'Monitor threats in real-time', icon: Shield },
-  { title: 'Try Attack Simulator', desc: 'Test defenses with simulated attacks', icon: Play },
   { title: 'Configure Firewall', desc: 'Set up custom security rules', icon: Lock },
   { title: 'Review Threats', desc: 'Analyze detected threats', icon: Skull },
+  { title: 'Run Device Scan', desc: 'Check your device for threats', icon: Bug },
 ];
 
 export default function Welcome() {
@@ -95,13 +96,18 @@ export default function Welcome() {
               ENTER COMMAND CENTER <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
             <Button
-              onClick={() => navigate('/attack-sim')}
+              onClick={() => base44.auth.logout()}
               variant="outline"
               size="lg"
               className="font-mono text-sm px-8"
             >
-              <Play className="w-4 h-4 mr-2" /> TRY SIMULATOR
+              <LogOut className="w-4 h-4 mr-2" /> LOGOUT
             </Button>
+          </div>
+
+          {/* Device Scanner */}
+          <div className="max-w-xl mx-auto w-full">
+            <DeviceScanner />
           </div>
 
           {/* Quick start steps */}
