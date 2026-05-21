@@ -153,7 +153,70 @@ Deno.serve(async (req) => {
       console.log(`[AEGIS SCANNER] Escalated anomaly: ${anomaly.id} | Type: ${anomaly.anomaly_type}`);
     }
     
-    // ── 5. Auto-clear low-risk old cleared threats ─────────────────────────
+    // ── 5. Auto-deploy Honeypots & Tarpits for mirror-environment threats ────
+    // These are permanently active — any threat in mirror/honeypot env gets a session
+    const mirrorThreats = allThreats.filter(t =>
+      (t.environment === 'mirror' || t.environment === 'honeypot') &&
+      (t.status === 'challenged' || t.status === 'cycle_1' || t.status === 'cycle_2' || t.status === 'cycle_3')
+    );
+    
+    for (const threat of mirrorThreats.slice(0, 5)) {
+      // Check if there's already an active session for this IP
+      const existingSessions = await base44Service.entities.HoneypotSession.filter({ source_ip: threat.source_ip });
+      const hasActiveSession = existingSessions.some(s => s.status === 'active');
+      
+      if (!hasActiveSession) {
+        const sessionType = threat.environment === 'honeypot' ? 'honeypot' : 'tarpit';
+        await base44Service.entities.HoneypotSession.create({
+          session_type: sessionType,
+          source_ip: threat.source_ip,
+          duration_seconds: 0,
+          interactions: 0,
+          data_captured: sessionType === 'honeypot'
+            ? `Auto-deployed: capturing tools, techniques, and intent from ${threat.source_ip}`
+            : `Auto-deployed: throttling connection from ${threat.source_ip} to 1 byte/sec`,
+          status: 'active',
+          threat_id: threat.id,
+        });
+        
+        await base44Service.entities.SecurityEvent.create({
+          event_type: sessionType === 'honeypot' ? 'honeypot_trigger' : 'tarpit_engage',
+          threat_id: threat.id,
+          severity: 'warning',
+          details: `Auto-deployed ${sessionType} for threat ${threat.source_ip} in mirror environment`,
+          environment: sessionType,
+          base_chain_step: 'base12',
+        });
+        
+        console.log(`[AEGIS SCANNER] Auto-deployed ${sessionType} for ${threat.source_ip}`);
+        detectedCount++;
+      }
+    }
+    
+    // ── 6. Keep QRNG active: advance any cycle_1/2/3 threats that haven't moved ──
+    const stuckCycles = allThreats.filter(t =>
+      ['cycle_1', 'cycle_2'].includes(t.status) &&
+      t.updated_date && new Date(t.updated_date) < new Date(fiveMinAgo)
+    );
+    
+    for (const threat of stuckCycles.slice(0, 10)) {
+      const nextStatus = threat.status === 'cycle_1' ? 'cycle_2' : 'cycle_3';
+      await base44Service.entities.Threat.update(threat.id, {
+        status: nextStatus,
+        qrng_cycle: (threat.qrng_cycle || 1) + 1,
+      });
+      await base44Service.entities.SecurityEvent.create({
+        event_type: 'qrng_cycle',
+        threat_id: threat.id,
+        severity: 'warning',
+        details: `QRNG auto-advanced: ${threat.source_ip} → ${nextStatus}`,
+        environment: threat.environment || 'production',
+        base_chain_step: 'qrng',
+      });
+      console.log(`[AEGIS SCANNER] QRNG advanced: ${threat.source_ip} → ${nextStatus}`);
+    }
+    
+    // ── 7. Auto-clear low-risk old cleared threats ─────────────────────────
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
     const oldCleared = allThreats.filter(
       t => t.status === 'cleared' && t.updated_date && new Date(t.updated_date) < new Date(oneDayAgo)
@@ -161,7 +224,7 @@ Deno.serve(async (req) => {
     // Just log the count, don't delete — preserve audit trail
     cleanedCount = oldCleared.length;
     
-    // ── 6. Log scanner heartbeat ───────────────────────────────────────────
+    // ── 8. Log scanner heartbeat ───────────────────────────────────────────
     await base44Service.entities.SecurityEvent.create({
       event_type: 'qrng_cycle',
       severity: 'info',
