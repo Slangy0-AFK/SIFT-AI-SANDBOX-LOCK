@@ -5,15 +5,17 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const base44 = createClientFromRequest(req);
 
-    // Gmail webhook payload - platform pre-enriches with new_message_ids
+    // For app user connectors, we need to get the user from context
+    // This handler is called per-user when their Gmail has new messages
     const messageIds = body.data?.new_message_ids || [];
     
     if (messageIds.length === 0) {
       return Response.json({ status: 'ok', processed: 0 });
     }
 
-    // Get Gmail access token
-    const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
+    // Get the app user's Gmail connection
+    const connectorId = 'GMAIL_CONNECTOR_ID'; // Will be replaced after registration
+    const { accessToken } = await base44.asServiceRole.connectors.getCurrentAppUserConnection(connectorId);
     const authHeader = { Authorization: `Bearer ${accessToken}` };
 
     let threatsFound = 0;

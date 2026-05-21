@@ -9,8 +9,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get Gmail access token
-    const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
+    // Get the app user's Gmail connection (each user connects their own)
+    const connectorId = 'GMAIL_CONNECTOR_ID'; // Will be replaced after registration
+    const { accessToken } = await base44.asServiceRole.connectors.getCurrentAppUserConnection(connectorId);
     const authHeader = { Authorization: `Bearer ${accessToken}` };
 
     // Fetch recent messages (last 50)
