@@ -29,14 +29,14 @@ export default function GuardianRing({ anomalies = [] }) {
     return () => clearInterval(interval);
   }, []);
 
-  const cx = 120, cy = 120, radius = 90;
+  const cx = 100, cy = 100, radius = 75;
 
   return (
     <div className="relative w-full">
-      <div className="flex gap-4 items-start">
+      <div className="flex flex-col md:flex-row gap-4 items-start">
         {/* SVG Ring */}
-        <div className="relative flex-shrink-0">
-          <svg width="240" height="240" className="overflow-hidden">
+        <div className="relative flex-shrink-0 mx-auto">
+          <svg width="200" height="200" className="overflow-hidden">
             {/* Orbit rings */}
             <circle cx={cx} cy={cy} r={radius} fill="none" stroke="hsl(215 25% 18%)" strokeWidth="1" strokeDasharray="4 4" />
             <circle cx={cx} cy={cy} r={radius - 30} fill="none" stroke="hsl(215 25% 14%)" strokeWidth="0.5" />
@@ -109,7 +109,7 @@ export default function GuardianRing({ anomalies = [] }) {
         </div>
 
         {/* Agent Info Panel */}
-        <div className="flex-1 space-y-2">
+        <div className="flex-1 w-full md:w-auto space-y-2">
           <AnimatePresence mode="wait">
             {activeAgent ? (
               <motion.div key={activeAgent.id}
@@ -118,15 +118,15 @@ export default function GuardianRing({ anomalies = [] }) {
                 style={{ borderColor: `${activeAgent.color}40` }}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 rounded-lg flex items-center justify-center font-mono text-[10px] font-bold"
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center font-mono text-[10px] font-bold flex-shrink-0"
                     style={{ background: `${activeAgent.color}15`, color: activeAgent.color, border: `1px solid ${activeAgent.color}40` }}>
                     {activeAgent.id}
                   </div>
-                  <div>
-                    <div className="font-mono text-xs font-bold" style={{ color: activeAgent.color }}>{activeAgent.name}</div>
-                    <div className="font-mono text-[8px] text-muted-foreground">{activeAgent.role}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-mono text-xs font-bold truncate" style={{ color: activeAgent.color }}>{activeAgent.name}</div>
+                    <div className="font-mono text-[8px] text-muted-foreground truncate">{activeAgent.role}</div>
                   </div>
-                  <div className="ml-auto flex items-center gap-1">
+                  <div className="flex items-center gap-1 flex-shrink-0">
                     <div className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />
                     <span className="font-mono text-[8px] text-green-400">ACTIVE</span>
                   </div>
@@ -144,7 +144,7 @@ export default function GuardianRing({ anomalies = [] }) {
           </AnimatePresence>
 
           {/* Agent list */}
-          <div className="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto pr-1">
+          <div className="grid grid-cols-2 md:grid-cols-1 gap-1 max-h-40 overflow-y-auto pr-1">
             {AGENTS.map(agent => (
               <button key={agent.id} onClick={() => setActiveAgent(activeAgent?.id === agent.id ? null : agent)}
                 className={`text-left px-2 py-1.5 rounded-lg border transition-all ${activeAgent?.id === agent.id ? 'bg-card border-opacity-60' : 'border-border hover:border-opacity-50 hover:bg-secondary/30'}`}
