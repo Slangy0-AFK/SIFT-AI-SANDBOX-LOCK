@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Shield, Zap, Lock, Bug, Skull, CheckCircle, ArrowRight, LogOut } from 'lucide-react';
-import DeviceScanner from '@/components/security/DeviceScanner.jsx';
+import DeviceScanner from '@/components/security/DeviceScanner';
 
 const features = [
   { icon: Shield, title: 'Base Chain Pipeline', desc: '6-step quantum verification', color: 'text-primary' },

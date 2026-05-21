@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import TheologicalGateway from '@/components/paradox/TheologicalGateway';
-import DeviceScanner from '@/components/security/DeviceScanner.jsx';
+import DeviceScanner from '@/components/security/DeviceScanner';
 
 // ── Internal simulation (hidden from customers) ──────────────────────────────
 function InternalParadoxSimulator({ threats, onClose }) {
