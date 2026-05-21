@@ -6,13 +6,18 @@ import { Label } from '@/components/ui/label';
 import { Shield, ShieldCheck, ShieldAlert, Key, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 
 export default function AdminKeyClaim() {
   const [adminKey, setAdminKey] = useState('');
   const [showKeyInput, setShowKeyInput] = useState(false);
   const [verifying, setVerifying] = useState(false);
+
+  const { data: user } = useQuery({
+    queryKey: ['me'],
+    queryFn: () => base44.auth.me(),
+  });
 
   const queryClient = useQueryClient();
 
@@ -48,20 +53,26 @@ export default function AdminKeyClaim() {
     setVerifying(false);
   };
 
+  // Only show for admin email
+  const ADMIN_EMAIL = 'dougleslie00@gmail.com';
+  if (!user || user.email !== ADMIN_EMAIL) {
+    return null;
+  }
+
   return (
     <Card className="border-primary/20">
       <CardHeader>
         <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
-          <Key className="w-4 h-4 text-primary" /> ADMIN ACCESS CLAIM
+          <Key className="w-4 h-4 text-primary" /> ADMIN ACCESS
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
           <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
-            Claim admin privileges for <strong className="text-foreground">dougleslie00@gmail.com</strong>
+            Admin configuration for <strong className="text-foreground">{user?.email}</strong>
           </p>
           <p className="font-mono text-[9px] text-muted-foreground mt-2">
-            Enter the admin key from your app secrets (ADMIN_PIN) to activate full admin access.
+            Enter the admin key to activate full admin access and system controls.
           </p>
         </div>
 
