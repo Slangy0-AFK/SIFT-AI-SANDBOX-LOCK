@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Shield, Activity, Lock, Layers, Bug, FileText, Settings, Swords, CreditCard, Radiation, GitBranch, Menu, X, User, ShieldAlert } from 'lucide-react';
 import NotificationBell from '../notifications/NotificationBell';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
-const navItems = [
+const allNavItems = [
   { path: '/dashboard', icon: Activity, label: 'Command Center' },
   { path: '/zero-day', icon: Radiation, label: 'Zero-Day Center', highlight: true },
   { path: '/workflow', icon: GitBranch, label: 'Workflow Engine' },
   { path: '/threat-intel', icon: ShieldAlert, label: 'Threat Intel', highlight: true },
   { path: '/firewall', icon: Shield, label: 'Firewall' },
-  { path: '/attack-sim', icon: Swords, label: 'Attack Simulator' },
+  { path: '/attack-sim', icon: Swords, label: 'Attack Simulator', adminOnly: true },
   { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
   { path: '/threat-log', icon: FileText, label: 'Threat Log' },
   { path: '/profile', icon: User, label: 'Profile' },
@@ -22,13 +24,15 @@ const mobileBottomNav = [
   { path: '/', icon: Activity, label: 'Dashboard' },
   { path: '/zero-day', icon: Radiation, label: 'Zero-Day', highlight: true },
   { path: '/threat-log', icon: FileText, label: 'Threats' },
-  { path: '/attack-sim', icon: Swords, label: 'Simulator' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export default function Sidebar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const isAdmin = user?.role === 'admin';
+  const navItems = allNavItems.filter(item => !item.adminOnly || isAdmin);
 
   return (
     <>
