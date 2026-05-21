@@ -8,8 +8,9 @@ import { base44 } from '@/api/base44Client';
 import {
   Mail, Link, Shield, AlertTriangle, CheckCircle2, XCircle,
   Loader2, Search, ShieldAlert, Globe, FileWarning, Eye,
-  Cpu, Wifi, Lock, Zap, Bug, Server
+  Cpu, Wifi, Lock, Zap, Bug, Server, Activity
 } from 'lucide-react';
+import RealTimeThreatMonitor from '@/components/threats/RealTimeThreatMonitor';
 
 const THREAT_CATEGORIES = [
   {
@@ -273,6 +274,8 @@ export default function ThreatIntelligence() {
       </div>
 
       <ThreatMatrix />
+
+      <RealTimeThreatMonitor />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <EmailAnalyzer />

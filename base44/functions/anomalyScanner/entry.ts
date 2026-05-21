@@ -184,7 +184,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── 1. Burst Detection: same IP with 3+ threats ────────────────────────
+    // ── 1. AI-Powered Burst Detection: same IP with 3+ threats ───────────────
     const ipCounts = {};
     for (const t of allThreats) {
       if (t.source_ip) {
@@ -194,25 +194,80 @@ Deno.serve(async (req) => {
     
     for (const [ip, count] of Object.entries(ipCounts)) {
       if (count >= 3) {
-        // Check if we already have an anomaly for this IP recently
         const existing = allAnomalies.find(
           a => a.source_ip === ip && a.anomaly_type === 'behavioral' && a.status !== 'neutralized'
         );
         
         if (!existing) {
-          await base44Service.entities.ZeroDayAnomaly.create({
-            anomaly_signature: `BURST-${ip.replace(/\./g, '-')}-${Date.now().toString(36)}`,
-            anomaly_type: 'behavioral',
-            severity: count >= 6 ? 'fatal' : count >= 5 ? 'critical' : 'warning',
-            status: 'detected',
-            source_ip: ip,
-            confidence_score: Math.min(95, 50 + count * 8),
-            notes: `Burst attack pattern: ${count} threats from ${ip}. Auto-detected by Aegis Scanner.`,
-            environment: 'production',
-          });
-          
-          console.log(`[AEGIS SCANNER] Burst detected from ${ip}: ${count} threats`);
-          detectedCount++;
+          // AI-powered burst analysis
+          try {
+            const burstAnalysisPrompt = `Analyze this burst attack pattern in real-time.
+            
+IP Address: ${ip}
+Number of Threats: ${count}
+Time Window: Last 5 minutes
+
+Assess:
+1. Is this a coordinated attack, botnet activity, or false positive?
+2. What is the attack sophistication level (1-10)?
+3. Should this be escalated to critical/fatal immediately?
+
+Return JSON:
+{
+  "attack_type": "coordinated" | "botnet" | "scanner" | "false_positive",
+  "sophistication_level": number (1-10),
+  "should_escalate": boolean,
+  "confidence_score": number (0-100),
+  "analysis": string
+}`;
+
+            const aiBurstAnalysis = await base44.integrations.Core.InvokeLLM({
+              prompt: burstAnalysisPrompt,
+              response_json_schema: {
+                type: "object",
+                properties: {
+                  attack_type: { type: "string" },
+                  sophistication_level: { type: "number" },
+                  should_escalate: { type: "boolean" },
+                  confidence_score: { type: "number" },
+                  analysis: { type: "string" }
+                },
+                required: ["attack_type", "sophistication_level", "should_escalate", "confidence_score", "analysis"]
+              }
+            });
+
+            const burstAI = JSON.parse(burstAnalysisPrompt);
+            const severity = burstAI.should_escalate || count >= 6 ? 'fatal' : count >= 5 ? 'critical' : 'warning';
+            
+            await base44Service.entities.ZeroDayAnomaly.create({
+              anomaly_signature: `BURST-${ip.replace(/\./g, '-')}-${Date.now().toString(36)}`,
+              anomaly_type: 'behavioral',
+              severity: severity,
+              status: 'detected',
+              source_ip: ip,
+              confidence_score: burstAI.confidence_score || Math.min(95, 50 + count * 8),
+              notes: `AI-Powered Burst Analysis: ${burstAI.analysis}. Attack type: ${burstAI.attack_type}, Sophistication: ${burstAI.sophistication_level}/10. Total threats: ${count}.`,
+              environment: 'production',
+              obfuscation_level: Math.min(10, Math.floor(burstAI.sophistication_level)),
+            });
+            
+            console.log(`[AEGIS SCANNER] AI Burst Analysis: ${ip} | ${count} threats | Type: ${burstAI.attack_type} | Confidence: ${burstAI.confidence_score}%`);
+            detectedCount++;
+          } catch (aiError) {
+            // Fallback to heuristic analysis
+            await base44Service.entities.ZeroDayAnomaly.create({
+              anomaly_signature: `BURST-${ip.replace(/\./g, '-')}-${Date.now().toString(36)}`,
+              anomaly_type: 'behavioral',
+              severity: count >= 6 ? 'fatal' : count >= 5 ? 'critical' : 'warning',
+              status: 'detected',
+              source_ip: ip,
+              confidence_score: Math.min(95, 50 + count * 8),
+              notes: `Burst attack pattern: ${count} threats from ${ip}. Auto-detected by Aegis Scanner.`,
+              environment: 'production',
+            });
+            console.log(`[AEGIS SCANNER] Burst detected from ${ip}: ${count} threats (heuristic)`);
+            detectedCount++;
+          }
         }
       }
     }
