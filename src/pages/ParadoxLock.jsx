@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import TheologicalGateway from '@/components/paradox/TheologicalGateway';
-import DeviceScanner from '@/components/security/DeviceScanner.jsx';
+import DeviceScanner from '@/components/security/DeviceScanner';
 
 // ── Internal simulation (hidden from customers) ──────────────────────────────
 function InternalParadoxSimulator({ threats, onClose }) {
@@ -180,21 +180,11 @@ export default function ParadoxLock() {
         </p>
       </div>
 
-      {/* ── FREE: Device Scan & Clean ── */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase">Free Feature</span>
-          <span className="font-mono text-[8px] bg-green-500/15 text-green-400 border border-green-500/30 px-2 py-0.5 rounded-full">Available on all plans</span>
-        </div>
-        <DeviceScanner />
-      </div>
+      {/* ── Device Scan & Clean ── */}
+      <DeviceScanner />
 
-      {/* ── PRO: Paradox Lock Gate ── */}
+      {/* ── Advanced Security Features ── */}
       <div>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase">Pro Features</span>
-          <span className="font-mono text-[8px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full">Pro & Enterprise</span>
-        </div>
         <FeatureGate requiredPlan="pro" featureName="Paradox Lock Gate">
         <div className="space-y-4">
 
@@ -254,10 +244,8 @@ export default function ParadoxLock() {
       {/* ── Paradox Simulator (always visible for testing) ── */}
       <InternalParadoxSimulator threats={challengedThreats} onClose={() => {}} />
 
-        </div>
         </FeatureGate>
       </div>
-
     </div>
   );
 }
