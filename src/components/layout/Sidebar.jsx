@@ -88,20 +88,13 @@ export default function Sidebar() {
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse-glow" />
             <span className="font-mono text-[10px] text-muted-foreground tracking-wider">QRNG ACTIVE</span>
           </div>
-          <button
-            onClick={async () => {
-              try {
-                await base44.auth.logout('/');
-              } catch (error) {
-                console.error('[Logout Error]:', error);
-                toast.error('Logout failed. Please try again.');
-              }
-            }}
+          <Link
+            to="/logout"
             className="mt-2 w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span className="font-mono text-[10px] tracking-wider">LOGOUT</span>
-          </button>
+          </Link>
         </div>
       </aside>
 
@@ -168,20 +161,13 @@ export default function Sidebar() {
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                 <span className="font-mono text-[10px] text-muted-foreground tracking-wider">SYSTEM ONLINE</span>
               </div>
-              <button
-                onClick={async () => {
-                  try {
-                    await base44.auth.logout('/');
-                  } catch (error) {
-                    console.error('[Logout Error]:', error);
-                    toast.error('Logout failed. Please try again.');
-                  }
-                }}
+              <Link
+                to="/logout"
                 className="mt-2 w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span className="font-mono text-[10px] tracking-wider">LOGOUT</span>
-              </button>
+              </Link>
             </div>
           </div>
         </div>

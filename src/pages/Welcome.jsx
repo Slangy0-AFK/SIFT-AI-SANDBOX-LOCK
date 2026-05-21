@@ -150,7 +150,7 @@ export default function Welcome() {
               </Button>
             )}
             <Button
-              onClick={() => base44.auth.logout()}
+              onClick={() => navigate('/logout')}
               variant="outline"
               size="lg"
               className="font-mono text-sm px-8"
