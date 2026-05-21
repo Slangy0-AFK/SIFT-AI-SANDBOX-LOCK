@@ -118,12 +118,15 @@ Deno.serve(async (req) => {
 
     const { action, response, totp_code, has_hardware_token, agent_zkp } = body;
 
-    // ── Auth check for non-gateway actions ───────────────────────────────────
-    const user = await base44.auth.me();
-
-    // ── GET CHALLENGE ─────────────────────────────────────────────────────────
+    // ── GET CHALLENGE (public, no auth required) ──────────────────────────────
     if (action === 'get_challenge') {
       return Response.json({ challenge: AUTH_CHALLENGE });
+    }
+
+    // ── Auth check for all other actions ──────────────────────────────────────
+    const user = await base44.auth.me();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });
     }
 
     // ── HUMAN CORRIDOR ─────────────────────────────────────────────────────────
