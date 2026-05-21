@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, Activity, Lock, Bug, FileText, Settings, CreditCard, Radiation, GitBranch, Menu, X, User, ShieldAlert, LogOut, Mail } from 'lucide-react';
+import { Shield, Activity, Lock, Bug, FileText, Settings, CreditCard, Radiation, GitBranch, Menu, X, User, ShieldAlert, Mail } from 'lucide-react';
 import NotificationBell from '../notifications/NotificationBell';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -88,13 +88,6 @@ export default function Sidebar() {
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse-glow" />
             <span className="font-mono text-[10px] text-muted-foreground tracking-wider">QRNG ACTIVE</span>
           </div>
-          <Link
-            to="/logout"
-            className="mt-2 w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span className="font-mono text-[10px] tracking-wider">LOGOUT</span>
-          </Link>
         </div>
       </aside>
 
@@ -161,13 +154,6 @@ export default function Sidebar() {
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                 <span className="font-mono text-[10px] text-muted-foreground tracking-wider">SYSTEM ONLINE</span>
               </div>
-              <Link
-                to="/logout"
-                className="mt-2 w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span className="font-mono text-[10px] tracking-wider">LOGOUT</span>
-              </Link>
             </div>
           </div>
         </div>

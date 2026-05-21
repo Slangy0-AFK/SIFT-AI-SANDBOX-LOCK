@@ -23,7 +23,7 @@ import TermsOfService from './pages/TermsOfService';
 import RefundPolicy from './pages/RefundPolicy';
 import ComplianceChecklist from './pages/ComplianceChecklist';
 import AcceptInvitePage from './pages/AcceptInvite';
-import Logout from './pages/Logout';
+
 
 import FirewallDashboard from './pages/FirewallDashboard';
 import ThreatIntelligence from './pages/ThreatIntelligence';
@@ -88,7 +88,6 @@ const AuthenticatedApp = () => {
         <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/compliance" element={<ComplianceChecklist />} />
         <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
-        <Route path="/logout" element={<Logout />} />
 
         <Route path="/threat-intel" element={<ThreatIntelligence />} />
         <Route path="/firewall" element={<FirewallDashboard />} />

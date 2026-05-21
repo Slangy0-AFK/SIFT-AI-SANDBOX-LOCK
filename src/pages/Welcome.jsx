@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Zap, Lock, Bug, Skull, CheckCircle, ArrowRight, LogOut, Mail, Settings } from 'lucide-react';
+import { Shield, Zap, Lock, Bug, Skull, CheckCircle, ArrowRight, Mail, Settings } from 'lucide-react';
 import DeviceScanner from '@/components/security/DeviceScanner';
 import TermsAcceptanceModal from '@/components/legal/TermsAcceptanceModal';
 import InstallPrompt from '@/components/pwa/InstallPrompt';
@@ -157,14 +157,7 @@ export default function Welcome() {
                 <Settings className="w-4 h-4 mr-2" /> INITIAL SETUP
               </Button>
             )}
-            <Button
-              onClick={() => navigate('/logout')}
-              variant="outline"
-              size="lg"
-              className="font-mono text-sm px-8"
-            >
-              <LogOut className="w-4 h-4 mr-2" /> LOGOUT
-            </Button>
+
           </div>
 
           {/* Device Scanner */}
