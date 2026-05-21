@@ -12,14 +12,6 @@ Deno.serve(async (req) => {
         allowed: false
       }, { status: 401 });
     }
-
-    // Admin-only authorization
-    if (user.role !== 'admin') {
-      return Response.json({
-        error: 'Forbidden - Admin access required',
-        allowed: false
-      }, { status: 403 });
-    }
     
     // Get client IP from headers
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 
