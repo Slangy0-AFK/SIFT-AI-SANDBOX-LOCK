@@ -2,26 +2,49 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
-    const body = await req.json();
     const base44 = createClientFromRequest(req);
+    
+    // Verify webhook authenticity using history ID from payload
+    const body = await req.json();
+    const historyId = body.data?.historyId;
+    
+    if (!historyId) {
+      console.warn('Gmail webhook: Missing historyId - potential spoofed request');
+      return Response.json({ error: 'Invalid webhook payload' }, { status: 400 });
+    }
 
-    // For app user connectors, we need to get the user from context
-    // This handler is called per-user when their Gmail has new messages
+    // Get the app user's Gmail connection
+    const connectorId = '6a0f21a2f39d9bf2ebd374e6';
+    
+    let accessToken;
+    let user;
+    try {
+      const connection = await base44.asServiceRole.connectors.getCurrentAppUserConnection(connectorId);
+      accessToken = connection.accessToken;
+      
+      // Get authenticated user
+      user = await base44.auth.me();
+      if (!user) {
+        throw new Error('Unauthorized: No authenticated user');
+      }
+      
+      console.log(`Gmail webhook for user: ${user.email}, historyId: ${historyId}`);
+    } catch (err) {
+      console.error('Gmail webhook auth failed:', err.message);
+      return Response.json({ error: 'Authentication failed: Gmail connection not found' }, { status: 401 });
+    }
+    
+    const authHeader = { Authorization: `Bearer ${accessToken}` };
     const messageIds = body.data?.new_message_ids || [];
     
     if (messageIds.length === 0) {
       return Response.json({ status: 'ok', processed: 0 });
     }
 
-    // Get the app user's Gmail connection
-    const connectorId = '6a0f21a2f39d9bf2ebd374e6';
-    const { accessToken } = await base44.asServiceRole.connectors.getCurrentAppUserConnection(connectorId);
-    const authHeader = { Authorization: `Bearer ${accessToken}` };
-
     let threatsFound = 0;
 
     // Analyze each new message
-    for (const messageId of messageIds.slice(0, 10)) { // Limit to 10 per webhook
+    for (const messageId of messageIds.slice(0, 10)) {
       try {
         const res = await fetch(
           `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}?format=full`,
@@ -32,7 +55,6 @@ Deno.serve(async (req) => {
         
         const message = await res.json();
         
-        // Extract headers and body
         const headers = message.payload.headers;
         const from = headers.find(h => h.name === 'From')?.value || '';
         const subject = headers.find(h => h.name === 'Subject')?.value || '';
@@ -44,7 +66,6 @@ Deno.serve(async (req) => {
           body = atob(message.payload.parts[0].body.data);
         }
 
-        // Analyze with LLM
         const analysisPrompt = `Analyze this email for phishing, scams, or malicious content.
         
 From: ${from}
@@ -76,39 +97,32 @@ Return JSON:
         const analysis = JSON.parse(llmRes);
 
         if (analysis.is_threat) {
-          // Get user from email domain (simplified - in prod you'd map email to user)
-          const users = await base44.entities.User.list();
-          const targetUser = users[0]; // First user for demo
+          await base44.entities.EmailThreat.create({
+            user_id: user.id,
+            message_id: messageId,
+            from_address: from,
+            subject,
+            threat_type: analysis.threat_type,
+            confidence_score: analysis.confidence,
+            analysis_reason: analysis.reason,
+            status: 'detected',
+            scanned_date: new Date().toISOString()
+          });
 
-          if (targetUser) {
-            await base44.entities.EmailThreat.create({
-              user_id: targetUser.id,
-              message_id: messageId,
-              from_address: from,
-              subject,
-              threat_type: analysis.threat_type,
-              confidence_score: analysis.confidence,
-              analysis_reason: analysis.reason,
-              status: 'detected',
-              scanned_date: new Date().toISOString()
-            });
-
-            // Label in Gmail
-            try {
-              await fetch(
-                `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/modify`,
-                {
-                  method: 'POST',
-                  headers: authHeader,
-                  body: JSON.stringify({ addLabelIds: ['Label_1'] })
-                }
-              );
-            } catch (e) {
-              console.error('Failed to label:', e);
-            }
-
-            threatsFound++;
+          try {
+            await fetch(
+              `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/modify`,
+              {
+                method: 'POST',
+                headers: authHeader,
+                body: JSON.stringify({ addLabelIds: ['Label_1'] })
+              }
+            );
+          } catch (e) {
+            console.error('Failed to label:', e);
           }
+
+          threatsFound++;
         }
       } catch (err) {
         console.error('Error processing message:', err);
