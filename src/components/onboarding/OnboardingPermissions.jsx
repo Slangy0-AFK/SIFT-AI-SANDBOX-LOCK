@@ -101,20 +101,7 @@ export default function OnboardingPermissions() {
   };
 
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <Card className="max-w-md w-full">
-          <CardContent className="pt-6 text-center">
-            <Shield className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h2 className="font-mono text-lg font-bold mb-2">Authentication Required</h2>
-            <p className="text-muted-foreground mb-4">Please log in to continue setup</p>
-            <Button onClick={() => base44.auth.redirectToLogin()}>
-              Log In
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return null; // Don't render anything when not authenticated - AuthContext will handle redirect
   }
 
   return (
