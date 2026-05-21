@@ -89,6 +89,13 @@ function calculateThreatScore(threat, anomalies) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Allow entity automations (no user session) or authenticated admin users
+    const user = await base44.auth.me().catch(() => null);
+    if (user && user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
     
     // Support both direct calls and entity automation payloads

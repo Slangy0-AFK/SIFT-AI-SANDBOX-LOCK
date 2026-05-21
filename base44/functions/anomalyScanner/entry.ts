@@ -89,6 +89,13 @@ function detectAIAttack(text) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Allow scheduled/system calls via service token, or require admin user
+    const user = await base44.auth.me().catch(() => null);
+    if (user && user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
     const base44Service = base44.asServiceRole;
     
     console.log('[AEGIS SCANNER] Starting anomaly scan cycle...');
