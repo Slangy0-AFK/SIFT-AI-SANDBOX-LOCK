@@ -49,8 +49,8 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Update user role to admin
-      await base44.entities.User.update(user.id, { role: 'admin' });
+      // Update user role to admin via service role
+      await base44.asServiceRole.entities.User.update(user.id, { role: 'admin' });
       
       // Log the admin activation
       await base44.entities.SecurityEvent.create({
