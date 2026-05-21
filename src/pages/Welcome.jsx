@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Shield, Zap, Lock, Bug, Skull, CheckCircle, ArrowRight, LogOut, Mail, Settings } from 'lucide-react';
 import DeviceScanner from '@/components/security/DeviceScanner';
 import TermsAcceptanceModal from '@/components/legal/TermsAcceptanceModal';
+import InstallPrompt from '@/components/pwa/InstallPrompt';
 
 const features = [
   { icon: Shield, title: 'Base Chain Pipeline', desc: '6-step quantum verification', color: 'text-primary' },
@@ -202,6 +203,9 @@ export default function Welcome() {
           </Card>
         </motion.div>
       </div>
+
+      {/* PWA Install Prompt */}
+      <InstallPrompt />
 
       {/* Footer */}
       <div className="border-t border-border p-4">
