@@ -38,7 +38,14 @@ Deno.serve(async (req) => {
       const otp = generateOTP();
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min
 
-      // Store OTP as a SecurityEvent (tagged with phone + user)
+      // Hash OTP before storing
+      const encoder = new TextEncoder();
+      const data = encoder.encode(otp);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const otpHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      // Store OTP hash as a SecurityEvent (tagged with phone + user)
       await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',
@@ -46,7 +53,7 @@ Deno.serve(async (req) => {
           type: 'phone_otp',
           user_email: user.email,
           phone_last4: phone.slice(-4),
-          otp_hash: otp, // In production: hash this. For test, store plain.
+          otp_hash: otpHash,
           expires_at: expiresAt,
         }),
         environment: 'production',
@@ -83,13 +90,20 @@ Deno.serve(async (req) => {
         event_type: 'access_granted',
       }, '-created_date', 20);
 
+      // Hash provided code for comparison
+      const encoder = new TextEncoder();
+      const data = encoder.encode(code);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const codeHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
       const otpEvent = events.find(e => {
         try {
           const d = JSON.parse(e.details || '{}');
           return (
             d.type === 'phone_otp' &&
             d.user_email === user.email &&
-            d.otp_hash === code &&
+            d.otp_hash === codeHash &&
             new Date(d.expires_at) > new Date()
           );
         } catch {

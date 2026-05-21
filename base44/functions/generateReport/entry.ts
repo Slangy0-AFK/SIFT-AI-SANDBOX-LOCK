@@ -20,11 +20,12 @@ Deno.serve(async (req) => {
     else if (dateRange === '90days') startDate.setDate(now.getDate() - 90);
     else startDate.setDate(now.getDate() - 7);
 
+    // Only fetch data for the current user
     const [threats, events, anomalies, honeypots] = await Promise.all([
-      base44.entities.Threat.filter({}),
-      base44.entities.SecurityEvent.filter({}),
-      base44.entities.ZeroDayAnomaly.filter({}),
-      base44.entities.HoneypotSession.filter({}),
+      base44.entities.Threat.filter({ created_by: user.email }),
+      base44.entities.SecurityEvent.filter({ created_by: user.email }),
+      base44.entities.ZeroDayAnomaly.filter({ created_by: user.email }),
+      base44.entities.HoneypotSession.filter({ created_by: user.email }),
     ]);
 
     const doc = new jsPDF();
