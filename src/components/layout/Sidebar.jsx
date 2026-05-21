@@ -91,7 +91,7 @@ export default function Sidebar() {
           <button
             onClick={async () => {
               try {
-                await base44.auth.logout();
+                await base44.auth.logout('/');
               } catch (error) {
                 console.error('[Logout Error]:', error);
                 toast.error('Logout failed. Please try again.');
@@ -171,7 +171,7 @@ export default function Sidebar() {
               <button
                 onClick={async () => {
                   try {
-                    await base44.auth.logout();
+                    await base44.auth.logout('/');
                   } catch (error) {
                     console.error('[Logout Error]:', error);
                     toast.error('Logout failed. Please try again.');
