@@ -35,12 +35,15 @@
   ],
   "rls": {
     "create": {
-      "data.user_id": "{{user.id}}"
+      "created_by": "{{user.email}}"
     },
     "read": {
       "$or": [
         {
           "data.user_id": "{{user.id}}"
+        },
+        {
+          "created_by": "{{user.email}}"
         },
         {
           "user_condition": {
