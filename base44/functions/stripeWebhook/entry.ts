@@ -4,6 +4,14 @@ import Stripe from 'npm:stripe@14.0.0';
 /**
  * Stripe Webhook - Payment Event Handler
  * 
+ * ═══════════════════════════════════════════════════
+ * DEACTIVATED - BETA MODE
+ * ═══════════════════════════════════════════════════
+ * This webhook is disabled during beta testing.
+ * All payments are handled via trial mode.
+ * To reactivate: Remove the beta mode block and implement event handlers.
+ * ═══════════════════════════════════════════════════
+ * 
  * SECURITY NOTE: This function uses environment variables securely.
  * - Secrets are fetched at runtime via Deno.env.get() inside Deno.serve()
  * - No secrets are hardcoded, logged, or exposed in responses

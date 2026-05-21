@@ -5,6 +5,14 @@ import crypto from 'node:crypto';
 /**
  * Stripe Checkout - Payment Processing
  * 
+ * ═══════════════════════════════════════════════════
+ * DEACTIVATED - BETA MODE
+ * ═══════════════════════════════════════════════════
+ * This checkout function is disabled during beta testing.
+ * All plans are available for free in trial mode.
+ * To reactivate: Remove the beta mode block and implement Stripe checkout session creation.
+ * ═══════════════════════════════════════════════════
+ * 
  * SECURITY NOTE: This function uses environment variables securely.
  * - Secrets are fetched at runtime via Deno.env.get() inside Deno.serve()
  * - No secrets are hardcoded, logged, or exposed in responses
