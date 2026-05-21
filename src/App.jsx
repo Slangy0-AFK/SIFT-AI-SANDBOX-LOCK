@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import IpAccessGate from '@/components/security/IpAccessGate';
 import Dashboard from './pages/Dashboard';
 import BaseChain from './pages/BaseChain';
 import ParadoxLock from './pages/ParadoxLock';
@@ -89,7 +90,9 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          <AuthenticatedApp />
+          <IpAccessGate>
+            <AuthenticatedApp />
+          </IpAccessGate>
         </Router>
         <Toaster />
       </QueryClientProvider>
