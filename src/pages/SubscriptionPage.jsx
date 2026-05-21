@@ -10,12 +10,15 @@ import PlanCard, { PLANS } from '../components/subscription/PlanCard';
 import DeviceManager from '../components/subscription/DeviceManager';
 import InvitationManager from '../components/subscription/InvitationManager';
 import SupportCenter from '../components/support/SupportCenter';
+import CaptchaModal from '../components/subscription/CaptchaModal';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function SubscriptionPage() {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [upgrading, setUpgrading] = useState(false);
   const [togglingAutoPay, setTogglingAutoPay] = useState(false);
+  const [showCaptcha, setShowCaptcha] = useState(false);
+  const [pendingCheckout, setPendingCheckout] = useState(null);
   const queryClient = useQueryClient();
 
   // Check for successful checkout
@@ -53,10 +56,12 @@ export default function SubscriptionPage() {
   const currentPlan = PLANS[rawPlan] ? rawPlan : (rawPlan === 'enterprise' ? 'pro' : 'free');
 
   const stripeCheckoutMutation = useMutation({
-    mutationFn: async ({ planKey, priceId }) => {
+    mutationFn: async ({ planKey, priceId, captcha_token, captcha_answer }) => {
       const response = await base44.functions.invoke('stripeCheckout', {
         price_id: priceId,
         billing_cycle: billingCycle,
+        captcha_token,
+        captcha_answer,
       });
       return response.data;
     },
@@ -66,6 +71,7 @@ export default function SubscriptionPage() {
         if (window.self !== window.top) {
           toast.error('Checkout is only available in the published app, not in preview mode.');
           setUpgrading(false);
+          setShowCaptcha(false);
           return;
         }
         window.location.href = data.url;
@@ -74,6 +80,7 @@ export default function SubscriptionPage() {
     onError: (error) => {
       toast.error('Failed to start checkout: ' + error.message);
       setUpgrading(false);
+      setShowCaptcha(false);
     },
   });
 
@@ -134,7 +141,21 @@ export default function SubscriptionPage() {
     if (planKey === 'free') {
       trialMutation.mutate();
     } else if (priceId) {
-      stripeCheckoutMutation.mutate({ planKey, priceId });
+      // Store pending checkout and show CAPTCHA
+      setPendingCheckout({ planKey, priceId });
+      setShowCaptcha(true);
+    }
+  };
+
+  const handleCaptchaSuccess = (captcha_token, captcha_answer) => {
+    setShowCaptcha(false);
+    if (pendingCheckout) {
+      stripeCheckoutMutation.mutate({
+        ...pendingCheckout,
+        captcha_token,
+        captcha_answer,
+      });
+      setPendingCheckout(null);
     }
   };
 
@@ -277,6 +298,16 @@ export default function SubscriptionPage() {
       {/* Support Center */}
       <SupportCenter />
 
+      {/* Human Verification CAPTCHA */}
+      <CaptchaModal
+        isOpen={showCaptcha}
+        onSuccess={handleCaptchaSuccess}
+        onClose={() => {
+          setShowCaptcha(false);
+          setUpgrading(false);
+          setPendingCheckout(null);
+        }}
+      />
 
     </div>
   );

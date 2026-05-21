@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import Stripe from 'npm:stripe@14.0.0';
+import crypto from 'node:crypto';
 
 Deno.serve(async (req) => {
   try {
@@ -10,10 +11,28 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { price_id, billing_cycle } = await req.json();
+    const { price_id, billing_cycle, captcha_answer, captcha_token } = await req.json();
 
     if (!price_id) {
       return Response.json({ error: 'price_id is required' }, { status: 400 });
+    }
+
+    // Human verification - mathematical CAPTCHA
+    if (!captcha_answer || !captcha_token) {
+      return Response.json({ error: 'Human verification required' }, { status: 403 });
+    }
+
+    // Verify CAPTCHA token (valid for 5 minutes)
+    const tokenData = JSON.parse(Buffer.from(captcha_token, 'base64').toString());
+    const tokenAge = Date.now() - tokenData.timestamp;
+    if (tokenAge > 300000) {
+      return Response.json({ error: 'CAPTCHA expired. Please try again.' }, { status: 403 });
+    }
+
+    // Verify the answer matches the challenge
+    const expectedAnswer = tokenData.num1 + tokenData.num2;
+    if (parseInt(captcha_answer) !== expectedAnswer) {
+      return Response.json({ error: 'Incorrect verification. Please try again.' }, { status: 403 });
     }
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));

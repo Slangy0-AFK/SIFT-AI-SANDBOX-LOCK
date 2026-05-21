@@ -1,0 +1,66 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
+/**
+ * Generate Mathematical CAPTCHA Challenge
+ * Returns a token and visual challenge for human verification
+ */
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Generate two random numbers (1-10)
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
+
+    // Create token with timestamp (valid for 5 minutes)
+    const tokenData = {
+      num1,
+      num2,
+      timestamp: Date.now(),
+      user_id: user.id
+    };
+
+    // Base64 encode the token
+    const captcha_token = Buffer.from(JSON.stringify(tokenData)).toString('base64');
+
+    // Generate visual representation (simple ASCII art style)
+    const visualChallenge = {
+      num1_visual: generateNumberVisual(num1),
+      num2_visual: generateNumberVisual(num2),
+      instruction: `What is ${num1} + ${num2}?`
+    };
+
+    return Response.json({
+      captcha_token,
+      challenge: visualChallenge,
+      expires_in: 300 // 5 minutes
+    });
+
+  } catch (error) {
+    console.error('[CAPTCHA] Error:', error.message);
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});
+
+// Simple ASCII-style number representation for visual challenge
+function generateNumberVisual(num) {
+  const visuals = {
+    1: ['  #  ', ' ##  ', '  #  ', '  #  ', '#####'],
+    2: ['###  ', '  #  ', ' ##  ', '#    ', '#####'],
+    3: ['###  ', '  #  ', ' ##  ', '  #  ', '###  '],
+    4: ['# #  ', '# #  ', '###  ', '  #  ', '  #  '],
+    5: ['#####', '#    ', '###  ', '  #  ', '###  '],
+    6: [' ### ', '#    ', '#### ', '#  # ', ' ### '],
+    7: ['#####', '   # ', '  #  ', ' #   ', ' #   '],
+    8: [' ### ', '#   #', ' ### ', '#   #', ' ### '],
+    9: [' ### ', '#   #', ' ####', '   # ', ' ### '],
+    0: [' ### ', '#   #', '#   #', '#   #', ' ### ']
+  };
+  return visuals[num] || visuals[0];
+}
