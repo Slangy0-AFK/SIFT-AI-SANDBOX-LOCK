@@ -54,6 +54,11 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'reset_password') {
+      const user = await base44.auth.me();
+      if (!user) {
+        return Response.json({ error: 'Unauthorized: User session required' }, { status: 401 });
+      }
+
       if (!reset_token || !new_password) {
         return Response.json({ error: 'reset_token and new_password are required' }, { status: 400 });
       }
