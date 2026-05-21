@@ -8,6 +8,7 @@ import { Shield, CreditCard, Smartphone, RefreshCw, ToggleLeft, ToggleRight } fr
 import { toast } from 'sonner';
 import PlanCard, { PLANS } from '../components/subscription/PlanCard';
 import DeviceManager from '../components/subscription/DeviceManager';
+import InvitationManager from '../components/subscription/InvitationManager';
 import SupportCenter from '../components/support/SupportCenter';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -233,6 +234,11 @@ export default function SubscriptionPage() {
           <DeviceManager devices={devices} plan={currentPlan} userId={user?.id || 'me'} />
         </CardContent>
       </Card>
+
+      {/* Invitation Manager */}
+      {currentPlan !== 'free' && (
+        <InvitationManager subscription={currentSub} />
+      )}
 
       {/* Plans */}
       <div>

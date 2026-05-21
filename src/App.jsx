@@ -20,6 +20,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import RefundPolicy from './pages/RefundPolicy';
 import ComplianceChecklist from './pages/ComplianceChecklist';
+import AcceptInvitePage from './pages/AcceptInvite';
 
 import FirewallDashboard from './pages/FirewallDashboard';
 import ThreatIntelligence from './pages/ThreatIntelligence';
@@ -73,6 +74,7 @@ const AuthenticatedApp = () => {
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/compliance" element={<ComplianceChecklist />} />
+        <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
 
         <Route path="/threat-intel" element={<ThreatIntelligence />} />
         <Route path="/firewall" element={<FirewallDashboard />} />
