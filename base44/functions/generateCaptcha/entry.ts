@@ -26,8 +26,12 @@ Deno.serve(async (req) => {
       user_id: user.id
     };
 
-    // Base64 encode the token
-    const captcha_token = Buffer.from(JSON.stringify(tokenData)).toString('base64');
+    // Base64 encode the token (Deno-compatible)
+    const encoder = new TextEncoder();
+    const jsonString = JSON.stringify(tokenData);
+    const uint8Array = encoder.encode(jsonString);
+    const binaryString = Array.from(uint8Array, byte => String.fromCharCode(byte)).join('');
+    const captcha_token = btoa(binaryString);
 
     // Generate visual representation (simple ASCII art style)
     const visualChallenge = {
@@ -43,7 +47,7 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('[CAPTCHA] Error:', error.message);
+    console.error('[CAPTCHA] Error:', error.message, error.stack);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
