@@ -102,6 +102,13 @@ export default function Welcome() {
               <p className="font-mono text-[10px] text-muted-foreground tracking-widest">QUANTUM SHIELD</p>
             </div>
           </div>
+          
+          {/* Beta Badge */}
+          <div className="flex items-center justify-center">
+            <Badge className="font-mono text-[9px] bg-primary/10 text-primary border-primary/20 border">
+              BETA MODE - ALL FEATURES FREE
+            </Badge>
+          </div>
 
           {/* Tagline */}
           <div className="space-y-2">
@@ -205,6 +212,9 @@ export default function Welcome() {
           <div className="flex items-center gap-2">
             <Badge className="font-mono text-[8px] bg-green-400/10 text-green-400 border-green-400/20 border">
               <CheckCircle className="w-3 h-3 mr-1" /> SYSTEM OPERATIONAL
+            </Badge>
+            <Badge className="font-mono text-[8px] bg-primary/10 text-primary border-primary/20 border">
+              BETA ACCESS
             </Badge>
           </div>
         </div>

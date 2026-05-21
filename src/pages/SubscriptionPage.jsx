@@ -215,13 +215,13 @@ export default function SubscriptionPage() {
       <Card className="border-primary/30 bg-primary/5">
         <CardHeader>
           <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2 text-primary">
-            <Shield className="w-4 h-4" /> BETA MODE ACTIVE
+            <Shield className="w-4 h-4" /> BETA MODE - FULL ACCESS
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
-            All features are available for free testing during beta. Payment processing is disabled. 
-            Select any plan below to explore features - no payment required.
+            All Pro features are currently free during beta testing. Select a plan below to set your preference - 
+            no payment required. Your account is ready to go live when we launch.
           </p>
         </CardContent>
       </Card>
