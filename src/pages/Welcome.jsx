@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Zap, Lock, Bug, Skull, CheckCircle, ArrowRight, LogOut, Mail } from 'lucide-react';
+import { Shield, Zap, Lock, Bug, Skull, CheckCircle, ArrowRight, LogOut, Mail, Settings } from 'lucide-react';
 import DeviceScanner from '@/components/security/DeviceScanner';
 
 const features = [
@@ -26,9 +26,25 @@ const steps = [
 export default function Welcome() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+
+  useEffect(() => {
+    const onboardingComplete = localStorage.getItem('aegis_onboarding_complete');
+    if (!onboardingComplete) {
+      setNeedsOnboarding(true);
+    }
+  }, []);
 
   const handleGetStarted = () => {
-    navigate('/dashboard');
+    if (needsOnboarding) {
+      navigate('/onboarding');
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
+  const handleOnboarding = () => {
+    navigate('/onboarding');
   };
 
   useEffect(() => {
@@ -96,6 +112,16 @@ export default function Welcome() {
             >
               ENTER COMMAND CENTER <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
+            {needsOnboarding && (
+              <Button
+                onClick={handleOnboarding}
+                variant="outline"
+                size="lg"
+                className="font-mono text-sm px-8"
+              >
+                <Settings className="w-4 h-4 mr-2" /> INITIAL SETUP
+              </Button>
+            )}
             <Button
               onClick={() => base44.auth.logout()}
               variant="outline"

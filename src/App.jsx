@@ -26,6 +26,7 @@ import FirewallLogs from './pages/FirewallLogs';
 import UserProfile from './pages/UserProfile';
 import Welcome from './pages/Welcome';
 import ThreatScanner from './pages/ThreatScanner';
+import OnboardingPermissions from './components/onboarding/OnboardingPermissions';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -55,6 +56,7 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route element={<AppLayout />}>
         <Route path="/" element={<Welcome />} />
+        <Route path="/onboarding" element={<OnboardingPermissions />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/profile" element={<UserProfile />} />
         <Route path="/base-chain" element={<BaseChain />} />
