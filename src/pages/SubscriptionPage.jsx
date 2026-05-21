@@ -11,14 +11,11 @@ import DeviceManager from '../components/subscription/DeviceManager';
 import InvitationManager from '../components/subscription/InvitationManager';
 import SupportCenter from '../components/support/SupportCenter';
 import CaptchaModal from '../components/subscription/CaptchaModal';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export default function SubscriptionPage() {
   const [billingCycle, setBillingCycle] = useState('monthly');
-  const [upgrading, setUpgrading] = useState(false);
   const [togglingAutoPay, setTogglingAutoPay] = useState(false);
-  const [showCaptcha, setShowCaptcha] = useState(false);
-  const [pendingCheckout, setPendingCheckout] = useState(null);
   const queryClient = useQueryClient();
 
   // Check for successful checkout
@@ -55,61 +52,34 @@ export default function SubscriptionPage() {
   const rawPlan = currentSub?.plan || 'free';
   const currentPlan = PLANS[rawPlan] ? rawPlan : (rawPlan === 'enterprise' ? 'pro' : 'free');
 
-  const stripeCheckoutMutation = useMutation({
-    mutationFn: async ({ planKey, priceId, captcha_token, captcha_answer }) => {
-      const response = await base44.functions.invoke('stripeCheckout', {
-        price_id: priceId,
-        billing_cycle: billingCycle,
-        captcha_token,
-        captcha_answer,
-      });
-      return response.data;
-    },
-    onSuccess: (data) => {
-      if (data.url) {
-        // Check if running in iframe
-        if (window.self !== window.top) {
-          toast.error('Checkout is only available in the published app, not in preview mode.');
-          setUpgrading(false);
-          setShowCaptcha(false);
-          return;
-        }
-        window.location.href = data.url;
-      }
-    },
-    onError: (error) => {
-      toast.error('Failed to start checkout: ' + error.message);
-      setUpgrading(false);
-      setShowCaptcha(false);
-    },
-  });
-
-  const trialMutation = useMutation({
-    mutationFn: async () => {
-      const renewalDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      
-      if (currentSub) {
-        return base44.entities.Subscription.update(currentSub.id, { 
-          plan: 'free', 
-          billing_cycle: 'monthly', 
-          status: 'trial',
-          renewal_date: renewalDate
-        });
-      }
-      return base44.entities.Subscription.create({ 
-        user_id: user?.id, 
-        plan: 'free', 
+  // BETA MODE - No payment processing
+  const handleBetaPlanSelect = (planKey) => {
+    // In beta mode, just update the plan locally without payment
+    const renewalDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    if (currentSub) {
+      base44.entities.Subscription.update(currentSub.id, { 
+        plan: planKey, 
         billing_cycle: 'monthly', 
         status: 'trial',
         renewal_date: renewalDate
+      }).then(() => {
+        queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+        toast.success(`Beta access granted to ${planKey === 'pro' ? 'Pro' : 'Free'} plan!`);
       });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
-      toast.success('14-day trial started! You will move to Free plan after trial ends.');
-      setUpgrading(false);
-    },
-  });
+    } else {
+      base44.entities.Subscription.create({ 
+        user_id: user?.id, 
+        plan: planKey, 
+        billing_cycle: 'monthly', 
+        status: 'trial',
+        renewal_date: renewalDate
+      }).then(() => {
+        queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+        toast.success(`Beta access granted to ${planKey === 'pro' ? 'Pro' : 'Free'} plan!`);
+      });
+    }
+  };
 
   const autoPayMutation = useMutation({
     mutationFn: async (enabled) => {
@@ -135,28 +105,8 @@ export default function SubscriptionPage() {
     autoPayMutation.mutate(newValue);
   };
 
-  const handleSelectPlan = (planKey, priceId) => {
-    setUpgrading(true);
-    
-    if (planKey === 'free') {
-      trialMutation.mutate();
-    } else if (priceId) {
-      // Store pending checkout and show CAPTCHA
-      setPendingCheckout({ planKey, priceId });
-      setShowCaptcha(true);
-    }
-  };
-
-  const handleCaptchaSuccess = (captcha_token, captcha_answer) => {
-    setShowCaptcha(false);
-    if (pendingCheckout) {
-      stripeCheckoutMutation.mutate({
-        ...pendingCheckout,
-        captcha_token,
-        captcha_answer,
-      });
-      setPendingCheckout(null);
-    }
+  const handleSelectPlan = (planKey) => {
+    handleBetaPlanSelect(planKey);
   };
 
   const planColor = currentPlan === 'pro' ? 'text-primary' : 'text-muted-foreground';
@@ -261,25 +211,26 @@ export default function SubscriptionPage() {
         <InvitationManager subscription={currentSub} />
       )}
 
+      {/* Beta Mode Notice */}
+      <Card className="border-primary/30 bg-primary/5">
+        <CardHeader>
+          <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2 text-primary">
+            <Shield className="w-4 h-4" /> BETA MODE ACTIVE
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
+            All features are available for free testing during beta. Payment processing is disabled. 
+            Select any plan below to explore features - no payment required.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Plans */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground uppercase">Change Plan</h2>
-          {/* Billing toggle */}
-          <div className="flex items-center gap-1 bg-secondary rounded-lg p-1">
-            <button
-              onClick={() => setBillingCycle('monthly')}
-              className={`font-mono text-[10px] px-3 py-1.5 rounded-md transition-all ${billingCycle === 'monthly' ? 'bg-card text-foreground shadow' : 'text-muted-foreground'}`}
-            >Monthly</button>
-            <button
-              onClick={() => setBillingCycle('annual')}
-              className={`font-mono text-[10px] px-3 py-1.5 rounded-md transition-all flex items-center gap-1 ${billingCycle === 'annual' ? 'bg-card text-foreground shadow' : 'text-muted-foreground'}`}
-            >
-              Annual
-              <span className="text-green-400 text-[8px]">-20%</span>
-            </button>
-          </div>
-        </div>
+        <h2 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-4">
+          Select Plan (Beta Access)
+        </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
            {['free', 'pro'].map(planKey => (
@@ -289,7 +240,8 @@ export default function SubscriptionPage() {
                billingCycle={billingCycle}
                currentPlan={currentPlan}
                onSelect={handleSelectPlan}
-               loading={stripeCheckoutMutation.isPending || trialMutation.isPending}
+               loading={false}
+               betaMode={true}
              />
            ))}
          </div>
@@ -298,16 +250,7 @@ export default function SubscriptionPage() {
       {/* Support Center */}
       <SupportCenter />
 
-      {/* Human Verification CAPTCHA */}
-      <CaptchaModal
-        isOpen={showCaptcha}
-        onSuccess={handleCaptchaSuccess}
-        onClose={() => {
-          setShowCaptcha(false);
-          setUpgrading(false);
-          setPendingCheckout(null);
-        }}
-      />
+
 
     </div>
   );

@@ -50,7 +50,7 @@ const PLANS = {
 
 export { PLANS };
 
-export default function PlanCard({ planKey, billingCycle, currentPlan, onSelect, loading }) {
+export default function PlanCard({ planKey, billingCycle, currentPlan, onSelect, loading, betaMode = false }) {
   const plan = PLANS[planKey];
   const price = plan.price[billingCycle];
   const isCurrentPlan = currentPlan === planKey;
@@ -73,7 +73,9 @@ export default function PlanCard({ planKey, billingCycle, currentPlan, onSelect,
       <div className="mb-5">
         <h3 className={`font-mono text-lg font-bold ${plan.color} tracking-wider`}>{plan.name}</h3>
         <div className="mt-2 flex items-end gap-1">
-          {price === 0 ? (
+          {betaMode ? (
+            <span className="font-mono text-3xl font-bold text-primary">Beta Access</span>
+          ) : price === 0 ? (
             <span className="font-mono text-3xl font-bold text-foreground">Free</span>
           ) : (
             <>
@@ -106,15 +108,12 @@ export default function PlanCard({ planKey, billingCycle, currentPlan, onSelect,
         variant={isCurrentPlan ? 'outline' : 'default'}
         disabled={isCurrentPlan || loading}
         onClick={() => {
-          if (!isCurrentPlan && planKey !== 'free') {
-            const priceId = plan.stripePriceIds?.[billingCycle];
-            onSelect(planKey, priceId);
-          } else if (!isCurrentPlan) {
-            onSelect(planKey, null);
+          if (!isCurrentPlan) {
+            onSelect(planKey);
           }
         }}
       >
-        {isCurrentPlan ? 'Current Plan' : isUpgrade ? `Upgrade to ${plan.name}` : `Switch to ${plan.name}`}
+        {isCurrentPlan ? 'Current Plan' : betaMode ? `Select ${plan.name} (Beta)` : (isUpgrade ? `Upgrade to ${plan.name}` : `Switch to ${plan.name}`)}
       </Button>
     </motion.div>
   );

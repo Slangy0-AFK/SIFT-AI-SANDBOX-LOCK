@@ -21,39 +21,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { price_id, billing_cycle } = await req.json();
-
-    if (!price_id) {
-      return Response.json({ error: 'price_id is required' }, { status: 400 });
-    }
-
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
-
-    // Create checkout session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: price_id,
-          quantity: 1,
-        },
-      ],
-      mode: 'subscription',
-      success_url: `${req.headers.get('origin')}/subscription?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get('origin')}/subscription`,
-      metadata: {
-        base44_app_id: Deno.env.get('BASE44_APP_ID'),
-        user_email: user.email,
-        user_id: user.id,
-        billing_cycle: billing_cycle || 'monthly',
-      },
-      client_reference_id: user.id,
-    });
-
+    // BETA MODE - Stripe disabled
     return Response.json({ 
-      success: true, 
-      url: session.url,
-      session_id: session.id 
+      success: false,
+      beta_mode: true,
+      message: 'Payment processing is disabled in beta mode. All features are available for free testing.'
     });
   } catch (error) {
     console.error('[Stripe Checkout] Error:', error.message);
