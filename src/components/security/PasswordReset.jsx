@@ -9,7 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Mail, Key, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function PasswordReset() {
+export default function PasswordReset({ onClose }) {
   const [email, setEmail] = useState('');
   const [resetToken, setResetToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -21,6 +21,7 @@ export default function PasswordReset() {
         action: 'request_reset',
         email,
       });
+      if (response.data?.error) throw new Error(response.data.error);
       return response.data;
     },
     onSuccess: () => {
@@ -39,6 +40,7 @@ export default function PasswordReset() {
         reset_token: token,
         new_password: password,
       });
+      if (response.data?.error) throw new Error(response.data.error);
       return response.data;
     },
     onSuccess: () => {
