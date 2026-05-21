@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Mail, CheckCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
-const GMAIL_CONNECTOR_ID = '6a0f21a2f39d9bf2ebd374e6';
+const GMAIL_CONNECTOR_ID = import.meta.env.VITE_GMAIL_CONNECTOR_ID || '6a0f21a2f39d9bf2ebd374e6';
 
 export default function GmailConnection({ onConnected }) {
   const [isConnected, setIsConnected] = useState(false);

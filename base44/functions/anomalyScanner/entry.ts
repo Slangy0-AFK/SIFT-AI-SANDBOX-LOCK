@@ -13,7 +13,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 // ── AI Attack Detection Signatures (loaded at runtime) ────────────────────
 // These signatures are loaded from environment variable to avoid hardcoding
-const getAIAttackSignatures = () => {
+function getAIAttackSignatures() {
   const sigsEnv = Deno.env.get('AI_ATTACK_SIGNATURES');
   if (sigsEnv) {
     try {
@@ -38,9 +38,7 @@ const getAIAttackSignatures = () => {
     "'; drop table", 'union select', 'langchain', 'autogpt', 'babyagi',
     'agentgpt', 'openai.com/v1', 'gpt-4', 'gpt-3',
   ];
-};
-
-const AI_ATTACK_SIGNATURES = getAIAttackSignatures();
+}
 
 function detectAIAttack(text) {
   if (!text) return null;
@@ -66,6 +64,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
+    const AI_ATTACK_SIGNATURES = getAIAttackSignatures();
     const base44Service = base44.asServiceRole;
     
     console.log('[AEGIS SCANNER] Starting anomaly scan cycle...');
