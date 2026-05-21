@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'threatId is required' }, { status: 400 });
     }
 
-    const threat = await base44.entities.Threat.get(threatId);
+    const threat = await base44.asServiceRole.entities.Threat.get(threatId);
     
     if (!threat) {
       return Response.json({ error: 'Threat not found' }, { status: 404 });
@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
       from_name: 'Aegis Quantum Shield'
     });
 
-    await base44.entities.SecurityEvent.create({
+    await base44.asServiceRole.entities.SecurityEvent.create({
       event_type: 'access_granted',
       threat_id: String(threatId),
       severity: 'warning',

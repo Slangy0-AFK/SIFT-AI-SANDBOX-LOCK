@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
 
     // Create firewall rule
     if (action === 'create_rule') {
-      const rule = await base44.entities.FirewallRule.create({
+      const rule = await base44.asServiceRole.entities.FirewallRule.create({
         rule_name: rule_data.rule_name,
         rule_type: rule_data.rule_type || 'block',
         priority: rule_data.priority || 100,
@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
         tags: rule_data.tags,
       });
 
-      await base44.entities.SecurityEvent.create({
+      await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',
         details: `Firewall rule created: ${rule_data.rule_name} by ${user.email}`,
@@ -52,9 +52,9 @@ Deno.serve(async (req) => {
     if (action === 'update_rule') {
       const { rule_id, updates } = rule_data;
       
-      await base44.entities.FirewallRule.update(rule_id, updates);
+      await base44.asServiceRole.entities.FirewallRule.update(rule_id, updates);
 
-      await base44.entities.SecurityEvent.create({
+      await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',
         details: `Firewall rule updated: ${rule_id} by ${user.email}`,
@@ -68,9 +68,9 @@ Deno.serve(async (req) => {
     if (action === 'delete_rule') {
       const { rule_id } = rule_data;
       
-      await base44.entities.FirewallRule.delete(rule_id);
+      await base44.asServiceRole.entities.FirewallRule.delete(rule_id);
 
-      await base44.entities.SecurityEvent.create({
+      await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',
         details: `Firewall rule deleted: ${rule_id} by ${user.email}`,
@@ -83,13 +83,13 @@ Deno.serve(async (req) => {
     // Toggle rule enabled/disabled
     if (action === 'toggle_rule') {
       const { rule_id } = rule_data;
-      const rule = await base44.entities.FirewallRule.filter({ id: rule_id });
+      const rule = await base44.asServiceRole.entities.FirewallRule.filter({ id: rule_id });
       
       if (rule.length === 0) {
         return Response.json({ error: 'Rule not found' }, { status: 404 });
       }
 
-      await base44.entities.FirewallRule.update(rule_id, {
+      await base44.asServiceRole.entities.FirewallRule.update(rule_id, {
         enabled: !rule[0].enabled,
       });
 
@@ -125,8 +125,8 @@ Deno.serve(async (req) => {
 
     // Get firewall statistics
     if (action === 'get_stats') {
-      const allRules = await base44.entities.FirewallRule.filter({});
-      const allLogs = await base44.entities.FirewallLog.filter({});
+      const allRules = await base44.asServiceRole.entities.FirewallRule.filter({});
+      const allLogs = await base44.asServiceRole.entities.FirewallLog.filter({});
 
       const stats = {
         total_rules: allRules.length,

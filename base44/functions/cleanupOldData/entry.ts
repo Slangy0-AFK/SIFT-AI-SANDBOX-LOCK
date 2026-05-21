@@ -28,14 +28,14 @@ Deno.serve(async (req) => {
     const cleanupResults = [];
 
     for (const entity of entitiesToClean) {
-      const records = await base44.entities[entity.name].filter({});
+      const records = await base44.asServiceRole.entities[entity.name].filter({});
       const toDelete = records.filter(r => {
         const recordDate = new Date(r[entity.field]);
         return recordDate < cutoffDate && r.status === 'destroyed' || r.status === 'completed' || r.status === 'cleared';
       });
 
       for (const record of toDelete) {
-        await base44.entities[entity.name].delete(record.id);
+        await base44.asServiceRole.entities[entity.name].delete(record.id);
       }
 
       cleanupResults.push({
@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    await base44.entities.SecurityEvent.create({
+    await base44.asServiceRole.entities.SecurityEvent.create({
       event_type: 'access_granted',
       severity: 'info',
       details: `Automated cleanup: ${cleanupResults.map(r => `${r.entity} (${r.deleted})`).join(', ')}`,
