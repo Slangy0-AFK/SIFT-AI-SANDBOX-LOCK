@@ -25,9 +25,10 @@ Deno.serve(async (req) => {
         length: 32,
       });
 
-      // Return secret for verification but don't save until verified
+      // Store secret temporarily - MFA not enabled until verified
       const userUpdates = {
         mfa_setup_date: new Date().toISOString(),
+        mfa_secret: secret.base32, // Store but not enabled yet
       };
 
       await base44.auth.updateMe(userUpdates);
@@ -43,8 +44,53 @@ Deno.serve(async (req) => {
         success: true,
         secret: secret.base32,
         otpauth_url: secret.otpauth_url,
-        message: 'Scan QR code with authenticator app',
+        message: 'Scan QR code and verify with a code to enable MFA',
       });
+    }
+
+    if (action === 'confirm') {
+      // New: Confirm MFA setup with a valid TOTP code
+      if (!totp_code) {
+        return Response.json({ error: 'totp_code is required to confirm MFA' }, { status: 400 });
+      }
+
+      const speakeasy = await import('npm:speakeasy@2.0.0');
+      const userData = await base44.auth.me();
+      
+      if (!userData.mfa_secret) {
+        return Response.json({ error: 'MFA setup not initiated. Please call setup first.' }, { status: 400 });
+      }
+
+      if (userData.mfa_enabled) {
+        return Response.json({ error: 'MFA already enabled' }, { status: 400 });
+      }
+
+      const verified = speakeasy.totp.verify({
+        secret: userData.mfa_secret,
+        encoding: 'base32',
+        token: totp_code,
+        window: 2,
+      });
+
+      if (!verified) {
+        return Response.json({ success: false, message: 'Invalid TOTP code' }, { status: 400 });
+      }
+
+      // Now enable MFA
+      await base44.auth.updateMe({
+        mfa_enabled: true,
+        mfa_verified_count: 1,
+        mfa_last_verified: new Date().toISOString(),
+      });
+
+      await base44.entities.SecurityEvent.create({
+        event_type: 'access_granted',
+        severity: 'info',
+        details: `MFA enabled and verified by ${user.email}`,
+        environment: 'production',
+      });
+
+      return Response.json({ success: true, message: 'MFA enabled successfully' });
     }
 
     if (action === 'verify') {
@@ -53,16 +99,14 @@ Deno.serve(async (req) => {
       }
 
       const speakeasy = await import('npm:speakeasy@2.0.0');
-      
       const userData = await base44.auth.me();
-      const mfa_secret = userData.mfa_secret;
 
-      if (!mfa_secret) {
-        return Response.json({ error: 'MFA not configured for this user' }, { status: 400 });
+      if (!userData.mfa_secret || !userData.mfa_enabled) {
+        return Response.json({ error: 'MFA not enabled for this user' }, { status: 400 });
       }
 
       const verified = speakeasy.totp.verify({
-        secret: mfa_secret,
+        secret: userData.mfa_secret,
         encoding: 'base32',
         token: totp_code,
         window: 2,
