@@ -38,40 +38,66 @@ export default function SubscriptionPage() {
   const rawPlan = currentSub?.plan || 'free';
   const currentPlan = PLANS[rawPlan] ? rawPlan : (rawPlan === 'enterprise' ? 'pro' : 'free');
 
-  const upgradeMutation = useMutation({
-    mutationFn: async (planKey) => {
-      const renewalDate = planKey === 'free' 
-        ? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-        : currentSub?.renewal_date;
-      
-      if (currentSub) {
-        return base44.entities.Subscription.update(currentSub.id, { 
-          plan: planKey, 
-          billing_cycle: billingCycle, 
-          status: planKey === 'free' ? 'trial' : 'active',
-          renewal_date: renewalDate
-        });
-      }
-      return base44.entities.Subscription.create({ 
-        user_id: user?.email, 
-        plan: planKey, 
-        billing_cycle: billingCycle, 
-        status: planKey === 'free' ? 'trial' : 'active',
-        renewal_date: renewalDate
+  const stripeCheckoutMutation = useMutation({
+    mutationFn: async ({ planKey, priceId }) => {
+      const response = await base44.functions.invoke('stripeCheckout', {
+        price_id: priceId,
+        billing_cycle: billingCycle,
       });
+      return response.data;
     },
-    onSuccess: (_, planKey) => {
-      queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
-      toast.success(planKey === 'free' 
-        ? '14-day trial started! You will move to Free plan after trial ends.'
-        : `Upgraded to ${PLANS[planKey].name} plan!`);
+    onSuccess: (data) => {
+      if (data.url) {
+        // Check if running in iframe
+        if (window.self !== window.top) {
+          toast.error('Checkout is only available in the published app, not in preview mode.');
+          setUpgrading(false);
+          return;
+        }
+        window.location.href = data.url;
+      }
+    },
+    onError: (error) => {
+      toast.error('Failed to start checkout: ' + error.message);
       setUpgrading(false);
     },
   });
 
-  const handleSelectPlan = (planKey) => {
+  const trialMutation = useMutation({
+    mutationFn: async () => {
+      const renewalDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      
+      if (currentSub) {
+        return base44.entities.Subscription.update(currentSub.id, { 
+          plan: 'free', 
+          billing_cycle: 'monthly', 
+          status: 'trial',
+          renewal_date: renewalDate
+        });
+      }
+      return base44.entities.Subscription.create({ 
+        user_id: user?.id, 
+        plan: 'free', 
+        billing_cycle: 'monthly', 
+        status: 'trial',
+        renewal_date: renewalDate
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+      toast.success('14-day trial started! You will move to Free plan after trial ends.');
+      setUpgrading(false);
+    },
+  });
+
+  const handleSelectPlan = (planKey, priceId) => {
     setUpgrading(true);
-    upgradeMutation.mutate(planKey);
+    
+    if (planKey === 'free') {
+      trialMutation.mutate();
+    } else if (priceId) {
+      stripeCheckoutMutation.mutate({ planKey, priceId });
+    }
   };
 
   const planColor = currentPlan === 'pro' ? 'text-primary' : 'text-muted-foreground';
@@ -180,7 +206,7 @@ export default function SubscriptionPage() {
                billingCycle={billingCycle}
                currentPlan={currentPlan}
                onSelect={handleSelectPlan}
-               loading={upgradeMutation.isPending}
+               loading={stripeCheckoutMutation.isPending || trialMutation.isPending}
              />
            ))}
          </div>

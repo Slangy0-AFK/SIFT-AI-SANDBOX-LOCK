@@ -24,11 +24,15 @@ const PLANS = {
   },
   pro: {
     name: 'Pro',
-    price: { monthly: 29, annual: 23 },
+    price: { monthly: 29.99, annual: 23.99 },
     color: 'text-primary',
     border: 'border-primary/40',
     badge: 'Best Value',
     devices: 5,
+    stripePriceIds: {
+      monthly: 'price_1TZayyLHuXUecdUf7ASTnfwO',
+      annual: 'price_1TZayyLHuXUecdUf281n2Dio',
+    },
     features: [
       { label: 'Everything in Free', included: true },
       { label: 'QRNG Cycles (unlimited)', included: true },
@@ -101,7 +105,14 @@ export default function PlanCard({ planKey, billingCycle, currentPlan, onSelect,
         className={`w-full font-mono text-xs ${isCurrentPlan ? 'opacity-60 cursor-default' : ''}`}
         variant={isCurrentPlan ? 'outline' : 'default'}
         disabled={isCurrentPlan || loading}
-        onClick={() => !isCurrentPlan && onSelect(planKey)}
+        onClick={() => {
+          if (!isCurrentPlan && planKey !== 'free') {
+            const priceId = plan.stripePriceIds?.[billingCycle];
+            onSelect(planKey, priceId);
+          } else if (!isCurrentPlan) {
+            onSelect(planKey, null);
+          }
+        }}
       >
         {isCurrentPlan ? 'Current Plan' : isUpgrade ? `Upgrade to ${plan.name}` : `Switch to ${plan.name}`}
       </Button>
