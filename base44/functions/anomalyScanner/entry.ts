@@ -184,7 +184,52 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── 1. AI-Powered Burst Detection: same IP with 3+ threats ───────────────
+    // ── 1. IP Reputation Scoring — Track repeat offenders ───────────────────
+    // Build reputation scores based on historical behavior across all threats
+    const ipReputation = {};
+    for (const t of allThreats) {
+      if (t.source_ip) {
+        if (!ipReputation[t.source_ip]) {
+          ipReputation[t.source_ip] = {
+            totalThreats: 0,
+            criticalCount: 0,
+            daysActive: 0,
+            firstSeen: new Date(t.created_date),
+            lastSeen: new Date(t.created_date),
+            threatLevels: new Set(),
+            environments: new Set(),
+          };
+        }
+        const rep = ipReputation[t.source_ip];
+        rep.totalThreats++;
+        if (t.threat_level === 'critical' || t.threat_level === 'high') rep.criticalCount++;
+        rep.threatLevels.add(t.threat_level);
+        if (t.environment) rep.environments.add(t.environment);
+        const created = new Date(t.created_date);
+        if (created < rep.firstSeen) rep.firstSeen = created;
+        if (created > rep.lastSeen) rep.lastSeen = created;
+      }
+    }
+    
+    // Calculate reputation scores and flag high-risk IPs
+    for (const [ip, rep] of Object.entries(ipReputation)) {
+      rep.daysActive = Math.max(1, (rep.lastSeen - rep.firstSeen) / (1000 * 60 * 60 * 24));
+      const threatsPerDay = rep.totalThreats / rep.daysActive;
+      
+      // Reputation score: lower = more dangerous
+      let reputationScore = 100;
+      if (rep.totalThreats >= 5) reputationScore -= 20;
+      if (rep.totalThreats >= 10) reputationScore -= 15;
+      if (rep.criticalCount >= 3) reputationScore -= 25;
+      if (threatsPerDay >= 2) reputationScore -= 20;
+      if (rep.threatLevels.has('critical')) reputationScore -= 10;
+      if (rep.environments.size >= 2) reputationScore -= 10; // Multi-environment attacker
+      
+      rep.reputationScore = Math.max(0, reputationScore);
+      rep.threatsPerDay = threatsPerDay;
+    }
+
+    // ── 2. AI-Powered Burst Detection: same IP with 3+ threats ───────────────
     const ipCounts = {};
     for (const t of allThreats) {
       if (t.source_ip) {
@@ -199,6 +244,13 @@ Deno.serve(async (req) => {
         );
         
         if (!existing) {
+          const rep = ipReputation[ip] || { reputationScore: 100, totalThreats: count, daysActive: 1 };
+          
+          // Auto-escalate severity for low-reputation IPs
+          let baseSeverity = count >= 6 ? 'fatal' : count >= 5 ? 'critical' : 'warning';
+          if (rep.reputationScore < 50) baseSeverity = 'critical';
+          if (rep.reputationScore < 30) baseSeverity = 'fatal';
+          
           // AI-powered burst analysis
           try {
             const burstAnalysisPrompt = `Analyze this burst attack pattern in real-time.
@@ -206,6 +258,9 @@ Deno.serve(async (req) => {
 IP Address: ${ip}
 Number of Threats: ${count}
 Time Window: Last 5 minutes
+IP Reputation Score: ${rep.reputationScore}/100 (lower = more dangerous)
+Total Historical Threats: ${rep.totalThreats || count}
+Days Active: ${rep.daysActive?.toFixed(1) || 'N/A'}
 
 Assess:
 1. Is this a coordinated attack, botnet activity, or false positive?
@@ -237,7 +292,7 @@ Return JSON:
             });
 
             const burstAI = JSON.parse(burstAnalysisPrompt);
-            const severity = burstAI.should_escalate || count >= 6 ? 'fatal' : count >= 5 ? 'critical' : 'warning';
+            const severity = burstAI.should_escalate || rep.reputationScore < 40 ? 'fatal' : baseSeverity;
             
             await base44Service.entities.ZeroDayAnomaly.create({
               anomaly_signature: `BURST-${ip.replace(/\./g, '-')}-${Date.now().toString(36)}`,
@@ -245,27 +300,27 @@ Return JSON:
               severity: severity,
               status: 'detected',
               source_ip: ip,
-              confidence_score: burstAI.confidence_score || Math.min(95, 50 + count * 8),
-              notes: `AI-Powered Burst Analysis: ${burstAI.analysis}. Attack type: ${burstAI.attack_type}, Sophistication: ${burstAI.sophistication_level}/10. Total threats: ${count}.`,
+              confidence_score: burstAI.confidence_score || Math.min(95, 50 + count * 8 + (100 - rep.reputationScore) / 5),
+              notes: `AI-Powered Burst Analysis: ${burstAI.analysis}. Attack type: ${burstAI.attack_type}, Sophistication: ${burstAI.sophistication_level}/10. Total threats: ${count}. IP Reputation: ${rep.reputationScore}/100 (repeat offender: ${rep.totalThreats || count} threats over ${rep.daysActive?.toFixed(1) || '?'} days).`,
               environment: 'production',
               obfuscation_level: Math.min(10, Math.floor(burstAI.sophistication_level)),
             });
             
-            console.log(`[AEGIS SCANNER] AI Burst Analysis: ${ip} | ${count} threats | Type: ${burstAI.attack_type} | Confidence: ${burstAI.confidence_score}%`);
+            console.log(`[AEGIS SCANNER] AI Burst Analysis: ${ip} | ${count} threats | Rep: ${rep.reputationScore}/100 | Type: ${burstAI.attack_type} | Confidence: ${burstAI.confidence_score}%`);
             detectedCount++;
           } catch (aiError) {
-            // Fallback to heuristic analysis
+            // Fallback to heuristic analysis with reputation
             await base44Service.entities.ZeroDayAnomaly.create({
               anomaly_signature: `BURST-${ip.replace(/\./g, '-')}-${Date.now().toString(36)}`,
               anomaly_type: 'behavioral',
-              severity: count >= 6 ? 'fatal' : count >= 5 ? 'critical' : 'warning',
+              severity: severity,
               status: 'detected',
               source_ip: ip,
-              confidence_score: Math.min(95, 50 + count * 8),
-              notes: `Burst attack pattern: ${count} threats from ${ip}. Auto-detected by Aegis Scanner.`,
+              confidence_score: Math.min(95, 50 + count * 8 + (100 - rep.reputationScore) / 5),
+              notes: `Burst attack pattern: ${count} threats from ${ip}. IP Reputation: ${rep.reputationScore}/100. Auto-detected by Aegis Scanner.`,
               environment: 'production',
             });
-            console.log(`[AEGIS SCANNER] Burst detected from ${ip}: ${count} threats (heuristic)`);
+            console.log(`[AEGIS SCANNER] Burst detected from ${ip}: ${count} threats | Rep: ${rep.reputationScore}/100 (heuristic)`);
             detectedCount++;
           }
         }
@@ -306,7 +361,38 @@ Return JSON:
       }
     }
     
-    // ── 3. Stale Threat Escalation ─────────────────────────────────────────
+    // ── 3. Reputation-Based Auto-Lock — Low-rep IPs get instant scrutiny ────
+    // Any new threat from IP with reputation < 40 gets auto-locked
+    const lowRepThreats = allThreats.filter(t => 
+      !['destroyed', 'cleared', 'locked'].includes(t.status) &&
+      t.source_ip &&
+      ipReputation[t.source_ip] &&
+      ipReputation[t.source_ip].reputationScore < 40
+    );
+    
+    for (const threat of lowRepThreats.slice(0, 10)) {
+      const rep = ipReputation[threat.source_ip];
+      await base44Service.entities.Threat.update(threat.id, {
+        status: 'locked',
+        threat_level: rep.reputationScore < 20 ? 'critical' : 'high',
+        base_chain_signature: `REP-LOCK-${Date.now().toString(36).toUpperCase()}`,
+        notes: (threat.notes || '') + ` | Auto-locked: IP reputation ${rep.reputationScore}/100 (${rep.totalThreats} historical threats).`,
+      });
+      
+      await base44Service.entities.SecurityEvent.create({
+        event_type: 'threat_locked',
+        threat_id: threat.id,
+        severity: 'warning',
+        details: `Reputation-based auto-lock: ${threat.source_ip} (Rep: ${rep.reputationScore}/100, ${rep.totalThreats} threats over ${rep.daysActive?.toFixed(1)} days)`,
+        environment: threat.environment || 'production',
+        base_chain_step: 'base0',
+      });
+      
+      console.log(`[AEGIS SCANNER] Reputation lock: ${threat.source_ip} | Rep: ${rep.reputationScore}/100`);
+      escalatedCount++;
+    }
+    
+    // ── 4. Stale Threat Escalation ─────────────────────────────────────────
     // Threats stuck in intermediate states for > 1 hour get auto-locked
     const staleStatuses = ['challenged', 'cycle_1', 'cycle_2', 'cycle_3'];
     const staleThreats = allThreats.filter(t => 
@@ -334,7 +420,27 @@ Return JSON:
       console.log(`[AEGIS SCANNER] Stale threat locked: ${threat.id} | IP: ${threat.source_ip}`);
     }
     
-    // ── 4. Escalate uncontained critical anomalies ─────────────────────────
+    for (const threat of staleThreats.slice(0, 10)) {
+      await base44Service.entities.Threat.update(threat.id, {
+        status: 'locked',
+        base_chain_signature: `STALE-LOCK-${Date.now().toString(36).toUpperCase()}`,
+        notes: (threat.notes || '') + ' | Auto-locked: stale threat exceeded 1hr window.',
+      });
+      
+      await base44Service.entities.SecurityEvent.create({
+        event_type: 'threat_locked',
+        threat_id: threat.id,
+        severity: 'warning',
+        details: `Stale threat auto-locked: ${threat.source_ip} was stuck in ${threat.status} for >1hr`,
+        environment: threat.environment || 'production',
+        base_chain_step: 'base1',
+      });
+      
+      escalatedCount++;
+      console.log(`[AEGIS SCANNER] Stale threat locked: ${threat.id} | IP: ${threat.source_ip}`);
+    }
+    
+    // ── 5. Escalate uncontained critical anomalies ─────────────────────────
     const urgentAnomalies = allAnomalies.filter(
       a => (a.severity === 'critical' || a.severity === 'fatal') && 
            a.status === 'detected' &&
@@ -359,7 +465,7 @@ Return JSON:
       console.log(`[AEGIS SCANNER] Escalated anomaly: ${anomaly.id} | Type: ${anomaly.anomaly_type}`);
     }
     
-    // ── 5. Auto-deploy Honeypots & Tarpits for mirror-environment threats ────
+    // ── 6. Auto-deploy Honeypots & Tarpits for mirror-environment threats ────
     // These are permanently active — any threat in mirror/honeypot env gets a session
     const mirrorThreats = allThreats.filter(t =>
       (t.environment === 'mirror' || t.environment === 'honeypot') &&
@@ -399,7 +505,7 @@ Return JSON:
       }
     }
     
-    // ── 6. Keep QRNG active: advance any cycle_1/2/3 threats that haven't moved ──
+    // ── 7. Keep QRNG active: advance any cycle_1/2/3 threats that haven't moved ──
     const stuckCycles = allThreats.filter(t =>
       ['cycle_1', 'cycle_2'].includes(t.status) &&
       t.updated_date && new Date(t.updated_date) < new Date(fiveMinAgo)
@@ -422,7 +528,7 @@ Return JSON:
       console.log(`[AEGIS SCANNER] QRNG advanced: ${threat.source_ip} → ${nextStatus}`);
     }
     
-    // ── 7. Auto-clear low-risk old cleared threats ─────────────────────────
+    // ── 8. Auto-clear low-risk old cleared threats ─────────────────────────
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
     const oldCleared = allThreats.filter(
       t => t.status === 'cleared' && t.updated_date && new Date(t.updated_date) < new Date(oneDayAgo)
@@ -430,7 +536,7 @@ Return JSON:
     // Just log the count, don't delete — preserve audit trail
     cleanedCount = oldCleared.length;
     
-    // ── 8. Log scanner heartbeat ───────────────────────────────────────────
+    // ── 9. Log scanner heartbeat ───────────────────────────────────────────
     await base44Service.entities.SecurityEvent.create({
       event_type: 'qrng_cycle',
       severity: 'info',
@@ -441,6 +547,16 @@ Return JSON:
     
     console.log(`[AEGIS SCANNER] Scan complete: +${detectedCount} detected, +${escalatedCount} escalated`);
     
+    // Build reputation summary for logging
+    const lowRepIPs = Object.entries(ipReputation)
+      .filter(([_, rep]) => rep.reputationScore < 50)
+      .map(([ip, rep]) => `${ip} (${rep.reputationScore}/100, ${rep.totalThreats} threats)`)
+      .slice(0, 5);
+    
+    if (lowRepIPs.length > 0) {
+      console.log(`[AEGIS SCANNER] Low-reputation IPs flagged: ${lowRepIPs.join(', ')}`);
+    }
+    
     return Response.json({
       success: true,
       scan_time: now.toISOString(),
@@ -450,6 +566,8 @@ Return JSON:
         old_cleared_threats: cleanedCount,
         total_active_threats: allThreats.filter(t => !['cleared', 'destroyed'].includes(t.status)).length,
         total_open_anomalies: allAnomalies.filter(a => !['neutralized'].includes(a.status)).length,
+        ip_reputation_tracked: Object.keys(ipReputation).length,
+        low_reputation_ips: lowRepIPs.length,
       }
     });
     
