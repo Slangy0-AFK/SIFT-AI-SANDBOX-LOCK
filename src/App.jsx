@@ -18,6 +18,7 @@ import ZeroDayCenter from './pages/ZeroDayCenter';
 import WorkflowEngine from './pages/WorkflowEngine';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
+import RefundPolicy from './pages/RefundPolicy';
 import ComplianceChecklist from './pages/ComplianceChecklist';
 
 import FirewallDashboard from './pages/FirewallDashboard';
@@ -70,6 +71,7 @@ const AuthenticatedApp = () => {
         <Route path="/workflow" element={<WorkflowEngine />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/compliance" element={<ComplianceChecklist />} />
 
         <Route path="/threat-intel" element={<ThreatIntelligence />} />

@@ -60,8 +60,8 @@ export default function TermsOfService() {
             By subscribing, you authorize recurring charges based on your selected plan and billing cycle (monthly or annual).
           </p>
           <p className="mt-2">
-            <span className="text-foreground font-semibold">Cancellations</span> must be managed through your Google Play account.
-            Refunds are governed by Google Play's refund policy. Downgrading your plan takes effect at the end of your current billing period.
+            <span className="text-foreground font-semibold">Cancellations:</span> Must be managed through your Google Play account.
+            Downgrading your plan takes effect at the end of your current billing period.
           </p>
           <p className="mt-2">
             <span className="text-foreground font-semibold">Device Limits:</span> Free (1 device), Pro (5 devices), Enterprise (unlimited).
@@ -70,7 +70,33 @@ export default function TermsOfService() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">5. User Accounts</h2>
+          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">5. Refund Policy</h2>
+          <p>
+            <span className="text-foreground font-semibold">Google Play Purchases:</span> Refunds for in-app purchases and subscriptions are processed through Google Play Store.
+            You may request a refund within 48 hours of purchase through your Google Play account settings. After 48 hours, refund requests are subject to Google Play's discretion.
+          </p>
+          <p className="mt-2">
+            <span className="text-foreground font-semibold">Direct Refunds:</span> In exceptional circumstances (technical issues, billing errors, or service outages),
+            you may contact our support team at <span className="text-primary font-mono">{CONTACT_EMAIL}</span> to request a refund.
+            Refund eligibility is determined on a case-by-case basis.
+          </p>
+          <p className="mt-2">
+            <span className="text-foreground font-semibold">Refund Timeline:</span> Approved refunds will be processed within 5-10 business days.
+            The refund will be credited to your original payment method. Subscription access will continue until the end of the current billing period.
+          </p>
+          <p className="mt-2">
+            <span className="text-foreground font-semibold">No Refund Scenarios:</span> Refunds are not provided for:
+          </p>
+          <ul className="list-disc list-inside space-y-1 mt-2">
+            <li>Violation of Terms of Service resulting in account termination</li>
+            <li>Failure to use the service after purchase</li>
+            <li>Change of mind after 48 hours (unless covered by Google Play policy)</li>
+            <li>Issues caused by unauthorized modifications or third-party integrations</li>
+          </ul>
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">6. User Accounts</h2>
           <p>
             You are responsible for maintaining the confidentiality of your account credentials. You must notify us immediately
             of any unauthorized use of your account. Accounts are non-transferable. Admin users are responsible for the actions
@@ -79,7 +105,7 @@ export default function TermsOfService() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">6. Intellectual Property</h2>
+          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">7. Intellectual Property</h2>
           <p>
             All content, features, and functionality of the Service — including algorithms, UI, brand assets, and threat detection
             logic — are owned by AEGIS and protected by applicable intellectual property laws. You may not reproduce or distribute
@@ -88,7 +114,7 @@ export default function TermsOfService() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">7. Data Ownership</h2>
+          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">8. Data Ownership</h2>
           <p>
             You retain ownership of all security data, threat logs, and event records generated within your account.
             By using the Service, you grant us a limited license to process and store this data solely to provide and improve the Service.
@@ -97,7 +123,7 @@ export default function TermsOfService() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">8. Disclaimer of Warranties</h2>
+          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">9. Disclaimer of Warranties</h2>
           <p>
             The Service is provided "as is" and "as available" without warranties of any kind. We do not warrant that the Service
             will be uninterrupted, error-free, or completely secure. Cybersecurity tools are aids — they do not guarantee absolute protection.
@@ -106,7 +132,7 @@ export default function TermsOfService() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">9. Limitation of Liability</h2>
+          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">10. Limitation of Liability</h2>
           <p>
             To the maximum extent permitted by law, AEGIS shall not be liable for any indirect, incidental, special, or consequential
             damages arising from your use of the Service, including data breaches, security incidents, or loss of business,
@@ -115,7 +141,7 @@ export default function TermsOfService() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">10. Termination</h2>
+          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">11. Termination</h2>
           <p>
             We reserve the right to suspend or terminate accounts that violate these Terms. Upon termination, your right to use the
             Service ceases immediately. You may export your data within 30 days of termination before it is permanently deleted.
@@ -123,7 +149,7 @@ export default function TermsOfService() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">11. Governing Law</h2>
+          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">12. Governing Law</h2>
           <p>
             These Terms are governed by applicable law. Any disputes shall be resolved through binding arbitration, except where
             prohibited by law. You waive any right to participate in class-action lawsuits against AEGIS.
@@ -131,7 +157,7 @@ export default function TermsOfService() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">12. Changes to Terms</h2>
+          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">13. Changes to Terms</h2>
           <p>
             We may update these Terms at any time. Material changes will be communicated via in-app notification or email with
             at least 14 days notice. Continued use of the Service after the effective date constitutes acceptance of the new Terms.
@@ -139,7 +165,22 @@ export default function TermsOfService() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">13. Contact</h2>
+          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">14. Digital Goods Disclosure</h2>
+          <p>
+            <span className="text-foreground font-semibold">Digital Product Notice:</span> AEGIS Quantum Shield is a digital service providing cybersecurity tools and threat detection capabilities.
+            By purchasing a subscription, you are acquiring access to digital features and services delivered electronically.
+          </p>
+          <p className="mt-2">
+            <span className="text-foreground font-semibold">No Physical Delivery:</span> This product does not include any physical goods. All features, updates, and support are delivered digitally through the application.
+          </p>
+          <p className="mt-2">
+            <span className="text-foreground font-semibold">Subscription Nature:</span> Subscriptions provide ongoing access to threat intelligence databases, real-time scanning, security updates, and cloud-based features.
+            Access continues for the duration of your subscription period.
+          </p>
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">15. Contact</h2>
           <p>For legal inquiries, contact us at:</p>
           <p className="font-mono text-primary mt-1">{CONTACT_EMAIL}</p>
         </section>

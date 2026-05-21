@@ -397,6 +397,11 @@ export default function SettingsPage() {
               <FileText className="w-3.5 h-3.5 text-primary" /> Terms of Service
             </button>
           </Link>
+          <Link to="/refund-policy">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-secondary hover:bg-muted transition-colors font-mono text-[11px] text-foreground">
+              <ClipboardList className="w-3.5 h-3.5 text-primary" /> Refund Policy
+            </button>
+          </Link>
 
         </CardContent>
       </Card>

@@ -120,7 +120,30 @@ export default function PrivacyPolicy() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">11. Contact Us</h2>
+          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">12. International Data Transfers</h2>
+          <p>
+            Your data may be processed and stored in countries outside your jurisdiction. We ensure appropriate safeguards are in place,
+            including standard contractual clauses and compliance with applicable data protection frameworks (GDPR, CCPA, etc.).
+          </p>
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">13. Cookies and Tracking</h2>
+          <p>
+            We use minimal tracking technologies essential for service functionality:
+          </p>
+          <ul className="list-disc list-inside space-y-1 mt-2">
+            <li>Authentication cookies for session management</li>
+            <li>Security tokens for threat detection and prevention</li>
+            <li>Analytics (anonymized) to improve platform performance</li>
+          </ul>
+          <p className="mt-2">
+            You can manage cookie preferences through your browser settings. Disabling essential cookies may affect service functionality.
+          </p>
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">14. Contact Us</h2>
           <p>For privacy-related questions or requests, contact us at:</p>
           <p className="font-mono text-primary mt-1">{CONTACT_EMAIL}</p>
         </section>

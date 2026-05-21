@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Shield, Zap, Lock, Bug, Skull, CheckCircle, ArrowRight, LogOut, Mail, Settings } from 'lucide-react';
 import DeviceScanner from '@/components/security/DeviceScanner';
+import TermsAcceptanceModal from '@/components/legal/TermsAcceptanceModal';
 
 const features = [
   { icon: Shield, title: 'Base Chain Pipeline', desc: '6-step quantum verification', color: 'text-primary' },
@@ -27,8 +28,29 @@ export default function Welcome() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
+    const checkAuthAndTerms = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+        
+        // Check if user needs to accept terms (only for app users, not web)
+        const isAppUser = !currentUser.terms_accepted;
+        const needsTerms = isAppUser && (!currentUser.terms_accepted || currentUser.terms_version !== '2026-05-21');
+        
+        if (needsTerms) {
+          setShowTermsModal(true);
+        }
+      } catch (err) {
+        console.error('Error checking user status:', err);
+      }
+    };
+    
+    checkAuthAndTerms();
+    
     const onboardingComplete = localStorage.getItem('aegis_onboarding_complete');
     if (!onboardingComplete) {
       setNeedsOnboarding(true);
@@ -56,6 +78,11 @@ export default function Welcome() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Terms Acceptance Modal - shows only once */}
+      {showTermsModal && (
+        <TermsAcceptanceModal onComplete={() => setShowTermsModal(false)} />
+      )}
+
       {/* Hero */}
       <div className="flex-1 flex items-center justify-center p-6">
         <motion.div
