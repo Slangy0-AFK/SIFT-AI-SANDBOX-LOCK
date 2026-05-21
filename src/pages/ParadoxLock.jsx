@@ -244,6 +244,7 @@ export default function ParadoxLock() {
       {/* ── Paradox Simulator (always visible for testing) ── */}
       <InternalParadoxSimulator threats={challengedThreats} onClose={() => {}} />
 
+        </div>
         </FeatureGate>
       </div>
     </div>
