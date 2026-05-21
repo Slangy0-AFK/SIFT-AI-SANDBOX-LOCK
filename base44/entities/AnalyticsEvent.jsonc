@@ -1,0 +1,68 @@
+{
+  "name": "AnalyticsEvent",
+  "type": "object",
+  "properties": {
+    "event_name": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "properties": {
+      "type": "string",
+      "description": "JSON string of event properties"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ip_address": {
+      "type": "string"
+    },
+    "user_agent": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_name",
+    "user_email",
+    "timestamp"
+  ],
+  "rls": {
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
