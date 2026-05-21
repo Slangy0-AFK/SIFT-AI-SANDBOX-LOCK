@@ -14,15 +14,19 @@ Deno.serve(async (req) => {
     if (action === 'setup') {
       const speakeasy = await import('npm:speakeasy@2.0.0');
       
+      const userData = await base44.auth.me();
+      if (userData.mfa_enabled) {
+        return Response.json({ error: 'MFA already enabled for this user' }, { status: 400 });
+      }
+      
       const secret = speakeasy.generateSecret({
         name: `Aegis Shield (${user.email})`,
         issuer: 'Aegis Quantum Shield',
         length: 32,
       });
 
+      // Return secret for verification but don't save until verified
       const userUpdates = {
-        mfa_enabled: true,
-        mfa_secret: secret.base32,
         mfa_setup_date: new Date().toISOString(),
       };
 

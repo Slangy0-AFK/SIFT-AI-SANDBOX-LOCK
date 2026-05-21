@@ -6,15 +6,18 @@ Deno.serve(async (req) => {
     
     // Validate request origin - check for Google Cloud Pub/Sub authorization header
     const requestAuth = req.headers.get('authorization');
-    if (!requestAuth) {
-      console.warn('Gmail webhook: Missing authorization header');
+    const webhookSecret = Deno.env.get('GMAIL_WEBHOOK_SECRET');
+    
+    if (!requestAuth || !webhookSecret) {
+      console.warn('Gmail webhook: Missing authorization header or secret');
       return Response.json({ error: 'Unauthorized webhook request' }, { status: 401 });
     }
     
-    // Verify it's a Bearer token from Google Pub/Sub
-    if (!requestAuth.startsWith('Bearer ')) {
-      console.warn('Gmail webhook: Invalid authorization header format');
-      return Response.json({ error: 'Invalid authorization format' }, { status: 401 });
+    // Verify Bearer token matches the secret
+    const tokenMatch = requestAuth.match(/^Bearer\s+(.+)$/);
+    if (!tokenMatch || tokenMatch[1] !== webhookSecret) {
+      console.warn('Gmail webhook: Invalid or mismatched authorization token');
+      return Response.json({ error: 'Invalid authorization token' }, { status: 401 });
     }
     
     const payload = await req.json();

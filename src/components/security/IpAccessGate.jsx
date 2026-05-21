@@ -18,26 +18,20 @@ export default function IpAccessGate({ children }) {
   const checkAccess = async () => {
     try {
       const response = await base44.functions.invoke('checkIpAccess', {});
+      if (!response?.data) {
+        setAllowed(false);
+        setChecking(false);
+        return;
+      }
+
       const data = response.data;
-      
       setUserIp(data.ip);
       setWarning(data.warning);
-      
-      if (data.allowed) {
-        setAllowed(true);
-      } else {
-        setAllowed(false);
-      }
+      setAllowed(data.allowed === true);
     } catch (error) {
-      // If function fails, check if it's 403 (blocked) or other error
-      if (error.response?.status === 403) {
-        setAllowed(false);
-        setUserIp(error.response.data?.ip || 'unknown');
-      } else {
-        // Other error - allow access but show warning
-        setAllowed(true);
-        setWarning('IP check service unavailable');
-      }
+      // On error, deny access by default (fail-closed)
+      setAllowed(false);
+      setUserIp(error.response?.data?.ip || 'unknown');
     } finally {
       setChecking(false);
     }
