@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
 
     // Check expiration
     if (new Date(invitation.expires_at) < new Date()) {
-      await base44.entities.Invitation.update(invitation.id, { status: 'expired' });
+      await base44.asServiceRole.entities.Invitation.update(invitation.id, { status: 'expired' });
       return Response.json({ error: 'This invitation has expired' }, { status: 400 });
     }
 
@@ -57,8 +57,8 @@ Deno.serve(async (req) => {
       existingUser = users[0];
     }
 
-    // Update invitation as accepted
-    const updateData: any = {
+    // Update invitation as accepted (using service role for authorization)
+    const updateData = {
       status: 'accepted',
       accepted_at: new Date().toISOString(),
     };
@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
       updateData.accepted_by_user_id = existingUser.id;
     }
 
-    await base44.entities.Invitation.update(invitation.id, updateData);
+    await base44.asServiceRole.entities.Invitation.update(invitation.id, updateData);
 
     return Response.json({
       success: true,
