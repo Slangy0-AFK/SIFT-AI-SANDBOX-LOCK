@@ -48,8 +48,6 @@ const getAIAttackSignatures = () => {
   ];
 };
 
-const AI_ATTACK_SIGNATURES = getAIAttackSignatures();
-
 function detectAIAttack(text) {
   if (!text) return null;
   const lower = text.toLowerCase();
@@ -123,6 +121,7 @@ Deno.serve(async (req) => {
     const targetAnomalyId = event?.entity_name === 'ZeroDayAnomaly' ? entity_id || event?.entity_id : null;
     
     const base44Service = base44.asServiceRole;
+    const AI_ATTACK_SIGNATURES = getAIAttackSignatures();
 
     // ── Handle ZeroDayAnomaly trigger ──────────────────────────────────────
     if (targetAnomalyId && !targetThreatId) {
@@ -203,6 +202,10 @@ async function processThreat(threat, base44Service) {
 
   // ── AI Attack Auto-Reject ──────────────────────────────────────────────
   const combined = [threat.notes, threat.paradox_response, threat.base_chain_signature].join(' ');
+  
+  // Initialize updates object
+  const updates = {};
+  
   // ── AI-Powered Real-Time Threat Analysis ────────────────────────────────
   try {
     const aiAnalysisPrompt = `Analyze this potential security threat in real-time. Provide accurate classification and threat assessment.
@@ -415,14 +418,12 @@ Return JSON:
   }
   
   // Update threat record with AI-enhanced data
-  const updates = {
-    status: newStatus,
-    agent_type: agentType,
-    qrng_cycle: cycles + 1,
-    threat_level: updates.threat_level || threat.threat_level,
-    encoding_method: updates.encoding_method || threat.encoding_method,
-    obfuscation_detected: updates.obfuscation_detected || threat.obfuscation_detected,
-  };
+  updates.status = newStatus;
+  updates.agent_type = agentType;
+  updates.qrng_cycle = cycles + 1;
+  updates.threat_level = updates.threat_level || threat.threat_level;
+  updates.encoding_method = updates.encoding_method || threat.encoding_method;
+  updates.obfuscation_detected = updates.obfuscation_detected || threat.obfuscation_detected;
   
   // Generate base chain signature on lock/destroy
   if (newStatus === 'locked' || newStatus === 'destroyed') {

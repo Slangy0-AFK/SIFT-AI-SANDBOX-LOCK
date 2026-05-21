@@ -7,30 +7,39 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * This function uses service role to access all data without user authentication.
  */
 
-const SUSPICIOUS_PATHS = [
-  '/tmp',
-  '/etc/passwd',
-  '/etc/shadow',
-  '/proc/self/environ',
-  '/proc/self/cmdline',
-  '/proc/self/maps',
-  '/var/log',
-  '/root/.ssh',
-  '/home',
-];
+// Load signatures from environment variables
+function getSuspiciousPaths() {
+  const pathsEnv = Deno.env.get('SUSPICIOUS_PATHS');
+  if (pathsEnv) {
+    try {
+      return JSON.parse(pathsEnv);
+    } catch {
+      console.warn('[AUTO-SCAN] Failed to parse SUSPICIOUS_PATHS from env');
+    }
+  }
+  // Fallback paths if env var not set
+  return [
+    '/tmp', '/etc/passwd', '/etc/shadow', '/proc/self/environ',
+    '/proc/self/cmdline', '/proc/self/maps', '/var/log', '/root/.ssh', '/home',
+  ];
+}
 
-const MALWARE_SIGNATURES = [
-  'eval(base64_decode',
-  'exec($_POST',
-  'system($_GET',
-  'passthru(',
-  'shell_exec(',
-  '/bin/bash -i',
-  'nc -e /bin/sh',
-  'python -c "import socket',
-  'curl | bash',
-  'wget -O- | sh',
-];
+function getMalwareSignatures() {
+  const sigsEnv = Deno.env.get('MALWARE_SIGNATURES');
+  if (sigsEnv) {
+    try {
+      return JSON.parse(sigsEnv);
+    } catch {
+      console.warn('[AUTO-SCAN] Failed to parse MALWARE_SIGNATURES from env');
+    }
+  }
+  // Fallback signatures if env var not set
+  return [
+    'eval(base64_decode', 'exec($_POST', 'system($_GET', 'passthru(',
+    'shell_exec(', '/bin/bash -i', 'nc -e /bin/sh', 'python -c "import socket',
+    'curl | bash', 'wget -O- | sh',
+  ];
+}
 
 async function checkFileAccess(path) {
   try {
@@ -49,7 +58,7 @@ async function checkFileAccess(path) {
   }
 }
 
-async function checkTmpForMalware() {
+async function checkTmpForMalware(malwareSignatures) {
   const findings = [];
   try {
     for await (const entry of Deno.readDir('/tmp')) {
@@ -69,7 +78,7 @@ async function checkTmpForMalware() {
       if (entry.isFile) {
         try {
           const content = await Deno.readTextFile(fullPath);
-          for (const sig of MALWARE_SIGNATURES) {
+          for (const sig of malwareSignatures) {
             if (content.toLowerCase().includes(sig.toLowerCase())) {
               findings.push({ path: fullPath, reason: `Malware signature: "${sig}"` });
               break;
@@ -140,10 +149,14 @@ Deno.serve(async (req) => {
     
     console.log(`[AUTO-SCAN] Found ${activeDevices.length} active devices`);
 
+    // Load signatures at runtime
+    const SUSPICIOUS_PATHS = getSuspiciousPaths();
+    const MALWARE_SIGNATURES = getMalwareSignatures();
+
     // Run system-level checks (these are environment-wide, not per-device)
     const [fileAccessResults, malwareFindings, envFindings, baseChainResults] = await Promise.all([
       Promise.all(SUSPICIOUS_PATHS.map(checkFileAccess)),
-      checkTmpForMalware(),
+      checkTmpForMalware(MALWARE_SIGNATURES),
       Promise.resolve(checkEnvironmentExposure()),
       verifyBaseChain(),
     ]);
