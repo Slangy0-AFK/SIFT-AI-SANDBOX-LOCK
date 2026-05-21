@@ -215,45 +215,34 @@ export default function SettingsPage() {
 
       <div className="grid grid-cols-2 gap-6">
         {/* Defense Modules — Permanently Active */}
-        <Card className="border-green-500/30">
-          <CardHeader>
-            <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
-              <Shield className="w-4 h-4 text-primary" /> DEFENSE MODULES
-              <span className="ml-auto flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/30">
+        <Card className="border-primary/20">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-primary" />
+              <CardTitle className="font-mono text-xs tracking-wider">DEFENSE MODULES</CardTitle>
+              <div className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded bg-green-500/10">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="font-mono text-[8px] text-green-400 tracking-widest">ALL SYSTEMS ACTIVE</span>
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Permanent lock banner */}
-            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-amber-400/10 border border-amber-400/20">
-              <Lock className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-              <p className="font-mono text-[9px] text-amber-400 leading-relaxed">
-                SYSTEM-LOCKED — These modules are permanently enforced and cannot be disabled. They form the core secret-sauce security architecture.
-              </p>
-            </div>
-            {[
-              { label: 'Paradox Lock Gate', desc: 'Theological paradox authentication — always on', icon: Lock, color: 'text-primary' },
-              { label: 'QRNG Cycles', desc: 'Quantum random number threat destruction cycles', icon: Atom, color: 'text-primary' },
-              { label: 'Mirror Environment', desc: 'Mirrored deception environment — active 24/7', icon: Shield, color: 'text-primary' },
-              { label: 'Honeypots', desc: 'Fake service traps — permanently deployed', icon: Bug, color: 'text-amber-400' },
-              { label: 'Tarpits', desc: 'Connection throttling traps — always engaged', icon: Clock, color: 'text-accent' },
-            ].map(({ label, desc, icon: Icon, color }) => (
-              <div key={label} className="flex items-center justify-between p-3 rounded-lg bg-green-500/5 border border-green-500/10">
-                <div className="flex items-center gap-3">
-                  <Icon className={`w-4 h-4 ${color}`} />
-                  <div>
-                    <Label className="font-mono text-[11px] text-foreground">{label}</Label>
-                    <p className="font-mono text-[9px] text-muted-foreground">{desc}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-[9px] text-green-400 tracking-wider">ACTIVE</span>
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                </div>
+                <span className="font-mono text-[8px] text-green-400 tracking-widest">ACTIVE</span>
               </div>
-            ))}
+            </div>
+            <p className="font-mono text-[9px] text-muted-foreground mt-2">System-locked. Core security architecture permanently enforced.</p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Paradox Lock', icon: Lock, color: 'text-primary' },
+                { label: 'QRNG Cycles', icon: Atom, color: 'text-primary' },
+                { label: 'Mirror Env', icon: Shield, color: 'text-primary' },
+                { label: 'Honeypots', icon: Bug, color: 'text-amber-400' },
+                { label: 'Tarpits', icon: Clock, color: 'text-accent' },
+              ].map(({ label, icon: Icon, color }) => (
+                <div key={label} className="flex items-center gap-2 p-2.5 rounded-lg bg-secondary/30 border border-border/50">
+                  <Icon className={`w-3.5 h-3.5 ${color} flex-shrink-0`} />
+                  <span className="font-mono text-[10px] text-foreground flex-1">{label}</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
