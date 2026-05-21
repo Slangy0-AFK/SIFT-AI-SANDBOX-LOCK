@@ -21,6 +21,7 @@ import PhoneRecovery from '../components/security/PhoneRecovery';
 import EmailProviderSetup from '../components/settings/EmailProviderSetup';
 import { Badge } from '@/components/ui/badge';
 import TheologicalGateway from '@/components/paradox/TheologicalGateway';
+import AdminKeyClaim from '../components/settings/AdminKeyClaim';
 
 export default function SettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState('');
@@ -215,7 +216,10 @@ export default function SettingsPage() {
 
         <TabsContent value="general" className="space-y-6 mt-4">
 
-      <div className="grid grid-cols-2 gap-6">
+        {/* Admin Key Claim - Only for dougleslie00@gmail.com */}
+        <AdminKeyClaim />
+
+        <div className="grid grid-cols-2 gap-6">
         {/* Defense Modules — Permanently Active */}
         <Card className="border-primary/20">
           <CardHeader className="pb-3">
