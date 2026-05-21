@@ -11,6 +11,13 @@ export default function InstallPrompt() {
   const [showInstructions, setShowInstructions] = useState(false);
 
   useEffect(() => {
+    // Only show on Android devices
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    if (!isAndroid) {
+      setShowPrompt(false);
+      return;
+    }
+
     // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setInstalled(true);
