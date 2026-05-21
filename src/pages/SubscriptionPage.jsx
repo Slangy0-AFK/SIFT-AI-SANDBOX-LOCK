@@ -55,7 +55,7 @@ export default function SubscriptionPage() {
     upgradeMutation.mutate(planKey);
   };
 
-  const planColor = currentPlan === 'enterprise' ? 'text-amber-400' : currentPlan === 'pro' ? 'text-primary' : 'text-muted-foreground';
+  const planColor = currentPlan === 'pro' ? 'text-primary' : 'text-muted-foreground';
   const activeDevices = devices.filter(d => d.status === 'active');
   const maxDevices = PLANS[currentPlan]?.devices || 1;
 
@@ -72,11 +72,11 @@ export default function SubscriptionPage() {
       </div>
 
       {/* Current plan status */}
-      <Card className={`border-2 ${currentPlan === 'enterprise' ? 'border-amber-400/30' : currentPlan === 'pro' ? 'border-primary/30' : 'border-border'}`}>
+      <Card className={`border-2 ${currentPlan === 'pro' ? 'border-primary/30' : 'border-border'}`}>
         <CardContent className="pt-5 pb-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-xl ${currentPlan === 'free' ? 'bg-secondary' : currentPlan === 'pro' ? 'bg-primary/10' : 'bg-amber-400/10'} border border-border`}>
+              <div className={`p-3 rounded-xl ${currentPlan === 'pro' ? 'bg-primary/10' : 'bg-secondary'} border border-border`}>
                 <Shield className={`w-6 h-6 ${planColor}`} />
               </div>
               <div>
@@ -84,7 +84,7 @@ export default function SubscriptionPage() {
                   <span className="font-mono text-sm font-bold text-foreground">
                     {PLANS[currentPlan].name} Plan
                   </span>
-                  <Badge className={`font-mono text-[8px] ${currentPlan === 'free' ? 'bg-secondary text-muted-foreground' : currentPlan === 'pro' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-amber-400/10 text-amber-400 border-amber-400/20'} border`}>
+                  <Badge className={`font-mono text-[8px] ${currentPlan === 'pro' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-secondary text-muted-foreground'} border`}>
                     {currentSub?.status?.toUpperCase() || 'FREE'}
                   </Badge>
                 </div>
@@ -148,8 +148,8 @@ export default function SubscriptionPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-           {['free', 'pro', 'enterprise'].map(planKey => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+           {['free', 'pro'].map(planKey => (
              <PlanCard
                key={planKey}
                planKey={planKey}
