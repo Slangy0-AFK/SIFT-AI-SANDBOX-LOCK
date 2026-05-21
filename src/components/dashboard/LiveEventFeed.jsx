@@ -5,8 +5,6 @@ import { Shield, Lock, Zap, Bug, AlertTriangle, CheckCircle } from 'lucide-react
 
 const eventIcons = {
   base_chain_compute: Zap,
-  paradox_challenge: Lock,
-  qrng_cycle: Shield,
   honeypot_trigger: Bug,
   tarpit_engage: Bug,
   threat_locked: Lock,
@@ -23,12 +21,20 @@ const severityColors = {
 };
 
 export default function LiveEventFeed({ events = [] }) {
+  // Format time in user's timezone
+  const formatTime = (dateString) => {
+    if (!dateString) return '--:--:--';
+    return new Date(dateString).toLocaleTimeString([], { 
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+  };
+
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="px-5 py-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <h3 className="font-mono text-xs font-semibold tracking-wider">LIVE EVENT FEED</h3>
+          <h3 className="font-mono text-xs font-semibold tracking-wider">EVENT TIMELINE</h3>
         </div>
         <span className="font-mono text-[10px] text-muted-foreground">{events.length} events</span>
       </div>
@@ -60,18 +66,13 @@ export default function LiveEventFeed({ events = [] }) {
                       <span className="font-mono text-[10px] font-semibold text-foreground">
                         {event.event_type?.replace(/_/g, ' ').toUpperCase()}
                       </span>
-                      {event.environment && event.environment !== 'production' && (
-                        <span className="font-mono text-[8px] px-1.5 py-0.5 rounded bg-accent/10 text-accent border border-accent/20">
-                          {event.environment.toUpperCase()}
-                        </span>
-                      )}
                     </div>
-                    <p className="font-mono text-[10px] text-muted-foreground mt-0.5 truncate">
+                    <p className="font-mono text-[9px] text-muted-foreground mt-0.5 truncate">
                       {event.details || 'No details'}
                     </p>
                   </div>
                   <span className="font-mono text-[9px] text-muted-foreground whitespace-nowrap">
-                    {event.created_date ? format(new Date(event.created_date), 'HH:mm:ss') : '--:--:--'}
+                    {formatTime(event.created_date)}
                   </span>
                 </motion.div>
               );

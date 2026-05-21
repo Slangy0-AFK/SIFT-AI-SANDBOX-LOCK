@@ -65,8 +65,10 @@ export default function ThreatLog() {
 
   const neutralizeAllMutation = useMutation({
     mutationFn: async () => {
-      const unresolved = filteredThreats.filter(t => !['cleared', 'destroyed'].includes(t.status));
+      const unresolved = threats.filter(t => !['cleared', 'destroyed'].includes(t.status));
       await Promise.all(unresolved.map(t => base44.entities.Threat.update(t.id, { status: 'destroyed' })));
+      await new Promise(resolve => setTimeout(resolve, 500)); // Wait for DB update
+      await refetch(); // Force refresh
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['threats-log'] });
@@ -80,6 +82,15 @@ export default function ThreatLog() {
     const matchStatus = statusFilter === 'all' || t.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  // Format time in user's timezone
+  const formatTime = (dateString) => {
+    if (!dateString) return '--';
+    return new Date(dateString).toLocaleString([], { 
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+  };
 
   const isResolving = (threatId) => resolveThreatMutation.isPending && resolveThreatMutation.variables === threatId;
   const isNeutralizing = (threatId) => neutralizeThreatMutation.isPending && neutralizeThreatMutation.variables === threatId;
@@ -143,13 +154,13 @@ export default function ThreatLog() {
           <div className="flex items-center justify-between">
             <CardTitle className="font-mono text-xs tracking-wider">THREAT REGISTRY</CardTitle>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] text-muted-foreground">{filteredThreats.length} threats</span>
+              <span className="font-mono text-[10px] text-muted-foreground">{threats.filter(t => !['cleared', 'destroyed'].includes(t.status)).length} active</span>
               <Button
                 size="sm"
                 variant="destructive"
                 className="h-7 px-3 font-mono text-[8px]"
                 onClick={() => neutralizeAllMutation.mutate()}
-                disabled={neutralizeAllMutation.isPending || !filteredThreats.some(t => !['cleared', 'destroyed'].includes(t.status))}
+                disabled={neutralizeAllMutation.isPending || !threats.some(t => !['cleared', 'destroyed'].includes(t.status))}
                 title="Neutralize all active threats"
               >
                 {neutralizeAllMutation.isPending ? 'Neutralizing...' : 'NEUTRALIZE ALL'}
@@ -199,7 +210,7 @@ export default function ThreatLog() {
                         </Badge>
                       </TableCell>
                       <TableCell className="font-mono text-[9px] text-muted-foreground">
-                        {threat.created_date ? format(new Date(threat.created_date), 'MMM d, HH:mm') : '--'}
+                        {formatTime(threat.created_date)}
                       </TableCell>
                       <TableCell className="text-right">
                         {isUnresolved && (
@@ -265,7 +276,7 @@ export default function ThreatLog() {
                     <p className="font-mono text-[9px] text-muted-foreground mt-0.5 truncate">{event.details}</p>
                   </div>
                   <span className="font-mono text-[9px] text-muted-foreground whitespace-nowrap">
-                    {event.created_date ? format(new Date(event.created_date), 'HH:mm:ss') : ''}
+                    {formatTime(event.created_date)}
                   </span>
                 </div>
               ))}

@@ -15,7 +15,6 @@ import { format } from 'date-fns';
 import FeatureGate from '@/components/subscription/FeatureGate';
 import AuditLogExport from '../components/settings/AuditLogExport';
 import MFASetup from '../components/security/MFASetup';
-import EncryptionTool from '../components/security/EncryptionTool';
 import PasswordReset from '../components/security/PasswordReset';
 import PhoneRecovery from '../components/security/PhoneRecovery';
 import EmailProviderSetup from '../components/settings/EmailProviderSetup';
@@ -291,7 +290,6 @@ export default function SettingsPage() {
       {/* Security Tools */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <MFASetup />
-        <EncryptionTool />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

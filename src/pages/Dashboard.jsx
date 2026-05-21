@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
-import { Shield, AlertTriangle, Lock, Skull, Eye, ChevronDown, ChevronUp, Atom, Bug, Radiation, GitBranch, ShieldAlert, FileText, LogOut } from 'lucide-react';
+import { Shield, AlertTriangle, Lock, Skull, Eye, ChevronDown, ChevronUp, Bug, Radiation, GitBranch, ShieldAlert, FileText, LogOut } from 'lucide-react';
 
 import ThreatCounter from '../components/dashboard/ThreatCounter';
 import LiveEventFeed from '../components/dashboard/LiveEventFeed';
@@ -114,7 +114,6 @@ export default function Dashboard() {
         <ThreatCounter label="Active Threats" value={activeThreats.length} color="text-accent" icon={AlertTriangle} />
         <ThreatCounter label="Locked Out" value={lockedThreats.length} color="text-amber-400" icon={Lock} />
         <ThreatCounter label="Destroyed" value={destroyedThreats.length} color="text-destructive" icon={Skull} />
-        <ThreatCounter label="Total Monitored" value={threats.length} color="text-primary" icon={Eye} />
       </div>
 
       {/* Predictive Risk Score */}
@@ -131,16 +130,12 @@ export default function Dashboard() {
 
       {/* Secondary panels — collapsible on mobile, side-by-side on desktop */}
       <div className="md:hidden space-y-3">
-        <CollapsiblePanel title="QRNG Cycle Monitor" icon={Atom} defaultOpen={false}>
-          <QRNGCycleDisplay />
-        </CollapsiblePanel>
         <CollapsiblePanel title="Mirror / Honeypot Status" icon={Bug} defaultOpen={false}>
           <MirrorStatus honeypotSessions={honeypots} />
         </CollapsiblePanel>
       </div>
 
-      <div className="hidden md:grid grid-cols-2 gap-6">
-        <QRNGCycleDisplay />
+      <div className="hidden md:grid grid-cols-1 gap-6">
         <MirrorStatus honeypotSessions={honeypots} />
       </div>
 
