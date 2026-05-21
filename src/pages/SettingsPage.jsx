@@ -21,7 +21,6 @@ import PhoneRecovery from '../components/security/PhoneRecovery';
 import EmailProviderSetup from '../components/settings/EmailProviderSetup';
 import { Badge } from '@/components/ui/badge';
 import TheologicalGateway from '@/components/paradox/TheologicalGateway';
-import BiometricSetup from '@/components/security/BiometricSetup';
 
 export default function SettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState('');
@@ -288,10 +287,6 @@ export default function SettingsPage() {
       {/* Security Tools */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <MFASetup />
-        <BiometricSetup />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <EncryptionTool />
       </div>
 
