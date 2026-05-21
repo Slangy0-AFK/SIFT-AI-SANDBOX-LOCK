@@ -194,6 +194,10 @@ Deno.serve(async (req) => {
     // ── AGENT CORRIDOR ─────────────────────────────────────────────────────────
     // External agents must provide ZKP — no simple Yes/No accepted
     if (action === 'agent_authenticate') {
+      if (!user) {
+        return Response.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });
+      }
+
       const inputCheck = sanitizeInput(response || '');
       if (!inputCheck.valid) {
         return Response.json({ error: 'Invalid input', reason: inputCheck.reason }, { status: 400 });
