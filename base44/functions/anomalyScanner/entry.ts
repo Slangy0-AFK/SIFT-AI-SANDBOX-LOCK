@@ -1,0 +1,191 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
+/**
+ * Anomaly Scanner — Scheduled every 5 minutes
+ * 
+ * Scans all active threat/anomaly data for patterns:
+ * - Repeated IPs across multiple threats
+ * - Stale threats stuck in intermediate states
+ * - High-severity anomalies not yet contained
+ * - Burst detection (many threats from same subnet)
+ * - Generates ZeroDayAnomaly records for suspicious patterns
+ */
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const base44Service = base44.asServiceRole;
+    
+    console.log('[AEGIS SCANNER] Starting anomaly scan cycle...');
+    
+    const now = new Date();
+    const fiveMinAgo = new Date(now.getTime() - 5 * 60 * 1000).toISOString();
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
+    
+    // Fetch data in parallel
+    const [allThreats, allAnomalies, recentEvents] = await Promise.all([
+      base44Service.entities.Threat.list('-created_date', 200),
+      base44Service.entities.ZeroDayAnomaly.list('-created_date', 100),
+      base44Service.entities.SecurityEvent.list('-created_date', 50),
+    ]);
+    
+    let detectedCount = 0;
+    let escalatedCount = 0;
+    let cleanedCount = 0;
+    
+    // ── 1. Burst Detection: same IP with 3+ threats ────────────────────────
+    const ipCounts = {};
+    for (const t of allThreats) {
+      if (t.source_ip) {
+        ipCounts[t.source_ip] = (ipCounts[t.source_ip] || 0) + 1;
+      }
+    }
+    
+    for (const [ip, count] of Object.entries(ipCounts)) {
+      if (count >= 3) {
+        // Check if we already have an anomaly for this IP recently
+        const existing = allAnomalies.find(
+          a => a.source_ip === ip && a.anomaly_type === 'behavioral' && a.status !== 'neutralized'
+        );
+        
+        if (!existing) {
+          await base44Service.entities.ZeroDayAnomaly.create({
+            anomaly_signature: `BURST-${ip.replace(/\./g, '-')}-${Date.now().toString(36)}`,
+            anomaly_type: 'behavioral',
+            severity: count >= 6 ? 'fatal' : count >= 5 ? 'critical' : 'warning',
+            status: 'detected',
+            source_ip: ip,
+            confidence_score: Math.min(95, 50 + count * 8),
+            notes: `Burst attack pattern: ${count} threats from ${ip}. Auto-detected by Aegis Scanner.`,
+            environment: 'production',
+          });
+          
+          console.log(`[AEGIS SCANNER] Burst detected from ${ip}: ${count} threats`);
+          detectedCount++;
+        }
+      }
+    }
+    
+    // ── 2. Subnet Sweep Detection: /24 subnet with 5+ different IPs ─────────
+    const subnetCounts = {};
+    for (const t of allThreats) {
+      if (t.source_ip) {
+        const subnet = t.source_ip.split('.').slice(0, 3).join('.');
+        if (!subnetCounts[subnet]) subnetCounts[subnet] = new Set();
+        subnetCounts[subnet].add(t.source_ip);
+      }
+    }
+    
+    for (const [subnet, ips] of Object.entries(subnetCounts)) {
+      if (ips.size >= 5) {
+        const existingSubnet = allAnomalies.find(
+          a => a.notes?.includes(subnet) && a.anomaly_type === 'behavioral' && a.status !== 'neutralized'
+        );
+        
+        if (!existingSubnet) {
+          await base44Service.entities.ZeroDayAnomaly.create({
+            anomaly_signature: `SUBNET-SWEEP-${subnet.replace(/\./g, '-')}-${Date.now().toString(36)}`,
+            anomaly_type: 'behavioral',
+            severity: 'critical',
+            status: 'detected',
+            source_ip: subnet + '.0',
+            confidence_score: 85,
+            notes: `Subnet sweep detected: ${ips.size} unique IPs from ${subnet}.0/24. Possible coordinated attack.`,
+            environment: 'production',
+          });
+          
+          console.log(`[AEGIS SCANNER] Subnet sweep: ${subnet}.0/24 — ${ips.size} IPs`);
+          detectedCount++;
+        }
+      }
+    }
+    
+    // ── 3. Stale Threat Escalation ─────────────────────────────────────────
+    // Threats stuck in intermediate states for > 1 hour get auto-locked
+    const staleStatuses = ['challenged', 'cycle_1', 'cycle_2', 'cycle_3'];
+    const staleThreats = allThreats.filter(t => 
+      staleStatuses.includes(t.status) && 
+      t.updated_date && new Date(t.updated_date) < new Date(oneHourAgo)
+    );
+    
+    for (const threat of staleThreats.slice(0, 10)) {
+      await base44Service.entities.Threat.update(threat.id, {
+        status: 'locked',
+        base_chain_signature: `STALE-LOCK-${Date.now().toString(36).toUpperCase()}`,
+        notes: (threat.notes || '') + ' | Auto-locked: stale threat exceeded 1hr window.',
+      });
+      
+      await base44Service.entities.SecurityEvent.create({
+        event_type: 'threat_locked',
+        threat_id: threat.id,
+        severity: 'warning',
+        details: `Stale threat auto-locked: ${threat.source_ip} was stuck in ${threat.status} for >1hr`,
+        environment: threat.environment || 'production',
+        base_chain_step: 'base1',
+      });
+      
+      escalatedCount++;
+      console.log(`[AEGIS SCANNER] Stale threat locked: ${threat.id} | IP: ${threat.source_ip}`);
+    }
+    
+    // ── 4. Escalate uncontained critical anomalies ─────────────────────────
+    const urgentAnomalies = allAnomalies.filter(
+      a => (a.severity === 'critical' || a.severity === 'fatal') && 
+           a.status === 'detected' &&
+           a.updated_date && new Date(a.updated_date) < new Date(fiveMinAgo)
+    );
+    
+    for (const anomaly of urgentAnomalies.slice(0, 5)) {
+      await base44Service.entities.ZeroDayAnomaly.update(anomaly.id, {
+        status: 'escalated',
+        mitigation_applied: 'Escalated by automated scanner — manual review required',
+      });
+      
+      await base44Service.entities.SecurityEvent.create({
+        event_type: 'honeypot_trigger',
+        severity: 'critical',
+        details: `Critical anomaly escalated: ${anomaly.anomaly_signature} (${anomaly.anomaly_type}) — uncontained >5min`,
+        environment: anomaly.environment || 'production',
+        base_chain_step: 'base12',
+      });
+      
+      escalatedCount++;
+      console.log(`[AEGIS SCANNER] Escalated anomaly: ${anomaly.id} | Type: ${anomaly.anomaly_type}`);
+    }
+    
+    // ── 5. Auto-clear low-risk old cleared threats ─────────────────────────
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+    const oldCleared = allThreats.filter(
+      t => t.status === 'cleared' && t.updated_date && new Date(t.updated_date) < new Date(oneDayAgo)
+    );
+    // Just log the count, don't delete — preserve audit trail
+    cleanedCount = oldCleared.length;
+    
+    // ── 6. Log scanner heartbeat ───────────────────────────────────────────
+    await base44Service.entities.SecurityEvent.create({
+      event_type: 'qrng_cycle',
+      severity: 'info',
+      details: `Anomaly scanner cycle complete: ${detectedCount} new anomalies, ${escalatedCount} escalated, ${cleanedCount} old cleared threats`,
+      environment: 'production',
+      base_chain_step: 'qrng',
+    });
+    
+    console.log(`[AEGIS SCANNER] Scan complete: +${detectedCount} detected, +${escalatedCount} escalated`);
+    
+    return Response.json({
+      success: true,
+      scan_time: now.toISOString(),
+      stats: {
+        new_anomalies_detected: detectedCount,
+        threats_escalated: escalatedCount,
+        old_cleared_threats: cleanedCount,
+        total_active_threats: allThreats.filter(t => !['cleared', 'destroyed'].includes(t.status)).length,
+        total_open_anomalies: allAnomalies.filter(a => !['neutralized'].includes(a.status)).length,
+      }
+    });
+    
+  } catch (error) {
+    console.error('[AEGIS SCANNER] Error:', error.message);
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});
