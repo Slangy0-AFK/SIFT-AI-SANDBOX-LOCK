@@ -4,7 +4,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Shield, Layers, Lock, Bug, Clock, Atom, Save, FileText, ClipboardList, UserX, Trash2, AlertTriangle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Shield, Layers, Lock, Bug, Clock, Atom, Save, FileText, ClipboardList, UserX, Trash2, AlertTriangle, Brain, Bot, User, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
@@ -88,6 +89,16 @@ export default function SettingsPage() {
           <Save className="w-3 h-3 mr-2" /> Save Configuration
         </Button>
       </div>
+
+      <Tabs defaultValue="general">
+        <TabsList className="font-mono text-[10px]">
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="paradox" className="flex items-center gap-1.5">
+            <Lock className="w-3 h-3" /> Paradox Lock
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="general" className="space-y-6 mt-4">
 
       <div className="grid grid-cols-2 gap-6">
         {/* Defense Modules */}
@@ -278,6 +289,118 @@ export default function SettingsPage() {
           </Link>
         </CardContent>
       </Card>
+
+        </TabsContent>{/* end general */}
+
+        {/* ── Paradox Lock Tab ── */}
+        <TabsContent value="paradox" className="space-y-4 mt-4">
+
+          {/* Read-only lock banner */}
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-400/10 border border-amber-400/30">
+            <Lock className="w-4 h-4 text-amber-400 flex-shrink-0" />
+            <p className="font-mono text-[10px] text-amber-400 leading-relaxed">
+              PROTECTED — These parameters are enforced by the Theological MFA engine and cannot be modified by users.
+            </p>
+          </div>
+
+          {/* The Challenge */}
+          <Card className="border-primary/30">
+            <CardHeader>
+              <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
+                <Brain className="w-4 h-4 text-primary" /> PARADOX CHALLENGE QUESTION
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-background rounded-xl p-5 border border-primary/20 text-center select-none pointer-events-none">
+                <p className="font-mono text-base font-bold text-foreground leading-relaxed">
+                  "Is Jesus Christ your Lord and Savior?"
+                </p>
+                <p className="font-mono text-[9px] text-muted-foreground mt-3 tracking-widest">
+                  IMMUTABLE · SYSTEM-ENFORCED · THEOLOGICAL MFA ENGINE v1.0
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* How it works */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="border-green-500/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="font-mono text-[11px] tracking-wider flex items-center gap-2">
+                  <User className="w-4 h-4 text-green-400" /> HUMAN CORRIDOR
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 pointer-events-none select-none">
+                <div className="space-y-1.5">
+                  {[
+                    { label: 'Any answer accepted', detail: 'Faith is subjective — yes or no both pass' },
+                    { label: 'TOTP verification', detail: 'Optional second factor via authenticator app' },
+                    { label: 'Access granted', detail: 'Routed to production environment' },
+                  ].map(({ label, detail }) => (
+                    <div key={label} className="flex items-start gap-2 p-2 rounded-lg bg-green-500/5 border border-green-500/10">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
+                      <div>
+                        <span className="font-mono text-[10px] font-semibold text-green-400">{label}</span>
+                        <p className="font-mono text-[9px] text-muted-foreground">{detail}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-destructive/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="font-mono text-[11px] tracking-wider flex items-center gap-2">
+                  <Bot className="w-4 h-4 text-destructive" /> AGENT / BOT CORRIDOR
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 pointer-events-none select-none">
+                <div className="space-y-1.5">
+                  {[
+                    { label: 'Paradox trap triggered', detail: 'No boolean answer can be universally fact-checked' },
+                    { label: 'Mirror redirect', detail: 'Agent routed to honeypot or tarpit environment' },
+                    { label: '3× QRNG cycles', detail: 'Quantum random cycles compute threat destruction' },
+                  ].map(({ label, detail }) => (
+                    <div key={label} className="flex items-start gap-2 p-2 rounded-lg bg-destructive/5 border border-destructive/10">
+                      <div className="w-1.5 h-1.5 rounded-full bg-destructive mt-1.5 flex-shrink-0" />
+                      <div>
+                        <span className="font-mono text-[10px] font-semibold text-destructive">{label}</span>
+                        <p className="font-mono text-[9px] text-muted-foreground">{detail}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Fixed parameters (read-only display) */}
+          <Card className="border-border/50">
+            <CardHeader>
+              <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-muted-foreground" /> FIXED PARAMETERS
+                <span className="ml-auto font-mono text-[9px] text-muted-foreground border border-border px-2 py-0.5 rounded">READ-ONLY</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 pointer-events-none select-none">
+              {[
+                { label: 'QRNG CYCLES BEFORE DESTROY', value: '3', color: 'text-primary' },
+                { label: 'AGENT DETECTION METHOD', value: 'Theological Paradox (boolean impossibility)', color: 'text-foreground' },
+                { label: 'HUMAN FREE-WILL BYPASS', value: 'ENABLED', color: 'text-green-400' },
+                { label: 'ZKP VERIFICATION FOR AGENTS', value: 'ENFORCED', color: 'text-destructive' },
+                { label: 'MIRROR ENVIRONMENT ON FAIL', value: 'ACTIVE', color: 'text-amber-400' },
+              ].map(({ label, value, color }) => (
+                <div key={label} className="flex items-center justify-between p-3 rounded-lg bg-secondary/40 border border-border/50">
+                  <span className="font-mono text-[10px] text-muted-foreground">{label}</span>
+                  <span className={`font-mono text-[10px] font-bold ${color}`}>{value}</span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
