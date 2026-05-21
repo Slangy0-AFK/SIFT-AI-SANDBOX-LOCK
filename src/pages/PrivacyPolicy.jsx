@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const LAST_UPDATED = 'May 20, 2026';
 const APP_NAME = 'AEGIS Quantum Shield';
-const CONTACT_EMAIL = import.meta.env.VITE_PRIVACY_EMAIL || 'privacy@aegis-security.app';
+const CONTACT_EMAIL = import.meta.env.VITE_PRIVACY_EMAIL || 'support@aegis-security.app';
 
 export default function PrivacyPolicy() {
   return (
