@@ -49,12 +49,12 @@
   ],
   "rls": {
     "create": {
-      "data.user_id": "{{user.email}}"
+      "data.user_id": "{{user.id}}"
     },
     "read": {
       "$or": [
         {
-          "data.user_id": "{{user.email}}"
+          "data.user_id": "{{user.id}}"
         },
         {
           "user_condition": {
