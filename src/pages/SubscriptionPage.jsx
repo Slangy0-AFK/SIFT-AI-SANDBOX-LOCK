@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Shield, CreditCard, Smartphone, RefreshCw, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Shield, Smartphone, RefreshCw, ToggleLeft, ToggleRight } from 'lucide-react';
 import { toast } from 'sonner';
 import PlanCard, { PLANS } from '../components/subscription/PlanCard';
 import DeviceManager from '../components/subscription/DeviceManager';
@@ -18,17 +18,7 @@ export default function SubscriptionPage() {
   const [togglingAutoPay, setTogglingAutoPay] = useState(false);
   const queryClient = useQueryClient();
 
-  // Check for successful checkout
-  React.useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const sessionId = params.get('session_id');
-    if (sessionId) {
-      toast.success('Payment successful! Your Pro plan is now active.');
-      queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
-      // Clean URL
-      window.history.replaceState({}, document.title, '/subscription');
-    }
-  }, []);
+
 
   const { data: user } = useQuery({
     queryKey: ['me'],
@@ -119,7 +109,7 @@ export default function SubscriptionPage() {
         <div>
           <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">SUBSCRIPTION</h1>
           <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
-            PLANS · DEVICES · GOOGLE PLAY BILLING
+            PLANS · DEVICES · BILLING VIA GOOGLE PLAY
           </p>
         </div>
 
@@ -220,8 +210,8 @@ export default function SubscriptionPage() {
         </CardHeader>
         <CardContent>
           <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
-            Pro plan is currently free during beta testing. Your account has full access to all features - 
-            no payment required. Ready to go live when we launch.
+            Pro plan is currently free during beta testing. Your account has full access to all features — 
+            no payment required. When billing goes live, all purchases will be processed securely through Google Play.
           </p>
         </CardContent>
       </Card>

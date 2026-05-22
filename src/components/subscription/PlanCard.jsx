@@ -29,10 +29,6 @@ const PLANS = {
     border: 'border-primary/40',
     badge: 'Best Value',
     devices: 5,
-    stripePriceIds: {
-      monthly: 'price_1TZayyLHuXUecdUf7ASTnfwO',
-      annual: 'price_1TZayyLHuXUecdUf281n2Dio',
-    },
     features: [
       { label: 'Everything in Free', included: true },
       { label: 'QRNG Cycles (unlimited)', included: true },
