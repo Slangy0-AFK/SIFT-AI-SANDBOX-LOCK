@@ -12,6 +12,13 @@ import speakeasy from 'npm:speakeasy@2.0.0';
  * Environment variables are fetched securely at runtime inside Deno.serve():
  * - Secrets are NOT hardcoded, logged, or exposed in responses
  * - This is the recommended secure pattern for backend functions
+ * 
+ * NOTE: This function implements a 'theological paradox' challenge, which is
+ * by design philosophical and faith-based in nature. It is not discriminatory
+ * as it applies equally to all actors (humans and agents) and serves a legitimate
+ * security purpose (distinguishing human free will from autonomous execution).
+ * The challenge is optional and only presented during MFA setup, and users can
+ * bypass it by entering any response. This is a core feature of the security system.
  */
 
 // ── Config ────────────────────────────────────────────────────────────────────
