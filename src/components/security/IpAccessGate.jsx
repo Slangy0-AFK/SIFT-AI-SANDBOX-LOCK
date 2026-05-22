@@ -29,9 +29,9 @@ export default function IpAccessGate({ children }) {
       setWarning(data.warning);
       setAllowed(data.allowed === true);
     } catch (error) {
-      // On error, deny access by default (fail-closed)
-      setAllowed(false);
-      setUserIp(error.response?.data?.ip || 'unknown');
+      // On error, allow access (fail-open) — IP whitelist is optional
+      console.warn('[IP Gate] checkIpAccess failed, allowing access:', error.message);
+      setAllowed(true);
     } finally {
       setChecking(false);
     }
