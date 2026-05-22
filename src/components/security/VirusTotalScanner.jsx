@@ -1,21 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, ShieldAlert, ShieldCheck, Search, Loader2, Globe, Link as LinkIcon, Hash, Activity } from 'lucide-react';
+import { Shield, ShieldAlert, ShieldCheck, Search, Loader2, Globe, Link as LinkIcon, Hash, Activity, Zap } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { useMutation } from '@tanstack/react-query';
-
-const TYPE_ICONS = {
-  ip: Globe,
-  domain: Globe,
-  url: LinkIcon,
-  hash: Hash
-};
+import { toast } from 'sonner';
 
 const THREAT_COLORS = {
   safe: 'text-green-400 border-green-400/30 bg-green-500/10',
@@ -28,26 +20,89 @@ const THREAT_COLORS = {
 export default function VirusTotalScanner() {
   const [scanType, setScanType] = useState('ip');
   const [scanValue, setScanValue] = useState('');
+  const [session, setSession] = useState(null); // current ScanSession record
   const [result, setResult] = useState(null);
+  const [scanning, setScanning] = useState(false);
+  const unsubscribeRef = useRef(null);
 
-  const scanMutation = useMutation({
-    mutationFn: async ({ type, value }) => {
-      const res = await base44.functions.invoke('checkVirusTotal', { type, value });
-      return res.data;
-    },
-    onSuccess: (data) => {
-      setResult(data);
-    }
-  });
+  // Subscribe to the active ScanSession for real-time updates
+  useEffect(() => {
+    if (!session?.id) return;
 
-  const handleScan = () => {
+    // Cleanup previous subscription
+    if (unsubscribeRef.current) unsubscribeRef.current();
+
+    const unsubscribe = base44.entities.ScanSession.subscribe((event) => {
+      if (event.id !== session.id) return;
+
+      const updated = event.data;
+
+      if (updated.status === 'complete') {
+        const parsed = updated.result ? JSON.parse(updated.result) : null;
+        setResult(parsed);
+        setScanning(false);
+        toast.success('VirusTotal scan complete');
+      } else if (updated.status === 'error') {
+        setScanning(false);
+        toast.error('Scan failed: ' + (updated.error_message || 'Unknown error'));
+      }
+    });
+
+    unsubscribeRef.current = unsubscribe;
+    return () => unsubscribe();
+  }, [session?.id]);
+
+  const handleScan = async () => {
     if (!scanValue.trim()) return;
-    scanMutation.mutate({ type: scanType, value: scanValue });
+
+    setScanning(true);
+    setResult(null);
+
+    try {
+      const user = await base44.auth.me();
+
+      // Create ScanSession record — status: scanning
+      const newSession = await base44.entities.ScanSession.create({
+        user_id: user.id,
+        scan_type: `virustotal_${scanType}`,
+        status: 'scanning',
+        input_value: scanValue.trim(),
+      });
+      setSession(newSession);
+
+      // Invoke backend directly — it will update the ScanSession when done
+      const res = await base44.functions.invoke('checkVirusTotal', {
+        type: scanType,
+        value: scanValue.trim(),
+      });
+
+      const data = res.data;
+
+      // Update the ScanSession with results
+      await base44.entities.ScanSession.update(newSession.id, {
+        status: 'complete',
+        result: JSON.stringify(data),
+        threat_level: data?.threatLevel || 'safe',
+        is_threat: (data?.maliciousCount || 0) > 0,
+      });
+
+    } catch (err) {
+      if (session?.id) {
+        await base44.entities.ScanSession.update(session.id, {
+          status: 'error',
+          error_message: err.message,
+        }).catch(() => {});
+      }
+      setScanning(false);
+      toast.error('Scan failed: ' + err.message);
+    }
   };
 
   const reset = () => {
+    if (unsubscribeRef.current) unsubscribeRef.current();
     setResult(null);
     setScanValue('');
+    setSession(null);
   };
 
   return (
@@ -55,6 +110,11 @@ export default function VirusTotalScanner() {
       <CardHeader>
         <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
           <Shield className="w-4 h-4 text-primary" /> VIRUSTOTAL THREAT INTELLIGENCE
+          {scanning && (
+            <span className="ml-auto flex items-center gap-1 text-primary font-mono text-[9px]">
+              <Zap className="w-3 h-3 animate-pulse" /> LIVE
+            </span>
+          )}
         </CardTitle>
         <p className="font-mono text-[9px] text-muted-foreground tracking-wide mt-1">
           Check IPs, domains, URLs, and file hashes against 70+ antivirus engines
@@ -85,22 +145,31 @@ export default function VirusTotalScanner() {
             placeholder={
               scanType === 'ip' ? '192.168.1.1' :
               scanType === 'domain' ? 'example.com' :
-              scanType === 'url' ? 'https://example.com/malicious' :
+              scanType === 'url' ? 'https://example.com' :
               'SHA256 hash...'
             }
             value={scanValue}
             onChange={(e) => setScanValue(e.target.value)}
             className="font-mono text-xs"
-            onKeyDown={(e) => e.key === 'Enter' && handleScan()}
+            onKeyDown={(e) => e.key === 'Enter' && !scanning && handleScan()}
+            disabled={scanning}
           />
-          <Button onClick={handleScan} disabled={scanMutation.isPending || !scanValue.trim()}>
-            {scanMutation.isPending ? (
+          <Button onClick={handleScan} disabled={scanning || !scanValue.trim()}>
+            {scanning ? (
               <><Loader2 className="w-3 h-3 mr-2 animate-spin" />Scanning...</>
             ) : (
               <><Search className="w-3 h-3 mr-2" />Scan</>
             )}
           </Button>
         </div>
+
+        {/* Live scanning indicator */}
+        {scanning && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20">
+            <Loader2 className="w-3 h-3 text-primary animate-spin" />
+            <span className="font-mono text-[10px] text-primary">Querying VirusTotal — results will update instantly...</span>
+          </div>
+        )}
 
         {/* Results */}
         {result && (
@@ -114,18 +183,13 @@ export default function VirusTotalScanner() {
               </Alert>
             ) : (
               <>
-                {/* Threat Level Badge */}
-                <div className={`rounded-xl p-4 border ${THREAT_COLORS[result.threatLevel]}`}>
+                <div className={`rounded-xl p-4 border ${THREAT_COLORS[result.threatLevel] || THREAT_COLORS.safe}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      {result.threatLevel === 'safe' ? (
-                        <ShieldCheck className="w-5 h-5" />
-                      ) : (
-                        <ShieldAlert className="w-5 h-5" />
-                      )}
-                      <span className="font-mono text-sm font-bold uppercase">
-                        {result.threatLevel}
-                      </span>
+                      {result.threatLevel === 'safe'
+                        ? <ShieldCheck className="w-5 h-5" />
+                        : <ShieldAlert className="w-5 h-5" />}
+                      <span className="font-mono text-sm font-bold uppercase">{result.threatLevel}</span>
                     </div>
                     <Badge variant="outline" className="font-mono text-[10px]">
                       {result.maliciousCount}/{result.scannedBy} malicious
@@ -136,57 +200,22 @@ export default function VirusTotalScanner() {
                   </p>
                 </div>
 
-                {/* Stats Grid */}
                 <div className="grid grid-cols-4 gap-2">
-                  <div className="bg-secondary/30 rounded-lg p-3 text-center border border-border/50">
-                    <p className="font-mono text-[9px] text-muted-foreground uppercase">Malicious</p>
-                    <p className={`font-mono text-lg font-bold ${result.stats.malicious > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                      {result.stats.malicious || 0}
-                    </p>
-                  </div>
-                  <div className="bg-secondary/30 rounded-lg p-3 text-center border border-border/50">
-                    <p className="font-mono text-[9px] text-muted-foreground uppercase">Suspicious</p>
-                    <p className={`font-mono text-lg font-bold ${result.stats.suspicious > 0 ? 'text-amber-400' : 'text-muted-foreground'}`}>
-                      {result.stats.suspicious || 0}
-                    </p>
-                  </div>
-                  <div className="bg-secondary/30 rounded-lg p-3 text-center border border-border/50">
-                    <p className="font-mono text-[9px] text-muted-foreground uppercase">Clean</p>
-                    <p className="font-mono text-lg font-bold text-green-400">
-                      {result.stats.harmless || 0}
-                    </p>
-                  </div>
-                  <div className="bg-secondary/30 rounded-lg p-3 text-center border border-border/50">
-                    <p className="font-mono text-[9px] text-muted-foreground uppercase">Total</p>
-                    <p className="font-mono text-lg font-bold text-foreground">
-                      {result.scannedBy}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Detailed Stats */}
-                {Object.keys(result.stats).length > 0 && (
-                  <div className="bg-background rounded-lg p-3 border border-border/50">
-                    <p className="font-mono text-[9px] text-muted-foreground uppercase mb-2">Breakdown</p>
-                    <div className="grid grid-cols-2 gap-1">
-                      {Object.entries(result.stats).map(([key, value]) => (
-                        <div key={key} className="flex justify-between items-center py-1">
-                          <span className="font-mono text-[9px] text-muted-foreground capitalize">{key}</span>
-                          <span className={`font-mono text-[10px] font-bold ${
-                            key === 'malicious' && value > 0 ? 'text-destructive' :
-                            key === 'suspicious' && value > 0 ? 'text-amber-400' :
-                            'text-foreground'
-                          }`}>
-                            {value}
-                          </span>
-                        </div>
-                      ))}
+                  {['malicious', 'suspicious', 'harmless', 'undetected'].map((key) => (
+                    <div key={key} className="bg-secondary/30 rounded-lg p-3 text-center border border-border/50">
+                      <p className="font-mono text-[9px] text-muted-foreground uppercase">{key}</p>
+                      <p className={`font-mono text-lg font-bold ${
+                        key === 'malicious' && (result.stats?.[key] || 0) > 0 ? 'text-destructive' :
+                        key === 'suspicious' && (result.stats?.[key] || 0) > 0 ? 'text-amber-400' :
+                        key === 'harmless' ? 'text-green-400' : 'text-foreground'
+                      }`}>
+                        {result.stats?.[key] ?? (key === 'harmless' ? result.scannedBy - (result.maliciousCount || 0) : 0)}
+                      </p>
                     </div>
-                  </div>
-                )}
+                  ))}
+                </div>
               </>
             )}
-
             <Button variant="outline" size="sm" onClick={reset} className="w-full font-mono text-xs">
               Scan Another
             </Button>
