@@ -12,7 +12,7 @@ import Dashboard from './pages/Dashboard';
 import BaseChain from './pages/BaseChain';
 import ParadoxLock from './pages/ParadoxLock';
 import MirrorEnvironment from './pages/MirrorEnvironment';
-import ThreatLog from './pages/ThreatLog';
+import ThreatLog from './pages/ThreatLog.jsx';
 import SettingsPage from './pages/SettingsPage';
 import AppLayout from './components/layout/AppLayout';
 import SubscriptionPage from './pages/SubscriptionPage';
@@ -31,7 +31,7 @@ import FirewallRules from './pages/FirewallRules';
 import FirewallLogs from './pages/FirewallLogs';
 import UserProfile from './pages/UserProfile';
 import Welcome from './pages/Welcome';
-import ThreatScanner from './pages/ThreatScanner';
+import ThreatScanner from './pages/ThreatScanner.jsx';
 import OnboardingPermissions from './components/onboarding/OnboardingPermissions';
 
 const AuthenticatedApp = () => {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
-import { Shield, AlertTriangle, Lock, Skull, Eye, ChevronDown, ChevronUp, Bug, Radiation, GitBranch, ShieldAlert, FileText, LogOut } from 'lucide-react';
+import { Shield, AlertTriangle, Lock, Skull, Eye, ChevronDown, ChevronUp, Bug, Radiation, GitBranch, ShieldAlert, FileText } from 'lucide-react';
 
 import ThreatCounter from '../components/dashboard/ThreatCounter';
 import LiveEventFeed from '../components/dashboard/LiveEventFeed';
@@ -86,12 +86,7 @@ export default function Dashboard() {
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             <span className="font-mono text-[9px] text-green-400 font-semibold tracking-wider">ALL SYSTEMS OPERATIONAL</span>
           </div>
-          <button
-            onClick={() => base44.auth.logout()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border hover:bg-secondary transition-colors font-mono text-[9px] text-muted-foreground hover:text-foreground"
-          >
-            <LogOut className="w-3 h-3" /> LOGOUT
-          </button>
+
         </div>
       </div>
 
