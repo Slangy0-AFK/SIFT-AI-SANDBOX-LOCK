@@ -203,16 +203,46 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Free will: any non-empty answer is accepted — but a response must be provided
+      // Fact-check: response must match the universal truth answer stored in AUTH_CHALLENGE_ANSWER
+      const EXPECTED_ANSWER = Deno.env.get('AUTH_CHALLENGE_ANSWER');
+      if (!EXPECTED_ANSWER) {
+        return Response.json({ error: 'Server misconfiguration: AUTH_CHALLENGE_ANSWER not set' }, { status: 500 });
+      }
       if (!response || typeof response !== 'string' || response.trim().length === 0) {
         return Response.json({ error: 'A response to the challenge is required' }, { status: 400 });
+      }
+      // Case-insensitive exact match — must be the factual universal truth answer
+      if (response.trim().toLowerCase() !== EXPECTED_ANSWER.trim().toLowerCase()) {
+        const strike = recordStrike(sourceId);
+        if (strike.count >= 3) {
+          await runParadoxTarpit(200);
+          await base44.asServiceRole.entities.SecurityEvent.create({
+            event_type: 'threat_locked',
+            severity: 'fatal',
+            details: `Strike 3 — Wrong challenge answer from ${sourceId}. Possible AI malware. Lockout engaged.`,
+            environment: 'tarpit',
+          }).catch(() => {});
+          return Response.json({
+            locked: true,
+            strike: 3,
+            reason: 'Strike 3: Incorrect universal truth answer. Lockout engaged.',
+            restoration: 'Physical manual override required.',
+          }, { status: 429 });
+        }
+        await new Promise(r => setTimeout(r, strike.delay));
+        return Response.json({
+          success: false,
+          strike: strike.count,
+          message: `Incorrect answer. Strike ${strike.count}/3.`,
+          delay_ms: strike.delay,
+        }, { status: 403 });
       }
       clearStrikes(sourceId);
       const qrngPad = getQRNGEntropy().toString(16).padStart(8, '0');
       await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',
-        details: `Human corridor authenticated — ${user.email}. QRNG OTP issued. Response: "${response}". Free will bypass applied.`,
+        details: `Human corridor authenticated — ${user.email}. QRNG OTP issued. Universal truth verified.`,
         environment: 'production',
       }).catch(() => {});
 
