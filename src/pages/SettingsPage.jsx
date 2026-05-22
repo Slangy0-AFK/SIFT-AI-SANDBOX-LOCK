@@ -243,39 +243,44 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Parameters */}
-        <Card>
+        {/* Parameters — LOCKED */}
+        <Card className="border-border/50 opacity-75">
           <CardHeader>
             <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
-              <Atom className="w-4 h-4 text-primary" /> PARAMETERS
+              <Atom className="w-4 h-4 text-muted-foreground" /> SYSTEM PARAMETERS
+              <span className="ml-auto font-mono text-[9px] text-amber-400 border border-amber-400/30 px-2 py-0.5 rounded-full bg-amber-400/5">LOCKED</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-4 pointer-events-none select-none">
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-400/5 border border-amber-400/20 mb-4">
+              <Lock className="w-3.5 h-3.5 text-amber-400 mt-0.5 flex-shrink-0" />
+              <p className="font-mono text-[10px] text-amber-400">These parameters are enforced by the system and cannot be modified.</p>
+            </div>
             <div>
               <Label className="font-mono text-[10px] text-muted-foreground">MAX QRNG CYCLES BEFORE DESTROY</Label>
               <Input
                 type="number"
-                className="font-mono text-xs mt-1"
+                disabled
+                className="font-mono text-xs mt-1 opacity-60"
                 value={settings.maxQRNGCycles}
-                onChange={(e) => setSettings(prev => ({ ...prev, maxQRNGCycles: parseInt(e.target.value) || 3 }))}
               />
             </div>
             <div>
               <Label className="font-mono text-[10px] text-muted-foreground">TARPIT DELAY (BYTES/SEC)</Label>
               <Input
                 type="number"
-                className="font-mono text-xs mt-1"
+                disabled
+                className="font-mono text-xs mt-1 opacity-60"
                 value={settings.tarpitDelay}
-                onChange={(e) => setSettings(prev => ({ ...prev, tarpitDelay: parseInt(e.target.value) || 1 }))}
               />
             </div>
             <div>
               <Label className="font-mono text-[10px] text-muted-foreground">MIRROR SYNC INTERVAL (SEC)</Label>
               <Input
                 type="number"
-                className="font-mono text-xs mt-1"
+                disabled
+                className="font-mono text-xs mt-1 opacity-60"
                 value={settings.mirrorSyncInterval}
-                onChange={(e) => setSettings(prev => ({ ...prev, mirrorSyncInterval: parseInt(e.target.value) || 5 }))}
               />
             </div>
           </CardContent>
