@@ -6,7 +6,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-import IpAccessGate from '@/components/security/IpAccessGate';
+
 import { DeviceScanService } from '@/lib/DeviceScanService';
 import Dashboard from './pages/Dashboard';
 import BaseChain from './pages/BaseChain';
@@ -107,9 +107,7 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          <IpAccessGate>
-            <AuthenticatedApp />
-          </IpAccessGate>
+          <AuthenticatedApp />
         </Router>
         <Toaster />
       </QueryClientProvider>
