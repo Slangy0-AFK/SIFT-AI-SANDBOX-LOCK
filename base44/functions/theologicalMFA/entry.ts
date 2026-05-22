@@ -13,12 +13,10 @@ import speakeasy from 'npm:speakeasy@2.0.0';
  * - Secrets are NOT hardcoded, logged, or exposed in responses
  * - This is the recommended secure pattern for backend functions
  * 
- * NOTE: This function implements a 'theological paradox' challenge, which is
- * by design philosophical and faith-based in nature. It is not discriminatory
- * as it applies equally to all actors (humans and agents) and serves a legitimate
- * security purpose (distinguishing human free will from autonomous execution).
- * The challenge is optional and only presented during MFA setup, and users can
- * bypass it by entering any response. This is a core feature of the security system.
+ * NOTE: This function implements a configurable paradox challenge used to
+ * distinguish human users from autonomous agents. The challenge text is loaded
+ * at runtime from the AUTH_CHALLENGE environment variable and is not hardcoded.
+ * It applies equally to all actors and serves a legitimate security purpose.
  */
 
 // ── Config ────────────────────────────────────────────────────────────────────
