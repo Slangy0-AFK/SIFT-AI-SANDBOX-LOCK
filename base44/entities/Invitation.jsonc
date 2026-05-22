@@ -68,7 +68,9 @@
   ],
   "rls": {
     "create": {
-      "data.subscriber_id": "{{user.id}}"
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "read": {
       "$or": [
@@ -79,9 +81,6 @@
           "data.accepted_by_user_id": "{{user.id}}"
         },
         {
-          "data.invitee_email": "{{user.email}}"
-        },
-        {
           "user_condition": {
             "role": "admin"
           }
@@ -89,31 +88,14 @@
       ]
     },
     "update": {
-      "$or": [
-        {
-          "data.subscriber_id": "{{user.id}}"
-        },
-        {
-          "data.invitee_email": "{{user.email}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
-      "$or": [
-        {
-          "data.subscriber_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
