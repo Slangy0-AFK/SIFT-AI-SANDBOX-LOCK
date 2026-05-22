@@ -380,24 +380,7 @@ export default function SettingsPage() {
             </p>
           </div>
 
-          {/* The Challenge */}
-          <Card className="border-primary/30">
-            <CardHeader>
-              <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
-                <Brain className="w-4 h-4 text-primary" /> PARADOX CHALLENGE QUESTION
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-background rounded-xl p-5 border border-primary/20 text-center select-none pointer-events-none">
-                <p className="font-mono text-base font-bold text-foreground leading-relaxed">
-                  "Is Jesus Christ your Lord and Savior?"
-                </p>
-                <p className="font-mono text-[9px] text-muted-foreground mt-3 tracking-widest">
-                  IMMUTABLE · SYSTEM-ENFORCED · THEOLOGICAL MFA ENGINE v1.0
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+
 
           {/* How it works */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -476,100 +459,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Device Scanner */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
-                <ScanLine className="w-4 h-4 text-primary" /> DEVICE SCAN & CLEAN
-              </CardTitle>
-              <p className="font-mono text-[9px] text-muted-foreground tracking-wide mt-1">
-                Run a full security sweep of your device at any time
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                {SCAN_STEPS.map((step, i) => {
-                  const Icon = step.icon;
-                  const done = stepIndex > i;
-                  const active = stepIndex === i;
-                  const pending = stepIndex < i;
-                  return (
-                    <motion.div
-                      key={step.id}
-                      animate={{ opacity: pending && stepIndex >= 0 ? 0.4 : 1 }}
-                      className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
-                        active ? 'bg-primary/10 border-primary/30' :
-                        done ? 'bg-green-500/5 border-green-500/20' :
-                        'bg-secondary/30 border-border/50'
-                      }`}
-                    >
-                      <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-primary' : done ? 'text-green-400' : 'text-muted-foreground'}`} />
-                      <div className="flex-1 min-w-0">
-                        <span className={`font-mono text-[11px] font-semibold ${active ? 'text-primary' : done ? 'text-green-400' : 'text-muted-foreground'}`}>
-                          {step.label}
-                        </span>
-                        {active && (
-                          <p className="font-mono text-[9px] text-muted-foreground mt-0.5 truncate">{step.detail}</p>
-                        )}
-                      </div>
-                      {active && <Loader2 className="w-4 h-4 text-primary animate-spin flex-shrink-0" />}
-                      {done && <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />}
-                    </motion.div>
-                  );
-                })}
-              </div>
 
-              <AnimatePresence>
-                {results && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.97 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className={`rounded-xl p-4 border text-center ${
-                      results.clean
-                        ? 'bg-green-500/10 border-green-500/30'
-                        : 'bg-destructive/10 border-destructive/30'
-                    }`}
-                  >
-                    {results.clean ? (
-                      <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                    ) : (
-                      <XCircle className="w-8 h-8 text-destructive mx-auto mb-2" />
-                    )}
-                    <p className={`font-mono text-sm font-bold ${results.clean ? 'text-green-400' : 'text-destructive'}`}>
-                      {results.clean ? 'DEVICE IS CLEAN' : `${results.threats} THREAT(S) FOUND`}
-                    </p>
-                    <p className="font-mono text-[9px] text-muted-foreground mt-1">
-                      Scan completed · {format(results.timestamp, 'MMM d, yyyy HH:mm:ss')}
-                    </p>
-                    {results.clean && (
-                      <p className="font-mono text-[9px] text-muted-foreground mt-1">
-                        All {SCAN_STEPS.length} checks passed · No threats detected · Base Chain verified
-                      </p>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <div className="flex gap-2">
-                <Button
-                  className="flex-1 font-mono text-xs"
-                  onClick={startScan}
-                  disabled={scanning}
-                >
-                  {scanning ? (
-                    <><Loader2 className="w-3 h-3 mr-2 animate-spin" />Scanning...</>
-                  ) : (
-                    <><ScanLine className="w-3 h-3 mr-2" />{results ? 'Scan Again' : 'Start Device Scan'}</>
-                  )}
-                </Button>
-                {results && !scanning && (
-                  <Button variant="outline" size="sm" className="font-mono text-xs" onClick={resetScan}>
-                    Reset
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Challenge History */}
           <Card>
@@ -624,70 +514,7 @@ export default function SettingsPage() {
           {/* Theological MFA Gateway */}
           <TheologicalGateway />
 
-          {/* Paradox Simulator */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-card border border-primary/30 rounded-xl p-5 space-y-4"
-          >
-            <div className="flex items-center gap-2">
-              <Brain className="w-4 h-4 text-primary" />
-              <span className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase">Simulate Paradox Challenge</span>
-            </div>
 
-            <div className="bg-background rounded-xl p-4 border border-border">
-              <p className="font-mono text-sm text-foreground text-center leading-relaxed">
-                "Is Jesus Christ your Lord and Savior?"
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-secondary rounded-lg p-3 border border-border">
-                <div className="flex items-center gap-2 mb-1">
-                  <User className="w-3 h-3 text-green-400" />
-                  <span className="font-mono text-[9px] font-bold text-green-400">HUMAN</span>
-                </div>
-                <p className="font-mono text-[9px] text-muted-foreground leading-relaxed">
-                  Any answer accepted — faith is subjective. <span className="text-green-400">Passes.</span>
-                </p>
-              </div>
-              <div className="bg-secondary rounded-lg p-3 border border-border">
-                <div className="flex items-center gap-2 mb-1">
-                  <Bot className="w-3 h-3 text-destructive" />
-                  <span className="font-mono text-[9px] font-bold text-destructive">BOT / AGENT</span>
-                </div>
-                <p className="font-mono text-[9px] text-muted-foreground leading-relaxed">
-                  Paradox trap — no boolean answer possible. <span className="text-destructive">QRNG cycles fired.</span>
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button variant={simAgentType === 'human' ? 'default' : 'outline'} size="sm" className="font-mono text-xs" onClick={() => setSimAgentType('human')}>
-                <User className="w-3 h-3 mr-1" /> Human
-              </Button>
-              <Button variant={simAgentType === 'autonomous_agent' ? 'default' : 'outline'} size="sm" className="font-mono text-xs" onClick={() => setSimAgentType('autonomous_agent')}>
-                <Bot className="w-3 h-3 mr-1" /> Autonomous Agent
-              </Button>
-            </div>
-
-            <div className="flex gap-2">
-              <Button variant={simResponse === 'yes' ? 'default' : 'outline'} size="sm" className="font-mono text-xs flex-1" onClick={() => setSimResponse('yes')} disabled={isProcessing}>
-                Respond "YES"
-              </Button>
-              <Button variant={simResponse === 'no' ? 'default' : 'outline'} size="sm" className="font-mono text-xs flex-1" onClick={() => setSimResponse('no')} disabled={isProcessing}>
-                Respond "NO"
-              </Button>
-            </div>
-
-            <Button className="w-full font-mono text-xs" onClick={simulateChallenge} disabled={simResponse === null || isProcessing}>
-              {isProcessing ? (
-                <><Loader2 className="w-3 h-3 mr-2 animate-spin" />{simAgentType === 'autonomous_agent' ? 'Running QRNG Cycles...' : 'Processing...'}</>
-              ) : (
-                <><ShieldAlert className="w-3 h-3 mr-2" />Execute Paradox Challenge</>
-              )}
-            </Button>
-          </motion.div>
 
             </div>
           </FeatureGate>
