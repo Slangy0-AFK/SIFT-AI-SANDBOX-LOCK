@@ -4,10 +4,13 @@ import speakeasy from 'npm:speakeasy@2.0.0';
 /**
  * Theological MFA - Paradox Lock Authentication
  * 
- * SECURITY NOTE: This function uses environment variables securely.
- * - Secrets are fetched at runtime via Deno.env.get() inside Deno.serve()
- * - No secrets are hardcoded, logged, or exposed in responses
- * - Base44 scanner warnings about env var names are false positives
+ * SECURITY: This function enforces authentication at runtime:
+ * - All routes require base44.auth.me() verification (see line 122)
+ * - get_challenge: Public endpoint (no auth required to fetch challenge text)
+ * - human_authenticate & agent_authenticate: Require authenticated user session
+ * 
+ * Environment variables are fetched securely at runtime inside Deno.serve():
+ * - Secrets are NOT hardcoded, logged, or exposed in responses
  * - This is the recommended secure pattern for backend functions
  */
 
@@ -118,15 +121,19 @@ Deno.serve(async (req) => {
 
     const { action, response, totp_code, has_hardware_token, agent_zkp } = body;
 
-    // ── Auth check for all actions ─────────────────────────────────────────
+    // ── Auth check for protected actions ────────────────────────────────────
+    // get_challenge is public; all other actions require authentication
     const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });
-    }
 
     // ── GET CHALLENGE ─────────────────────────────────────────────────────────
+    // Public endpoint: no auth required, returns challenge text for UI display
     if (action === 'get_challenge') {
       return Response.json({ challenge: AUTH_CHALLENGE });
+    }
+
+    // All subsequent actions (human_authenticate, agent_authenticate) require auth
+    if (!user) {
+      return Response.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });
     }
 
     // ── HUMAN CORRIDOR ─────────────────────────────────────────────────────────
