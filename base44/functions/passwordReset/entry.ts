@@ -18,23 +18,25 @@ Deno.serve(async (req) => {
       }
 
       const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown';
-      
-      // Call rateLimiter backend function for persistent rate limiting
-      try {
-        const rateLimitResult = await base44.asServiceRole.functions.invoke('rateLimiter', {
-          key: `password_reset_${clientIp}`,
-          max_requests: 3,
-          window_ms: 15 * 60 * 1000,
-        });
-        
-        if (!rateLimitResult?.data?.allowed) {
-          console.warn(`[passwordReset] Rate limit exceeded for IP: ${clientIp}`);
-          return Response.json({ error: 'Too many reset requests. Please try again later.' }, { status: 429 });
-        }
-      } catch (err) {
-        console.error('[passwordReset] Rate limiting check failed:', err);
-        // Fail open on rate limiter error, but log it
+
+      // Persistent rate limiting via SecurityEvent records
+      const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+      const recentAttempts = await base44.asServiceRole.entities.SecurityEvent.filter({
+        event_type: 'paradox_challenge',
+        details: { $regex: `pwd_reset_${clientIp}` },
+      }).catch(() => []);
+      const recentCount = recentAttempts.filter(e => e.created_date > fifteenMinutesAgo).length;
+      if (recentCount >= 3) {
+        console.warn(`[passwordReset] Rate limit exceeded for IP: ${clientIp}`);
+        return Response.json({ error: 'Too many reset requests. Please try again later.' }, { status: 429 });
       }
+      // Log this attempt
+      await base44.asServiceRole.entities.SecurityEvent.create({
+        event_type: 'paradox_challenge',
+        severity: 'info',
+        details: `pwd_reset_${clientIp}`,
+        environment: 'production',
+      }).catch(() => {});
 
       // Use Base44's built-in password reset - handles email automatically
       await base44.auth.resetPasswordRequest(email);
