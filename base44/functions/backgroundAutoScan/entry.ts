@@ -130,13 +130,19 @@ async function sendThreatNotification(base44Service, userEmail, summary) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
-    // Verify only admins can trigger background scans
-    const user = await base44.auth.me();
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+
+    // Allow scheduler (no user token) via shared secret, or authenticated admin users
+    const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
+    const providedSecret = req.headers.get('x-scheduler-secret');
+    const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
+
+    if (!isScheduler) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden: Admin access or scheduler secret required' }, { status: 403 });
+      }
     }
-    
+
     // Use service role for all operations
     const base44Service = base44.asServiceRole;
     
