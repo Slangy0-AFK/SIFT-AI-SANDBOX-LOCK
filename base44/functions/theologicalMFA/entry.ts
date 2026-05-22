@@ -203,7 +203,10 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Free will: any answer ("Yes" or "No") is accepted — no theological evaluation
+      // Free will: any non-empty answer is accepted — but a response must be provided
+      if (!response || typeof response !== 'string' || response.trim().length === 0) {
+        return Response.json({ error: 'A response to the challenge is required' }, { status: 400 });
+      }
       clearStrikes(sourceId);
       const qrngPad = getQRNGEntropy().toString(16).padStart(8, '0');
       await base44.asServiceRole.entities.SecurityEvent.create({
