@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,22 +30,9 @@ const STATUS_COLORS = {
   cleared: 'text-green-400',
 };
 
-const ACTIVE_STATUSES = ['detected', 'challenged', 'cycle_1', 'cycle_2', 'cycle_3', 'locked'];
 
 const TABS = ['THREATS', 'ANOMALIES', 'AGENTS'];
 
-function useAutoNeutralize(threats, queryClient) {
-  const mutation = useMutation({
-    mutationFn: async (active) =>
-      Promise.all(active.map((t) => base44.entities.Threat.update(t.id, { status: 'destroyed' }))),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['threats-log'] }),
-  });
-  useEffect(() => {
-    if (!threats) return;
-    const active = threats.filter((t) => ACTIVE_STATUSES.includes(t.status));
-    if (active.length > 0) mutation.mutate(active);
-  }, [threats]);
-}
 
 function ThreatCard({ threat, onBlock }) {
   const [expanded, setExpanded] = useState(false);
@@ -195,8 +182,6 @@ export default function ThreatLog() {
     queryFn: () => base44.entities.ZeroDayAnomaly.list('-created_date', 30),
     refetchInterval: 8000,
   });
-
-  useAutoNeutralize(threats, queryClient);
 
   const activeThreats = threats.filter(t => !['destroyed', 'cleared'].includes(t.status));
   const openAnomalies = anomalies.filter(a => a.status !== 'neutralized');

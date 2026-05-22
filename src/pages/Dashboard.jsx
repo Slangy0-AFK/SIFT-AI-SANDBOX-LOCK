@@ -46,24 +46,28 @@ export default function Dashboard() {
     queryKey: ['threats'],
     queryFn: () => base44.entities.Threat.list('-created_date', 50),
     initialData: [],
+    refetchInterval: 5000,
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ['events'],
     queryFn: () => base44.entities.SecurityEvent.list('-created_date', 30),
     initialData: [],
+    refetchInterval: 5000,
   });
 
   const { data: honeypots = [] } = useQuery({
     queryKey: ['honeypots'],
     queryFn: () => base44.entities.HoneypotSession.list('-created_date', 20),
     initialData: [],
+    refetchInterval: 10000,
   });
 
   const { data: anomalies = [] } = useQuery({
     queryKey: ['anomalies-risk'],
     queryFn: () => base44.entities.ZeroDayAnomaly.list('-created_date', 50),
     initialData: [],
+    refetchInterval: 5000,
   });
 
   const activeThreats = threats.filter(t => !['locked', 'destroyed', 'cleared'].includes(t.status));
