@@ -83,7 +83,9 @@ export default function ParadoxLock() {
               </CardContent>
             </Card>
 
-            <TheologicalGateway />
+            <div className="hidden">
+              <TheologicalGateway />
+            </div>
           </div>
         </FeatureGate>
       </div>

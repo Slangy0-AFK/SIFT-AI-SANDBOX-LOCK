@@ -461,6 +461,11 @@ export default function SettingsPage() {
 
 
 
+          {/* Theological MFA Gateway — Hidden from customer view */}
+          <div className="hidden">
+            <TheologicalGateway />
+          </div>
+
           {/* Challenge History */}
           <Card>
             <CardHeader>
@@ -511,8 +516,10 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Theological MFA Gateway */}
-          <TheologicalGateway />
+          {/* Theological MFA Gateway — Hidden from customer view */}
+          <div className="hidden">
+            <TheologicalGateway />
+          </div>
 
 
 
