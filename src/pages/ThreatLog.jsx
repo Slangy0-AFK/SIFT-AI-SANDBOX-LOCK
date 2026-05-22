@@ -5,8 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Shield, ChevronDown, ChevronUp, Skull, Clock, Activity,
-  Target, Cpu, RefreshCw, Eye, Loader2, CheckCircle2, AlertTriangle
+  Target, Cpu, RefreshCw, Eye, Loader2, CheckCircle2, AlertTriangle, Ban
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import GuardianRing from '@/components/agents/GuardianRing';
@@ -46,8 +47,31 @@ function useAutoNeutralize(threats, queryClient) {
   }, [threats]);
 }
 
-function ThreatCard({ threat }) {
+function ThreatCard({ threat, onBlock }) {
   const [expanded, setExpanded] = useState(false);
+  const [blocking, setBlocking] = useState(false);
+
+  const handleBlock = async (e) => {
+    e.stopPropagation();
+    setBlocking(true);
+    try {
+      const res = await base44.functions.invoke('autoBlockIp', {
+        threat_id: threat.id,
+        source_ip: threat.source_ip,
+      });
+      if (res.data?.already_blocked) {
+        toast.info(`IP ${threat.source_ip} is already blocked`);
+      } else {
+        toast.success(`IP ${threat.source_ip} has been blocked`);
+        onBlock?.();
+      }
+    } catch (e) {
+      toast.error('Block failed: ' + e.message);
+    } finally {
+      setBlocking(false);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -70,6 +94,15 @@ function ThreatCard({ threat }) {
           <span className={`font-mono text-[9px] ${STATUS_COLORS[threat.status] || 'text-muted-foreground'}`}>
             {threat.status?.replace(/_/g, ' ').toUpperCase()}
           </span>
+          <button
+            onClick={handleBlock}
+            disabled={blocking}
+            className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-destructive/10 border border-destructive/30 text-destructive hover:bg-destructive/20 transition-all font-mono text-[8px] font-bold disabled:opacity-50"
+            title={`Block ${threat.source_ip}`}
+          >
+            {blocking ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Ban className="w-2.5 h-2.5" />}
+            {blocking ? 'BLOCKING' : 'BLOCK'}
+          </button>
           {expanded ? <ChevronUp className="w-3 h-3 text-muted-foreground" /> : <ChevronDown className="w-3 h-3 text-muted-foreground" />}
         </div>
       </button>
@@ -270,7 +303,7 @@ export default function ThreatLog() {
               </div>
             ) : (
               <div className="space-y-2">
-                {threats.map(t => <ThreatCard key={t.id} threat={t} />)}
+                {threats.map(t => <ThreatCard key={t.id} threat={t} onBlock={() => queryClient.invalidateQueries({ queryKey: ['threats-log'] })} />)}
               </div>
             )}
           </motion.div>

@@ -28,7 +28,17 @@ async function executeAction(action, eventData) {
   switch (action.type) {
     case 'block_ip': {
       const ip = action.params?.ip || eventData.source_ip;
-      log.message = `IP ${ip} flagged for blocking. Threat record updated with block status.`;
+      // Actually create a firewall block rule via autoBlockIp function
+      try {
+        await base44.functions.invoke('autoBlockIp', {
+          source_ip: ip,
+          threat_id: eventData.id || null,
+          reason: `Auto-blocked by workflow policy (${action.params?.reason || 'threat_detected'})`,
+        });
+        log.message = `IP ${ip} blocked — firewall rule created automatically.`;
+      } catch (e) {
+        log.message = `IP ${ip} flagged for blocking (firewall: ${e.message})`;
+      }
       if (eventData.id) {
         await base44.entities.ZeroDayAnomaly.update(eventData.id, {
           status: 'contained',
