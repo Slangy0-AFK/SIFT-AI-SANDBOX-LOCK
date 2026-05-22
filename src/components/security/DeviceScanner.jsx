@@ -44,11 +44,11 @@ export default function DeviceScanner() {
   const [stepIndex, setStepIndex] = useState(-1);
   const [results, setResults] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
-  const [autoScanActive, setAutoScanActive] = useState(DeviceScanService.isActive());
+  const [autoScanActive, setAutoScanActive] = useState(DeviceScanService.isRunning());
 
   // Sync autoScanActive state with global service
   useEffect(() => {
-    const updateState = () => setAutoScanActive(DeviceScanService.isActive());
+    const updateState = () => setAutoScanActive(DeviceScanService.isRunning());
     updateState();
     const interval = setInterval(updateState, 1000);
     return () => clearInterval(interval);
