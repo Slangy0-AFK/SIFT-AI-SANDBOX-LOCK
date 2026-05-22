@@ -40,10 +40,10 @@ function getAIAttackSignatures() {
   ];
 }
 
-function detectAIAttack(text) {
+function detectAIAttack(text, signatures) {
   if (!text) return null;
   const lower = text.toLowerCase();
-  for (const sig of AI_ATTACK_SIGNATURES) {
+  for (const sig of signatures) {
     if (lower.includes(sig.toLowerCase())) {
       return sig;
     }
@@ -55,13 +55,17 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Require authenticated user with admin role
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    // Allow: scheduler secret header, entity automation, or authenticated admin
+    const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
+    const providedSecret = req.headers.get('x-scheduler-secret');
+    const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
+    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
+
+    if (!isScheduler && !isAutomation) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden: Admin access or scheduler secret required' }, { status: 403 });
+      }
     }
 
     const AI_ATTACK_SIGNATURES = getAIAttackSignatures();
@@ -93,7 +97,7 @@ Deno.serve(async (req) => {
 
     for (const threat of aiScanTargets) {
       const combined = [threat.notes, threat.paradox_response, threat.base_chain_signature].join(' ');
-      const matchedSig = detectAIAttack(combined);
+      const matchedSig = detectAIAttack(combined, AI_ATTACK_SIGNATURES);
 
       if (matchedSig) {
         // Check if already flagged as ai_adversarial anomaly
@@ -257,7 +261,7 @@ Return JSON:
               }
             });
 
-            const burstAI = JSON.parse(burstAnalysisPrompt);
+            const burstAI = typeof aiBurstAnalysis === 'string' ? JSON.parse(aiBurstAnalysis) : aiBurstAnalysis;
             const severity = burstAI.should_escalate || rep.reputationScore < 40 ? 'fatal' : baseSeverity;
             
             await base44Service.entities.ZeroDayAnomaly.create({

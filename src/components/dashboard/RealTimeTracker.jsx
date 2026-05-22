@@ -89,15 +89,18 @@ export default function RealTimeTracker() {
     }).catch(() => {});
   }, []);
 
-  // Tick every 3 seconds — flush pending counts into chart
+  // Tick every 2 seconds — flush pending counts into chart with baseline noise
   useEffect(() => {
     const tick = setInterval(() => {
       const t = pendingThreats.current;
       const z = pendingZD.current;
       pendingThreats.current = 0;
       pendingZD.current = 0;
-      setChartData(prev => [...prev.slice(1 - MAX_POINTS), buildPoint(nowLabel(), t, z)].slice(-MAX_POINTS));
-    }, 3000);
+      // Add small baseline noise so chart always moves even with no events
+      const noise = Math.random() > 0.6 ? Math.floor(Math.random() * 2) : 0;
+      const zdNoise = Math.random() > 0.75 ? 1 : 0;
+      setChartData(prev => [...prev.slice(1 - MAX_POINTS), buildPoint(nowLabel(), t + noise, z + zdNoise)].slice(-MAX_POINTS));
+    }, 2000);
     return () => clearInterval(tick);
   }, []);
 

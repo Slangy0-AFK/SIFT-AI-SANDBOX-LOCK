@@ -48,10 +48,10 @@ const getAIAttackSignatures = () => {
   ];
 };
 
-function detectAIAttack(text) {
+function detectAIAttack(text, signatures) {
   if (!text) return null;
   const lower = text.toLowerCase();
-  for (const sig of AI_ATTACK_SIGNATURES) {
+  for (const sig of signatures) {
     if (lower.includes(sig.toLowerCase())) return sig;
   }
   return null;
@@ -107,10 +107,17 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Require authenticated admin users (entity automations will have service role context)
-    const user = await base44.auth.me();
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    // Allow: scheduler secret header, entity automation (x-automation header), or authenticated admin
+    const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
+    const providedSecret = req.headers.get('x-scheduler-secret');
+    const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
+    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
+
+    if (!isScheduler && !isAutomation) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden: Admin access or scheduler secret required' }, { status: 403 });
+      }
     }
 
     const body = await req.json().catch(() => ({}));
@@ -175,7 +182,7 @@ Deno.serve(async (req) => {
       
       const results = [];
       for (const threat of activeThreats.slice(0, 20)) { // cap at 20 per run
-        const processed = await processThreat(threat, base44Service);
+        const processed = await processThreat(threat, base44Service, AI_ATTACK_SIGNATURES);
         results.push(processed);
       }
       
@@ -188,7 +195,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Threat not found' }, { status: 404 });
     }
     
-    const result = await processThreat(threats[0], base44Service);
+    const result = await processThreat(threats[0], base44Service, AI_ATTACK_SIGNATURES);
     return Response.json({ success: true, action: 'threat_processed', ...result });
     
   } catch (error) {
@@ -197,7 +204,7 @@ Deno.serve(async (req) => {
   }
 });
 
-async function processThreat(threat, base44Service) {
+async function processThreat(threat, base44Service, AI_ATTACK_SIGNATURES) {
   console.log(`[AEGIS] Processing threat: ${threat.id} | IP: ${threat.source_ip} | Level: ${threat.threat_level} | Status: ${threat.status}`);
 
   // ── AI Attack Auto-Reject ──────────────────────────────────────────────
@@ -261,7 +268,7 @@ Return JSON:
       }
     });
 
-    const analysis = JSON.parse(aiAnalysis);
+    const analysis = typeof aiAnalysis === 'string' ? JSON.parse(aiAnalysis) : aiAnalysis;
     
     // AI Attack detected with high confidence
     if (analysis.is_ai_attack && analysis.confidence_score >= 85) {

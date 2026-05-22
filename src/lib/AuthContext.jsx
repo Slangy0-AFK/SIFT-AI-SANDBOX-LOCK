@@ -104,13 +104,14 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false);
       setAuthChecked(true);
       
-      // If user auth fails, it might be an expired token
-      if (error.status === 401 || error.status === 403) {
+      // Only force re-login on explicit 403 (forbidden), not 401 (token may still be valid on retry)
+      if (error.status === 403) {
         setAuthError({
           type: 'auth_required',
           message: 'Authentication required'
         });
       }
+      // 401 on tab restore is often transient — don't log out, let the user retry naturally
     }
   };
 
