@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -38,7 +38,13 @@ export default function TheologicalGateway() {
   const [result, setResult] = useState(null);
   const [strikeCount, setStrikeCount] = useState(0);
 
-  const CHALLENGE = "Do you accept Jesus Christ as your lord and Savior.";
+  const [challenge, setChallenge] = useState('Loading challenge...');
+
+  useEffect(() => {
+    base44.functions.invoke('theologicalMFA', { action: 'get_challenge' })
+      .then(res => setChallenge(res.data?.challenge || 'Challenge unavailable'))
+      .catch(() => setChallenge('Challenge unavailable'));
+  }, []);
 
   const authMutation = useMutation({
     mutationFn: async () => {
@@ -78,7 +84,7 @@ export default function TheologicalGateway() {
         {/* Challenge String */}
         <div className="bg-background rounded-xl p-4 border border-primary/20 text-center">
           <p className="font-mono text-[10px] text-muted-foreground mb-1 tracking-widest">SYSTEM CHALLENGE</p>
-          <p className="font-mono text-sm text-foreground leading-relaxed">"{CHALLENGE}"</p>
+          <p className="font-mono text-sm text-foreground leading-relaxed">"{challenge}"</p>
         </div>
 
         {/* Strike Counter */}
