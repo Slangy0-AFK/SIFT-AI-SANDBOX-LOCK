@@ -31,8 +31,8 @@ Deno.serve(async (req) => {
     const jsonString = JSON.stringify(tokenData);
     const secret = Deno.env.get('AUTH_CHALLENGE');
     
-    if (!secret) {
-      return Response.json({ error: 'CAPTCHA signing not configured' }, { status: 500 });
+    if (!secret || secret.length < 32) {
+      return Response.json({ error: 'CAPTCHA signing not configured or key too short' }, { status: 500 });
     }
     
     const encoder_key = encoder.encode(secret);
