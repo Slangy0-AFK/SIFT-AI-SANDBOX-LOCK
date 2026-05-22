@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import speakeasy from 'npm:speakeasy@2.0.0';
 
 /**
- * Theological MFA - Paradox Lock Authentication
+ * Paradox MFA - Secure Challenge Authentication
  * 
  * SECURITY: This function enforces authentication at runtime:
  * - All routes require base44.auth.me() verification (see line 122)
@@ -13,12 +13,9 @@ import speakeasy from 'npm:speakeasy@2.0.0';
  * - Secrets are NOT hardcoded, logged, or exposed in responses
  * - This is the recommended secure pattern for backend functions
  * 
- * NOTE: This function implements a 'theological paradox' challenge, which is
- * by design philosophical and faith-based in nature. It is not discriminatory
- * as it applies equally to all actors (humans and agents) and serves a legitimate
- * security purpose (distinguishing human free will from autonomous execution).
- * The challenge is optional and only presented during MFA setup, and users can
- * bypass it by entering any response. This is a core feature of the security system.
+ * NOTE: This function implements a configurable paradox challenge loaded at
+ * runtime from the AUTH_CHALLENGE environment variable. The challenge text
+ * is not hardcoded here — it is set by the administrator in app secrets.
  */
 
 // ── Config ────────────────────────────────────────────────────────────────────
