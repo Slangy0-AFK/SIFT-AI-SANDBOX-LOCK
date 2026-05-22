@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Layers, Lock, Bug, Clock, Atom, Save, FileText, ClipboardList, UserX, Trash2, AlertTriangle, Brain, Bot, User, ShieldAlert, ScanLine, CheckCircle2, XCircle, Cpu, Wifi, HardDrive, ShieldX, ShieldCheck, Loader2 } from 'lucide-react';
+import { Shield, Layers, Lock, Bug, Clock, Atom, FileText, ClipboardList, UserX, Trash2, AlertTriangle, Brain, Bot, User, ShieldAlert, ScanLine, CheckCircle2, XCircle, Cpu, Wifi, HardDrive, ShieldX, ShieldCheck, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
@@ -78,11 +78,11 @@ export default function SettingsPage() {
   });
 
   const handleToggle = (key) => {
-    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const handleSave = () => {
-    toast.success('Settings saved successfully');
+    setSettings(prev => {
+      const updated = { ...prev, [key]: !prev[key] };
+      toast.success('Setting updated');
+      return updated;
+    });
   };
 
   // ── Paradox Lock State ──
@@ -193,16 +193,11 @@ export default function SettingsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">SETTINGS</h1>
-          <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
-            SYSTEM CONFIGURATION & DEFENSE PARAMETERS
-          </p>
-        </div>
-        <Button className="font-mono text-xs" onClick={handleSave}>
-          <Save className="w-3 h-3 mr-2" /> Save Configuration
-        </Button>
+      <div>
+        <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">SETTINGS</h1>
+        <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+          SYSTEM CONFIGURATION & DEFENSE PARAMETERS
+        </p>
       </div>
 
       <Tabs defaultValue="general">
