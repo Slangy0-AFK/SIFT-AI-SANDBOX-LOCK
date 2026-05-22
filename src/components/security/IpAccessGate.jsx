@@ -18,18 +18,18 @@ export default function IpAccessGate({ children }) {
   const checkAccess = async () => {
     try {
       const response = await base44.functions.invoke('checkIpAccess', {});
-      if (!response?.data) {
-        setAllowed(false);
+      const data = response?.data;
+      if (!data) {
+        // No data returned — fail-open
+        setAllowed(true);
         setChecking(false);
         return;
       }
-
-      const data = response.data;
       setUserIp(data.ip);
       setWarning(data.warning);
-      setAllowed(data.allowed === true);
+      // Only block if explicitly allowed===false AND ip is known
+      setAllowed(data.allowed !== false || data.ip === 'unknown');
     } catch (error) {
-      // On error, allow access (fail-open) — IP whitelist is optional
       console.warn('[IP Gate] checkIpAccess failed, allowing access:', error.message);
       setAllowed(true);
     } finally {
