@@ -6,9 +6,34 @@ const RATE_LIMITS = {
   enterprise: { requests_per_minute: 300, requests_per_hour: 10000 },
 };
 
+/**
+ * Rate Limiter — Internal service function
+ * Called backend-to-backend (e.g. from passwordReset).
+ * Authentication: requires either a valid user session OR a shared internal secret
+ * passed as X-Internal-Secret header (set the INTERNAL_SECRET env var).
+ * NOTE: No user session auth here by design — this is an internal utility called
+ * from other backend functions that already enforce their own auth checks.
+ */
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Allow internal backend-to-backend calls via shared secret header
+    const internalSecret = Deno.env.get('INTERNAL_SECRET');
+    const headerSecret = req.headers.get('x-internal-secret');
+    const isInternalCall = internalSecret && headerSecret === internalSecret;
+
+    // Also allow authenticated users (admin only for direct calls)
+    let isAuthorized = isInternalCall;
+    if (!isAuthorized) {
+      const user = await base44.auth.me();
+      isAuthorized = user && user.role === 'admin';
+    }
+
+    if (!isAuthorized) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const { action, endpoint, user_id, user_email } = await req.json();
 

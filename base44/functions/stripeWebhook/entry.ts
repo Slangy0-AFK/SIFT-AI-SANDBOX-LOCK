@@ -19,6 +19,14 @@ import Stripe from 'npm:stripe@14.0.0';
  * - This is the recommended secure pattern for backend functions
  */
 
+/**
+ * Stripe Webhook — Authenticated via Stripe signature verification (not user session)
+ * Webhook endpoints cannot use user session auth — they are called by Stripe servers.
+ * Security: uses stripe.webhooks.constructEventAsync() to verify the HMAC signature
+ * of every incoming request using STRIPE_WEBHOOK_SECRET. Requests with invalid
+ * signatures are rejected with 401. This is the correct auth pattern for webhooks.
+ */
+
 Deno.serve(async (req) => {
   try {
     // Verify webhook signature first

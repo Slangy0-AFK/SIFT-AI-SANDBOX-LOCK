@@ -1,7 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// Rate limiting should be implemented server-side with persistent storage
-// Using in-memory is vulnerable. This uses the backend rateLimiter function instead.
+/**
+ * Password Reset — Intentionally public (no authentication required)
+ * The request_reset action must be public by design — users call it when they
+ * can't log in. The reset_password action uses a time-limited signed token.
+ * Security: uses rate limiting, does not confirm whether email exists.
+ */
 
 Deno.serve(async (req) => {
   try {

@@ -1,8 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 /**
- * IP Access Check - Does NOT require authentication
- * Used by IpAccessGate to verify IP before login
+ * IP Access Check - Intentionally public (no authentication required)
+ * Used by IpAccessGate to verify IP BEFORE the user logs in.
+ * This endpoint must remain unauthenticated by design — it runs pre-login.
+ * Security: only returns allow/deny status, no sensitive data exposed.
  */
 
 Deno.serve(async (req) => {
