@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import GmailConnection from '@/components/scanner/GmailConnection';
+import OutlookConnection from '@/components/scanner/OutlookConnection';
 import { Shield, ShieldAlert, ShieldCheck, Search, Loader2, Mail, MessageSquare, Zap, AlertTriangle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { sendSlackNotification } from '@/lib/slack';
@@ -25,6 +26,8 @@ export default function ThreatScanner() {
   const [selectedThreat, setSelectedThreat] = useState(null);
   const [gmailScanLoading, setGmailScanLoading] = useState(false);
   const [gmailScanResult, setGmailScanResult] = useState(null);
+  const [outlookScanLoading, setOutlookScanLoading] = useState(false);
+  const [outlookScanResult, setOutlookScanResult] = useState(null);
   const unsubscribeRef = useRef(null);
 
   const { data: emailThreats = [], refetch: refetchEmailThreats, isFetching: loadingEmailThreats } = useQuery({
@@ -216,6 +219,28 @@ export default function ThreatScanner() {
     }
   };
 
+  const scanOutlookInbox = async () => {
+    setOutlookScanLoading(true);
+    setOutlookScanResult(null);
+
+    try {
+      const res = await base44.functions.invoke('scanOutlook', {});
+      setOutlookScanResult(res.data);
+      toast.success(`Outlook scan finished: ${res.data.threats_found || 0} threat(s) found`);
+      refetchEmailThreats();
+      await base44.entities.SecurityEvent.create({
+        event_type: 'outlook_scan',
+        severity: (res.data.threats_found || 0) > 0 ? 'critical' : 'info',
+        details: `Outlook inbox scan completed. ${res.data.threats_found || 0} threats found.`,
+        environment: 'production',
+      }).catch(() => {});
+    } catch (err) {
+      toast.error('Outlook scan failed: ' + err.message);
+    } finally {
+      setOutlookScanLoading(false);
+    }
+  };
+
   const resetScan = () => {
     setResult(null);
     setSession(null);
@@ -251,6 +276,7 @@ export default function ThreatScanner() {
       <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
         <div className="space-y-4">
           <GmailConnection />
+          <OutlookConnection />
 
           <div className="rounded-3xl border border-border bg-card p-4 space-y-4">
             <div className="flex items-center justify-between gap-2">
@@ -271,6 +297,30 @@ export default function ThreatScanner() {
                 <p className="font-mono text-[10px] text-muted-foreground">Last Gmail scan</p>
                 <p className="font-mono text-sm text-foreground mt-1">
                   Scanned {gmailScanResult.scanned || 0} messages · Found {gmailScanResult.threats_found || 0} threats.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-3xl border border-border bg-card p-4 space-y-4">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">Outlook Inbox Scan</p>
+                <p className="font-mono text-[11px] text-foreground mt-1">Scan the latest Outlook messages for phishing, malware, and spoofing.</p>
+              </div>
+              <Button onClick={scanOutlookInbox} disabled={outlookScanLoading}>
+                {outlookScanLoading ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Scanning...</>
+                ) : (
+                  <><Zap className="w-4 h-4 mr-2" />Scan Inbox</>
+                )}
+              </Button>
+            </div>
+            {outlookScanResult && (
+              <div className="rounded-2xl border border-border/50 bg-secondary/10 p-3">
+                <p className="font-mono text-[10px] text-muted-foreground">Last Outlook scan</p>
+                <p className="font-mono text-sm text-foreground mt-1">
+                  Scanned {outlookScanResult.scanned || 0} messages · Found {outlookScanResult.threats_found || 0} threats.
                 </p>
               </div>
             )}
