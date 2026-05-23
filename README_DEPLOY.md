@@ -14,6 +14,7 @@ This guide covers two paths:
 2) Local testing without Base44 credits (mocked backend)
 - We included a lightweight in-memory mock of the Base44 client at `src/api/base44Mock.js`.
 - Enable mock by setting `VITE_BASE44_MOCK=true`.
+- If you are out of Base44 credits, use the mock path until tokens are available again. This gives you the full UI and threat workflow experience without live Base44 execution.
 - Start dev server bound to all interfaces (for tunneling):
 ```bash
 npm install
@@ -29,6 +30,7 @@ ngrok http 5173 --host-header=localhost:5173
 
 3) Switching to real Base44
 - Set `VITE_BASE44_MOCK=false` and set `VITE_BASE44_APP_ID` in env or GitHub secrets.
+- Optionally set `VITE_BASE44_ACCESS_TOKEN` if you want to pre-authenticate with an existing Base44 token or integration token.
 - Deploy Base44 functions and ensure runtime env vars are set in Base44.
 
 Notes & Limitations

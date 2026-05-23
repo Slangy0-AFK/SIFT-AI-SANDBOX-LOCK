@@ -15,18 +15,19 @@ Any change pushed to the repo will also be reflected in the Base44 Builder.
 1. Clone the repository using the project's Git URL 
 2. Navigate to the project directory
 3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
+4. Create an `.env.local` file and set the right environment variables, or copy `.env.example` for mock mode while you wait for Base44 credits.
 
 ```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
-
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
+VITE_BASE44_MOCK=true
+# Only set these when you have live Base44 access and want real backend integration:
+# VITE_BASE44_APP_ID=your_app_id
+# VITE_BASE44_APP_BASE_URL=your_backend_url
+# VITE_BASE44_ACCESS_TOKEN=your_integration_or_user_token
 ```
 
 Run the app: `npm run dev`
+
+> If you are out of Base44 credits, keep `VITE_BASE44_MOCK=true` and the app will run with the local mock backend until you can switch to live Base44.
 
 **Publish your changes**
 

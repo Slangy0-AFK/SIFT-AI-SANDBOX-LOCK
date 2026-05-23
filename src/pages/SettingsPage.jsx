@@ -17,6 +17,7 @@ import AuditLogExport from '../components/settings/AuditLogExport';
 import MFASetup from '../components/security/MFASetup';
 import PasswordReset from '../components/security/PasswordReset';
 import EmailProviderSetup from '../components/settings/EmailProviderSetup';
+import SlackIntegrationSetup from '../components/settings/SlackIntegrationSetup';
 import { Badge } from '@/components/ui/badge';
 import TheologicalGateway from '@/components/paradox/TheologicalGateway';
 import AdminKeyClaim from '../components/settings/AdminKeyClaim';
@@ -252,6 +253,7 @@ export default function SettingsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <EmailProviderSetup />
+        <SlackIntegrationSetup />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

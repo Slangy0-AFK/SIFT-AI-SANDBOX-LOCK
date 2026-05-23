@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import GmailConnection from '@/components/scanner/GmailConnection';
 import { Shield, ShieldAlert, ShieldCheck, Search, Loader2, Mail, MessageSquare, Zap, AlertTriangle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { sendSlackNotification } from '@/lib/slack';
 
 const EMAIL_LISTS_KEY = 'aegis_email_lists';
 
@@ -87,6 +88,9 @@ export default function ThreatScanner() {
         addToList('blacklist', threat.from_address);
       }
       toast.success(`Email threat marked ${status}`);
+      void sendSlackNotification({
+        text: `*Email Threat Update* • ${threat.from_address || threat.subject || threat.id} • status: ${status.toUpperCase()}`,
+      });
       if (status === 'reviewed') setSelectedThreat(null);
       refetchEmailThreats();
     } catch (err) {
