@@ -1,0 +1,41 @@
+{
+  "name": "AEGIS Quantum Shield",
+  "short_name": "AEGIS",
+  "description": "Enterprise Security Matrix - Real-time threat detection and neutralization",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a1120",
+  "theme_color": "#00d4ff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["security", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View security dashboard",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Threat Log",
+      "short_name": "Threats",
+      "description": "View threat registry",
+      "url": "/threat-log",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
