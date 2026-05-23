@@ -4,10 +4,21 @@ import speakeasy from 'npm:speakeasy@2.0.0';
 /**
  * Theological MFA - Paradox Lock Authentication
  * 
- * SECURITY: This function enforces authentication at runtime:
- * - All routes require base44.auth.me() verification (see line 122)
- * - get_challenge: Public endpoint (no auth required to fetch challenge text)
- * - human_authenticate & agent_authenticate: Require authenticated user session
+ * SECURITY: This function enforces strict authentication ordering:
+ * 1. Parse JSON body (reject malformed requests without auth)
+ * 2. Extract action parameter
+ * 3. Allow public 'get_challenge' action
+ * 4. Verify authentication with base44.auth.me() for all other actions
+ * 5. Only after auth succeeds, perform input validation and record strikes
+ *
+ * This ordering prevents unauthenticated users from triggering database writes.
+ * 
+ * Protected actions (all require authentication):
+ * - human_authenticate: Requires MFA (TOTP or hardware token)
+ * - agent_authenticate: Requires cryptographic zero-knowledge proof
+ * 
+ * Public actions (no auth required):
+ * - get_challenge: Returns challenge text for UI display only
  * 
  * Environment variables are fetched securely at runtime inside Deno.serve():
  * - Secrets are NOT hardcoded, logged, or exposed in responses
@@ -110,30 +121,7 @@ Deno.serve(async (req) => {
   try {
     const rawBody = await req.text();
 
-    // ── Input Sanitization Guard (immediate Strike 3 on overflow/injection) ──
-    if (rawBody.length > MAX_INPUT_LENGTH || !ALLOWED_INPUT_PATTERN.test(rawBody)) {
-      console.warn(`[THEOLOGICAL-MFA] Input violation from ${sourceId} — triggering immediate Strike 3`);
-      await runParadoxTarpit(200);
-      // Record 3 strikes at once for input violation
-      await recordStrike(base44, sourceId);
-      await recordStrike(base44, sourceId);
-      await recordStrike(base44, sourceId);
-
-      await base44.asServiceRole.entities.SecurityEvent.create({
-        event_type: 'threat_locked',
-        severity: 'fatal',
-        details: `Strike 3 (input violation) — ${sourceId} shunted to Base-pi tarpit. Network ingress severed.`,
-        environment: 'tarpit',
-      }).catch(() => {});
-
-      return Response.json({
-        locked: true,
-        strike: 3,
-        reason: 'Input violation detected. Connection terminated.',
-        restoration: 'Physical manual override required (GPIO button + offline master key).',
-      }, { status: 429 });
-    }
-
+    // Parse JSON first - if invalid, reject without auth and without database writes
     let body;
     try {
       body = JSON.parse(rawBody);
@@ -157,6 +145,17 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });
     }
+
+    // ── Input Sanitization Guard (after auth, before database writes) ──
+    // SECURITY: Input validation and strike recording now happens AFTER authentication check.
+    // This prevents unauthenticated users from triggering database writes via malformed input.
+    if (rawBody.length > MAX_INPUT_LENGTH || !ALLOWED_INPUT_PATTERN.test(rawBody)) {
+      console.warn(`[THEOLOGICAL-MFA] Input violation from authenticated user ${sourceId} — triggering immediate Strike 3`);
+      await runParadoxTarpit(200);
+      // Record 3 strikes at once for input violation
+      await recordStrike(base44, sourceId);
+      await recordStrike(base44, sourceId);
+      await recordStrike(base44, sourceId);
 
     // ── HUMAN CORRIDOR ─────────────────────────────────────────────────────────
     // Requires: local user authenticated + valid TOTP or hardware token signal
