@@ -297,7 +297,7 @@ Deno.serve(async (req) => {
             details: `Strike 3 — Agent ${sourceId} failed ZKP. Shunted to Base-pi/Base-60 paradox tarpit. Hardware lockout.`,
             environment: 'tarpit',
           }).catch(() => {});
-          await base44.asServiceRole.entities.ZeroDayAnomaly.create({
+          const anomaly = await base44.asServiceRole.entities.ZeroDayAnomaly.create({
             anomaly_signature: `theological-zkp-fail-${sourceId}-${Date.now()}`,
             anomaly_type: 'ai_adversarial',
             severity: 'fatal',
@@ -307,7 +307,22 @@ Deno.serve(async (req) => {
             confidence_score: 99,
             mitigation_applied: 'Base-pi paradox tarpit + hardware ingress lockout',
             notes: `Agent responded "${response}" without valid ZKP. Strike 3 neutralization executed.`,
+          }).catch(() => null);
+
+          await base44.functions.invoke('autoBlockIp', {
+            source_ip: sourceId,
+            threat_id: anomaly?.id || `theological-zkp-fail-${sourceId}-${Date.now()}`,
+            reason: 'Auto-blocked after 3 QRNG cycles failed agent authentication',
           }).catch(() => {});
+
+          await base44.asServiceRole.entities.SecurityEvent.create({
+            event_type: 'auto_blacklist',
+            severity: 'fatal',
+            details: `Agent ${sourceId} blocked after 3 QRNG cycle failures; IP auto-blacklisted.`,
+            source_ip: sourceId,
+            environment: 'tarpit',
+          }).catch(() => {});
+
           return Response.json({
             locked: true,
             strike: 3,

@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import GuardianRing from '../components/agents/GuardianRing';
 import ZeroDayFeed from '../components/zeroday/ZeroDayFeed';
 import { motion } from 'framer-motion';
-import { runPoliciesAgainstEvent } from '../lib/workflowEngine';
 
 const ANOMALY_TYPES = ['behavioral', 'polymorphic', 'memory_injection', 'side_channel', 'supply_chain', 'ai_adversarial', 'fileless', 'firmware', 'unknown'];
 const SEVERITIES = ['info', 'warning', 'critical', 'fatal'];

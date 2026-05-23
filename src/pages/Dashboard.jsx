@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
-import { Shield, AlertTriangle, Lock, Skull, Eye, ChevronDown, ChevronUp, Bug, Radiation, GitBranch, ShieldAlert, FileText } from 'lucide-react';
+import { Shield, AlertTriangle, Lock, Skull, Eye, ChevronDown, ChevronUp, Bug, Radiation, ShieldAlert, FileText } from 'lucide-react';
 
 import ThreatCounter from '../components/dashboard/ThreatCounter';
 import LiveEventFeed from '../components/dashboard/LiveEventFeed';
@@ -36,7 +36,6 @@ const quickLinks = [
   { path: '/threat-intel', icon: ShieldAlert, label: 'Threat Intel', color: 'text-accent' },
   { path: '/firewall', icon: Shield, label: 'Firewall', color: 'text-primary' },
   { path: '/threat-log', icon: FileText, label: 'Threat Log', color: 'text-primary' },
-  { path: '/workflow', icon: GitBranch, label: 'Workflows', color: 'text-primary' },
   { path: '/mirror-env', icon: Bug, label: 'Mirror Env', color: 'text-green-400' },
 ];
 

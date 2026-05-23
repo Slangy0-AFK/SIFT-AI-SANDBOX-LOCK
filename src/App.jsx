@@ -1,118 +1,39 @@
 import React from 'react';
-import { Toaster } from "@/components/ui/toaster"
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import PageNotFound from './lib/PageNotFound';
-import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import AppLayout from '@/components/layout/AppLayout';
+import Dashboard from '@/pages/Dashboard';
+import ZeroDayCenter from '@/pages/ZeroDayCenter';
+import ThreatIntelligence from '@/pages/ThreatIntelligence';
+import FirewallDashboard from '@/pages/FirewallDashboard';
+import ThreatScanner from '@/pages/ThreatScanner';
+import MirrorEnvironment from '@/pages/MirrorEnvironment';
+import ThreatLog from '@/pages/ThreatLog';
+import UserProfile from '@/pages/UserProfile';
+import SubscriptionPage from '@/pages/SubscriptionPage';
+import SettingsPage from '@/pages/SettingsPage';
+import PageNotFound from '@/lib/PageNotFound';
+import useRealTimeSync from '@/hooks/useRealTimeSync';
 
-import { DeviceScanService } from '@/lib/DeviceScanService';
-import Dashboard from './pages/Dashboard';
-import BaseChain from './pages/BaseChain';
-import ParadoxLock from './pages/ParadoxLock';
-import MirrorEnvironment from './pages/MirrorEnvironment';
-import ThreatLog from './pages/ThreatLog.jsx';
-import SettingsPage from './pages/SettingsPage';
-import AppLayout from './components/layout/AppLayout';
-import SubscriptionPage from './pages/SubscriptionPage';
-import ZeroDayCenter from './pages/ZeroDayCenter';
-import WorkflowEngine from './pages/WorkflowEngine';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
-import RefundPolicy from './pages/RefundPolicy';
-import ComplianceChecklist from './pages/ComplianceChecklist';
-import AcceptInvitePage from './pages/AcceptInvite';
-
-
-import FirewallDashboard from './pages/FirewallDashboard';
-import ThreatIntelligence from './pages/ThreatIntelligence';
-import FirewallRules from './pages/FirewallRules';
-import FirewallLogs from './pages/FirewallLogs';
-import UserProfile from './pages/UserProfile';
-import Welcome from './pages/Welcome';
-import ThreatScanner from './pages/ThreatScanner.jsx';
-import OnboardingPermissions from './components/onboarding/OnboardingPermissions';
-
-const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
-
-  // Start background device scanner when user is authenticated
-  React.useEffect(() => {
-    if (!isLoadingAuth && !isLoadingPublicSettings && !authError) {
-      DeviceScanService.start();
-      return () => {
-        // Cleanup on unmount only - don't stop scans
-      };
-    }
-  }, [isLoadingAuth, isLoadingPublicSettings, authError]);
-
-  // Show loading spinner while checking app public settings or auth
-  if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  // Handle authentication errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
-    }
-  }
-
-  // Render the main app
+export default function App() {
+  useRealTimeSync();
   return (
-    <Routes>
-      <Route element={<AppLayout />}>
-        <Route path="/" element={<Welcome />} />
-        <Route path="/onboarding" element={<OnboardingPermissions />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/profile" element={<UserProfile />} />
-        <Route path="/base-chain" element={<BaseChain />} />
-        <Route path="/paradox-lock" element={<ParadoxLock />} />
-        <Route path="/mirror-env" element={<MirrorEnvironment />} />
-        <Route path="/threat-log" element={<ThreatLog />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/subscription" element={<SubscriptionPage />} />
-        <Route path="/zero-day" element={<ZeroDayCenter />} />
-        <Route path="/workflow" element={<WorkflowEngine />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<TermsOfService />} />
-        <Route path="/refund-policy" element={<RefundPolicy />} />
-        <Route path="/compliance" element={<ComplianceChecklist />} />
-        <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
-
-        <Route path="/threat-intel" element={<ThreatIntelligence />} />
-        <Route path="/firewall" element={<FirewallDashboard />} />
-        <Route path="/firewall/rules" element={<FirewallRules />} />
-        <Route path="/firewall/logs" element={<FirewallLogs />} />
-        <Route path="/threat-scanner" element={<ThreatScanner />} />
-      </Route>
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<AppLayout />}>
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/zero-day" element={<ZeroDayCenter />} />
+          <Route path="/threat-intel" element={<ThreatIntelligence />} />
+          <Route path="/firewall" element={<FirewallDashboard />} />
+          <Route path="/threat-scanner" element={<ThreatScanner />} />
+          <Route path="/mirror-env" element={<MirrorEnvironment />} />
+          <Route path="/threat-log" element={<ThreatLog />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/subscription" element={<SubscriptionPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="*" element={<PageNotFound />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
-};
-
-
-function App() {
-
-  return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
-    </AuthProvider>
-  )
 }
-
-export default App

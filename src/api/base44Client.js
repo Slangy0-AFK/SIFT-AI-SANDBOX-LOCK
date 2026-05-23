@@ -1,14 +1,16 @@
 import { createClient } from '@base44/sdk';
-import { appParams } from '@/lib/app-params';
+import base44Mock from './base44Mock';
 
-const { appId, token, functionsVersion, appBaseUrl } = appParams;
+const USE_MOCK = import.meta.env.VITE_BASE44_MOCK === 'true' || !import.meta.env.VITE_BASE44_APP_ID;
 
-//Create a client with authentication required
-export const base44 = createClient({
-  appId,
-  token,
-  functionsVersion,
-  serverUrl: '',
-  requiresAuth: false,
-  appBaseUrl
-});
+let base44Client;
+if (USE_MOCK) {
+  base44Client = base44Mock;
+} else {
+  base44Client = createClient({
+    appId: import.meta.env.VITE_BASE44_APP_ID || 'cbef744a8545c389ef439ea6'
+  });
+}
+
+export const base44 = base44Client;
+export default base44Client;

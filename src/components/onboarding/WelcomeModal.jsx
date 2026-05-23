@@ -9,7 +9,7 @@ export default function WelcomeModal({ onClose }) {
     { title: 'Real-time Threat Monitoring', desc: 'Track threats as they happen', icon: CheckCircle },
     { title: 'Quantum Verification', desc: '6-step Base Chain pipeline', icon: CheckCircle },
     { title: 'AI Detection', desc: 'Paradox lock distinguishes humans from bots', icon: CheckCircle },
-    { title: 'Automated Response', desc: 'Workflow engine for instant action', icon: CheckCircle },
+    { title: 'Automated Response', desc: 'Immediate defense actions and audit logging', icon: CheckCircle },
   ];
 
   return (

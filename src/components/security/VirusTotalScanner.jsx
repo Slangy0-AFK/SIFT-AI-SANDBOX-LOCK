@@ -86,6 +86,13 @@ export default function VirusTotalScanner() {
         is_threat: (data?.maliciousCount || 0) > 0,
       });
 
+      await base44.entities.SecurityEvent.create({
+        event_type: 'virustotal_scan',
+        severity: data?.maliciousCount > 0 ? 'critical' : data?.suspiciousCount > 0 ? 'warning' : 'info',
+        details: `VirusTotal scan completed for ${scanType}:${scanValue.trim()}. Malicious: ${data?.maliciousCount || 0}, suspicious: ${data?.suspiciousCount || 0}.`, 
+        environment: 'production',
+      }).catch(() => {});
+
     } catch (err) {
       if (session?.id) {
         await base44.entities.ScanSession.update(session.id, {
