@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import speakeasy from 'npm:speakeasy@2.0.0';
 
 /**
- * Theological MFA - Paradox Lock Authentication
+ * Adaptive Challenge MFA - Secure Authentication
  * 
  * SECURITY: This function enforces strict authentication ordering:
  * 1. Parse JSON body (reject malformed requests without auth)
@@ -24,10 +24,10 @@ import speakeasy from 'npm:speakeasy@2.0.0';
  * - Secrets are NOT hardcoded, logged, or exposed in responses
  * - This is the recommended secure pattern for backend functions
  * 
- * NOTE: This function implements a configurable paradox challenge used to
- * distinguish human users from autonomous agents. The challenge text is loaded
- * at runtime from the AUTH_CHALLENGE environment variable and is not hardcoded.
- * It applies equally to all actors and serves a legitimate security purpose.
+ * NOTE: This function implements a configurable challenge used to
+ * distinguish authenticated users from automated clients. The challenge text is
+ * loaded at runtime from the AUTH_CHALLENGE environment variable and is not
+ * hardcoded. It applies equally to all actors and serves a legitimate security purpose.
  */
 
 // ── Config ────────────────────────────────────────────────────────────────────
@@ -267,14 +267,14 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',
-        details: `Human corridor authenticated — ${user.email}. QRNG OTP issued. Universal truth verified.`,
+        details: `Challenge response validated for ${user.email}. QRNG OTP issued.`,
         environment: 'production',
       }).catch(() => {});
 
       return Response.json({
         success: true,
-        corridor: 'human',
-        message: 'Access granted via Human Corridor. Free will acknowledged.',
+        corridor: 'user',
+        message: 'Access granted. Challenge response validated successfully.',
         qrng_otp: qrngPad,
         challenge: AUTH_CHALLENGE,
       });
@@ -289,24 +289,24 @@ Deno.serve(async (req) => {
       if (!agent_zkp || typeof agent_zkp !== 'string' || agent_zkp.length < 64) {
         const strike = await recordStrike(base44, sourceId);
         if (strike.count >= 3) {
-          console.warn(`[THEOLOGICAL-MFA] Strike 3 — agent ${sourceId} entering paradox tarpit`);
+          console.warn(`[ADAPTIVE-CHALLENGE] Strike 3 — automated client ${sourceId} failed proof`);
           await runParadoxTarpit(200);
           await base44.asServiceRole.entities.SecurityEvent.create({
             event_type: 'threat_locked',
             severity: 'fatal',
-            details: `Strike 3 — Agent ${sourceId} failed ZKP. Shunted to Base-2/Base-12/Base-60 paradox tarpit. Hardware lockout.`,
+            details: `Strike 3 — automated client ${sourceId} failed ZKP proof. Access limited.`,
             environment: 'tarpit',
           }).catch(() => {});
           const anomaly = await base44.asServiceRole.entities.ZeroDayAnomaly.create({
-            anomaly_signature: `theological-zkp-fail-${sourceId}-${Date.now()}`,
+            anomaly_signature: `adaptive-challenge-zkp-fail-${sourceId}-${Date.now()}`,
             anomaly_type: 'ai_adversarial',
             severity: 'fatal',
             status: 'neutralized',
             source_ip: sourceId,
             environment: 'tarpit',
             confidence_score: 99,
-            mitigation_applied: 'Paradox tarpit + hardware ingress lockout',
-            notes: `Agent responded "${response}" without valid ZKP. Strike 3 neutralization executed.`,
+            mitigation_applied: 'adaptive challenge tarpit + access restriction',
+            notes: `Automated client responded "${response}" without valid ZKP. Strike 3 neutralization executed.`,
           }).catch(() => null);
 
           await base44.functions.invoke('autoBlockIp', {
@@ -326,8 +326,8 @@ Deno.serve(async (req) => {
           return Response.json({
             locked: true,
             strike: 3,
-            reason: 'Strike 3: Agent shunted to Base-2/Base-12/Base-60 paradox loop. Processing threads frozen.',
-            restoration: 'Physical manual override required (GPIO button + offline master key).',
+            reason: 'Strike 3: authentication failed. Access restricted pending manual review.',
+            restoration: 'Support must review and reset access policies.',
           }, { status: 429 });
         }
 
@@ -335,24 +335,24 @@ Deno.serve(async (req) => {
         return Response.json({
           success: false,
           strike: strike.count,
-          message: `Agent corridor requires cryptographic ZKP from decentralized oracle. Simple string responses rejected. Strike ${strike.count}/3.`,
-          required: 'Connect to immutable historical consensus database and return ZKP proof (min 64 hex chars).',
+          message: `Automated client access requires a valid cryptographic proof. Strike ${strike.count}/3.`,
+          required: 'Submit a valid ZKP proof string of minimum 64 characters.',
           delay_ms: strike.delay,
         }, { status: 403 });
       }
 
       await clearStrikes();
       await base44.asServiceRole.entities.SecurityEvent.create({
-        event_type: 'paradox_challenge',
+        event_type: 'challenge_verification',
         severity: 'warning',
-        details: `Agent corridor — ZKP submitted by ${sourceId}. Manual oracle verification required.`,
+        details: `Automated client proof submitted by ${sourceId}. Manual verification pending.`,
         environment: 'honeypot',
       }).catch(() => {});
 
       return Response.json({
         success: false,
-        corridor: 'agent',
-        message: 'ZKP received. Pending oracle consensus verification. Access not yet granted.',
+        corridor: 'automated',
+        message: 'Proof received. Verification pending. Access is not yet granted.',
       }, { status: 202 });
     }
 

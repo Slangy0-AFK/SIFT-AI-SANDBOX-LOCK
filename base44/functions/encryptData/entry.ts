@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
       const CryptoJS = await import('npm:crypto-js@4.2.0');
       const encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), ENCRYPTION_KEY).toString();
       
-      await base44.entities.SecurityEvent.create({
+      await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',
         details: `Data encrypted by ${user.email}`,
