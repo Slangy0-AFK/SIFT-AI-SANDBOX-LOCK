@@ -70,9 +70,6 @@
     "create": {
       "$or": [
         {
-          "data.subscriber_id": "{{user.id}}"
-        },
-        {
           "created_by_id": "{{user.id}}"
         },
         {
@@ -103,9 +100,6 @@
           "data.subscriber_id": "{{user.id}}"
         },
         {
-          "created_by_id": "{{user.id}}"
-        },
-        {
           "user_condition": {
             "role": "admin"
           }
@@ -113,19 +107,9 @@
       ]
     },
     "delete": {
-      "$or": [
-        {
-          "data.subscriber_id": "{{user.id}}"
-        },
-        {
-          "created_by_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
