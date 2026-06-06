@@ -2,8 +2,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import speakeasy from 'npm:speakeasy@2.0.0';
 
 /**
- * Adaptive Challenge MFA - Secure Authentication
- * 
+ * Adaptive Paradox Challenge MFA - Secure Backend Authentication
+ *
+ * NOTE: The frontend renders the paradox challenge as a UI layer only. All
+ * critical operations — including base2/base12/base60 transformation and
+ * QRNG generation — are performed backend-side inside this function.
+ *
  * SECURITY: This function enforces strict authentication ordering:
  * 1. Parse JSON body (reject malformed requests without auth)
  * 2. Extract action parameter
@@ -12,22 +16,22 @@ import speakeasy from 'npm:speakeasy@2.0.0';
  * 5. Only after auth succeeds, perform input validation and record strikes
  *
  * This ordering prevents unauthenticated users from triggering database writes.
- * 
+ *
  * Protected actions (all require authentication):
  * - human_authenticate: Requires MFA (TOTP or hardware token)
  * - agent_authenticate: Requires cryptographic zero-knowledge proof
- * 
+ *
  * Public actions (no auth required):
  * - get_challenge: Returns challenge text for UI display only
- * 
+ *
  * Environment variables are fetched securely at runtime inside Deno.serve():
  * - Secrets are NOT hardcoded, logged, or exposed in responses
  * - This is the recommended secure pattern for backend functions
- * 
+ *
  * NOTE: This function implements a configurable challenge used to
  * distinguish authenticated users from automated clients. The challenge text is
  * loaded at runtime from the AUTH_CHALLENGE environment variable and is not
- * hardcoded. It applies equally to all actors and serves a legitimate security purpose.
+ * hardcoded.
  */
 
 // ── Config ────────────────────────────────────────────────────────────────────

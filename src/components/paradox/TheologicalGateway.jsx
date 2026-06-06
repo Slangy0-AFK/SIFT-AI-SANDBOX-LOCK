@@ -1,3 +1,11 @@
+/**
+ * Paradox Verification Gateway
+ *
+ * NOTE: This component is a frontend-only challenge UI. It displays the paradox
+ * verification state and submits user/agent responses to the backend function.
+ * The backend service is responsible for all sensitive base math, QRNG generation,
+ * strike evaluation, and challenge verification.
+ */
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation } from '@tanstack/react-query';
@@ -76,7 +84,7 @@ export default function TheologicalGateway() {
           <Lock className="w-4 h-4 text-primary" /> PARADOX VERIFICATION GATEWAY
         </CardTitle>
         <p className="font-mono text-[9px] text-muted-foreground tracking-wide mt-1">
-          3-STRIKE QRNG NEUTRALIZATION · BASE-2/12/60 TARPIT · GENERIC SHELL CHALLENGE
+          3-STRIKE QRNG NEUTRALIZATION · BACKEND BASE-2/12/60/QRNG · FRONTEND PARADOX UI
         </p>
       </CardHeader>
       <CardContent className="space-y-4">

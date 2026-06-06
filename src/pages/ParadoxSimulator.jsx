@@ -55,7 +55,7 @@ export default function ParadoxSimulator() {
             <Lock className="w-8 h-8 text-primary" />
             <h1 className="text-3xl font-mono font-bold text-foreground">Paradox Simulator</h1>
           </div>
-          <p className="text-muted-foreground font-mono text-sm">Test the Theological MFA authentication engine in a controlled environment.</p>
+          <p className="text-muted-foreground font-mono text-sm">Test the backend Paradox authentication engine in a controlled environment. The frontend presents the paradox UI only; the base math and QRNG processing occur on the server.</p>
         </div>
 
         {/* Simulation Controls */}
@@ -214,6 +214,10 @@ export default function ParadoxSimulator() {
             <div>
               <div className="text-foreground font-semibold mb-1">Strike System</div>
               <p>Failed attempts increment strike count. 3 strikes triggers lockout. Resets after successful authentication.</p>
+            </div>
+            <div>
+              <div className="text-foreground font-semibold mb-1">Backend QRNG</div>
+              <p>The Paradox UI simulates the frontend experience only; the actual QRNG pad and base conversion logic are produced securely on the backend.</p>
             </div>
           </CardContent>
         </Card>

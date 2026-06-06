@@ -83,6 +83,7 @@ export default function ParadoxLock() {
               </CardContent>
             </Card>
 
+            {/* Paradox gateway UI remains hidden here; only the backend function performs the sensitive base math and QRNG operations. */}
             <div className="hidden">
               <TheologicalGateway />
             </div>

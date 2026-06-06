@@ -463,7 +463,7 @@ export default function SettingsPage() {
 
 
 
-          {/* Theological MFA Gateway — Hidden from customer view */}
+          {/* Paradox UI is frontend-only; internal base math and QRNG processing are performed securely on the backend. */}
           <div className="hidden">
             <TheologicalGateway />
           </div>
@@ -518,7 +518,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Theological MFA Gateway — Hidden from customer view */}
+          {/* Paradox UI is frontend-only; internal base math and QRNG processing are performed securely on the backend. */}
           <div className="hidden">
             <TheologicalGateway />
           </div>
