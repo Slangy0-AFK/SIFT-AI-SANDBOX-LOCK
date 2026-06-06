@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import FeatureGate from '@/components/subscription/FeatureGate';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Shield, Zap, RefreshCw, Activity } from 'lucide-react';
+import { AlertTriangle, Shield, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import GuardianRing from '../components/agents/GuardianRing';
 import ZeroDayFeed from '../components/zeroday/ZeroDayFeed';

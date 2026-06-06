@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { MessageCircle, Send, ThumbsUp, ThumbsDown, Lightbulb, ChevronDown, ChevronUp, Loader2, CheckCircle, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';

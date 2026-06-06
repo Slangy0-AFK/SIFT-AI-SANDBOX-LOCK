@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { Zap, AlertTriangle, Activity } from 'lucide-react';
+import { Activity } from 'lucide-react';
 
 const MAX_POINTS = 20;
 

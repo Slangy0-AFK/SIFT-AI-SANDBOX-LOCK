@@ -8,7 +8,7 @@ import { base44 } from '@/api/base44Client';
 import {
   Mail, Link, Shield, AlertTriangle, CheckCircle2, XCircle,
   Loader2, Search, ShieldAlert, Globe, FileWarning, Eye,
-  Cpu, Wifi, Lock, Zap, Bug, Server, Activity
+  Cpu, Wifi, Lock, Zap, Bug, Server
 } from 'lucide-react';
 import RealTimeThreatMonitor from '@/components/threats/RealTimeThreatMonitor';
 

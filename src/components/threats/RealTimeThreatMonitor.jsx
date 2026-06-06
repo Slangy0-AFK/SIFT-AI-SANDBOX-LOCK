@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
-  Shield, Zap, Cpu, Globe, AlertTriangle, CheckCircle2, 
-  Loader2, RefreshCw, Target, Activity, Eye, Lock
+  Shield, Cpu, CheckCircle2, 
+  Loader2, RefreshCw, Target, Activity, Eye
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { 
-  Mail, Plus, Trash2, Clock, CheckCircle2, XCircle, AlertTriangle,
+  Mail, Plus, Trash2, Clock, CheckCircle2,
   UserPlus, Calendar, Users
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

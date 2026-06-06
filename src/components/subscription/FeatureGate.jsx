@@ -1,7 +1,3 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Lock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
 
 const PLAN_LABELS = { pro: 'Pro', enterprise: 'Enterprise' };

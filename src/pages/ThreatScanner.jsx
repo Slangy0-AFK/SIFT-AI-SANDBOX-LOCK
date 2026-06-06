@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import GmailConnection from '@/components/scanner/GmailConnection';
 import OutlookConnection from '@/components/scanner/OutlookConnection';
-import { Shield, ShieldAlert, ShieldCheck, Search, Loader2, Mail, MessageSquare, Zap, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Shield, ShieldAlert, ShieldCheck, Search, Loader2, Mail, Zap, AlertTriangle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { sendSlackNotification } from '@/lib/slack';
 

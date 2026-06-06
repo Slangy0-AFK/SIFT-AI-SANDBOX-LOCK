@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Shield, ShieldAlert, Loader2, AlertTriangle } from 'lucide-react';
+import { ShieldAlert, Loader2 } from 'lucide-react';
 
 export default function IpAccessGate({ children }) {
   const [checking, setChecking] = useState(true);

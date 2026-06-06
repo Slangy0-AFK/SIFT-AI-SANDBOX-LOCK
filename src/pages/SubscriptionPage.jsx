@@ -1,17 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Shield, Smartphone, RefreshCw, ToggleLeft, ToggleRight } from 'lucide-react';
 import { toast } from 'sonner';
 import PlanCard, { PLANS } from '../components/subscription/PlanCard';
 import DeviceManager from '../components/subscription/DeviceManager';
 import InvitationManager from '../components/subscription/InvitationManager';
 import SupportCenter from '../components/support/SupportCenter';
-import CaptchaModal from '../components/subscription/CaptchaModal';
-import { motion } from 'framer-motion';
 
 export default function SubscriptionPage() {
   const [billingCycle, setBillingCycle] = useState('monthly');

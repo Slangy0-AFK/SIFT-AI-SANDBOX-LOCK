@@ -6,8 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
-  Shield, Scan, AlertTriangle, CheckCircle, Lock, Unlock, 
-  Code, Eye, EyeOff, FileText, Layers, Binary, Activity
+  Shield, Scan, AlertTriangle, CheckCircle, 
+  Code, Eye, EyeOff, Layers, Binary, Activity
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';

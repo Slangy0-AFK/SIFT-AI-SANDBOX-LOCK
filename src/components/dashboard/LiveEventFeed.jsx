@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format } from 'date-fns';
 import { Shield, Lock, Zap, Bug, AlertTriangle, CheckCircle } from 'lucide-react';
 
 const eventIcons = {

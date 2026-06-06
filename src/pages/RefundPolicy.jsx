@@ -1,11 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { FileText, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { base44 } from '@/api/base44Client';
-import { toast } from 'sonner';
+import React from 'react';
+import { FileText, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const LAST_UPDATED = 'May 21, 2026';
 const APP_NAME = 'AEGIS Quantum Shield';

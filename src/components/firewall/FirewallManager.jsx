@@ -9,8 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Shield, Plus, Trash2, Edit, Activity, AlertTriangle, CheckCircle, XCircle, Globe, Network } from 'lucide-react';
+import { Shield, Plus, Trash2, Edit, Activity, AlertTriangle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function FirewallManager() {

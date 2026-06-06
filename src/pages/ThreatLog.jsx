@@ -4,8 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Shield, ChevronDown, ChevronUp, Skull, Clock, Activity,
-  Target, Cpu, RefreshCw, Eye, Loader2, CheckCircle2, AlertTriangle, Ban
+  Shield, ChevronDown, ChevronUp, Clock, Activity, Cpu, RefreshCw, Eye, Loader2, CheckCircle2, Ban
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';

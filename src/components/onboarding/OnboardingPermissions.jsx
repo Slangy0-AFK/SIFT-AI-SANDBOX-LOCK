@@ -4,11 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import {
-  Shield, Mail, Smartphone, HardDrive, Wifi, Lock, CheckCircle2,
-  Loader2, ArrowRight, AlertTriangle, Eye, EyeOff, KeyRound,
-  ScanLine, Bell, FileText, Settings, Globe, Database
+  Shield, Mail, Smartphone, HardDrive, Wifi, CheckCircle2,
+  Loader2, ArrowRight, Eye, Bell, FileText, Settings, Database
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';

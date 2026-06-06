@@ -3,8 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, X, ChevronDown, ChevronUp } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, X } from 'lucide-react';
 
 const TRIGGER_OPTIONS = [
   { value: 'zero_day_detected', label: 'Zero-Day Anomaly Detected' },

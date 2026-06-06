@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Layers, Lock, Bug, Clock, Atom, FileText, ClipboardList, UserX, Trash2, AlertTriangle, Brain, Bot, User, ShieldAlert, ScanLine, CheckCircle2, XCircle, Cpu, Wifi, HardDrive, ShieldX, ShieldCheck, Loader2 } from 'lucide-react';
+import { Shield, Lock, Bug, Clock, Atom, FileText, ClipboardList, UserX, Trash2, AlertTriangle, Bot, User, ShieldAlert, Cpu, Wifi, HardDrive, ShieldX, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import FeatureGate from '@/components/subscription/FeatureGate';
 import AuditLogExport from '../components/settings/AuditLogExport';

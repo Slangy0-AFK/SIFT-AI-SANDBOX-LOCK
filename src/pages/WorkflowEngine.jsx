@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { GitBranch, Plus, Play, Trash2, ToggleLeft, ToggleRight, Clock, Zap, AlertTriangle } from 'lucide-react';
+import { GitBranch, Plus, Play, Trash2, ToggleLeft, ToggleRight, Clock, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import PolicyBuilder from '../components/workflow/PolicyBuilder';

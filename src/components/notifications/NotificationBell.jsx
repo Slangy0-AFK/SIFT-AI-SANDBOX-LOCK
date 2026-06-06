@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { Bell, X, AlertTriangle, Zap, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 
 const MAX_NOTIFS = 30;
 

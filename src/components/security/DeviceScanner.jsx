@@ -6,8 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
-  ScanLine, Shield, ShieldCheck, ShieldX, Loader2, CheckCircle2,
-  XCircle, AlertTriangle, Lock, Wifi, HardDrive, Cpu, Bell,
+  ScanLine, ShieldCheck, ShieldX, Loader2, CheckCircle2, AlertTriangle, Lock, Wifi, HardDrive, Cpu, Bell,
   BellOff, KeyRound, RefreshCw, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
