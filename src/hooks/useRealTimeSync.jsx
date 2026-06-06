@@ -45,9 +45,23 @@ export default function useRealTimeSync() {
         return `*Zero Day Anomaly Detected* • ${type} • severity: ${severity} • ${source}${details ? `\nSignature: ${details}` : ''}`;
       };
 
+      const formatEmailThreatText = (threat, action) => {
+        const status = threat.status?.toUpperCase() || 'UNKNOWN';
+        const source = threat.source_ip || threat.sender || 'unknown source';
+        const details = threat.notes || threat.description || '';
+        return `*Email Threat ${action}* • ${source} • status: ${status}${details ? `\n${details}` : ''}`;
+      };
+
+      const formatScanSessionText = (session, action) => {
+        const status = session.status?.toUpperCase() || 'UNKNOWN';
+        const source = session.source_ip || 'unknown source';
+        const type = session.session_type || 'scan';
+        return `*Scan Session ${action}* • ${type} • ${source} • status: ${status}`;
+      };
+
       const invalidate = (keys = []) => () => {
         // Invalidate provided keys and a few common variants
-        const all = new Set([...keys, 'threats', 'threats-live', 'anomalies-live', 'anomalies-risk', 'events', 'honeypots']);
+        const all = new Set([...keys, 'threats', 'threats-live', 'anomalies-live', 'anomalies-risk', 'events', 'honeypots', 'email-threats', 'scan-sessions', 'firewall-logs']);
         for (const k of all) queryClientInstance.invalidateQueries({ queryKey: [k] });
       };
 
@@ -139,12 +153,54 @@ export default function useRealTimeSync() {
       });
       subs.push(unsubH);
 
+      if (base44.entities.EmailThreat && typeof base44.entities.EmailThreat.subscribe === 'function') {
+        const unsubEmail = base44.entities.EmailThreat.subscribe((ev) => {
+          try {
+            if (ev.type === 'create') {
+              queryClientInstance.setQueryData(['email-threats'], (old = []) => [ev.data, ...old].slice(0, 50));
+              notifySlack(formatEmailThreatText(ev.data, 'Created'));
+            } else if (ev.type === 'update') {
+              queryClientInstance.setQueryData(['email-threats'], (old = []) => old.map(i => i.id === ev.id ? ev.data : i));
+            } else if (ev.type === 'delete') {
+              queryClientInstance.setQueryData(['email-threats'], (old = []) => old.filter(i => i.id !== ev.id));
+            } else {
+              queryClientInstance.invalidateQueries({ queryKey: ['email-threats'] });
+            }
+          } catch (e) {
+            queryClientInstance.invalidateQueries({ queryKey: ['email-threats'] });
+          }
+        });
+        subs.push(unsubEmail);
+      }
+
+      if (base44.entities.ScanSession && typeof base44.entities.ScanSession.subscribe === 'function') {
+        const unsubScan = base44.entities.ScanSession.subscribe((ev) => {
+          try {
+            if (ev.type === 'create') {
+              queryClientInstance.setQueryData(['scan-sessions'], (old = []) => [ev.data, ...old].slice(0, 50));
+              notifySlack(formatScanSessionText(ev.data, 'Started'));
+            } else if (ev.type === 'update') {
+              queryClientInstance.setQueryData(['scan-sessions'], (old = []) => old.map(i => i.id === ev.id ? ev.data : i));
+            } else if (ev.type === 'delete') {
+              queryClientInstance.setQueryData(['scan-sessions'], (old = []) => old.filter(i => i.id !== ev.id));
+            } else {
+              queryClientInstance.invalidateQueries({ queryKey: ['scan-sessions'] });
+            }
+          } catch (e) {
+            queryClientInstance.invalidateQueries({ queryKey: ['scan-sessions'] });
+          }
+        });
+        subs.push(unsubScan);
+      }
+
       // Also subscribe to FirewallLog changes (for firewall dashboard)
       if (base44.entities.FirewallLog && typeof base44.entities.FirewallLog.subscribe === 'function') {
         const unsubF = base44.entities.FirewallLog.subscribe((ev) => {
           try {
             if (ev.type === 'create') {
               queryClientInstance.setQueryData(['firewall-logs'], (old = []) => [ev.data, ...old].slice(0, 200));
+              const action = ev.data.action_taken?.toUpperCase() || 'BLOCKED';
+              notifySlack(`*Firewall Action* • ${action} • ${ev.data.source_ip || 'unknown source'} • ${ev.data.rule_name || ev.data.blocked_reason || 'auto-block'}`);
             } else {
               queryClientInstance.invalidateQueries({ queryKey: ['firewall-logs'] });
             }

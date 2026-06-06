@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
-import { Shield, AlertTriangle, Lock, Skull, Eye, ChevronDown, ChevronUp, Bug, Radiation, ShieldAlert, FileText } from 'lucide-react';
+import { Shield, AlertTriangle, Lock, Skull, ChevronDown, ChevronUp, Bug, Radiation, ShieldAlert, FileText } from 'lucide-react';
 
 import ThreatCounter from '../components/dashboard/ThreatCounter';
-import LiveEventFeed from '../components/dashboard/LiveEventFeed';
-import QRNGCycleDisplay from '../components/dashboard/QRNGCycleDisplay';
+import CustomerThreatFeed from '../components/dashboard/CustomerThreatFeed';
 import MirrorStatus from '../components/dashboard/MirrorStatus';
 import RealTimeTracker from '../components/dashboard/RealTimeTracker';
 import PredictiveRiskScore from '../components/dashboard/PredictiveRiskScore';
@@ -69,9 +68,31 @@ export default function Dashboard() {
     refetchInterval: 5000,
   });
 
+  const { data: emailThreats = [] } = useQuery({
+    queryKey: ['email-threats'],
+    queryFn: () => base44.entities.EmailThreat.list('-scanned_date', 50),
+    initialData: [],
+    refetchInterval: 7000,
+  });
+
+  const { data: scanSessions = [] } = useQuery({
+    queryKey: ['scan-sessions'],
+    queryFn: () => base44.entities.ScanSession.list('-created_date', 50),
+    initialData: [],
+    refetchInterval: 10000,
+  });
+
+  const { data: firewallLogs = [] } = useQuery({
+    queryKey: ['firewall-logs'],
+    queryFn: () => base44.entities.FirewallLog.list('-created_date', 50),
+    initialData: [],
+    refetchInterval: 5000,
+  });
+
   const activeThreats = threats.filter(t => !['locked', 'destroyed', 'cleared'].includes(t.status));
   const lockedThreats = threats.filter(t => t.status === 'locked');
   const destroyedThreats = threats.filter(t => t.status === 'destroyed');
+  const blockedEvents = firewallLogs.filter(log => String(log.action_taken || 'blocked').toLowerCase().includes('block'));
 
   return (
     <div className="p-4 md:p-6 space-y-4 md:space-y-6">
@@ -82,6 +103,9 @@ export default function Dashboard() {
           <h1 className="font-mono text-lg md:text-xl font-bold tracking-wider text-foreground">COMMAND CENTER</h1>
           <p className="font-mono text-[9px] md:text-[10px] text-muted-foreground tracking-widest mt-0.5">
             AEGIS QUANTUM SHIELD — ENTERPRISE SECURITY MATRIX
+          </p>
+          <p className="mt-2 font-mono text-[9px] text-muted-foreground max-w-2xl">
+            Total security mode: live zero-day detection, AI adversarial containment, and automated firewall block events are actively protecting customer environments.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -112,6 +136,7 @@ export default function Dashboard() {
         <ThreatCounter label="Active Threats" value={activeThreats.length} color="text-accent" icon={AlertTriangle} />
         <ThreatCounter label="Locked Out" value={lockedThreats.length} color="text-amber-400" icon={Lock} />
         <ThreatCounter label="Destroyed" value={destroyedThreats.length} color="text-destructive" icon={Skull} />
+        <ThreatCounter label="Firewall Blocks" value={blockedEvents.length} color="text-teal-400" icon={ShieldAlert} />
       </div>
 
       {/* Predictive Risk Score */}
@@ -123,8 +148,16 @@ export default function Dashboard() {
       {/* VirusTotal Scanner */}
       <VirusTotalScanner />
 
-      {/* Live Event Feed — always visible */}
-      <LiveEventFeed events={events} />
+      {/* Live Customer Threat Feed — integrated signals from all tools */}
+      <CustomerThreatFeed
+        threats={threats}
+        events={events}
+        anomalies={anomalies}
+        emailThreats={emailThreats}
+        scanSessions={scanSessions}
+        honeypots={honeypots}
+        firewallLogs={firewallLogs}
+      />
 
       {/* Secondary panels — collapsible on mobile, side-by-side on desktop */}
       <div className="md:hidden space-y-3">

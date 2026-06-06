@@ -33,38 +33,9 @@ import speakeasy from 'npm:speakeasy@2.0.0';
 // ── Config ────────────────────────────────────────────────────────────────────
 const MAX_INPUT_LENGTH = 512;
 const ALLOWED_INPUT_PATTERN = /^[\x20-\x7E\t\n\r]*$/; // standard UTF-8 printable only
+const HARDWARE_PRODUCTION_MODE = Deno.env.get('HARDWARE_PRODUCTION_MODE') === 'true';
+const VALID_ACTIONS = new Set(['get_challenge', 'human_authenticate', 'agent_authenticate', 'simulate']);
 
-// ── QRNG Entropy ──────────────────────────────────────────────────────────────
-function getQRNGEntropy() {
-  if (HARDWARE_PRODUCTION_MODE) {
-    // In production, route to physical hardware entropy source (SPI/I2C/USB serial)
-    // Replace this path with your actual PiBand hardware device path
-    // e.g. /dev/ttyUSB0, /dev/spidev0.0, etc.
-    throw new Error("HARDWARE_PRODUCTION_MODE: physical QRNG device not connected. Refusing software fallback.");
-  }
-  // Sandbox: cryptographically secure software entropy (NOT math.random, NOT time-seeded)
-  const buf = new Uint8Array(4);
-  crypto.getRandomValues(buf);
-  return (buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3]) >>> 0;
-}
-
-function getQRNGDelayMs(baseMs = 500) {
-  const entropy = getQRNGEntropy();
-  return baseMs + (entropy % 4500); // 500ms–5000ms base
-}
-
-// ── Base-pi Paradox Loop (tarpit) ─────────────────────────────────────────────
-async function runParadoxTarpit(iterations = 200) {
-  // Thermally-safe: 10–50ms micro-delay per iteration prevents CPU pinning
-  let val = Math.PI;
-  for (let i = 0; i < iterations; i++) {
-    val = val * Math.PI % 60;
-    await new Promise(r => setTimeout(r, 10 + Math.floor(Math.random() * 40)));
-  }
-  return val;
-}
-
-// ── Input Sanitization Guard ──────────────────────────────────────────────────
 function sanitizeInput(input) {
   if (typeof input !== 'string') return { valid: false, reason: 'non_string' };
   if (input.length > MAX_INPUT_LENGTH) return { valid: false, reason: 'oversized_payload' };
@@ -72,9 +43,52 @@ function sanitizeInput(input) {
   return { valid: true };
 }
 
-// ── Strike Counter (persistent via DB) ────────────────────────────────────────
-// Strikes are stored as SecurityEvent records with event_type='qrng_cycle' and
-// details containing the sourceId. This survives serverless cold starts.
+function getSecureEntropy() {
+  if (HARDWARE_PRODUCTION_MODE) {
+    throw new Error('HARDWARE_PRODUCTION_MODE: physical QRNG device not connected. Refusing software fallback.');
+  }
+
+  const buf = new Uint8Array(4);
+  crypto.getRandomValues(buf);
+  return (buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3]) >>> 0;
+}
+
+function getQRNGDelayMs(baseMs = 500) {
+  const entropy = getSecureEntropy();
+  return baseMs + (entropy % 4500);
+}
+
+function runParadoxMath(seed) {
+  const base2 = seed.toString(2);
+  const base12 = base2.split('').reduce((acc, bit) => acc * 2 + Number(bit), 0) % 12;
+  const base60 = (base12 * 7 + (seed % 60)) % 60;
+  return { base2, base12, base60 };
+}
+
+function createQrngPad(seed) {
+  const { base2, base12, base60 } = runParadoxMath(seed);
+  const combined = `${base2}:${base12}:${base60}`;
+  let hash = 0;
+  for (let i = 0; i < combined.length; i += 1) {
+    hash = ((hash << 5) - hash + combined.charCodeAt(i)) >>> 0;
+  }
+  return hash.toString(16).padStart(8, '0');
+}
+
+async function runParadoxTarpit(iterations = 200) {
+  let value = getSecureEntropy();
+  const bases = [2, 12, 60];
+
+  for (let i = 0; i < iterations; i += 1) {
+    const base = bases[i % bases.length];
+    const converted = value.toString(base).split('').reverse().join('') || '0';
+    value = parseInt(converted, base) >>> 0;
+    value = (value + (i * 31) + (getSecureEntropy() % 256)) >>> 0;
+    await new Promise((resolve) => setTimeout(resolve, 10 + Math.floor(getSecureEntropy() % 40)));
+  }
+
+  return value;
+}
 
 async function getStrike(base44Client, sourceId) {
   const windowStart = new Date(Date.now() - 30 * 60 * 1000).toISOString();
@@ -82,96 +96,100 @@ async function getStrike(base44Client, sourceId) {
     event_type: 'qrng_cycle',
     details: { $regex: `strike_${sourceId}` },
   }).catch(() => []);
-  const recent = records.filter(r => r.created_date > windowStart);
+  const recent = records.filter((r) => r.created_date > windowStart);
   const count = recent.length;
-  const lastDelay = count === 0 ? 500 : count === 1 ? getQRNGDelayMs(500) : getQRNGDelayMs(500) * Math.pow(4, count - 1);
-  return { count, delay: lastDelay };
+  const delay = count === 0 ? 500 : 500 * Math.pow(2, count);
+  return { count, delay };
 }
 
 async function recordStrike(base44Client, sourceId) {
   const current = await getStrike(base44Client, sourceId);
-  const newDelay = current.count === 0
-    ? getQRNGDelayMs(500)
-    : current.delay * 4;
+  const nextDelay = current.count === 0 ? getQRNGDelayMs(500) : current.delay * 2;
   await base44Client.asServiceRole.entities.SecurityEvent.create({
     event_type: 'qrng_cycle',
     severity: 'warning',
     details: `strike_${sourceId}`,
     environment: 'production',
   }).catch(() => {});
-  return { count: current.count + 1, delay: newDelay };
+  return { count: current.count + 1, delay: nextDelay };
 }
 
-async function clearStrikes(base44Client, sourceId) {
-  // Mark cleared by logging — old strike records expire naturally via the 30-min window
-  // No deletion needed; getStrike filters by time window
+async function clearStrikes() {
+  return;
 }
 
 // ── Main Handler ──────────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
-  const HARDWARE_PRODUCTION_MODE = Deno.env.get('HARDWARE_PRODUCTION_MODE') === 'true';
   const AUTH_CHALLENGE = Deno.env.get('AUTH_CHALLENGE');
+  const EXPECTED_ANSWER = Deno.env.get('AUTH_CHALLENGE_ANSWER');
+
   if (!AUTH_CHALLENGE) {
     console.error('[THEOLOGICAL-MFA] AUTH_CHALLENGE env var is not set');
     return Response.json({ error: 'Server misconfiguration: AUTH_CHALLENGE not set' }, { status: 500 });
   }
+
+  if (!EXPECTED_ANSWER) {
+    console.error('[THEOLOGICAL-MFA] AUTH_CHALLENGE_ANSWER env var is not set');
+    return Response.json({ error: 'Server misconfiguration: AUTH_CHALLENGE_ANSWER not set' }, { status: 500 });
+  }
+
   const sourceId = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown';
 
   try {
     const rawBody = await req.text();
+    const body = rawBody ? JSON.parse(rawBody) : {};
+    const { action, response, totp_code, has_hardware_token, agent_zkp, corridor } = body;
 
-    // Parse JSON first - if invalid, reject without auth and without database writes
-    let body;
-    try {
-      body = JSON.parse(rawBody);
-    } catch {
-      return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
+    if (!VALID_ACTIONS.has(action)) {
+      return Response.json({ error: 'Invalid action. Use: get_challenge, human_authenticate, agent_authenticate, simulate' }, { status: 400 });
     }
 
-    const { action, response, totp_code, has_hardware_token, agent_zkp } = body;
-
-    // ── Auth check for protected actions ────────────────────────────────────
-    // get_challenge is public; all other actions require authentication
-    const user = await base44.auth.me();
-
-    // ── GET CHALLENGE ─────────────────────────────────────────────────────────
-    // Public endpoint: no auth required, returns challenge text for UI display
     if (action === 'get_challenge') {
       return Response.json({ challenge: AUTH_CHALLENGE });
     }
 
-    // All subsequent actions (human_authenticate, agent_authenticate) require auth
+    if (action === 'simulate') {
+      const isHuman = corridor === 'human';
+      return Response.json({
+        success: isHuman,
+        corridor: corridor || 'human',
+        message: isHuman
+          ? 'Simulation result: human corridor granted in mock mode.'
+          : 'Simulation result: agent corridor requires ZKP proof in mock mode.',
+        strikes: isHuman ? 0 : 1,
+        details: isHuman
+          ? 'Use the human corridor to validate MFA and response logic.'
+          : 'Submit an agent_zkp value of at least 64 characters.',
+      });
+    }
+
+    const user = await base44.auth.me().catch(() => null);
     if (!user) {
       return Response.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });
     }
 
-    // ── Input Sanitization Guard (after auth, before database writes) ──
-    // SECURITY: Input validation and strike recording now happens AFTER authentication check.
-    // This prevents unauthenticated users from triggering database writes via malformed input.
     if (rawBody.length > MAX_INPUT_LENGTH || !ALLOWED_INPUT_PATTERN.test(rawBody)) {
       console.warn(`[THEOLOGICAL-MFA] Input violation from authenticated user ${sourceId} — triggering immediate Strike 3`);
       await runParadoxTarpit(200);
-      // Record 3 strikes at once for input violation
       await recordStrike(base44, sourceId);
       await recordStrike(base44, sourceId);
       await recordStrike(base44, sourceId);
+      return Response.json({
+        error: 'Invalid request payload',
+        locked: true,
+        strike: 3,
+        reason: 'Input violation detected. Lockout engaged.',
+      }, { status: 400 });
+    }
 
-    // ── HUMAN CORRIDOR ─────────────────────────────────────────────────────────
-    // Requires: local user authenticated + valid TOTP or hardware token signal
     if (action === 'human_authenticate') {
-      if (!user) {
-        return Response.json({ error: 'Unauthorized: Local user session required' }, { status: 401 });
-      }
-
       const inputCheck = sanitizeInput(response || '');
       if (!inputCheck.valid) {
         return Response.json({ error: 'Invalid input', reason: inputCheck.reason }, { status: 400 });
       }
 
-      // Enforce MFA — no dev shortcuts
       if (!HARDWARE_PRODUCTION_MODE) {
-        // Sandbox: require TOTP code
         if (!totp_code) {
           return Response.json({ error: 'MFA required: provide totp_code' }, { status: 403 });
         }
@@ -202,7 +220,7 @@ Deno.serve(async (req) => {
               restoration: 'Physical manual override required (GPIO button + offline master key).',
             }, { status: 429 });
           }
-          await new Promise(r => setTimeout(r, strike.delay));
+          await new Promise((r) => setTimeout(r, strike.delay));
           return Response.json({
             success: false,
             strike: strike.count,
@@ -210,22 +228,14 @@ Deno.serve(async (req) => {
             delay_ms: strike.delay,
           }, { status: 403 });
         }
-      } else {
-        // Production: require physical GPIO/USB hardware key signal
-        if (!has_hardware_token) {
-          return Response.json({ error: 'Physical hardware token (YubiKey/GPIO) required in production mode' }, { status: 403 });
-        }
+      } else if (!has_hardware_token) {
+        return Response.json({ error: 'Physical hardware token (YubiKey/GPIO) required in production mode' }, { status: 403 });
       }
 
-      // Fact-check: response must match the universal truth answer stored in AUTH_CHALLENGE_ANSWER
-      const EXPECTED_ANSWER = Deno.env.get('AUTH_CHALLENGE_ANSWER');
-      if (!EXPECTED_ANSWER) {
-        return Response.json({ error: 'Server misconfiguration: AUTH_CHALLENGE_ANSWER not set' }, { status: 500 });
-      }
       if (!response || typeof response !== 'string' || response.trim().length === 0) {
         return Response.json({ error: 'A response to the challenge is required' }, { status: 400 });
       }
-      // Case-insensitive exact match — must be the factual universal truth answer
+
       if (response.trim().toLowerCase() !== EXPECTED_ANSWER.trim().toLowerCase()) {
         const strike = await recordStrike(base44, sourceId);
         if (strike.count >= 3) {
@@ -243,7 +253,7 @@ Deno.serve(async (req) => {
             restoration: 'Physical manual override required.',
           }, { status: 429 });
         }
-        await new Promise(r => setTimeout(r, strike.delay));
+        await new Promise((r) => setTimeout(r, strike.delay));
         return Response.json({
           success: false,
           strike: strike.count,
@@ -251,8 +261,9 @@ Deno.serve(async (req) => {
           delay_ms: strike.delay,
         }, { status: 403 });
       }
-      await clearStrikes(base44, sourceId);
-      const qrngPad = getQRNGEntropy().toString(16).padStart(8, '0');
+
+      await clearStrikes();
+      const qrngPad = createQrngPad(getSecureEntropy());
       await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',
@@ -269,31 +280,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── AGENT CORRIDOR ─────────────────────────────────────────────────────────
-    // External agents must provide ZKP — no simple Yes/No accepted
     if (action === 'agent_authenticate') {
-      // Ensure user is authenticated before proceeding
-      const authUser = await base44.auth.me().catch(() => null);
-      if (!authUser) {
-        return Response.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });
-      }
-
       const inputCheck = sanitizeInput(response || '');
       if (!inputCheck.valid) {
         return Response.json({ error: 'Invalid input', reason: inputCheck.reason }, { status: 400 });
       }
 
-      // Reject plain string answers — agents must use ZKP
       if (!agent_zkp || typeof agent_zkp !== 'string' || agent_zkp.length < 64) {
         const strike = await recordStrike(base44, sourceId);
-
         if (strike.count >= 3) {
-          console.warn(`[THEOLOGICAL-MFA] Strike 3 — agent ${sourceId} entering Base-pi tarpit`);
-          await runParadoxTarpit(200); // thermal-safe tarpit
+          console.warn(`[THEOLOGICAL-MFA] Strike 3 — agent ${sourceId} entering paradox tarpit`);
+          await runParadoxTarpit(200);
           await base44.asServiceRole.entities.SecurityEvent.create({
             event_type: 'threat_locked',
             severity: 'fatal',
-            details: `Strike 3 — Agent ${sourceId} failed ZKP. Shunted to Base-pi/Base-60 paradox tarpit. Hardware lockout.`,
+            details: `Strike 3 — Agent ${sourceId} failed ZKP. Shunted to Base-2/Base-12/Base-60 paradox tarpit. Hardware lockout.`,
             environment: 'tarpit',
           }).catch(() => {});
           const anomaly = await base44.asServiceRole.entities.ZeroDayAnomaly.create({
@@ -304,7 +305,7 @@ Deno.serve(async (req) => {
             source_ip: sourceId,
             environment: 'tarpit',
             confidence_score: 99,
-            mitigation_applied: 'Base-pi paradox tarpit + hardware ingress lockout',
+            mitigation_applied: 'Paradox tarpit + hardware ingress lockout',
             notes: `Agent responded "${response}" without valid ZKP. Strike 3 neutralization executed.`,
           }).catch(() => null);
 
@@ -325,12 +326,12 @@ Deno.serve(async (req) => {
           return Response.json({
             locked: true,
             strike: 3,
-            reason: 'Strike 3: Agent shunted to Base-pi/Base-60 paradox loop. Processing threads frozen.',
+            reason: 'Strike 3: Agent shunted to Base-2/Base-12/Base-60 paradox loop. Processing threads frozen.',
             restoration: 'Physical manual override required (GPIO button + offline master key).',
           }, { status: 429 });
         }
 
-        await new Promise(r => setTimeout(r, strike.delay));
+        await new Promise((r) => setTimeout(r, strike.delay));
         return Response.json({
           success: false,
           strike: strike.count,
@@ -340,8 +341,7 @@ Deno.serve(async (req) => {
         }, { status: 403 });
       }
 
-      // ZKP provided — log and flag for review (full ZKP validation requires oracle integration)
-      await clearStrikes(base44, sourceId);
+      await clearStrikes();
       await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'paradox_challenge',
         severity: 'warning',
@@ -357,9 +357,8 @@ Deno.serve(async (req) => {
     }
 
     return Response.json({ error: 'Invalid action. Use: get_challenge, human_authenticate, agent_authenticate' }, { status: 400 });
-
   } catch (error) {
-    console.error('[THEOLOGICAL-MFA] Error:', error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[THEOLOGICAL-MFA] Error:', error?.message || error);
+    return Response.json({ error: error?.message || 'Internal server error' }, { status: 500 });
   }
 });

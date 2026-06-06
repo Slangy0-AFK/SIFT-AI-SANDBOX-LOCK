@@ -101,20 +101,129 @@ function simulateQRNGForThreat(threat) {
   setTimeout(advance, 800 + Math.floor(Math.random() * 1200));
 }
 
+const mockStrikes = { human: 0, agent: 0 };
+
+function incrementMockStrike(type = 'human') {
+  mockStrikes[type] = (mockStrikes[type] || 0) + 1;
+  return mockStrikes[type];
+}
+
+function resetMockStrike(type = 'human') {
+  mockStrikes[type] = 0;
+}
+
 const functions = {
   invoke: async (name, payload) => {
-    // Minimal behavior: return payload wrapped
     if (name === 'threatDetectionEngine') {
       return { data: { processed: 0, action: 'mocked', ...payload } };
     }
+
     if (name === 'autoBlockIp') {
-      // create a firewall log and security event
-      await entities.FirewallLog.create({ rule_id: 'mock-auto', action_taken: 'blocked', source_ip: payload?.source_ip || 'unknown', blocked_reason: payload?.reason || 'mock' });
+      await entities.FirewallLog.create({
+        rule_id: 'mock-auto',
+        action_taken: 'blocked',
+        source_ip: payload?.source_ip || 'unknown',
+        blocked_reason: payload?.reason || 'mock',
+      });
       await entities.SecurityEvent.create({ event_type: 'auto_blacklist', severity: 'fatal', details: `Mock auto-block ${payload?.source_ip}` });
       return { success: true };
     }
+
+    if (name === 'theologicalMFA') {
+      const action = payload?.action;
+
+      if (action === 'get_challenge') {
+        return {
+          data: {
+            challenge: 'Do you accept? Answer Yes or No.',
+          },
+        };
+      }
+
+      if (action === 'simulate') {
+        const isHuman = payload?.corridor === 'human';
+        return {
+          data: {
+            success: isHuman,
+            corridor: payload?.corridor || 'human',
+            message: isHuman
+              ? 'Mock simulation: human corridor passed.'
+              : 'Mock simulation: agent corridor requires a 64+ character ZKP proof.',
+            strikes: isHuman ? 0 : 1,
+            details: isHuman
+              ? 'Use the human corridor form to test TOTP and response handling.'
+              : 'Enter a minimal ZKP string to simulate agent verification.',
+          },
+        };
+      }
+
+      if (action === 'human_authenticate') {
+        const totpValid = payload?.totp_code === '123456';
+        const responseValid = typeof payload?.response === 'string' && payload.response.trim().length > 0;
+
+        if (totpValid && responseValid) {
+          resetMockStrike('human');
+          return {
+            data: {
+              success: true,
+              corridor: 'human',
+              message: 'Mock human passport authenticated successfully.',
+              qrng_otp: '7a8f2c1d',
+            },
+          };
+        }
+
+        const strike = incrementMockStrike('human');
+        const result = {
+          success: false,
+          strike,
+          message: responseValid ? 'Invalid MFA code.' : 'Invalid challenge response.',
+          delay_ms: 500 * strike,
+        };
+        if (strike >= 3) {
+          result.locked = true;
+          result.reason = 'Mock lockout engaged after 3 failed human authentication attempts.';
+          result.restoration = 'Reset the mock state to continue testing.';
+        }
+        return { data: result };
+      }
+
+      if (action === 'agent_authenticate') {
+        const proof = payload?.agent_zkp;
+        const proofValid = typeof proof === 'string' && proof.length >= 64;
+
+        if (proofValid) {
+          resetMockStrike('agent');
+          return {
+            data: {
+              success: false,
+              corridor: 'agent',
+              message: 'Mock ZKP received. Pending oracle consensus verification.',
+              required: 'A valid decentralized proof is queued for review.',
+            },
+          };
+        }
+
+        const strike = incrementMockStrike('agent');
+        const result = {
+          success: false,
+          strike,
+          message: 'Agent corridor requires a valid cryptographic ZKP proof.',
+          delay_ms: 500 * strike,
+        };
+        if (strike >= 3) {
+          result.locked = true;
+          result.reason = 'Mock agent lockout engaged on repeated invalid proof attempts.';
+          result.restoration = 'Reset the mock state to continue testing.';
+        }
+        return { data: result };
+      }
+
+      return { data: { error: 'Unknown theologicalMFA action', action, payload } };
+    }
+
     return { data: payload };
-  }
+  },
 };
 
 const base44Mock = {

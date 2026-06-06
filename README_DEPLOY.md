@@ -30,7 +30,9 @@ ngrok http 5173 --host-header=localhost:5173
 
 3) Switching to real Base44
 - Set `VITE_BASE44_MOCK=false` and set `VITE_BASE44_APP_ID` in env or GitHub secrets.
+- Set `VITE_BASE44_APP_BASE_URL=https://sift-ai.net` to point the frontend at your live Sift AI deployment.
 - Optionally set `VITE_BASE44_ACCESS_TOKEN` if you want to pre-authenticate with an existing Base44 token or integration token.
+- Set `AUTH_CHALLENGE=Do you accept?` and `AUTH_CHALLENGE_ANSWER=Yes` in the Base44 function runtime env.
 - Deploy Base44 functions and ensure runtime env vars are set in Base44.
 
 Notes & Limitations

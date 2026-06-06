@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
-  Lock, ShieldCheck, ShieldAlert, User, Bot, Key, AlertTriangle,
+  Lock, ShieldCheck, User, Bot, Key, AlertTriangle,
   Loader2, CheckCircle2, XCircle, Zap
 } from 'lucide-react';
 
@@ -18,7 +18,7 @@ const CORRIDORS = {
     color: 'text-green-400',
     border: 'border-green-500/20',
     bg: 'bg-green-500/5',
-    desc: 'Local user + valid TOTP or hardware token. Any free-will answer accepted.',
+    desc: 'Local user + valid TOTP or hardware auth. Answer the secret shell challenge with Yes or No.',
   },
   agent: {
     icon: Bot,
@@ -26,7 +26,7 @@ const CORRIDORS = {
     color: 'text-destructive',
     border: 'border-destructive/20',
     bg: 'bg-destructive/5',
-    desc: 'External agents must supply cryptographic ZKP from decentralized oracle. Simple Yes/No rejected.',
+    desc: 'External agents must supply cryptographic ZKP. Simple yes/no responses are rejected.',
   },
 };
 
@@ -73,17 +73,17 @@ export default function TheologicalGateway() {
     <Card>
       <CardHeader>
         <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
-          <Lock className="w-4 h-4 text-primary" /> THEOLOGICAL MFA GATEWAY
+          <Lock className="w-4 h-4 text-primary" /> PARADOX VERIFICATION GATEWAY
         </CardTitle>
         <p className="font-mono text-[9px] text-muted-foreground tracking-wide mt-1">
-          3-STRIKE QRNG NEUTRALIZATION · BASE-PI TARPIT · ZKP ORACLE CHALLENGE
+          3-STRIKE QRNG NEUTRALIZATION · BASE-2/12/60 TARPIT · GENERIC SHELL CHALLENGE
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
 
         {/* Challenge String */}
         <div className="bg-background rounded-xl p-4 border border-primary/20 text-center">
-          <p className="font-mono text-[10px] text-muted-foreground mb-1 tracking-widest">SYSTEM CHALLENGE</p>
+          <p className="font-mono text-[10px] text-muted-foreground mb-1 tracking-widest">SECRET SHELL CHALLENGE</p>
           <p className="font-mono text-sm text-foreground leading-relaxed">"{challenge}"</p>
         </div>
 

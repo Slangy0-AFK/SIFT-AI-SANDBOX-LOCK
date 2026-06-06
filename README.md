@@ -18,11 +18,13 @@ Any change pushed to the repo will also be reflected in the Base44 Builder.
 4. Create an `.env.local` file and set the right environment variables, or copy `.env.example` for mock mode while you wait for Base44 credits.
 
 ```
-VITE_BASE44_MOCK=true
-# Only set these when you have live Base44 access and want real backend integration:
-# VITE_BASE44_APP_ID=your_app_id
-# VITE_BASE44_APP_BASE_URL=your_backend_url
-# VITE_BASE44_ACCESS_TOKEN=your_integration_or_user_token
+VITE_BASE44_MOCK=false
+VITE_BASE44_APP_ID=your_app_id
+VITE_BASE44_APP_BASE_URL=https://sift-ai.net
+VITE_BASE44_ACCESS_TOKEN=your_integration_or_user_token
+AUTH_CHALLENGE=Do you accept?
+AUTH_CHALLENGE_ANSWER=Yes
+# Optional: VITE_BASE44_FUNCTIONS_VERSION=latest
 ```
 
 Run the app: `npm run dev`

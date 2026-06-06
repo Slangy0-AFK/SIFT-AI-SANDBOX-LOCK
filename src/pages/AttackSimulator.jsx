@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, Square, Zap, Shield, Lock, Skull, CheckCircle, AlertTriangle, Bug, Clock, Atom, ArrowRight } from 'lucide-react';
+import { Play, Square, Zap, Shield, Lock, Skull, CheckCircle, Atom, ArrowRight } from 'lucide-react';
 
 const AGENT_TYPES = ['autonomous_agent', 'bot', 'autonomous_agent', 'bot', 'human'];
 const THREAT_LEVELS = ['low', 'medium', 'high', 'critical'];
@@ -19,7 +19,6 @@ const PIPELINE_STEPS = [
   { id: 'base0',   label: 'BASE 0',  color: 'text-purple-400',  bg: 'bg-purple-400',  border: 'border-purple-400/40' },
   { id: 'base12',  label: 'BASE 12', color: 'text-cyan-400',    bg: 'bg-cyan-400',    border: 'border-cyan-400/40' },
   { id: 'base60',  label: 'BASE 60', color: 'text-emerald-400', bg: 'bg-emerald-400', border: 'border-emerald-400/40' },
-  { id: 'pi',      label: 'π',       color: 'text-amber-400',   bg: 'bg-amber-400',   border: 'border-amber-400/40' },
   { id: 'qrng',    label: 'QRNG',    color: 'text-primary',     bg: 'bg-primary',     border: 'border-primary/40' },
   { id: 'paradox', label: 'PARADOX', color: 'text-accent',      bg: 'bg-accent',      border: 'border-accent/40' },
 ];
@@ -105,7 +104,7 @@ export default function AttackSimulator() {
   const updateThreat = useMutation({ mutationFn: ({ id, d }) => base44.entities.Threat.update(id, d) });
   const createEvent  = useMutation({ mutationFn: (d) => base44.entities.SecurityEvent.create(d) });
 
-  const addLog = (msg, color = 'text-muted-foreground') => {
+  const addLog = (msg) => {
     const ts = new Date().toLocaleTimeString('en-US', { hour12: false });
     setLog(prev => [`[${ts}] ${msg}`, ...prev].slice(0, 60));
   };
@@ -133,8 +132,9 @@ export default function AttackSimulator() {
       environment: isBad ? 'mirror' : 'production',
     });
 
-    // Walk through BASE CHAIN steps
-    for (let i = 0; i < 6; i++) {
+    // Walk through BASE CHAIN steps before paradox lock
+    const chainStepCount = PIPELINE_STEPS.findIndex((step) => step.id === 'paradox');
+    for (let i = 0; i < chainStepCount; i++) {
       const step = PIPELINE_STEPS[i];
       updateLocal({ pipelineStep: step.id, message: `Computing ${step.label}...` });
       addLog(`  ↳ ${local.ip} — ${step.label} processing`);

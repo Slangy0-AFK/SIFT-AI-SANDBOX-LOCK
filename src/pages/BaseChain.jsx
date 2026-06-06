@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Hash, Circle, Grid3x3, Clock, Pi, Atom } from 'lucide-react';
+import { Zap, Hash, Circle, Grid3x3, Clock, Atom } from 'lucide-react';
 
 const STEPS = [
   {
@@ -50,17 +50,6 @@ const STEPS = [
     example: '3661₁₀ → 1:1:1₆₀ → spatiotemporal hash',
   },
   {
-    id: 'pi',
-    title: 'π — Irrational Key',
-    icon: Pi,
-    color: 'text-amber-400',
-    border: 'border-amber-400/30',
-    bg: 'bg-amber-400/5',
-    description: 'Values are modulated through pi\'s infinite, non-repeating decimal sequence. Creates an irreversible transformation layer.',
-    detail: 'Pi\'s transcendental nature ensures no algebraic equation can reverse this step. Position-dependent pi digits create a one-way function.',
-    example: 'hash × π[n:n+k] → irrational cipher stream',
-  },
-  {
     id: 'qrng',
     title: 'QRNG — Quantum Random',
     icon: Atom,
@@ -84,7 +73,6 @@ export default function BaseChain() {
         base0: `∅.${Math.random().toFixed(12).slice(2)}`,
         base12: Math.floor(Math.random() * 1000).toString(12).toUpperCase(),
         base60: `${Math.floor(Math.random() * 60)}:${Math.floor(Math.random() * 60)}:${Math.floor(Math.random() * 60)}`,
-        pi: (Math.PI * Math.random() * 1000).toFixed(16),
         qrng: Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join(''),
       });
     }, 2000);
