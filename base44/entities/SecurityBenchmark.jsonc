@@ -84,9 +84,6 @@
           "created_by_id": "{{user.id}}"
         },
         {
-          "created_by": "{{user.email}}"
-        },
-        {
           "user_condition": {
             "role": "admin"
           }
@@ -99,9 +96,6 @@
           "created_by_id": "{{user.id}}"
         },
         {
-          "created_by": "{{user.email}}"
-        },
-        {
           "user_condition": {
             "role": "admin"
           }
@@ -112,9 +106,6 @@
       "$or": [
         {
           "created_by_id": "{{user.id}}"
-        },
-        {
-          "created_by": "{{user.email}}"
         },
         {
           "user_condition": {
