@@ -136,9 +136,31 @@ export default function ThreatScanner() {
             <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
               <Activity className="w-4 h-4 text-primary" /> RECENT SCAN SESSIONS
             </CardTitle>
-            <Button variant="outline" size="sm" onClick={() => { refetchSessions(); toast.success('Sessions refreshed'); }}>
-              <Zap className="w-3 h-3 mr-1" /> Refresh
-            </Button>
+            <div className="flex items-center gap-2">
+              {scanSessions.some(s => s.status === 'pending' || s.status === 'scanning') && (
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={async () => {
+                    try {
+                      const active = scanSessions.filter(s => s.status === 'pending' || s.status === 'scanning');
+                      for (const s of active) {
+                        await base44.entities.ScanSession.update(s.id, { status: 'error', error_message: 'Stopped by user' });
+                      }
+                      toast.success('Active scans stopped');
+                      refetchSessions();
+                    } catch (err) {
+                      toast.error('Failed to stop scans');
+                    }
+                  }}
+                >
+                  <ShieldBan className="w-3 h-3 mr-1" /> Stop Active
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={() => { refetchSessions(); toast.success('Sessions refreshed'); }}>
+                <Zap className="w-3 h-3 mr-1" /> Refresh
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -161,9 +183,29 @@ export default function ThreatScanner() {
                       </p>
                     </div>
                   </div>
-                  <Badge className={`font-mono text-[8px] rounded-full border px-2 py-1 ${session.status === 'complete' ? 'bg-green-500/10 border-green-500/20 text-green-500' : session.status === 'error' ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-primary/10 border-primary/20 text-primary'}`}>
-                    {session.status?.toUpperCase()}
-                  </Badge>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {(session.status === 'pending' || session.status === 'scanning') && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-[10px] text-destructive hover:text-destructive hover:bg-destructive/10 px-2"
+                        onClick={async () => {
+                          try {
+                            await base44.entities.ScanSession.update(session.id, { status: 'error', error_message: 'Stopped by user' });
+                            toast.success('Scan stopped');
+                            refetchSessions();
+                          } catch (err) {
+                            toast.error('Failed to stop scan');
+                          }
+                        }}
+                      >
+                        Stop
+                      </Button>
+                    )}
+                    <Badge className={`font-mono text-[8px] rounded-full border px-2 py-1 ${session.status === 'complete' ? 'bg-green-500/10 border-green-500/20 text-green-500' : session.status === 'error' ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-primary/10 border-primary/20 text-primary'}`}>
+                      {session.status?.toUpperCase()}
+                    </Badge>
+                  </div>
                 </div>
               ))}
             </div>
