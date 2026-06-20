@@ -43,7 +43,6 @@ function AppRoutes() {
       <Route path="/" element={<ParadoxGate />} />
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/zero-day" element={<ZeroDayCenter />} />
         <Route path="/threat-intel" element={<ThreatIntelligence />} />
         <Route path="/firewall" element={<FirewallDashboard />} />
