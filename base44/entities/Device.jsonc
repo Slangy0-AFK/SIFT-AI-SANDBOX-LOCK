@@ -54,10 +54,10 @@
           "created_by_id": "{{user.id}}"
         },
         {
-          "user_id": "{{user.id}}"
+          "data.user_id": "{{user.id}}"
         },
         {
-          "subscriber_id": "{{user.id}}"
+          "data.subscriber_id": "{{user.id}}"
         },
         {
           "user_condition": {
@@ -69,10 +69,10 @@
     "read": {
       "$or": [
         {
-          "user_id": "{{user.id}}"
+          "data.user_id": "{{user.id}}"
         },
         {
-          "subscriber_id": "{{user.id}}"
+          "data.subscriber_id": "{{user.id}}"
         },
         {
           "user_condition": {
@@ -84,10 +84,10 @@
     "update": {
       "$or": [
         {
-          "user_id": "{{user.id}}"
+          "data.user_id": "{{user.id}}"
         },
         {
-          "subscriber_id": "{{user.id}}"
+          "data.subscriber_id": "{{user.id}}"
         },
         {
           "user_condition": {
@@ -99,10 +99,10 @@
     "delete": {
       "$or": [
         {
-          "user_id": "{{user.id}}"
+          "data.user_id": "{{user.id}}"
         },
         {
-          "subscriber_id": "{{user.id}}"
+          "data.subscriber_id": "{{user.id}}"
         },
         {
           "user_condition": {

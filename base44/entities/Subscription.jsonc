@@ -60,7 +60,7 @@
     "create": {
       "$or": [
         {
-          "user_id": "{{user.id}}"
+          "data.user_id": "{{user.id}}"
         },
         {
           "user_condition": {
@@ -72,7 +72,7 @@
     "read": {
       "$or": [
         {
-          "user_id": "{{user.id}}"
+          "data.user_id": "{{user.id}}"
         },
         {
           "user_condition": {
@@ -84,7 +84,7 @@
     "update": {
       "$or": [
         {
-          "user_id": "{{user.id}}"
+          "data.user_id": "{{user.id}}"
         },
         {
           "user_condition": {
