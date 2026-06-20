@@ -197,7 +197,7 @@ export default function Dashboard() {
         <div>
           <h1 className="font-mono text-lg md:text-xl font-bold tracking-wider text-foreground">COMMAND CENTER</h1>
           <p className="font-mono text-[9px] md:text-[10px] text-muted-foreground tracking-widest mt-0.5">
-            AEGIS QUANTUM SHIELD — ENTERPRISE SECURITY MATRIX
+            SIFT-AI QUANTUM SHIELD — ENTERPRISE SECURITY MATRIX
           </p>
           <p className="mt-2 font-mono text-[9px] text-muted-foreground max-w-2xl">
             Total security mode: live zero-day detection, AI adversarial containment, and automated firewall block events are actively protecting customer environments.

@@ -29,7 +29,7 @@ import speakeasy from 'npm:speakeasy@2.0.0';
  * - This is the recommended secure pattern for backend functions
  *
  * NOTE: This function implements a configurable challenge used to
- * distinguish authenticated users from automated clients. The challenge text is
+ * distinguish authenticated users from automated clients for Sift-AI. The challenge text is
  * loaded at runtime from the AUTH_CHALLENGE environment variable and is not
  * hardcoded.
  */

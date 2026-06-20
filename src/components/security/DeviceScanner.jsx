@@ -243,13 +243,13 @@ export default function DeviceScanner() {
       setStepIndex(SCAN_STEPS.length);
 
       if (data.summary?.threats > 0) {
-        toast.error(`⚠️ ${data.summary.threats} hidden threat(s) detected on your device!`, { duration: 8000 });
-        if (prefs.notifications && 'Notification' in window && Notification.permission === 'granted') {
-          new Notification('AEGIS Security Alert', {
-            body: `${data.summary.threats} hidden threat(s) found. Check your dashboard.`,
-            icon: '/favicon.ico',
-          });
-        }
+      toast.error(`⚠️ ${data.summary.threats} hidden threat(s) detected on your device!`, { duration: 8000 });
+      if (prefs.notifications && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification('Sift-AI Security Alert', {
+          body: `${data.summary.threats} hidden threat(s) found. Check your dashboard.`,
+          icon: '/favicon.ico',
+        });
+      }
       } else if (!background) {
         toast.success('Scan complete — no hidden threats found.');
       }
@@ -290,7 +290,7 @@ export default function DeviceScanner() {
           </div>
         </div>
         <p className="font-mono text-[9px] text-muted-foreground tracking-wide mt-1">
-          Autonomous AI detector: scans for undercover modes, Claude leak attacks, injected scripts & hardware anomalies — no personal data stored
+          Sift-AI autonomous detector: scans for undercover modes, Claude leak attacks, injected scripts & hardware anomalies — no personal data stored
         </p>
       </CardHeader>
 
