@@ -5,6 +5,14 @@
     "total_visits": {
       "type": "number",
       "default": 0
+    },
+    "paradox_tries": {
+      "type": "number",
+      "default": 0
+    },
+    "paradox_breaches": {
+      "type": "number",
+      "default": 0
     }
   },
   "rls": {
