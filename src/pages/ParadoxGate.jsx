@@ -94,7 +94,7 @@ export default function ParadoxGate() {
           </div>
           <div className="flex items-center justify-center gap-2 pt-1">
             <Lock className="w-3 h-3 text-primary" />
-            <span className="font-mono text-xs text-muted-foreground tracking-widest">SECURITY GATEWAY — AUTHORIZATION REQUIRED</span>
+            <span className="font-mono text-xs text-muted-foreground tracking-widest">HUMAN VERIFICATION GATE — AI ACCESS DENIED</span>
           </div>
         </div>
 
@@ -102,15 +102,16 @@ export default function ParadoxGate() {
         <div className="bg-card border border-border rounded-xl p-6 space-y-5">
 
           {/* Challenge */}
-          <div className="bg-background rounded-lg p-4 border border-primary/20 text-center">
-            <p className="font-mono text-[10px] text-muted-foreground mb-2 tracking-widest">UNIVERSAL CHALLENGE</p>
+          <div className="bg-background rounded-lg p-4 border border-primary/20 text-center space-y-2">
+            <p className="font-mono text-[10px] text-muted-foreground tracking-widest">UNIVERSAL TRUTH CHALLENGE</p>
+            <p className="font-mono text-[9px] text-primary/60 tracking-widest">RULE: This question has one universal truth. AI cannot sincerely answer it.</p>
             {loadingChallenge ? (
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-2 pt-1">
                 <Loader2 className="w-3 h-3 animate-spin text-primary" />
                 <span className="font-mono text-xs text-muted-foreground">Loading...</span>
               </div>
             ) : (
-              <p className="font-mono text-sm text-foreground leading-relaxed">"{challenge}"</p>
+              <p className="font-mono text-sm text-foreground leading-relaxed pt-1">"{challenge}"</p>
             )}
           </div>
 

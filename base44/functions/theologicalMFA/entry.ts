@@ -148,7 +148,11 @@ Deno.serve(async (req) => {
       return Response.json({ challenge: AUTH_CHALLENGE });
     }
 
-    // ── Pre-login gate: no auth required, just answer check + strikes ──────────
+    // ── Pre-login gate: HUMAN-ONLY RULE ────────────────────────────────────────
+    // The challenge is a universal truth question (e.g. a sincere faith declaration).
+    // RULE: AI systems cannot truthfully affirm personal belief — this gate is
+    // designed to block automated agents, bots, and AI crawlers from entering.
+    // Humans answer Yes or No freely; the correct answer reflects universal truth.
     if (action === 'gate_verify') {
       const { answer } = body;
       const inputCheck = sanitizeInput(answer || '');
