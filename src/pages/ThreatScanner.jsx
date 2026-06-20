@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 
 export default function ThreatScanner() {
   const [selectedThreat, setSelectedThreat] = useState(null);
+  const [neutralizingId, setNeutralizingId] = useState(null);
   const unsubscribeRef = useRef(null);
 
   const { data: deviceThreats = [], refetch: refetchDeviceThreats, isFetching: loadingDeviceThreats } = useQuery({
@@ -188,28 +189,32 @@ export default function ThreatScanner() {
                           size="sm"
                           variant="destructive"
                           className="font-mono text-[9px] h-7 px-2"
+                          disabled={neutralizingId === threat.id}
                           onClick={async (e) => {
                             e.stopPropagation();
+                            setNeutralizingId(threat.id);
                             try {
-                              const result = await base44.functions.invoke('autoBlockIp', {
+                              await base44.functions.invoke('autoBlockIp', {
                                 source_ip: threat.source_ip,
                                 threat_id: threat.id,
                                 reason: 'Manually neutralized from threat list',
                               });
-                              console.log('Neutralize result:', result);
-                              if (result.data?.error) {
-                                throw new Error(result.data.error);
-                              }
-                              toast.success(`Threat neutralized - IP ${threat.source_ip} blocked`);
+                              await base44.entities.Threat.update(threat.id, { status: 'cleared' });
+                              toast.success(`✓ Threat neutralized`);
                               await sendSlackNotification({ text: `*Threat Neutralized* • IP: ${threat.source_ip} • Level: ${threat.threat_level}` });
                               refetchDeviceThreats();
                             } catch (err) {
-                              console.error('Neutralize error:', err);
-                              toast.error('Failed: ' + (err.message || 'Unknown error - check console'));
+                              toast.error(err.message || 'Failed to neutralize');
+                            } finally {
+                              setNeutralizingId(null);
                             }
                           }}
                         >
-                          <Shield className="w-3 h-3 mr-1" /> Neutralize
+                          {neutralizingId === threat.id ? (
+                            <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Neutralizing...</>
+                          ) : (
+                            <><Shield className="w-3 h-3 mr-1" /> Neutralize</>
+                          )}
                         </Button>
                       )}
                     </div>
