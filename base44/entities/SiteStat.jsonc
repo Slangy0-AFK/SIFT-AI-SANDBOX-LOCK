@@ -13,6 +13,22 @@
     "paradox_breaches": {
       "type": "number",
       "default": 0
+    },
+    "human_paradox_tries": {
+      "type": "number",
+      "default": 0
+    },
+    "human_paradox_breaches": {
+      "type": "number",
+      "default": 0
+    },
+    "robot_paradox_tries": {
+      "type": "number",
+      "default": 0
+    },
+    "robot_paradox_breaches": {
+      "type": "number",
+      "default": 0
     }
   },
   "rls": {
