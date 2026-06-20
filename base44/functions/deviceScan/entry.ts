@@ -110,7 +110,7 @@ function analyzeHardware(hardware = {}) {
     findings.push({ label: 'Zero color depth — headless browser indicator', severity: 'high' });
   }
   // SwiftShader or LLVMpipe = headless rendering (no real GPU)
-  if (hardware.webgl_renderer && /SwiftShader|llvmpipe|ANGLE|Mesa|softpipe/i.test(hardware.webgl_renderer)) {
+  if (hardware.webgl_renderer && /SwiftShader|llvmpipe|Mesa|softpipe/i.test(hardware.webgl_renderer)) {
     findings.push({ label: `Software/virtual GPU detected: ${hardware.webgl_renderer.slice(0, 80)}`, severity: 'high' });
   }
   // Battery nearly dead while "charging" = desktop VM (always full or always draining)
@@ -220,7 +220,7 @@ Deno.serve(async (req) => {
       if (notifyOnThreat) {
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: user.email,
-          subject: '🚨 AEGIS — Hidden Threat Detected on Your Device',
+          subject: '🚨 Sift-AI — Hidden Threat Detected on Your Device',
           body: `Hi ${user.full_name || user.email},\n\nSift-AI detected hidden threats on your device during a full in-depth scan.\n\nScan ID: ${scanId}\nThreats found: ${totalThreats}\nWarnings: ${totalWarnings}\n\nFindings:\n${allFindings.map(f => `• [${f.severity.toUpperCase()}] ${f.label}`).join('\n')}\n\nLog in to your Sift-AI dashboard to view full details and block threats.\n\n— Sift-AI Security`,
         }).catch(() => {});
       }
