@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Bug, AlertTriangle, Cpu, Mail, ShieldAlert } from 'lucide-react';
+import { Shield, Bug, AlertTriangle, Cpu, Mail, ShieldAlert, ChevronDown } from 'lucide-react';
 
 const typeMeta = {
   threat: { label: 'Threat', icon: AlertTriangle, color: 'text-accent bg-accent/10 border-accent/20' },
@@ -112,6 +112,7 @@ function formatEvent(item) {
 
 export default function CustomerThreatFeed({ threats = [], events = [], anomalies = [], emailThreats = [], scanSessions = [], honeypots = [], firewallLogs = [] }) {
   const [activeFilter, setActiveFilter] = useState('all');
+  const [isOpen, setIsOpen] = useState(false);
   const feedItems = useMemo(() => {
     const items = [];
 
@@ -177,31 +178,36 @@ export default function CustomerThreatFeed({ threats = [], events = [], anomalie
 
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
-      <div className="px-5 py-4 border-b border-border">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <div>
-              <h3 className="font-mono text-xs font-semibold tracking-wider">LIVE CUSTOMER THREAT FEED</h3>
-              <p className="font-mono text-[9px] text-muted-foreground mt-1">Visibility into threats, zero-day detections, firewall blocks, email threats, scan sessions, and mirror events.</p>
+      <button
+        onClick={() => setIsOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-4 border-b border-border hover:bg-secondary/30 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <div className="text-left">
+            <h3 className="font-mono text-xs font-semibold tracking-wider">LIVE CUSTOMER THREAT FEED</h3>
+            <p className="font-mono text-[9px] text-muted-foreground mt-0.5">{titleCount} activities · Click to {isOpen ? 'collapse' : 'expand'}</p>
+          </div>
+        </div>
+        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      {isOpen && (
+        <>
+          <div className="px-5 py-3 border-b border-border">
+            <div className="flex flex-wrap gap-2">
+              {feedFilters.map((filter) => (
+                <button
+                  key={filter.id}
+                  type="button"
+                  onClick={() => setActiveFilter(filter.id)}
+                  className={`rounded-full px-3 py-1 text-[10px] font-semibold tracking-wide transition ${activeFilter === filter.id ? 'bg-primary text-primary-foreground border border-primary' : 'bg-secondary text-muted-foreground border border-border hover:bg-secondary/80'}`}
+                >
+                  {filter.label}
+                </button>
+              ))}
             </div>
           </div>
-          <span className="font-mono text-[10px] text-muted-foreground">{titleCount} visible activities</span>
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {feedFilters.map((filter) => (
-            <button
-              key={filter.id}
-              type="button"
-              onClick={() => setActiveFilter(filter.id)}
-              className={`rounded-full px-3 py-1 text-[10px] font-semibold tracking-wide transition ${activeFilter === filter.id ? 'bg-primary text-primary-foreground border border-primary' : 'bg-secondary text-muted-foreground border border-border hover:bg-secondary/80'}`}
-            >
-              {filter.label}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-80 overflow-y-auto">
         <AnimatePresence>
           {filteredItems.length === 0 ? (
             <div className="p-8 text-center">
@@ -243,7 +249,9 @@ export default function CustomerThreatFeed({ threats = [], events = [], anomalie
             })
           )}
         </AnimatePresence>
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
