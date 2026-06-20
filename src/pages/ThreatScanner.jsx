@@ -160,13 +160,12 @@ export default function ThreatScanner() {
           ) : (
             <div className="space-y-2">
               {deviceThreats.slice(0, 10).map((threat) => (
-                <button
-                  key={threat.id}
-                  onClick={() => setSelectedThreat(threat)}
-                  className="w-full text-left rounded-xl border border-border/50 bg-secondary/10 p-3 hover:border-destructive/30 transition"
-                >
+                <div key={threat.id} className="rounded-xl border border-border/50 bg-secondary/10 p-3 hover:border-destructive/30 transition">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
+                    <button
+                      onClick={() => setSelectedThreat(threat)}
+                      className="flex-1 text-left min-w-0"
+                    >
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge className={`font-mono text-[8px] rounded-full border px-2 py-0.5 ${threat.threat_level === 'critical' ? 'bg-destructive/10 border-destructive/20 text-destructive' : threat.threat_level === 'high' ? 'bg-amber-400/10 border-amber-400/20 text-amber-400' : 'bg-blue-400/10 border-blue-400/20 text-blue-400'}`}>
                           {threat.threat_level?.toUpperCase()}
@@ -179,12 +178,38 @@ export default function ThreatScanner() {
                       <p className="font-mono text-[9px] text-muted-foreground mt-1">
                         IP: {threat.source_ip} • {format(new Date(threat.created_date), 'MMM d, HH:mm:ss')}
                       </p>
+                    </button>
+                    <div className="flex flex-col gap-2 flex-shrink-0">
+                      <Badge className={`font-mono text-[8px] rounded-full border px-2 py-1 ${threat.status === 'destroyed' || threat.status === 'cleared' ? 'bg-green-500/10 border-green-500/20 text-green-500' : threat.status === 'locked' ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-amber-400/10 border-amber-400/20 text-amber-400'}`}>
+                        {threat.status?.toUpperCase()}
+                      </Badge>
+                      {threat.status === 'detected' && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="font-mono text-[9px] h-7 px-2"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            try {
+                              await base44.functions.invoke('autoBlockIp', {
+                                source_ip: threat.source_ip,
+                                threat_id: threat.id,
+                                reason: 'Manually neutralized from threat list',
+                              });
+                              toast.success(`Threat neutralized - IP ${threat.source_ip} blocked`);
+                              await sendSlackNotification({ text: `*Threat Neutralized* • IP: ${threat.source_ip} • Level: ${threat.threat_level}` });
+                              refetchDeviceThreats();
+                            } catch (err) {
+                              toast.error('Failed to neutralize: ' + err.message);
+                            }
+                          }}
+                        >
+                          <Shield className="w-3 h-3 mr-1" /> Neutralize
+                        </Button>
+                      )}
                     </div>
-                    <Badge className={`font-mono text-[8px] rounded-full border px-2 py-1 flex-shrink-0 ${threat.status === 'destroyed' || threat.status === 'cleared' ? 'bg-green-500/10 border-green-500/20 text-green-500' : threat.status === 'locked' ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-amber-400/10 border-amber-400/20 text-amber-400'}`}>
-                      {threat.status?.toUpperCase()}
-                    </Badge>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           )}
