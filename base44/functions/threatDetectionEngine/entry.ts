@@ -289,18 +289,38 @@ Return JSON:
           details: `AI ATTACK AUTO-REJECTED (${analysis.confidence_score}%): ${analysis.ai_attack_type} — Real-time AI detection from ${threat.source_ip}`,
           environment: threat.environment || 'production',
           base_chain_step: 'base0',
-        }),
-        base44Service.entities.FirewallLog.create({
-          rule_id: 'ai-attack-auto-block',
-          rule_name: 'Aegis AI Real-Time Blocker',
-          action_taken: 'blocked',
-          source_ip: threat.source_ip,
-          threat_level: 'critical',
-          blocked_reason: `AI attack confirmed (${analysis.confidence_score}%): ${analysis.ai_attack_type}`,
-          direction: 'inbound',
-          protocol: 'tcp',
-        }),
+        })
       ]);
+
+      const existingRulesAI = await base44Service.entities.FirewallRule.filter({ source_ip: threat.source_ip });
+      const alreadyBlockedAI = existingRulesAI.some(r => r.rule_type === 'block' && r.enabled);
+      let ruleIdAI = 'ai-attack-auto-block';
+      
+      if (!alreadyBlockedAI) {
+        const rule = await base44Service.entities.FirewallRule.create({
+          rule_name: `AI-Block: ${threat.source_ip}`,
+          rule_type: 'block',
+          priority: 1,
+          enabled: true,
+          source_ip: threat.source_ip,
+          protocol: 'any',
+          direction: 'inbound',
+          description: `Auto-blocked AI attack: ${analysis.ai_attack_type}`,
+          tags: 'ai-block,threat-response',
+        });
+        ruleIdAI = rule.id;
+      }
+
+      await base44Service.entities.FirewallLog.create({
+        rule_id: ruleIdAI,
+        rule_name: 'Aegis AI Real-Time Blocker',
+        action_taken: 'blocked',
+        source_ip: threat.source_ip,
+        threat_level: 'critical',
+        blocked_reason: `AI attack confirmed (${analysis.confidence_score}%): ${analysis.ai_attack_type}`,
+        direction: 'inbound',
+        protocol: 'tcp',
+      });
       console.log(`[AEGIS] AI ATTACK BLOCKED: ${threat.source_ip} | Type: ${analysis.ai_attack_type} | Confidence: ${analysis.confidence_score}%`);
       return { threat_id: threat.id, source_ip: threat.source_ip, old_status: threat.status, new_status: 'locked', action: 'ai_attack_rejected', threat_score: 100, agent_type: 'autonomous_agent', ai_confidence: analysis.confidence_score };
     }
@@ -349,18 +369,38 @@ Return JSON:
           details: `AI ATTACK AUTO-REJECTED: matched "${aiSig}" — Claude/LLM prompt injection blocked from ${threat.source_ip}`,
           environment: threat.environment || 'production',
           base_chain_step: 'base0',
-        }),
-        base44Service.entities.FirewallLog.create({
-          rule_id: 'ai-attack-auto-block',
-          rule_name: 'Aegis AI Attack Blocker',
-          action_taken: 'blocked',
-          source_ip: threat.source_ip,
-          threat_level: 'critical',
-          blocked_reason: `AI/LLM attack signature: "${aiSig}"`,
-          direction: 'inbound',
-          protocol: 'tcp',
-        }),
+        })
       ]);
+
+      const existingRulesFallback = await base44Service.entities.FirewallRule.filter({ source_ip: threat.source_ip });
+      const alreadyBlockedFallback = existingRulesFallback.some(r => r.rule_type === 'block' && r.enabled);
+      let ruleIdFallback = 'ai-attack-auto-block';
+      
+      if (!alreadyBlockedFallback) {
+        const rule = await base44Service.entities.FirewallRule.create({
+          rule_name: `AI-Block: ${threat.source_ip}`,
+          rule_type: 'block',
+          priority: 1,
+          enabled: true,
+          source_ip: threat.source_ip,
+          protocol: 'any',
+          direction: 'inbound',
+          description: `Auto-blocked AI attack signature: "${aiSig}"`,
+          tags: 'ai-block,threat-response',
+        });
+        ruleIdFallback = rule.id;
+      }
+
+      await base44Service.entities.FirewallLog.create({
+        rule_id: ruleIdFallback,
+        rule_name: 'Aegis AI Attack Blocker',
+        action_taken: 'blocked',
+        source_ip: threat.source_ip,
+        threat_level: 'critical',
+        blocked_reason: `AI/LLM attack signature: "${aiSig}"`,
+        direction: 'inbound',
+        protocol: 'tcp',
+      });
       console.log(`[AEGIS] AI ATTACK BLOCKED: ${threat.source_ip} | Sig: "${aiSig}"`);
       return { threat_id: threat.id, source_ip: threat.source_ip, old_status: threat.status, new_status: 'locked', action: 'ai_attack_rejected', threat_score: 100, agent_type: 'autonomous_agent' };
     }
@@ -437,8 +477,27 @@ Return JSON:
   
   // Log firewall block for high/critical threats
   if (threat.threat_level === 'critical' || threat.threat_level === 'high') {
+    const existingRules = await base44Service.entities.FirewallRule.filter({ source_ip: threat.source_ip });
+    const alreadyBlocked = existingRules.some(r => r.rule_type === 'block' && r.enabled);
+    
+    let ruleId = 'auto-detect';
+    if (!alreadyBlocked) {
+      const rule = await base44Service.entities.FirewallRule.create({
+        rule_name: `Auto-Block: ${threat.source_ip}`,
+        rule_type: 'block',
+        priority: 1, // highest priority
+        enabled: true,
+        source_ip: threat.source_ip,
+        protocol: 'any',
+        direction: 'inbound',
+        description: `Auto-blocked due to high/critical threat detection (Score: ${threatScore})`,
+        tags: 'auto-block,threat-response',
+      });
+      ruleId = rule.id;
+    }
+
     await base44Service.entities.FirewallLog.create({
-      rule_id: 'auto-detect',
+      rule_id: ruleId,
       rule_name: 'Aegis Auto-Block',
       action_taken: 'blocked',
       source_ip: threat.source_ip,
