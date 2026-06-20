@@ -16,6 +16,8 @@ const allNavItems = [
   { path: '/profile', icon: User, label: 'Profile' },
   { path: '/subscription', icon: CreditCard, label: 'Subscription' },
   { path: '/settings', icon: Settings, label: 'Settings' },
+  { path: '/about', icon: FileText, label: 'About', adminOnly: false },
+  { path: '/contact', icon: Mail, label: 'Contact', adminOnly: false },
 ];
 
 // Bottom nav shows 5 most-used items on mobile

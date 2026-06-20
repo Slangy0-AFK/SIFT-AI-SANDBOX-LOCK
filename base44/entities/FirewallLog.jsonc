@@ -85,6 +85,10 @@
     "blocked_reason": {
       "type": "string",
       "description": "Reason for blocking if applicable"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
     }
   },
   "required": [
