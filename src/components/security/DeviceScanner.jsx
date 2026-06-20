@@ -14,10 +14,12 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 
 const SCAN_STEPS = [
-  { id: 'permissions', label: 'Permission Audit', detail: 'Checking browser permission states...' },
-  { id: 'network', label: 'Network Signals', detail: 'Analysing connection anomalies...' },
+  { id: 'permissions', label: 'Permission Audit', detail: 'Requesting camera, mic, clipboard, geolocation access...' },
+  { id: 'hardware', label: 'Hardware Fingerprint', detail: 'Analysing CPU, GPU, memory & display signals...' },
+  { id: 'network', label: 'Network & Location Signals', detail: 'Checking connection, timezone & proxy anomalies...' },
+  { id: 'storage', label: 'Storage Analysis', detail: 'Scanning storage usage for malware caches...' },
   { id: 'scripts', label: 'Hidden Script Scan', detail: 'Detecting injected or obfuscated code...' },
-  { id: 'fingerprint', label: 'Agent Fingerprint', detail: 'Validating browser identity...' },
+  { id: 'fingerprint', label: 'Agent Fingerprint', detail: 'Validating browser identity & automation flags...' },
   { id: 'verify', label: 'Threat Verification', detail: 'Cross-referencing signature database...' },
 ];
 
@@ -37,35 +39,129 @@ const SEVERITY_BG = {
   info: 'bg-secondary border-border',
 };
 
+// Request deep browser permissions for a full device scan
+async function requestScanPermissions() {
+  const granted = {};
+
+  // Notification permission (needed for alert delivery)
+  if ('Notification' in window && Notification.permission === 'default') {
+    try { await Notification.requestPermission(); } catch {}
+  }
+  granted.notifications = 'Notification' in window ? Notification.permission : 'unsupported';
+
+  // Clipboard read (detect clipboard hijackers)
+  try {
+    const s = await navigator.permissions.query({ name: 'clipboard-read' });
+    granted.clipboard = s.state;
+    if (s.state !== 'granted') {
+      // Attempt to actually request it
+      try { await navigator.clipboard.readText(); granted.clipboard = 'granted'; } catch {}
+    }
+  } catch {}
+
+  // Camera & microphone (detect unauthorized access)
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    granted.camera = 'granted';
+    granted.microphone = 'granted';
+    stream.getTracks().forEach(t => t.stop()); // immediately release
+  } catch (e) {
+    granted.camera = e.name === 'NotAllowedError' ? 'denied' : 'unavailable';
+    granted.microphone = e.name === 'NotAllowedError' ? 'denied' : 'unavailable';
+  }
+
+  // Geolocation (detect location spoofing/VPN mismatches)
+  try {
+    await new Promise((resolve) =>
+      navigator.geolocation.getCurrentPosition(
+        () => { granted.geolocation = 'granted'; resolve(); },
+        () => { granted.geolocation = 'denied'; resolve(); },
+        { timeout: 3000, maximumAge: 60000 }
+      )
+    );
+  } catch { granted.geolocation = 'unavailable'; }
+
+  return granted;
+}
+
 // Collect real browser signals — no file reading, no personal data
 async function collectDeviceSignals() {
   const signals = {
     permissions: {},
     network: {},
+    hardware: {},
+    storage: {},
     suspicious_strings: [],
     user_agent: navigator.userAgent,
   };
 
-  // Permission states
-  const permsToCheck = ['clipboard-read', 'camera', 'microphone', 'notifications'];
+  // Request deep permissions first
+  signals.permissions = await requestScanPermissions();
+
+  // Also query read-only permission states
+  const permsToCheck = ['camera', 'microphone', 'notifications', 'geolocation'];
   for (const perm of permsToCheck) {
     try {
       const status = await navigator.permissions.query({ name: perm });
-      const key = perm.replace('-read', '').replace('-write', '');
-      signals.permissions[key] = status.state;
-    } catch { /* not supported */ }
+      if (!signals.permissions[perm]) signals.permissions[perm] = status.state;
+    } catch {}
   }
 
   // Network signals
   signals.network.onLine = navigator.onLine;
   signals.network.connection_type = navigator.connection?.effectiveType || 'unknown';
+  signals.network.downlink = navigator.connection?.downlink || null;
+  signals.network.rtt = navigator.connection?.rtt || null;
+  // Detect if running behind a proxy/VPN by comparing timezone vs language
+  signals.network.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  signals.network.language = navigator.language;
+  signals.network.languages = navigator.languages?.join(',') || '';
+
+  // Hardware fingerprint
+  signals.hardware.cpu_cores = navigator.hardwareConcurrency || 0;
+  signals.hardware.device_memory_gb = navigator.deviceMemory || 0;
+  signals.hardware.screen_width = screen.width;
+  signals.hardware.screen_height = screen.height;
+  signals.hardware.color_depth = screen.colorDepth;
+  signals.hardware.pixel_ratio = window.devicePixelRatio || 1;
+  signals.hardware.touch_points = navigator.maxTouchPoints || 0;
+  signals.hardware.platform = navigator.platform || '';
+
+  // WebGL fingerprint (detect headless/spoofed GPU)
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (gl) {
+      const ext = gl.getExtension('WEBGL_debug_renderer_info');
+      signals.hardware.webgl_vendor = ext ? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : 'unknown';
+      signals.hardware.webgl_renderer = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'unknown';
+    }
+  } catch {}
+
+  // Battery status (drain anomalies can indicate crypto mining)
+  try {
+    const battery = await navigator.getBattery?.();
+    if (battery) {
+      signals.hardware.battery_level = battery.level;
+      signals.hardware.battery_charging = battery.charging;
+    }
+  } catch {}
+
+  // Storage estimate (unusually full storage = potential malware cache)
+  try {
+    const estimate = await navigator.storage?.estimate();
+    if (estimate) {
+      signals.storage.quota_mb = Math.round((estimate.quota || 0) / 1024 / 1024);
+      signals.storage.usage_mb = Math.round((estimate.usage || 0) / 1024 / 1024);
+      signals.storage.usage_pct = estimate.quota ? Math.round(estimate.usage / estimate.quota * 100) : 0;
+    }
+  } catch {}
 
   // Detect suspicious injected scripts in the current page DOM
   const scripts = Array.from(document.querySelectorAll('script'));
   for (const s of scripts) {
     const content = s.textContent || '';
     const src = s.src || '';
-    // Flag data-URI scripts, eval patterns, or unknown external origins
     if (src.startsWith('data:') || /eval\s*\(\s*atob/.test(content) ||
         /fromCharCode\(\d+,\d+,\d+,\d+,\d+/.test(content) ||
         /String\.prototype\.\w+\s*=\s*function/.test(content)) {
@@ -74,9 +170,13 @@ async function collectDeviceSignals() {
   }
 
   // Detect prototype tampering
-  if (Array.prototype.push !== Array.prototype.push || typeof Array.prototype.push !== 'function') {
+  if (typeof Array.prototype.push !== 'function') {
     signals.suspicious_strings.push('Array.prototype.push has been tampered');
   }
+
+  // Detect automation flags
+  if (navigator.webdriver) signals.suspicious_strings.push('navigator.webdriver=true (automation/bot detected)');
+  if (!navigator.languages || navigator.languages.length === 0) signals.suspicious_strings.push('no navigator.languages (headless indicator)');
 
   return signals;
 }

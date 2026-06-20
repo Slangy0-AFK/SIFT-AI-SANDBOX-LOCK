@@ -79,6 +79,44 @@ function analyzePermissions(permissions = {}) {
   return warnings;
 }
 
+function analyzeHardware(hardware = {}) {
+  const findings = [];
+  // Zero CPU cores = headless/VM
+  if (hardware.cpu_cores === 0 || hardware.cpu_cores === 1) {
+    findings.push({ label: `Suspicious CPU core count: ${hardware.cpu_cores} (possible headless/VM)`, severity: 'medium' });
+  }
+  // Headless browsers report 0 color depth
+  if (hardware.color_depth === 0) {
+    findings.push({ label: 'Zero color depth — headless browser indicator', severity: 'high' });
+  }
+  // SwiftShader or LLVMpipe = headless rendering (no real GPU)
+  if (hardware.webgl_renderer && /SwiftShader|llvmpipe|ANGLE|Mesa|softpipe/i.test(hardware.webgl_renderer)) {
+    findings.push({ label: `Software/virtual GPU detected: ${hardware.webgl_renderer.slice(0, 80)}`, severity: 'high' });
+  }
+  // Battery nearly dead while "charging" = desktop VM (always full or always draining)
+  if (hardware.battery_level !== undefined && hardware.battery_level < 0.05 && !hardware.battery_charging) {
+    findings.push({ label: 'Battery critically low during scan — device may be compromised or VM', severity: 'low' });
+  }
+  // Zero touch points on a declared mobile UA = spoofed UA
+  if (hardware.touch_points === 0 && /Android|iPhone|iPad/i.test(hardware.platform || '')) {
+    findings.push({ label: 'Mobile platform declared but no touch support — spoofed User-Agent', severity: 'medium' });
+  }
+  return findings;
+}
+
+function analyzeStorage(storage = {}) {
+  const findings = [];
+  // Storage usage > 80% can indicate malware caching large payloads
+  if (storage.usage_pct > 80) {
+    findings.push({ label: `Storage ${storage.usage_pct}% full (${storage.usage_mb}MB) — possible malware cache`, severity: 'medium' });
+  }
+  // Unusually large usage for a browser origin
+  if (storage.usage_mb > 500) {
+    findings.push({ label: `Abnormally large origin storage: ${storage.usage_mb}MB — review cached data`, severity: 'medium' });
+  }
+  return findings;
+}
+
 function analyzeNetworkSignals(network = {}) {
   const findings = [];
   if (network.onLine === false) {
@@ -102,10 +140,11 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const {
       notifyOnThreat = true,
-      // Client-collected signals — no file content, just metadata
-      suspicious_strings = [],   // snippets of JS the browser detected as anomalous
-      permissions = {},           // browser permission states
-      network = {},               // navigator.onLine, detected proxy signals
+      suspicious_strings = [],
+      permissions = {},
+      network = {},
+      hardware = {},
+      storage = {},
       user_agent = req.headers.get('user-agent') || '',
     } = body;
 
@@ -117,8 +156,10 @@ Deno.serve(async (req) => {
     const sigFindings = scanPayloadStrings(suspicious_strings);
     const permWarnings = analyzePermissions(permissions);
     const netFindings = analyzeNetworkSignals(network);
+    const hwFindings = analyzeHardware(hardware);
+    const storageFindings = analyzeStorage(storage);
 
-    const allFindings = [...uaFindings, ...sigFindings, ...netFindings];
+    const allFindings = [...uaFindings, ...sigFindings, ...netFindings, ...hwFindings, ...storageFindings];
     const allWarnings = [...permWarnings];
 
     const criticalCount = allFindings.filter(f => f.severity === 'critical').length;
@@ -159,7 +200,7 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: user.email,
           subject: '🚨 AEGIS — Hidden Threat Detected on Your Device',
-          body: `Hi ${user.full_name || user.email},\n\nAEGIS detected hidden threats on your device.\n\nScan ID: ${scanId}\nThreats found: ${totalThreats}\nWarnings: ${totalWarnings}\n\nFindings:\n${allFindings.map(f => `• [${f.severity.toUpperCase()}] ${f.label}`).join('\n')}\n\nLog in to your AEGIS dashboard to view full details.\n\n— AEGIS Security`,
+          body: `Hi ${user.full_name || user.email},\n\nAEGIS detected hidden threats on your device during a full in-depth scan.\n\nScan ID: ${scanId}\nThreats found: ${totalThreats}\nWarnings: ${totalWarnings}\n\nFindings:\n${allFindings.map(f => `• [${f.severity.toUpperCase()}] ${f.label}`).join('\n')}\n\nDevice Info:\n• CPU Cores: ${hardware.cpu_cores ?? 'N/A'}\n• GPU: ${hardware.webgl_renderer ?? 'N/A'}\n• Storage Usage: ${storage.usage_mb ?? 0}MB / ${storage.quota_mb ?? 0}MB (${storage.usage_pct ?? 0}%)\n• Platform: ${hardware.platform ?? 'N/A'}\n• Network: ${network.connection_type ?? 'N/A'} (${network.timezone ?? 'N/A'})\n\nLog in to your AEGIS dashboard to view full details.\n\n— AEGIS Security`,
         }).catch(() => {});
       }
     }
