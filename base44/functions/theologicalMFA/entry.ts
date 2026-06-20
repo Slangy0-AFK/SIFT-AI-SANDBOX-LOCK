@@ -37,7 +37,7 @@ import speakeasy from 'npm:speakeasy@2.0.0';
 // ── Config ────────────────────────────────────────────────────────────────────
 const MAX_INPUT_LENGTH = 512;
 const ALLOWED_INPUT_PATTERN = /^[\x20-\x7E\t\n\r]*$/; // standard UTF-8 printable only
-const VALID_ACTIONS = new Set(['get_challenge', 'gate_verify', 'human_authenticate', 'agent_authenticate', 'simulate']);
+const VALID_ACTIONS = new Set(['get_challenge', 'gate_verify', 'human_authenticate', 'agent_authenticate', 'simulate', 'background_scan']);
 
 function sanitizeInput(input) {
   if (typeof input !== 'string') return { valid: false, reason: 'non_string' };
@@ -146,6 +146,41 @@ Deno.serve(async (req) => {
 
     if (action === 'get_challenge') {
       return Response.json({ challenge: AUTH_CHALLENGE });
+    }
+
+    // ── Silent background AI/bot detection ────────────────────────────────────
+    // Runs invisibly after login. Checks passive browser signals for automation.
+    // Normal human users are never blocked — only logged for analysis.
+    if (action === 'background_scan') {
+      const { signals = {} } = body;
+      const suspiciousFlags = [];
+
+      // navigator.webdriver = true is a dead giveaway for Selenium/Puppeteer
+      if (signals.webdriver === true) suspiciousFlags.push('webdriver_flag');
+      // Headless browsers often report no touch points and no color depth
+      if (signals.colorDepth === 0) suspiciousFlags.push('zero_color_depth');
+      // Known bot user-agent patterns
+      if (signals.userAgent && /HeadlessChrome|PhantomJS|Selenium|puppeteer|python-requests|curl\//i.test(signals.userAgent)) {
+        suspiciousFlags.push('bot_user_agent');
+      }
+      // No languages = automated
+      if (!signals.languages) suspiciousFlags.push('no_languages');
+
+      if (suspiciousFlags.length > 0) {
+        await base44.asServiceRole.entities.ZeroDayAnomaly.create({
+          anomaly_signature: `background-scan-${sourceId}-${Date.now()}`,
+          anomaly_type: 'ai_adversarial',
+          severity: suspiciousFlags.length >= 2 ? 'critical' : 'warning',
+          status: 'detected',
+          source_ip: sourceId,
+          environment: 'production',
+          confidence_score: Math.min(40 + suspiciousFlags.length * 20, 95),
+          notes: `Silent background scan flags: ${suspiciousFlags.join(', ')}. UA: ${String(signals.userAgent || '').slice(0, 100)}`,
+        }).catch(() => {});
+      }
+
+      // Always return 200 — never reveal detection to the client
+      return Response.json({ ok: true });
     }
 
     // ── Pre-login gate: HUMAN-ONLY RULE ────────────────────────────────────────

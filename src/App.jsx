@@ -19,7 +19,6 @@ import SettingsPage from '@/pages/SettingsPage';
 import PageNotFound from '@/lib/PageNotFound';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import useRealTimeSync from '@/hooks/useRealTimeSync';
-import ParadoxGate from '@/pages/ParadoxGate';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -53,7 +52,6 @@ function AppRoutes() {
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/paradox-gate" element={<ParadoxGate />} />
           <Route path="/zero-day" element={<ZeroDayCenter />} />
           <Route path="/threat-intel" element={<ThreatIntelligence />} />
           <Route path="/firewall" element={<FirewallDashboard />} />
