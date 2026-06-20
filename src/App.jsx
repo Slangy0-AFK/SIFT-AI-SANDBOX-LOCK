@@ -18,6 +18,7 @@ import SettingsPage from '@/pages/SettingsPage';
 import PageNotFound from '@/lib/PageNotFound';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import useRealTimeSync from '@/hooks/useRealTimeSync';
+import ParadoxGate from '@/pages/ParadoxGate';
 
 // Add page imports here
 
@@ -39,8 +40,9 @@ function AppRoutes() {
 
   return (
     <Routes>
+      <Route path="/" element={<ParadoxGate />} />
       <Route element={<AppLayout />}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/zero-day" element={<ZeroDayCenter />} />
         <Route path="/threat-intel" element={<ThreatIntelligence />} />
