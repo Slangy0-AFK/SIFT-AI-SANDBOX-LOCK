@@ -181,10 +181,21 @@ export default function MirrorDemo() {
       <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-mono font-bold text-foreground">Deception Architecture</h1>
-            <p className="font-mono text-sm text-muted-foreground mt-1 max-w-2xl">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-2xl font-mono font-bold text-foreground">Deception Architecture</h1>
+              <Badge variant="outline" className="font-mono text-[10px] bg-primary/10 text-primary border-primary/30">
+                EARLY ACCESS
+              </Badge>
+            </div>
+            <p className="font-mono text-sm text-muted-foreground mt-2 max-w-2xl">
               Public demonstration of Sift-AI's mirror routing. Production traffic is routed normally, while suspicious signatures are seamlessly redirected to adaptive honeypots and tarpits.
             </p>
+            <div className="mt-3 p-3 bg-secondary/30 border border-border rounded-lg max-w-2xl flex items-start gap-3">
+              <Activity className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+              <p className="font-mono text-xs text-muted-foreground leading-relaxed">
+                <strong className="text-foreground">Development Preview:</strong> This advanced deception module is currently under active development. Access is provided free of charge during this evaluation phase for testing and telemetry tuning.
+              </p>
+            </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex flex-col items-center">
