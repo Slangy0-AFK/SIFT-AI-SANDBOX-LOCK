@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Zap, Brain, Cpu, Network, Package, HardDrive, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { format } from 'date-fns';
 
 const TYPE_META = {
   behavioral:       { icon: Brain,       color: 'text-amber-400',  bg: 'bg-amber-400/10',  border: 'border-amber-400/20' },
@@ -82,7 +83,7 @@ export default function ZeroDayFeed({ anomalies = [] }) {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <span className="font-mono text-[8px] text-muted-foreground">
-                      {new Date(a.created_date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+                      {format(new Date(a.created_date), 'MMM d, yyyy h:mm:ss a')}
                     </span>
                     {isExpanded ? (
                       <ChevronUp className="w-4 h-4 text-muted-foreground" />

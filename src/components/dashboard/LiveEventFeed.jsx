@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Lock, Zap, Bug, AlertTriangle, CheckCircle } from 'lucide-react';
+import { format } from 'date-fns';
 
 const eventIcons = {
   base_chain_compute: Zap,
@@ -23,9 +24,7 @@ export default function LiveEventFeed({ events = [] }) {
   // Format time in user's timezone
   const formatTime = (dateString) => {
     if (!dateString) return '--:--:--';
-    return new Date(dateString).toLocaleString([], { month: 'short', day: 'numeric',  
-      hour: '2-digit', minute: '2-digit', second: '2-digit'
-     });
+    return format(new Date(dateString), 'MMM d, yyyy h:mm:ss a');
   };
 
   return (

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DeviceScanner from '@/components/security/DeviceScanner';
-import { Shield, ShieldAlert, ShieldCheck, Activity, ScanLine, Zap, AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
+import { Shield, ShieldAlert, ShieldCheck, Activity, ScanLine, Zap, AlertTriangle, CheckCircle, Loader2, ShieldBan } from 'lucide-react';
 import { toast } from 'sonner';
 import { sendSlackNotification } from '@/lib/slack';
 import { format } from 'date-fns';
@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 export default function ThreatScanner() {
   const [selectedThreat, setSelectedThreat] = useState(null);
   const [neutralizingId, setNeutralizingId] = useState(null);
+  const [neutralizingAll, setNeutralizingAll] = useState(false);
   const unsubscribeRef = useRef(null);
 
   const { data: deviceThreats = [], refetch: refetchDeviceThreats, isFetching: loadingDeviceThreats } = useQuery({
@@ -75,19 +76,52 @@ export default function ThreatScanner() {
             Real-time device scanning for hidden threats, injected scripts, hardware anomalies & network security
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-2 w-full sm:w-auto">
-          <div className="rounded-2xl border border-border bg-card p-3">
-            <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">Active threats</p>
-            <p className="font-mono text-2xl font-bold text-destructive mt-2">{activeThreatCount}</p>
+        <div className="flex flex-col gap-2 w-full sm:w-auto">
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-2xl border border-border bg-card p-3">
+              <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">Active threats</p>
+              <p className="font-mono text-2xl font-bold text-destructive mt-2">{activeThreatCount}</p>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-3">
+              <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">Critical</p>
+              <p className="font-mono text-2xl font-bold text-destructive mt-2">{criticalCount}</p>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-3">
+              <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">Scans (1hr)</p>
+              <p className="font-mono text-2xl font-bold text-primary mt-2">{recentSessions.length}</p>
+            </div>
           </div>
-          <div className="rounded-2xl border border-border bg-card p-3">
-            <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">Critical</p>
-            <p className="font-mono text-2xl font-bold text-destructive mt-2">{criticalCount}</p>
-          </div>
-          <div className="rounded-2xl border border-border bg-card p-3">
-            <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">Scans (1hr)</p>
-            <p className="font-mono text-2xl font-bold text-primary mt-2">{recentSessions.length}</p>
-          </div>
+          {activeThreats.some(t => t.status === 'detected' || t.status.startsWith('cycle_')) && (
+            <Button 
+              variant="destructive" 
+              className="w-full font-mono text-[10px] h-8"
+              disabled={neutralizingAll}
+              onClick={async () => {
+                setNeutralizingAll(true);
+                try {
+                  const threatsToNeutralize = activeThreats.filter(t => t.status === 'detected' || t.status.startsWith('cycle_'));
+                  let count = 0;
+                  for (const t of threatsToNeutralize) {
+                    await base44.functions.invoke('autoBlockIp', {
+                      source_ip: t.source_ip,
+                      threat_id: t.id,
+                      reason: 'Bulk neutralized from Threat Scanner',
+                    });
+                    count++;
+                  }
+                  toast.success(`✓ ${count} active threats neutralized`);
+                  await refetchDeviceThreats();
+                } catch (err) {
+                  toast.error('Failed to neutralize all: ' + err.message);
+                } finally {
+                  setNeutralizingAll(false);
+                }
+              }}
+            >
+              {neutralizingAll ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : <ShieldBan className="w-3 h-3 mr-2" />}
+              NEUTRALIZE ALL ACTIVE THREATS
+            </Button>
+          )}
         </div>
       </div>
 
@@ -122,7 +156,7 @@ export default function ThreatScanner() {
                         {session.scan_type?.toUpperCase()} • {session.input_value?.slice(0, 40) || 'Device scan'}
                       </p>
                       <p className="font-mono text-[9px] text-muted-foreground mt-0.5">
-                        {format(new Date(session.created_date), 'MMM d, HH:mm:ss')}
+                        {format(new Date(session.created_date), 'MMM d, yyyy h:mm:ss a')}
                       </p>
                     </div>
                   </div>
@@ -178,46 +212,14 @@ export default function ThreatScanner() {
                         {threat.notes?.slice(0, 80) || 'Threat detected during device scan'}
                       </p>
                       <p className="font-mono text-[9px] text-muted-foreground mt-1">
-                        IP: {threat.source_ip} • {format(new Date(threat.created_date), 'MMM d, HH:mm:ss')}
+                        IP: {threat.source_ip} • {format(new Date(threat.created_date), 'MMM d, yyyy h:mm:ss a')}
                       </p>
                     </button>
                     <div className="flex flex-col gap-2 flex-shrink-0">
                       <Badge className={`font-mono text-[8px] rounded-full border px-2 py-1 ${threat.status === 'destroyed' || threat.status === 'cleared' ? 'bg-green-500/10 border-green-500/20 text-green-500' : threat.status === 'locked' ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-amber-400/10 border-amber-400/20 text-amber-400'}`}>
                         {threat.status?.toUpperCase()}
                       </Badge>
-                      {(threat.status === 'detected' || threat.status === 'cycle_1' || threat.status === 'cycle_2' || threat.status === 'cycle_3') && (
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="font-mono text-[9px] h-7 px-2"
-                          disabled={neutralizingId === threat.id}
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            setNeutralizingId(threat.id);
-                            try {
-                              // autoBlockIp updates threat status to 'destroyed' internally
-                              await base44.functions.invoke('autoBlockIp', {
-                                source_ip: threat.source_ip,
-                                threat_id: threat.id,
-                                reason: 'Manually neutralized from threat list',
-                              });
-                              toast.success(`✓ Threat neutralized — IP blocked`);
-                              await sendSlackNotification({ text: `*Threat Neutralized* • IP: ${threat.source_ip} • Level: ${threat.threat_level}` });
-                              await refetchDeviceThreats();
-                            } catch (err) {
-                              toast.error(err.message || 'Failed to neutralize');
-                            } finally {
-                              setNeutralizingId(null);
-                            }
-                          }}
-                        >
-                          {neutralizingId === threat.id ? (
-                            <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Neutralizing...</>
-                          ) : (
-                            <><Shield className="w-3 h-3 mr-1" /> Neutralize</>
-                          )}
-                        </Button>
-                      )}
+                      {/* Individual neutralize buttons removed in favor of Bulk Neutralize */}
                     </div>
                   </div>
                 </div>

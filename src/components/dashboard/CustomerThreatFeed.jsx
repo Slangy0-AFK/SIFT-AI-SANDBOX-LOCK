@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Bug, AlertTriangle, Cpu, Mail, ShieldAlert, ChevronDown } from 'lucide-react';
+import { format } from 'date-fns';
 
 const typeMeta = {
   threat: { label: 'Threat', icon: AlertTriangle, color: 'text-accent bg-accent/10 border-accent/20' },
@@ -242,7 +243,7 @@ export default function CustomerThreatFeed({ threats = [], events = [], anomalie
                     {eventText.meta && <p className="font-mono text-[8px] text-muted-foreground mt-1 truncate">{eventText.meta}</p>}
                   </div>
                   <span className="font-mono text-[9px] text-muted-foreground whitespace-nowrap">
-                    {new Date(getTimestamp(item)).toLocaleString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+                    {format(new Date(getTimestamp(item)), 'MMM d, yyyy h:mm:ss a')}
                   </span>
                 </motion.div>
               );
