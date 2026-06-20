@@ -236,7 +236,7 @@ export default function CustomerThreatFeed({ threats = [], events = [], anomalie
                     {eventText.meta && <p className="font-mono text-[8px] text-muted-foreground mt-1 truncate">{eventText.meta}</p>}
                   </div>
                   <span className="font-mono text-[9px] text-muted-foreground whitespace-nowrap">
-                    {new Date(getTimestamp(item)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    {new Date(getTimestamp(item)).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </span>
                 </motion.div>
               );
