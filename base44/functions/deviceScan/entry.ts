@@ -1,229 +1,168 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 /**
- * Device Scan — Real threat scan with file/permission checks
- * 
- * Performs:
- * 1. File system permission probes (readable dirs, suspicious paths)
- * 2. Environment variable enumeration (detect secrets exposure)
- * 3. Network interface / DNS probe
- * 4. Known malicious signature matching against accessible paths
- * 5. Memory / process inspection (Deno sandbox)
- * 6. Base Chain cryptographic pipeline verification
- * 
- * Returns structured scan results including file permission findings.
+ * Device Threat Scan
+ *
+ * Receives client-side device signals collected by the browser (permissions,
+ * network anomalies, UA fingerprint, suspicious patterns) and runs server-side
+ * threat analysis against them.
+ *
+ * NO personal files or file content are stored — only threat signatures and
+ * event metadata. Work agents (standard User-Agent strings with legit patterns)
+ * are NOT flagged.
  */
 
-// Load signatures from environment variables
-function getSuspiciousPaths() {
-  const pathsEnv = Deno.env.get('SUSPICIOUS_PATHS');
-  if (pathsEnv) {
-    try {
-      return JSON.parse(pathsEnv);
-    } catch {
-      console.warn('[DEVICE SCAN] Failed to parse SUSPICIOUS_PATHS from env');
-    }
-  }
-  // Fallback paths if env var not set
-  return [
-    '/tmp', '/etc/passwd', '/etc/shadow', '/proc/self/environ',
-    '/proc/self/cmdline', '/proc/self/maps', '/var/log', '/root/.ssh', '/home',
-  ];
+const THREAT_SIGNATURES = [
+  // Hidden injected scripts / malware patterns
+  { pattern: /eval\s*\(\s*atob\s*\(/i, label: 'Obfuscated eval injection', severity: 'critical' },
+  { pattern: /document\.write\s*\(\s*unescape/i, label: 'DOM write obfuscation', severity: 'high' },
+  { pattern: /<script[^>]+src=["']data:/i, label: 'Data-URI script injection', severity: 'critical' },
+  { pattern: /fromCharCode\(\d+,\d+,\d+,\d+,\d+/i, label: 'CharCode payload encoding', severity: 'high' },
+  { pattern: /window\[['"][a-z]{1,3}['"]\]\s*\(/i, label: 'Obfuscated window property call', severity: 'high' },
+  { pattern: /String\.prototype\.\w+\s*=\s*function/i, label: 'Native prototype hijack', severity: 'critical' },
+  { pattern: /fetch\s*\(\s*['"]https?:\/\/(?!.*(?:googleapis|cloudflare|amazonaws))/i, label: 'Suspicious outbound fetch', severity: 'medium' },
+  // Crypto mining
+  { pattern: /CoinHive|coinhive|cryptonight|cpu-miner|webminer/i, label: 'Crypto mining script', severity: 'critical' },
+  // Keylogger / credential harvesting
+  { pattern: /addEventListener\s*\(\s*['"]keydown['"]/i, label: 'Keydown listener (possible keylogger)', severity: 'medium' },
+  { pattern: /navigator\.credentials/i, label: 'Credential API access', severity: 'medium' },
+];
+
+// Legitimate work agent patterns — these are NOT flagged
+const LEGIT_AGENT_PATTERNS = [
+  /Mozilla\/5\.0/i, /Chrome\/\d+/i, /Safari\/\d+/i, /Firefox\/\d+/i,
+  /Edg\/\d+/i, /Postman/i, /curl\/\d+/i, /axios/i, /python-requests/i,
+  /Googlebot/i, /Slackbot/i, /Twitterbot/i, /LinkedInBot/i,
+];
+
+function isLegitWorkAgent(userAgent) {
+  return LEGIT_AGENT_PATTERNS.some(p => p.test(userAgent));
 }
 
-function getMalwareSignatures() {
-  const sigsEnv = Deno.env.get('MALWARE_SIGNATURES');
-  if (sigsEnv) {
-    try {
-      return JSON.parse(sigsEnv);
-    } catch {
-      console.warn('[DEVICE SCAN] Failed to parse MALWARE_SIGNATURES from env');
-    }
-  }
-  // Fallback signatures if env var not set
-  return [
-    'eval(base64_decode', 'exec($_POST', 'system($_GET', 'passthru(',
-    'shell_exec(', '/bin/bash -i', 'nc -e /bin/sh', 'python -c "import socket',
-    'curl | bash', 'wget -O- | sh',
-  ];
-}
-
-async function checkFileAccess(path) {
-  try {
-    const stat = await Deno.stat(path);
-    return {
-      path,
-      accessible: true,
-      isFile: stat.isFile,
-      isDirectory: stat.isDirectory,
-      size: stat.size,
-      mtime: stat.mtime,
-      risk: path.includes('shadow') || path.includes('ssh') || path.includes('environ') ? 'high' : 'medium',
-    };
-  } catch {
-    return { path, accessible: false, risk: 'low' };
-  }
-}
-
-async function checkTmpForMalware(malwareSignatures) {
+function analyzeUserAgent(userAgent) {
   const findings = [];
-  try {
-    for await (const entry of Deno.readDir('/tmp')) {
-      const fullPath = `/tmp/${entry.name}`;
-      // Check for suspicious file extensions or names
-      const suspicious =
-        entry.name.endsWith('.sh') ||
-        entry.name.endsWith('.py') ||
-        entry.name.startsWith('.') ||
-        entry.name.includes('hack') ||
-        entry.name.includes('exploit') ||
-        entry.name.includes('payload');
-
-      if (suspicious) {
-        findings.push({ path: fullPath, reason: 'Suspicious file in /tmp' });
-      }
-
-      // If it's a small readable file, scan for malware signatures
-      if (entry.isFile) {
-        try {
-          const content = await Deno.readTextFile(fullPath);
-          for (const sig of malwareSignatures) {
-            if (content.toLowerCase().includes(sig.toLowerCase())) {
-              findings.push({ path: fullPath, reason: `Malware signature: "${sig}"` });
-              break;
-            }
-          }
-        } catch { /* can't read, skip */ }
-      }
-    }
-  } catch { /* /tmp not accessible or empty */ }
-  return findings;
-}
-
-function checkEnvironmentExposure() {
-  const findings = [];
-  const sensitiveKeys = ['PASSWORD', 'SECRET', 'KEY', 'TOKEN', 'PRIVATE', 'CREDENTIAL'];
-  for (const key of Object.keys(Deno.env.toObject())) {
-    if (sensitiveKeys.some(s => key.toUpperCase().includes(s))) {
-      // Don't leak the value — just flag the key name
-      findings.push({ key, risk: 'Sensitive env var accessible in runtime' });
-    }
+  if (!userAgent || userAgent.length === 0) {
+    findings.push({ label: 'Missing User-Agent header', severity: 'medium' });
+    return findings;
+  }
+  // Suspiciously short or randomised UA
+  if (userAgent.length < 10) {
+    findings.push({ label: 'Abnormally short User-Agent', severity: 'medium' });
+  }
+  // Null-byte or binary injection in UA
+  if (/[\x00-\x08\x0b\x0e-\x1f\x7f]/.test(userAgent)) {
+    findings.push({ label: 'Control characters in User-Agent (injection attempt)', severity: 'critical' });
   }
   return findings;
 }
 
-async function verifyBaseChain() {
-  // Simulate 6-step base chain cryptographic pipeline verification
-  const steps = ['base1', 'base0', 'base12', 'base60', 'pi', 'qrng'];
-  const results = [];
-  for (const step of steps) {
-    const data = new TextEncoder().encode(`${step}-${Date.now()}`);
-    const hash = await crypto.subtle.digest('SHA-256', data);
-    const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-    results.push({ step, hash: hex.slice(0, 16), verified: true });
+function scanPayloadStrings(strings = []) {
+  const hits = [];
+  for (const str of strings) {
+    if (typeof str !== 'string') continue;
+    for (const sig of THREAT_SIGNATURES) {
+      if (sig.pattern.test(str)) {
+        hits.push({ label: sig.label, severity: sig.severity, matched: str.slice(0, 80) });
+        break;
+      }
+    }
   }
-  return results;
+  return hits;
 }
 
-async function sendThreatNotification(base44, user, summary) {
-  try {
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to: user.email,
-      subject: '🚨 AEGIS Security Alert — Threat Detected on Your Device',
-      body: `Hi ${user.full_name || user.email},\n\nAEGIS Quantum Shield detected a security threat on your device.\n\n📊 Scan Summary:\n• Threats: ${summary.threats}\n• Warnings: ${summary.warnings}\n• Scan ID: ${summary.scan_id}\n• Time: ${new Date().toISOString()}\n\nAEGIS has automatically logged this event. If auto-encryption is enabled, your sensitive data has been protected.\n\nLog in to your AEGIS dashboard to review the full scan report.\n\n— AEGIS Quantum Shield Security Team`,
-    });
-    console.log(`[DEVICE SCAN] Threat notification sent to ${user.email}`);
-  } catch (e) {
-    console.error('[DEVICE SCAN] Failed to send notification email:', e.message);
+function analyzePermissions(permissions = {}) {
+  const warnings = [];
+  if (permissions.clipboard === 'granted') warnings.push({ label: 'Clipboard read access granted', severity: 'medium' });
+  if (permissions.camera === 'granted') warnings.push({ label: 'Camera access granted', severity: 'low' });
+  if (permissions.microphone === 'granted') warnings.push({ label: 'Microphone access granted', severity: 'low' });
+  if (permissions.notifications === 'denied') warnings.push({ label: 'Push notifications blocked by user', severity: 'info' });
+  return warnings;
+}
+
+function analyzeNetworkSignals(network = {}) {
+  const findings = [];
+  if (network.onLine === false) {
+    findings.push({ label: 'Device offline during scan (possible network isolation attack)', severity: 'medium' });
   }
+  if (network.tor === true) {
+    findings.push({ label: 'Tor exit node detected', severity: 'high' });
+  }
+  if (network.vpn_anomaly === true) {
+    findings.push({ label: 'VPN/proxy anomaly detected', severity: 'medium' });
+  }
+  return findings;
 }
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
-    const notifyOnThreat = body.notifyOnThreat !== false; // default true
-    const autoEncrypt = body.autoEncrypt === true;
+    const {
+      notifyOnThreat = true,
+      // Client-collected signals — no file content, just metadata
+      suspicious_strings = [],   // snippets of JS the browser detected as anomalous
+      permissions = {},           // browser permission states
+      network = {},               // navigator.onLine, detected proxy signals
+      user_agent = req.headers.get('user-agent') || '',
+    } = body;
 
-    console.log(`[DEVICE SCAN] Starting scan for ${user.email} | notify=${notifyOnThreat} | encrypt=${autoEncrypt}`);
     const startTime = Date.now();
+    const scanId = `SCAN-${Date.now().toString(36).toUpperCase()}`;
 
-    // Load signatures at runtime
-    const SUSPICIOUS_PATHS = getSuspiciousPaths();
-    const MALWARE_SIGNATURES = getMalwareSignatures();
+    // Analyse signals
+    const uaFindings = analyzeUserAgent(user_agent);
+    const sigFindings = scanPayloadStrings(suspicious_strings);
+    const permWarnings = analyzePermissions(permissions);
+    const netFindings = analyzeNetworkSignals(network);
 
-    // Run all checks in parallel where possible
-    const [fileAccessResults, malwareFindings, envFindings, baseChainResults] = await Promise.all([
-      Promise.all(SUSPICIOUS_PATHS.map(checkFileAccess)),
-      checkTmpForMalware(MALWARE_SIGNATURES),
-      Promise.resolve(checkEnvironmentExposure()),
-      verifyBaseChain(),
-    ]);
+    const allFindings = [...uaFindings, ...sigFindings, ...netFindings];
+    const allWarnings = [...permWarnings];
 
-    // Tally accessible sensitive paths
-    const accessibleSensitive = fileAccessResults.filter(r => r.accessible && r.risk !== 'low');
-    const totalThreats = malwareFindings.length + accessibleSensitive.filter(r => r.risk === 'high').length;
-    const warnings = accessibleSensitive.filter(r => r.risk === 'medium').length + envFindings.length;
+    const criticalCount = allFindings.filter(f => f.severity === 'critical').length;
+    const highCount = allFindings.filter(f => f.severity === 'high').length;
+    const totalThreats = criticalCount + highCount;
+    const totalWarnings = allFindings.filter(f => f.severity === 'medium').length + allWarnings.length;
+    const isClean = allFindings.length === 0;
 
-    // Log the scan as a SecurityEvent
+    // Log scan event — no personal file data, just threat metadata
     await base44.asServiceRole.entities.SecurityEvent.create({
       event_type: 'base_chain_compute',
-      severity: totalThreats > 0 ? 'critical' : warnings > 0 ? 'warning' : 'info',
+      severity: totalThreats > 0 ? 'critical' : totalWarnings > 0 ? 'warning' : 'info',
       details: JSON.stringify({
-        scan_user: user.email,
+        scan_id: scanId,
         threats: totalThreats,
-        warnings,
+        warnings: totalWarnings,
+        findings_count: allFindings.length,
         duration_ms: Date.now() - startTime,
-        accessible_paths: accessibleSensitive.map(r => r.path),
-        malware_findings: malwareFindings.length,
       }),
       environment: 'production',
       base_chain_step: 'base1',
     });
 
-    // If threats found, log Threat and ZeroDayAnomaly records
-    const scanId = `SCAN-${Date.now().toString(36).toUpperCase()}`;
-    if (totalThreats > 0 || malwareFindings.length > 0) {
-      // Create Threat record for dashboard visibility
-      const threat = await base44.asServiceRole.entities.Threat.create({
+    // Create threat record if threats found
+    if (totalThreats > 0) {
+      await base44.asServiceRole.entities.Threat.create({
         user_id: user.id,
-        source_ip: '127.0.0.1',
-        threat_level: totalThreats > 0 ? 'critical' : 'medium',
+        source_ip: req.headers.get('x-forwarded-for') || '127.0.0.1',
+        threat_level: criticalCount > 0 ? 'critical' : 'high',
         status: 'detected',
-        agent_type: 'unknown',
+        agent_type: isLegitWorkAgent(user_agent) ? 'human' : 'unknown',
         environment: 'production',
-        notes: `Device scan: ${totalThreats} threats, ${warnings} warnings. ${malwareFindings.map(f => f.reason).join('; ')}`,
-        encoding_method: 'none',
-        obfuscation_detected: malwareFindings.length > 0,
+        notes: `Device scan ${scanId}: ${allFindings.map(f => f.label).join('; ')}`,
+        obfuscation_detected: sigFindings.length > 0,
       });
 
-      // Create ZeroDayAnomaly for detailed tracking
-      await base44.asServiceRole.entities.ZeroDayAnomaly.create({
-        anomaly_signature: `DEVICE-SCAN-${user.email.split('@')[0]}-${Date.now().toString(36)}`,
-        anomaly_type: malwareFindings.length > 0 ? 'fileless' : 'behavioral',
-        severity: totalThreats > 0 ? 'critical' : 'warning',
-        status: autoEncrypt ? 'contained' : 'detected',
-        source_ip: '127.0.0.1',
-        threat_id: threat.id,
-        confidence_score: totalThreats > 0 ? 95 : 70,
-        mitigation_applied: autoEncrypt ? 'AES-256 auto-encryption triggered' : null,
-        notes: `Device scan found ${totalThreats} threats and ${warnings} warnings for ${user.email}${autoEncrypt ? ' — auto-encryption applied' : ''}`,
-        environment: 'production',
-      });
-
-      // Send email notification if requested
       if (notifyOnThreat) {
-        await sendThreatNotification(base44, user, { threats: totalThreats, warnings, scan_id: scanId });
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: user.email,
+          subject: '🚨 AEGIS — Hidden Threat Detected on Your Device',
+          body: `Hi ${user.full_name || user.email},\n\nAEGIS detected hidden threats on your device.\n\nScan ID: ${scanId}\nThreats found: ${totalThreats}\nWarnings: ${totalWarnings}\n\nFindings:\n${allFindings.map(f => `• [${f.severity.toUpperCase()}] ${f.label}`).join('\n')}\n\nLog in to your AEGIS dashboard to view full details.\n\n— AEGIS Security`,
+        }).catch(() => {});
       }
     }
-
-    console.log(`[DEVICE SCAN] Complete: ${totalThreats} threats, ${warnings} warnings (${Date.now() - startTime}ms)`);
 
     return Response.json({
       success: true,
@@ -232,29 +171,12 @@ Deno.serve(async (req) => {
       duration_ms: Date.now() - startTime,
       summary: {
         threats: totalThreats,
-        warnings,
-        clean: totalThreats === 0,
+        warnings: totalWarnings,
+        clean: isClean,
       },
-      file_access: {
-        paths_checked: SUSPICIOUS_PATHS.length,
-        accessible_sensitive: accessibleSensitive.map(r => ({
-          path: r.path,
-          risk: r.risk,
-          type: r.isDirectory ? 'directory' : 'file',
-        })),
-        malware_findings: malwareFindings,
-      },
-      environment: {
-        sensitive_vars_exposed: envFindings.length,
-      },
-      base_chain: {
-        verified: baseChainResults.every(r => r.verified),
-        steps: baseChainResults,
-      },
-      protection: {
-        auto_encrypt_applied: autoEncrypt && totalThreats > 0,
-        notification_sent: notifyOnThreat && (totalThreats > 0 || malwareFindings.length > 0),
-      },
+      findings: allFindings,
+      warnings: allWarnings,
+      notification_sent: notifyOnThreat && totalThreats > 0,
     });
 
   } catch (error) {
