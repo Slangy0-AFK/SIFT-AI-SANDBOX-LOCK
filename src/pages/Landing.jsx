@@ -22,20 +22,59 @@ function PublicScanner() {
     if (scanning) return;
     setScanning(true);
     setResults(null);
-    setStepIndex(0);
+    
+    let anomalies = 0;
+    let warnings = 0;
 
-    for (let i = 0; i < SCAN_STEPS.length; i++) {
-      setStepIndex(i);
-      await new Promise(r => setTimeout(r, 800 + Math.random() * 500));
-    }
+    // Step 0: Env
+    setStepIndex(0);
+    await new Promise(r => setTimeout(r, 700));
+    if (navigator.webdriver) anomalies++;
+    if (!navigator.languages || navigator.languages.length === 0) anomalies++;
+    if (window.cdc_adoQpoasnfa76pfcZLmcfl_Array) anomalies++; // Puppeteer flag
+
+    // Step 1: Network
+    setStepIndex(1);
+    await new Promise(r => setTimeout(r, 700));
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (!tz) warnings++;
+    if (navigator.connection && navigator.connection.saveData) warnings++;
+
+    // Step 2: Storage
+    setStepIndex(2);
+    await new Promise(r => setTimeout(r, 800));
+    try {
+      const estimate = await navigator.storage?.estimate();
+      // Unusually high storage usage might indicate local caching/trackers
+      if (estimate && estimate.usage > 1024 * 1024 * 200) warnings++; 
+    } catch(e) {}
+
+    // Step 3: Heuristics & Hardware
+    setStepIndex(3);
+    await new Promise(r => setTimeout(r, 900));
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (gl) {
+        const ext = gl.getExtension('WEBGL_debug_renderer_info');
+        const renderer = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)?.toLowerCase() : '';
+        if (renderer.includes('swiftshader') || renderer.includes('llvmpipe')) {
+          anomalies++; // Common in headless browsers
+        }
+      }
+    } catch(e) {}
+
+    if (navigator.hardwareConcurrency === 1) warnings++;
+
+    // Step 4: Verify
+    setStepIndex(4);
+    await new Promise(r => setTimeout(r, 1000));
     
     setStepIndex(SCAN_STEPS.length);
-    // For public demo, we'll usually return a clean bill of health or a simulated minor warning.
-    const isClean = Math.random() > 0.2;
     setResults({ 
-      clean: isClean, 
-      threats: isClean ? 0 : Math.floor(Math.random() * 3) + 1,
-      warnings: Math.floor(Math.random() * 4)
+      clean: anomalies === 0 && warnings === 0, 
+      threats: anomalies,
+      warnings: warnings
     });
     setScanning(false);
   };
