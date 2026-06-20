@@ -349,7 +349,7 @@ export default function DeviceScanner() {
                       {isClean ? 'DEVICE IS CLEAN' : threatCount > 0 ? `${threatCount} HIDDEN THREAT(S) FOUND` : `${warningCount} WARNING(S)`}
                     </p>
                     <p className="font-mono text-[9px] text-muted-foreground mt-0.5">
-                      {results.scan_id} · {format(new Date(results.timestamp), 'MMM d, HH:mm:ss')}
+                      {results.scan_id} · {format(new Date(results.timestamp), 'MMM d, yyyy h:mm:ss a')}
                     </p>
                   </div>
                 </div>

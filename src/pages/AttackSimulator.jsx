@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Play, Square, Zap, Shield, Lock, Skull, CheckCircle, Atom, ArrowRight } from 'lucide-react';
+import { format } from 'date-fns';
 
 const AGENT_TYPES = ['autonomous_agent', 'bot', 'autonomous_agent', 'bot', 'human'];
 const THREAT_LEVELS = ['low', 'medium', 'high', 'critical'];
@@ -105,7 +106,7 @@ export default function AttackSimulator() {
   const createEvent  = useMutation({ mutationFn: (d) => base44.entities.SecurityEvent.create(d) });
 
   const addLog = (msg) => {
-    const ts = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    const ts = format(new Date(), 'MMM d, yyyy h:mm:ss a');
     setLog(prev => [`[${ts}] ${msg}`, ...prev].slice(0, 60));
   };
 

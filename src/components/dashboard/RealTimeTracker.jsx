@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity } from 'lucide-react';
+import { format } from 'date-fns';
 
 const MAX_POINTS = 20;
 
@@ -11,7 +12,7 @@ function buildPoint(label, threats = 0, zerodays = 0) {
 }
 
 function nowLabel() {
-  return new Date().toLocaleString([], { month: 'short', day: 'numeric',  hour: '2-digit', minute: '2-digit', second: '2-digit'  });
+  return format(new Date(), 'MMM d, yyyy h:mm:ss a');
 }
 
 export default function RealTimeTracker() {
@@ -39,7 +40,7 @@ export default function RealTimeTracker() {
 
       const slots = Array.from({ length: MAX_POINTS }, (_, i) => {
         const slotStart = now - windowMs + i * slotMs;
-        const label = new Date(slotStart).toLocaleString([], { month: 'short', day: 'numeric',  hour: '2-digit', minute: '2-digit', second: '2-digit'  });
+        const label = format(new Date(slotStart), 'MMM d, yyyy h:mm:ss a');
         const t = threats.filter(r => {
           const d = new Date(r.created_date).getTime();
           return d >= slotStart && d < slotStart + slotMs;
@@ -209,7 +210,7 @@ export default function RealTimeTracker() {
                 <div className={`w-1 h-1 rounded-full flex-shrink-0 ${ev.type === 'zeroday' ? 'bg-purple-400' : 'bg-primary'}`} />
                 <span className={`font-mono text-[9px] font-semibold ${ev.color}`}>{ev.label}</span>
                 <span className="font-mono text-[9px] text-muted-foreground truncate">{ev.detail}</span>
-                <span className="font-mono text-[8px] text-muted-foreground/50 ml-auto flex-shrink-0">{ev.time.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</span>
+                <span className="font-mono text-[8px] text-muted-foreground/50 ml-auto flex-shrink-0">{format(ev.time, 'MMM d, yyyy h:mm:ss a')}</span>
               </motion.div>
             ))}
           </AnimatePresence>
