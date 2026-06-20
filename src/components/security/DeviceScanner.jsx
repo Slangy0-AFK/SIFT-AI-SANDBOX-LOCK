@@ -184,8 +184,8 @@ async function collectDeviceSignals() {
 
 const PREFS_KEY = 'sift-ai_scan_prefs';
 function loadPrefs() {
-  try { return JSON.parse(localStorage.getItem(PREFS_KEY)) || { notifications: true, autoScan: false }; }
-  catch { return { notifications: true, autoScan: false }; }
+  try { return JSON.parse(localStorage.getItem(PREFS_KEY)) || { notifications: true, autoScan: true }; }
+  catch { return { notifications: true, autoScan: true }; }
 }
 
 export default function DeviceScanner() {

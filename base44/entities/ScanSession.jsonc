@@ -13,7 +13,8 @@
         "virustotal_url",
         "virustotal_hash",
         "email",
-        "sms"
+        "sms",
+        "device_scan"
       ]
     },
     "status": {

@@ -203,6 +203,20 @@ Deno.serve(async (req) => {
       base_chain_step: 'base1',
     });
 
+    await base44.asServiceRole.entities.ScanSession.create({
+      user_id: user.id,
+      scan_type: 'device_scan',
+      status: 'complete',
+      input_value: 'Device telemetry scan',
+      result: JSON.stringify({
+        scan_id: scanId,
+        threats: totalThreats,
+        warnings: totalWarnings,
+      }),
+      threat_level: totalThreats > 0 ? 'critical' : totalWarnings > 0 ? 'warning' : 'info',
+      is_threat: totalThreats > 0
+    });
+
     // Create threat record if threats found
     if (totalThreats > 0) {
       const isAI = isAutonomousAgent(user_agent);
