@@ -233,8 +233,25 @@ export default function DeviceScanner() {
 
     const signals = await signalsPromise;
 
+    let sessionId = null;
+    try {
+      const user = await base44.auth.me();
+      if (user) {
+        const session = await base44.entities.ScanSession.create({
+          user_id: user.id,
+          scan_type: 'device_scan',
+          status: 'scanning',
+          input_value: 'Device telemetry scan',
+        });
+        sessionId = session.id;
+      }
+    } catch (e) {
+      console.warn('Failed to create scan session:', e);
+    }
+
     try {
       const res = await base44.functions.invoke('deviceScan', {
+        scan_session_id: sessionId,
         ...signals,
         notifyOnThreat: prefs.notifications,
       });
@@ -254,6 +271,9 @@ export default function DeviceScanner() {
         toast.success('Scan complete — no hidden threats found.');
       }
     } catch (err) {
+      if (sessionId) {
+        await base44.entities.ScanSession.update(sessionId, { status: 'error', error_message: err.message }).catch(() => {});
+      }
       toast.error('Scan failed: ' + err.message);
     }
 

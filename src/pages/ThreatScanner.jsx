@@ -14,7 +14,8 @@ export default function ThreatScanner() {
   const [selectedThreat, setSelectedThreat] = useState(null);
   const [neutralizingId, setNeutralizingId] = useState(null);
   const [neutralizingAll, setNeutralizingAll] = useState(false);
-  const unsubscribeRef = useRef(null);
+  const unsubscribeThreatRef = useRef(null);
+  const unsubscribeSessionRef = useRef(null);
 
   const { data: deviceThreats = [], refetch: refetchDeviceThreats, isFetching: loadingDeviceThreats } = useQuery({
     queryKey: ['device-threats'],
@@ -42,14 +43,19 @@ export default function ThreatScanner() {
   });
 
   useEffect(() => {
-    if (!unsubscribeRef.current) {
-      unsubscribeRef.current = base44.entities.Threat.subscribe(() => {
+    if (!unsubscribeThreatRef.current) {
+      unsubscribeThreatRef.current = base44.entities.Threat.subscribe(() => {
         refetchDeviceThreats();
+      });
+    }
+    if (!unsubscribeSessionRef.current) {
+      unsubscribeSessionRef.current = base44.entities.ScanSession.subscribe(() => {
         refetchSessions();
       });
     }
     return () => {
-      if (unsubscribeRef.current) unsubscribeRef.current();
+      if (unsubscribeThreatRef.current) unsubscribeThreatRef.current();
+      if (unsubscribeSessionRef.current) unsubscribeSessionRef.current();
     };
   }, []);
 

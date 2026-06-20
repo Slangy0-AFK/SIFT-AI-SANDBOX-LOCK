@@ -159,6 +159,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const {
+      scan_session_id,
       notifyOnThreat = true,
       suspicious_strings = [],
       permissions = {},
@@ -203,7 +204,7 @@ Deno.serve(async (req) => {
       base_chain_step: 'base1',
     });
 
-    await base44.asServiceRole.entities.ScanSession.create({
+    const sessionData = {
       user_id: user.id,
       scan_type: 'device_scan',
       status: 'complete',
@@ -215,7 +216,15 @@ Deno.serve(async (req) => {
       }),
       threat_level: totalThreats > 0 ? 'critical' : totalWarnings > 0 ? 'warning' : 'info',
       is_threat: totalThreats > 0
-    });
+    };
+
+    if (scan_session_id) {
+      await base44.entities.ScanSession.update(scan_session_id, sessionData).catch(async () => {
+        await base44.entities.ScanSession.create(sessionData);
+      });
+    } else {
+      await base44.entities.ScanSession.create(sessionData);
+    }
 
     // Create threat record if threats found
     if (totalThreats > 0) {
