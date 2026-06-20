@@ -191,16 +191,21 @@ export default function ThreatScanner() {
                           onClick={async (e) => {
                             e.stopPropagation();
                             try {
-                              await base44.functions.invoke('autoBlockIp', {
+                              const result = await base44.functions.invoke('autoBlockIp', {
                                 source_ip: threat.source_ip,
                                 threat_id: threat.id,
                                 reason: 'Manually neutralized from threat list',
                               });
+                              console.log('Neutralize result:', result);
+                              if (result.data?.error) {
+                                throw new Error(result.data.error);
+                              }
                               toast.success(`Threat neutralized - IP ${threat.source_ip} blocked`);
                               await sendSlackNotification({ text: `*Threat Neutralized* • IP: ${threat.source_ip} • Level: ${threat.threat_level}` });
                               refetchDeviceThreats();
                             } catch (err) {
-                              toast.error('Failed to neutralize: ' + err.message);
+                              console.error('Neutralize error:', err);
+                              toast.error('Failed: ' + (err.message || 'Unknown error - check console'));
                             }
                           }}
                         >
