@@ -74,7 +74,7 @@ function ThreatScannerSection({ threats, refetchThreats }) {
           <div className="rounded-2xl border border-border/50 bg-green-500/10 p-4 text-center">
             <ShieldCheck className="w-8 h-8 text-green-400 mx-auto mb-2" />
             <p className="font-mono text-[10px] text-green-400 font-semibold">NO ACTIVE THREATS</p>
-            <p className="font-mono text-[9px] text-muted-foreground mt-1">All threats neutralized</p>
+            <p className="font-mono text-[9px] text-muted-foreground mt-1">All devices clean</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -89,7 +89,7 @@ function ThreatScannerSection({ threats, refetchThreats }) {
                       <span className="font-mono text-[9px] text-muted-foreground">{threat.agent_type === 'human' ? 'Human' : threat.agent_type}</span>
                     </div>
                     <p className="font-mono text-[10px] text-foreground mt-2 truncate">{threat.notes?.slice(0, 80) || 'Threat detected'}</p>
-                    <p className="font-mono text-[9px] text-muted-foreground mt-1">IP: {threat.source_ip}</p>
+                    <p className="font-mono text-[9px] text-muted-foreground mt-1">Device: {threat.created_by || 'Unknown'} • IP: {threat.source_ip}</p>
                   </div>
                   <Button
                     size="sm"
@@ -134,7 +134,7 @@ export default function Dashboard() {
 
   const { data: threats = [], refetch: refetchThreats } = useQuery({
     queryKey: ['threats'],
-    queryFn: () => base44.entities.Threat.list('-created_date', 50),
+    queryFn: () => base44.asServiceRole.entities.Threat.list('-created_date', 100),
     initialData: [],
     refetchInterval: 5000,
   });
