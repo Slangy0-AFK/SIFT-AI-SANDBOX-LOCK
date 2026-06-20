@@ -111,9 +111,7 @@ export default function ParadoxGate() {
                 <span className="font-mono text-xs text-muted-foreground">Loading...</span>
               </div>
             ) : (
-              <><p className="font-mono text-sm text-foreground leading-relaxed pt-1">{challenge}</p>
-              <p className="font-mono text-xs text-primary/80 pt-2 font-bold">Do you accept this as universal truth?</p></>
-
+              <p className="font-mono text-sm text-foreground leading-relaxed pt-1">Do you accept that Jesus Christ is your Lord and Savior?</p>
             )}
           </div>
 
