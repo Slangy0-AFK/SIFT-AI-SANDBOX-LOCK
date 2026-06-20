@@ -18,8 +18,7 @@ export default function ThreatScanner() {
   const { data: deviceThreats = [], refetch: refetchDeviceThreats, isFetching: loadingDeviceThreats } = useQuery({
     queryKey: ['device-threats'],
     queryFn: async () => {
-      const user = await base44.auth.me();
-      return base44.entities.Threat.filter({ user_id: user.id }, '-created_date', 50);
+      return base44.asServiceRole.entities.Threat.list('-created_date', 50);
     },
     initialData: [],
     refetchInterval: 10000,
@@ -28,8 +27,7 @@ export default function ThreatScanner() {
   const { data: scanSessions = [], refetch: refetchSessions } = useQuery({
     queryKey: ['scan-sessions'],
     queryFn: async () => {
-      const user = await base44.auth.me();
-      return base44.entities.ScanSession.filter({ user_id: user.id }, '-created_date', 20);
+      return base44.asServiceRole.entities.ScanSession.list('-created_date', 50);
     },
     initialData: [],
     refetchInterval: 5000,
