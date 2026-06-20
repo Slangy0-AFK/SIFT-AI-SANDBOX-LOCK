@@ -4,13 +4,16 @@ export default async function handler(req) {
   try {
     const base44 = createClientFromRequest(req);
     
-    // We use service role to bypass the strictly closed RLS (since this is public)
+    // Using service role to securely track visits
     const stats = await base44.asServiceRole.entities.SiteStat.list();
     
     let stat;
     if (stats.length === 0) {
-      // Initialize accurate tracking starting at 1
-      stat = await base44.asServiceRole.entities.SiteStat.create({ total_visits: 1 });
+      // In a completely public context, provide a dummy created_by_id to avoid auth.me() calls
+      stat = await base44.asServiceRole.entities.SiteStat.create({ 
+        total_visits: 1,
+        created_by_id: 'system_tracker'
+      });
     } else {
       stat = stats[0];
       // Increment the counter
