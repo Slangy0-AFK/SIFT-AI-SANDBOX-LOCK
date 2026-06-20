@@ -1,8 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
-import { Shield, AlertTriangle, Lock, Skull, ChevronDown, ChevronUp, Bug, Radiation, ShieldAlert, FileText } from 'lucide-react';
+import { Shield, AlertTriangle, Lock, Skull, ChevronDown, ChevronUp, Bug, Radiation, ShieldAlert, FileText, ScanLine, Activity, ShieldCheck, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
 import usePullToRefresh from '@/hooks/usePullToRefresh';
 
 import ThreatCounter from '../components/dashboard/ThreatCounter';
@@ -31,6 +35,85 @@ function CollapsiblePanel({ title, icon: Icon, children, defaultOpen = false }) 
   );
 }
 
+function ThreatScannerSection({ threats, refetchThreats }) {
+  const [neutralizingId, setNeutralizingId] = useState(null);
+  const activeThreats = threats.filter(t => !['locked', 'destroyed', 'cleared'].includes(t.status));
+
+  const handleNeutralize = async (threat) => {
+    setNeutralizingId(threat.id);
+    try {
+      await base44.functions.invoke('autoBlockIp', {
+        source_ip: threat.source_ip,
+        threat_id: threat.id,
+        reason: 'Manually neutralized from command center',
+      });
+      await base44.entities.Threat.update(threat.id, { status: 'cleared' });
+      toast.success('✓ Threat neutralized');
+      refetchThreats();
+    } catch (err) {
+      toast.error(err.message || 'Failed to neutralize');
+    } finally {
+      setNeutralizingId(null);
+    }
+  };
+
+  return (
+    <Card className="border-border/50">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
+            <ScanLine className="w-4 h-4 text-primary" /> DEVICE THREAT SCANNER
+          </CardTitle>
+          <Button variant="outline" size="sm" onClick={() => { refetchThreats(); toast.success('Threats refreshed'); }}>
+            <Activity className="w-3 h-3 mr-1" /> Refresh
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {activeThreats.length === 0 ? (
+          <div className="rounded-2xl border border-border/50 bg-green-500/10 p-4 text-center">
+            <ShieldCheck className="w-8 h-8 text-green-400 mx-auto mb-2" />
+            <p className="font-mono text-[10px] text-green-400 font-semibold">NO ACTIVE THREATS</p>
+            <p className="font-mono text-[9px] text-muted-foreground mt-1">All threats neutralized</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {activeThreats.slice(0, 5).map((threat) => (
+              <div key={threat.id} className="rounded-xl border border-border/50 bg-secondary/10 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge className={`font-mono text-[8px] rounded-full border px-2 py-0.5 ${threat.threat_level === 'critical' ? 'bg-destructive/10 border-destructive/20 text-destructive' : threat.threat_level === 'high' ? 'bg-amber-400/10 border-amber-400/20 text-amber-400' : 'bg-blue-400/10 border-blue-400/20 text-blue-400'}`}>
+                        {threat.threat_level?.toUpperCase()}
+                      </Badge>
+                      <span className="font-mono text-[9px] text-muted-foreground">{threat.agent_type === 'human' ? 'Human' : threat.agent_type}</span>
+                    </div>
+                    <p className="font-mono text-[10px] text-foreground mt-2 truncate">{threat.notes?.slice(0, 80) || 'Threat detected'}</p>
+                    <p className="font-mono text-[9px] text-muted-foreground mt-1">IP: {threat.source_ip}</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="font-mono text-[9px] h-7 px-2"
+                    disabled={neutralizingId === threat.id}
+                    onClick={() => handleNeutralize(threat)}
+                  >
+                    {neutralizingId === threat.id ? (
+                      <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Neutralizing...</>
+                    ) : (
+                      <><Shield className="w-3 h-3 mr-1" /> Neutralize</>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 const quickLinks = [
   { path: '/zero-day', icon: Radiation, label: 'Zero-Day', color: 'text-accent' },
   { path: '/threat-intel', icon: ShieldAlert, label: 'Threat Intel', color: 'text-accent' },
@@ -42,6 +125,12 @@ const quickLinks = [
 export default function Dashboard() {
   const navigate = useNavigate();
   const containerRef = useRef(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const { data: threats = [], refetch: refetchThreats } = useQuery({
     queryKey: ['threats'],
@@ -119,7 +208,12 @@ export default function Dashboard() {
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             <span className="font-mono text-[9px] text-green-400 font-semibold tracking-wider">ALL SYSTEMS OPERATIONAL</span>
           </div>
-
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border">
+            <Activity className="w-3 h-3 text-primary" />
+            <span className="font-mono text-[10px] text-foreground font-semibold">
+              {currentTime.toLocaleTimeString('en-US', { timeZone: 'America/Chicago' })}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -153,6 +247,9 @@ export default function Dashboard() {
 
       {/* VirusTotal Scanner */}
       <VirusTotalScanner />
+
+      {/* Threat Scanner Section */}
+      <ThreatScannerSection threats={threats} refetchThreats={refetchThreats} />
 
       {/* Live Customer Threat Feed — integrated signals from all tools */}
       <CustomerThreatFeed
