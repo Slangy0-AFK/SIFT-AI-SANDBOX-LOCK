@@ -12,13 +12,16 @@ export default function About() {
         </CardHeader>
         <CardContent className="space-y-4 text-foreground/80 font-mono text-sm">
           <p>
-            Welcome to Sift-AI Quantum Shield, the next generation in proactive cybersecurity and autonomous threat detection. Our platform is designed to provide enterprise-grade protection for both organizations and individuals against an ever-evolving landscape of digital threats. By leveraging advanced artificial intelligence, behavioral analytics, and a multi-layered deception architecture including honeypots and tarpits, we intercept, analyze, and neutralize threats before they can compromise your valuable assets.
+            Welcome to Sift-AI Quantum Shield. We build an autonomous threat detection and deception platform designed to secure devices and networks against sophisticated modern attacks—including autonomous AI agents, headless browser bots, and zero-day exploits. We protect your infrastructure by deploying an active defense architecture: identifying malicious intent through browser and device telemetry, and seamlessly redirecting bad actors into adaptive honeypots and tarpits where their resources are safely exhausted.
           </p>
           <p>
-            Who is this for? Sift-AI is built for security professionals, IT administrators, and privacy-conscious users who require unparalleled visibility into their network and device integrity. Whether you are safeguarding a corporate infrastructure from zero-day exploits, protecting your team against sophisticated phishing campaigns, or ensuring your personal devices are free from injected scripts and hidden trackers, Sift-AI delivers the comprehensive oversight and automated remediation necessary to maintain a secure posture.
+            What exactly do we do and protect? Our engine actively scans for injected scripts, prototype tampering, proxy anomalies, and automation flags without ever touching your personal files. It provides continuous monitoring against data exfiltration, Claude leak attacks, and polymorphic behavior. Our Paradox Lock technology further ensures that highly advanced bots and AI models cannot bypass critical security checkpoints, offering an impenetrable layer of verification. In short: we hunt the threats trying to hunt you, intercepting them before they ever reach your actual data.
           </p>
           <p>
-            Who builds it? The platform is developed by a dedicated team of cybersecurity researchers, AI engineers, and system architects at Base44. We are committed to pushing the boundaries of what is possible in threat intelligence. By combining our expertise in machine learning with deep insights into adversarial tactics, we have created an autonomous system that not only reacts to known signatures but also predicts and mitigates novel attack vectors, keeping you one step ahead in the digital arms race.
+            Who is this for? Sift-AI is built for security-conscious individuals, IT administrators, and enterprises who need verifiable visibility into what is happening on their devices and networks. If you are concerned about hidden trackers, unauthorized environmental access, or automated botnets scraping your infrastructure, our platform gives you the command center to neutralize them instantly.
+          </p>
+          <p>
+            Who builds it? Sift-AI is developed by a dedicated team of cybersecurity researchers, AI engineers, and systems architects. We focus exclusively on proactive defense mechanisms—building real-time threat intelligence and deceptive networking tools to keep you one step ahead in an evolving digital arms race.
           </p>
         </CardContent>
       </Card>
