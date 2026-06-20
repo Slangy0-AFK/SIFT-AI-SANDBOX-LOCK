@@ -54,8 +54,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    const AI_ATTACK_SIGNATURES = await getAIAttackSignatures(base44Service);
     const base44Service = base44.asServiceRole;
+    const AI_ATTACK_SIGNATURES = await getAIAttackSignatures(base44Service);
     
     console.log('[AEGIS SCANNER] Starting anomaly scan cycle...');
     

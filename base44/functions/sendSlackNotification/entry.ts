@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     }
 
     // Send to Slack with the secure webhook URL
-    const slackPayload: Record<string, any> = { text };
+    const slackPayload = { text };
     if (blocks) slackPayload.blocks = blocks;
 
     const slackResponse = await fetch(slackWebhookUrl, {
