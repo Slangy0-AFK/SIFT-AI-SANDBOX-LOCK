@@ -2,6 +2,9 @@
   "name": "SecurityEvent",
   "type": "object",
   "properties": {
+    "user_id": {
+      "type": "string"
+    },
     "event_type": {
       "type": "string",
       "enum": [
@@ -14,8 +17,7 @@
         "threat_destroyed",
         "mirror_redirect",
         "access_granted"
-      ],
-      "description": "Type of security event"
+      ]
     },
     "threat_id": {
       "type": "string",
@@ -53,8 +55,7 @@
         "base60",
         "pi",
         "qrng"
-      ],
-      "description": "Which step in the base chain this event relates to"
+      ]
     }
   },
   "required": [
@@ -64,42 +65,42 @@
     "create": {
       "$or": [
         {
-          "created_by_id": "{{user.id}}"
-        },
-        {
           "data.user_id": "{{user.id}}"
         },
         {
-          "user_condition": {
-            "role": "admin"
-          }
+          "created_by_id": "{{user.id}}"
         }
       ]
     },
     "read": {
       "$or": [
         {
-          "created_by_id": "{{user.id}}"
-        },
-        {
           "data.user_id": "{{user.id}}"
         },
         {
-          "user_condition": {
-            "role": "admin"
-          }
+          "created_by_id": "{{user.id}}"
         }
       ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        }
+      ]
     }
   }
 }
