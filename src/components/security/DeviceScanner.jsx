@@ -40,26 +40,32 @@ const SEVERITY_BG = {
 };
 
 // Request deep browser permissions for a full device scan
+// This MUST be called directly from a user gesture (button click) to trigger popups
 async function requestScanPermissions() {
   const granted = {};
 
-  // Notification permission (needed for alert delivery)
+  // Notification permission (needed for alert delivery) - triggers popup
   if ('Notification' in window && Notification.permission === 'default') {
-    try { await Notification.requestPermission(); } catch {}
+    try { 
+      const perm = await Notification.requestPermission();
+      granted.notifications = perm;
+    } catch { granted.notifications = 'denied'; }
+  } else {
+    granted.notifications = 'Notification' in window ? Notification.permission : 'unsupported';
   }
-  granted.notifications = 'Notification' in window ? Notification.permission : 'unsupported';
 
-  // Clipboard read (detect clipboard hijackers)
+  // Geolocation - triggers popup (must be from user gesture)
   try {
-    const s = await navigator.permissions.query({ name: 'clipboard-read' });
-    granted.clipboard = s.state;
-    if (s.state !== 'granted') {
-      // Attempt to actually request it
-      try { await navigator.clipboard.readText(); granted.clipboard = 'granted'; } catch {}
-    }
-  } catch {}
+    await new Promise((resolve) =>
+      navigator.geolocation.getCurrentPosition(
+        () => { granted.geolocation = 'granted'; resolve(); },
+        () => { granted.geolocation = 'denied'; resolve(); },
+        { timeout: 5000, maximumAge: 60000, enableHighAccuracy: true }
+      )
+    );
+  } catch { granted.geolocation = 'unavailable'; }
 
-  // Camera & microphone (detect unauthorized access)
+  // Camera & microphone - triggers popup (must be from user gesture)
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     granted.camera = 'granted';
@@ -70,16 +76,11 @@ async function requestScanPermissions() {
     granted.microphone = e.name === 'NotAllowedError' ? 'denied' : 'unavailable';
   }
 
-  // Geolocation (detect location spoofing/VPN mismatches)
+  // Clipboard read - query only (popup not reliably triggerable)
   try {
-    await new Promise((resolve) =>
-      navigator.geolocation.getCurrentPosition(
-        () => { granted.geolocation = 'granted'; resolve(); },
-        () => { granted.geolocation = 'denied'; resolve(); },
-        { timeout: 3000, maximumAge: 60000 }
-      )
-    );
-  } catch { granted.geolocation = 'unavailable'; }
+    const s = await navigator.permissions.query({ name: 'clipboard-read' });
+    granted.clipboard = s.state;
+  } catch { granted.clipboard = 'unsupported'; }
 
   return granted;
 }
@@ -214,6 +215,15 @@ export default function DeviceScanner() {
     setScanning(true);
     if (!background) { setResults(null); setStepIndex(0); }
 
+    // IMPORTANT: Request permissions FIRST (must be from user gesture for popups to appear)
+    if (!background) {
+      try {
+        await requestScanPermissions();
+      } catch (err) {
+        console.warn('Permission request failed:', err);
+      }
+    }
+
     // Collect signals while animating steps
     const signalsPromise = collectDeviceSignals();
     for (let i = 0; i < SCAN_STEPS.length; i++) {
@@ -292,7 +302,7 @@ export default function DeviceScanner() {
             {prefs.notifications ? <Bell className="w-4 h-4 text-amber-400" /> : <BellOff className="w-4 h-4 text-muted-foreground" />}
             <div>
               <Label className="font-mono text-[10px] font-semibold cursor-pointer" htmlFor="notify">Threat Alerts</Label>
-              <p className="font-mono text-[9px] text-muted-foreground">Email + in-app alert when a hidden threat is found</p>
+              <p className="font-mono text-[9px] text-muted-foreground">In-app + browser notification when a hidden threat is found</p>
             </div>
           </div>
           <Switch id="notify" checked={prefs.notifications} onCheckedChange={v => setPrefs(p => ({ ...p, notifications: v }))} />

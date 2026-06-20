@@ -200,7 +200,7 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: user.email,
           subject: '🚨 AEGIS — Hidden Threat Detected on Your Device',
-          body: `Hi ${user.full_name || user.email},\n\nAEGIS detected hidden threats on your device during a full in-depth scan.\n\nScan ID: ${scanId}\nThreats found: ${totalThreats}\nWarnings: ${totalWarnings}\n\nFindings:\n${allFindings.map(f => `• [${f.severity.toUpperCase()}] ${f.label}`).join('\n')}\n\nDevice Info:\n• CPU Cores: ${hardware.cpu_cores ?? 'N/A'}\n• GPU: ${hardware.webgl_renderer ?? 'N/A'}\n• Storage Usage: ${storage.usage_mb ?? 0}MB / ${storage.quota_mb ?? 0}MB (${storage.usage_pct ?? 0}%)\n• Platform: ${hardware.platform ?? 'N/A'}\n• Network: ${network.connection_type ?? 'N/A'} (${network.timezone ?? 'N/A'})\n\nLog in to your AEGIS dashboard to view full details.\n\n— AEGIS Security`,
+          body: `Hi ${user.full_name || user.email},\n\nAEGIS detected hidden threats on your device during a full in-depth scan.\n\nScan ID: ${scanId}\nThreats found: ${totalThreats}\nWarnings: ${totalWarnings}\n\nFindings:\n${allFindings.map(f => `• [${f.severity.toUpperCase()}] ${f.label}`).join('\n')}\n\nLog in to your AEGIS dashboard to view full details and block threats.\n\n— AEGIS Security`,
         }).catch(() => {});
       }
     }
