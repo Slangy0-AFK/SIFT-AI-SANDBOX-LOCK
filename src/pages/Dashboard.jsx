@@ -128,6 +128,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    base44.functions.invoke('ensureDecoys', {}).catch(console.error);
     return () => clearInterval(timer);
   }, []);
 
