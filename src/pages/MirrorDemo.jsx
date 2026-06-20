@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Shield, Bug, Activity, Clock, ShieldAlert, ArrowLeft, Globe, Wifi, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,18 @@ const getRandomIP = () => `${Math.floor(Math.random()*200)+1}.${Math.floor(Math.
 
 export default function MirrorDemo() {
   const [sessions, setSessions] = useState([]);
+  const [searchParams] = useSearchParams();
+  const isGuest = searchParams.get('guest') === 'true';
+  const [visitorIp, setVisitorIp] = useState(null);
+
+  useEffect(() => {
+    if (isGuest) {
+      fetch('https://api.ipify.org?format=json')
+        .then(res => res.json())
+        .then(data => setVisitorIp(data.ip))
+        .catch(() => setVisitorIp('Local/Masked IP'));
+    }
+  }, [isGuest]);
 
   useEffect(() => {
     // Generate initial synthetic sessions
@@ -23,11 +35,37 @@ export default function MirrorDemo() {
       timestamp: new Date(Date.now() - Math.random() * 10000).toISOString()
     }));
     
+    if (isGuest && visitorIp) {
+      initialSessions.unshift({
+        id: 'guest-tarpit-session',
+        type: 'tarpit',
+        ip: visitorIp + ' (YOU)',
+        duration: 0,
+        interactions: 1,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
     setSessions(initialSessions);
 
     // Simulate incoming threats
     const interval = setInterval(() => {
       setSessions(prev => {
+        let guestSession = null;
+        const others = [];
+        
+        prev.forEach(s => {
+          if (s.id === 'guest-tarpit-session') {
+            guestSession = {
+              ...s,
+              duration: s.duration + 4,
+              interactions: s.interactions + Math.floor(Math.random() * 3)
+            };
+          } else {
+            others.push(s);
+          }
+        });
+
         const newSession = {
           id: `demo-${Math.random().toString(36).substr(2, 9)}`,
           type: Math.random() > 0.6 ? 'honeypot' : 'tarpit',
@@ -36,17 +74,27 @@ export default function MirrorDemo() {
           interactions: 1,
           timestamp: new Date().toISOString()
         };
-        // Keep list bounded
-        return [newSession, ...prev].slice(0, 15);
+        
+        const nextSessions = [newSession, ...others].slice(0, 14);
+        if (guestSession) {
+          nextSessions.unshift(guestSession);
+        }
+        return nextSessions;
       });
     }, 4500);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isGuest, visitorIp]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
+      {isGuest && (
+        <div className="bg-amber-500/20 border-b border-amber-500/30 text-amber-500 p-3 text-center font-mono text-xs flex items-center justify-center gap-2">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+          <span>This is a Guest Demo — Deception layers are active for demonstration purposes. Your connection may be slowed.</span>
+        </div>
+      )}
       <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">

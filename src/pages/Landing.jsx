@@ -235,9 +235,9 @@ export default function Landing() {
                   Start Free Trial <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
-              <Link to="/mirror-demo" className="w-full sm:w-auto">
+              <Link to="/mirror-demo?guest=true" className="w-full sm:w-auto">
                 <Button size="lg" variant="outline" className="w-full font-mono gap-2 h-12 px-8 border-primary/30 text-primary hover:bg-primary/10">
-                  View Live Demo <Activity className="w-4 h-4" />
+                  Launch Free Demo <Activity className="w-4 h-4" />
                 </Button>
               </Link>
             </div>

@@ -39,22 +39,47 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid webhook payload' }, { status: 400 });
     }
 
-    // Get the app user's Gmail connection using service role
-    // This works because the connector was authorized by the app user during onboarding
     const connectorId = Deno.env.get('GMAIL_CONNECTOR_ID');
     if (!connectorId) {
       console.error('Gmail webhook: Connector ID not configured');
       return Response.json({ error: 'Gmail connector not configured' }, { status: 500 });
     }
     
+    // Extract target email from Pub/Sub payload to properly identify the user
+    let targetEmail = '';
+    if (payload.message?.data) {
+      try {
+        const decoded = JSON.parse(atob(payload.message.data));
+        targetEmail = decoded.emailAddress || '';
+      } catch (e) {
+        console.warn('Failed to parse pubsub message data');
+      }
+    }
+
+    let userId = 'webhook_user';
+    if (targetEmail) {
+      const users = await base44.asServiceRole.entities.User.filter({ email: targetEmail });
+      if (users.length > 0) {
+        userId = users[0].id;
+        console.log(`Gmail webhook matched user: ${userId} (${targetEmail})`);
+      } else {
+        console.warn(`Gmail webhook target email ${targetEmail} not found in User entity.`);
+      }
+    }
+
     let accessToken;
-    let userId;
     try {
-      const connection = await base44.asServiceRole.connectors.getCurrentAppUserConnection(connectorId);
+      let connection;
+      if (userId !== 'webhook_user' && typeof base44.asServiceRole.connectors.getAppUserConnection === 'function') {
+        try {
+          connection = await base44.asServiceRole.connectors.getAppUserConnection(userId, connectorId);
+        } catch (e) {
+          connection = await base44.asServiceRole.connectors.getConnection(connectorId);
+        }
+      } else {
+        connection = await base44.asServiceRole.connectors.getConnection(connectorId);
+      }
       accessToken = connection.accessToken;
-      // Extract user info from connection config if available
-      userId = connection.connectionConfig?.user_id || 'webhook_user';
-      console.log(`Gmail webhook received for user: ${userId}`);
     } catch (err) {
       console.error('Gmail webhook connection failed:', err.message);
       return Response.json({ error: 'Connection failed' }, { status: 401 });
