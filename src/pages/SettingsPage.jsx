@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { formatChicagoTime } from '@/lib/utils';
 import FeatureGate from '@/components/subscription/FeatureGate';
 import AuditLogExport from '../components/settings/AuditLogExport';
 import MFASetup from '../components/security/MFASetup';
@@ -459,7 +459,7 @@ export default function SettingsPage() {
                         <p className="font-mono text-[9px] text-muted-foreground mt-0.5 line-clamp-2">{threat.notes}</p>
                       </div>
                       <span className="font-mono text-[9px] text-muted-foreground flex-shrink-0">
-                        {threat.created_date ? format(new Date(threat.created_date), 'MMM d, HH:mm:ss') : ''}
+                        {threat.created_date ? formatChicagoTime(threat.created_date) : ''}
                       </span>
                     </div>
                   ))}

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AlertTriangle, CheckCircle, XCircle, Shield, Globe, Clock, ArrowRight, Activity, ChevronDown, ChevronUp } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatChicagoTime } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function FirewallLogViewer() {
@@ -80,7 +80,7 @@ export default function FirewallLogViewer() {
                           <div className="flex items-center gap-2 flex-shrink-0">
                             <span className="text-muted-foreground text-xs flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              {format(new Date(log.created_date), 'MMM d, yyyy h:mm:ss a')}
+                              {formatChicagoTime(log.created_date)}
                             </span>
                             {isExpanded ? (
                               <ChevronUp className="w-4 h-4 text-muted-foreground" />

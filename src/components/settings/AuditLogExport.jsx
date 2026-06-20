@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Download, FileText, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatChicagoTime } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export default function AuditLogExport() {
@@ -28,7 +29,7 @@ export default function AuditLogExport() {
       const rows = [
         ['Timestamp', 'Type', 'Event Type / Threat Level', 'Status', 'Severity', 'Source IP', 'Environment', 'Details'],
         ...events.map(e => [
-          e.created_date ? format(new Date(e.created_date), 'yyyy-MM-dd HH:mm:ss') : '',
+          e.created_date ? formatChicagoTime(e.created_date, 'yyyy-MM-dd HH:mm:ss a') : '',
           'Security Event',
           e.event_type || '',
           '',
@@ -38,7 +39,7 @@ export default function AuditLogExport() {
           (e.details || '').replace(/,/g, ';'),
         ]),
         ...threats.map(t => [
-          t.created_date ? format(new Date(t.created_date), 'yyyy-MM-dd HH:mm:ss') : '',
+          t.created_date ? formatChicagoTime(t.created_date, 'yyyy-MM-dd HH:mm:ss a') : '',
           'Threat',
           t.threat_level || '',
           t.status || '',

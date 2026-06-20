@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Bug, Clock, Eye, Loader2, Wifi, Globe, Shield, AlertTriangle } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatChicagoTime } from '@/lib/utils';
 
 export default function MirrorEnvironment() {
   const [deploying, setDeploying] = useState(null);
@@ -226,7 +226,7 @@ export default function MirrorEnvironment() {
                       </p>
                     </div>
                     <span className="font-mono text-[9px] text-muted-foreground">
-                      {session.created_date ? format(new Date(session.created_date), 'MMM d, HH:mm:ss') : ''}
+                      {session.created_date ? formatChicagoTime(session.created_date) : ''}
                     </span>
                   </motion.div>
                 ))}

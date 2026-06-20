@@ -10,7 +10,7 @@ import {
   CheckCircle2, Bell, BellOff, RefreshCw, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { format } from 'date-fns';
+import { formatChicagoTime } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const SCAN_STEPS = [
@@ -349,7 +349,7 @@ export default function DeviceScanner() {
                       {isClean ? 'DEVICE IS CLEAN' : threatCount > 0 ? `${threatCount} HIDDEN THREAT(S) FOUND` : `${warningCount} WARNING(S)`}
                     </p>
                     <p className="font-mono text-[9px] text-muted-foreground mt-0.5">
-                      {results.scan_id} · {format(new Date(results.timestamp), 'MMM d, yyyy h:mm:ss a')}
+                      {results.scan_id} · {formatChicagoTime(results.timestamp)}
                     </p>
                   </div>
                 </div>

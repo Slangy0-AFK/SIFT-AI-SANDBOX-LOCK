@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Lock, Zap, Bug, AlertTriangle, CheckCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatChicagoTime } from '@/lib/utils';
 
 const eventIcons = {
   base_chain_compute: Zap,
@@ -23,8 +23,7 @@ const severityColors = {
 export default function LiveEventFeed({ events = [] }) {
   // Format time in user's timezone
   const formatTime = (dateString) => {
-    if (!dateString) return '--:--:--';
-    return format(new Date(dateString), 'MMM d, yyyy h:mm:ss a');
+    return formatChicagoTime(dateString);
   };
 
   return (

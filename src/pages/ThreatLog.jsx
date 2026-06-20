@@ -8,8 +8,8 @@ import {
   Shield, ChevronDown, ChevronUp, Clock, Activity, Cpu, RefreshCw, Eye, Loader2, CheckCircle2, Ban
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatChicagoTime } from '@/lib/utils';
 import GuardianRing from '@/components/agents/GuardianRing';
 
 const THREAT_COLORS = {
@@ -71,7 +71,7 @@ function ThreatCard({ threat, onBlock }) {
           <p className="font-mono text-xs font-semibold text-foreground truncate">{threat.source_ip}</p>
           <p className="font-mono text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
             <Clock className="w-3 h-3" />
-            {threat.created_date ? format(new Date(threat.created_date), 'MMM d, yyyy h:mm:ss a') : 'Unknown'}
+            {threat.created_date ? formatChicagoTime(threat.created_date) : 'Unknown'}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -158,7 +158,7 @@ function AnomalyCard({ anomaly }) {
           Confidence: {anomaly.confidence_score || 0}%
         </span>
         <span className="font-mono text-[9px] text-muted-foreground">
-          {anomaly.created_date ? format(new Date(anomaly.created_date), 'MMM d, yyyy h:mm:ss a') : 'Unknown'}
+          {anomaly.created_date ? formatChicagoTime(anomaly.created_date) : 'Unknown'}
         </span>
       </div>
     </motion.div>

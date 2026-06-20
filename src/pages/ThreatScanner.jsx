@@ -8,7 +8,7 @@ import DeviceScanner from '@/components/security/DeviceScanner';
 import { Shield, ShieldAlert, ShieldCheck, Activity, ScanLine, Zap, AlertTriangle, CheckCircle, Loader2, ShieldBan } from 'lucide-react';
 import { toast } from 'sonner';
 import { sendSlackNotification } from '@/lib/slack';
-import { format } from 'date-fns';
+import { formatChicagoTime } from '@/lib/utils';
 
 export default function ThreatScanner() {
   const [selectedThreat, setSelectedThreat] = useState(null);
@@ -156,7 +156,7 @@ export default function ThreatScanner() {
                         {session.scan_type?.toUpperCase()} • {session.input_value?.slice(0, 40) || 'Device scan'}
                       </p>
                       <p className="font-mono text-[9px] text-muted-foreground mt-0.5">
-                        {format(new Date(session.created_date), 'MMM d, yyyy h:mm:ss a')}
+                        {formatChicagoTime(session.created_date)}
                       </p>
                     </div>
                   </div>
@@ -212,7 +212,7 @@ export default function ThreatScanner() {
                         {threat.notes?.slice(0, 80) || 'Threat detected during device scan'}
                       </p>
                       <p className="font-mono text-[9px] text-muted-foreground mt-1">
-                        IP: {threat.source_ip} • {format(new Date(threat.created_date), 'MMM d, yyyy h:mm:ss a')}
+                        IP: {threat.source_ip} • {formatChicagoTime(threat.created_date)}
                       </p>
                     </button>
                     <div className="flex flex-col gap-2 flex-shrink-0">
