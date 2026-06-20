@@ -26,6 +26,8 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
+import Landing from '@/pages/Landing';
+import MirrorDemo from '@/pages/MirrorDemo';
 
 // Add page imports here
 
@@ -47,7 +49,8 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="/mirror-demo" element={<MirrorDemo />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
