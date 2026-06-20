@@ -194,15 +194,15 @@ export default function ThreatScanner() {
                             e.stopPropagation();
                             setNeutralizingId(threat.id);
                             try {
+                              // autoBlockIp updates threat status to 'destroyed' internally
                               await base44.functions.invoke('autoBlockIp', {
                                 source_ip: threat.source_ip,
                                 threat_id: threat.id,
                                 reason: 'Manually neutralized from threat list',
                               });
-                              await base44.entities.Threat.update(threat.id, { status: 'cleared' });
-                              toast.success(`✓ Threat neutralized`);
+                              toast.success(`✓ Threat neutralized — IP blocked`);
                               await sendSlackNotification({ text: `*Threat Neutralized* • IP: ${threat.source_ip} • Level: ${threat.threat_level}` });
-                              refetchDeviceThreats();
+                              await refetchDeviceThreats();
                             } catch (err) {
                               toast.error(err.message || 'Failed to neutralize');
                             } finally {
@@ -317,9 +317,9 @@ export default function ThreatScanner() {
                         threat_id: selectedThreat.id,
                         reason: 'Manually blocked from threat scanner',
                       });
-                      toast.success(`Blocked IP ${selectedThreat.source_ip}`);
+                      toast.success(`✓ IP blocked — threat destroyed`);
                       await sendSlackNotification({ text: `*Threat Blocked* • IP: ${selectedThreat.source_ip} • Level: ${selectedThreat.threat_level}` });
-                      refetchDeviceThreats();
+                      await refetchDeviceThreats();
                       setSelectedThreat(null);
                     } catch (err) {
                       toast.error('Failed to block IP: ' + err.message);

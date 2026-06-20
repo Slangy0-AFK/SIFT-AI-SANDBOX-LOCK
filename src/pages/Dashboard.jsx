@@ -42,14 +42,14 @@ function ThreatScannerSection({ threats, refetchThreats }) {
   const handleNeutralize = async (threat) => {
     setNeutralizingId(threat.id);
     try {
+      // autoBlockIp already updates threat status to 'destroyed' internally
       await base44.functions.invoke('autoBlockIp', {
         source_ip: threat.source_ip,
         threat_id: threat.id,
         reason: 'Manually neutralized from command center',
       });
-      await base44.entities.Threat.update(threat.id, { status: 'cleared' });
-      toast.success('✓ Threat neutralized');
-      refetchThreats();
+      toast.success('✓ Threat neutralized — IP blocked');
+      await refetchThreats();
     } catch (err) {
       toast.error(err.message || 'Failed to neutralize');
     } finally {
