@@ -290,7 +290,7 @@ export default function DeviceScanner() {
           </div>
         </div>
         <p className="font-mono text-[9px] text-muted-foreground tracking-wide mt-1">
-          Scans your device for hidden threats, injected scripts & network anomalies — no personal data stored
+          Autonomous AI detector: scans for undercover modes, Claude leak attacks, injected scripts & hardware anomalies — no personal data stored
         </p>
       </CardHeader>
 

@@ -26,6 +26,10 @@ const THREAT_SIGNATURES = [
   // Keylogger / credential harvesting
   { pattern: /addEventListener\s*\(\s*['"]keydown['"]/i, label: 'Keydown listener (possible keylogger)', severity: 'medium' },
   { pattern: /navigator\.credentials/i, label: 'Credential API access', severity: 'medium' },
+  // Autonomous AI detector — Claude leak attacks & undercover modes
+  { pattern: /claude|anthropic|ai-assistant|llm-agent|autonomous-agent/i, label: 'AI agent signature detected (possible Claude leak)', severity: 'critical' },
+  { pattern: /undercover|stealth-mode|headless-automation|puppeteer|playwright|selenium/i, label: 'Undercover automation mode detected', severity: 'critical' },
+  { pattern: /__webdriver|_selenium|_playwright|cdp_|devtools/i, label: 'Browser automation framework detected', severity: 'high' },
 ];
 
 // Legitimate work agent patterns — these are NOT flagged
@@ -35,8 +39,20 @@ const LEGIT_AGENT_PATTERNS = [
   /Googlebot/i, /Slackbot/i, /Twitterbot/i, /LinkedInBot/i,
 ];
 
+// AI/Bot detector patterns — these ARE flagged as autonomous agents
+const AI_AGENT_PATTERNS = [
+  /claude|anthropic|ai-assistant|llm-agent|autonomous-agent/i,
+  /undercover|stealth-mode|headless-automation|puppeteer|playwright|selenium/i,
+  /__webdriver|_selenium|_playwright|cdp_|devtools/i,
+  /bot|crawler|spider|scraper|headless/i,
+];
+
 function isLegitWorkAgent(userAgent) {
   return LEGIT_AGENT_PATTERNS.some(p => p.test(userAgent));
+}
+
+function isAutonomousAgent(userAgent) {
+  return AI_AGENT_PATTERNS.some(p => p.test(userAgent || ''));
 }
 
 function analyzeUserAgent(userAgent) {
@@ -52,6 +68,10 @@ function analyzeUserAgent(userAgent) {
   // Null-byte or binary injection in UA
   if (/[\x00-\x08\x0b\x0e-\x1f\x7f]/.test(userAgent)) {
     findings.push({ label: 'Control characters in User-Agent (injection attempt)', severity: 'critical' });
+  }
+  // Autonomous AI detector — Claude leak attacks & undercover modes
+  if (isAutonomousAgent(userAgent)) {
+    findings.push({ label: 'AUTONOMOUS AI AGENT DETECTED — Undercover mode or Claude leak attack', severity: 'critical' });
   }
   return findings;
 }
@@ -185,12 +205,13 @@ Deno.serve(async (req) => {
 
     // Create threat record if threats found
     if (totalThreats > 0) {
+      const isAI = isAutonomousAgent(user_agent);
       await base44.asServiceRole.entities.Threat.create({
         user_id: user.id,
         source_ip: req.headers.get('x-forwarded-for') || '127.0.0.1',
         threat_level: criticalCount > 0 ? 'critical' : 'high',
         status: 'detected',
-        agent_type: isLegitWorkAgent(user_agent) ? 'human' : 'unknown',
+        agent_type: isAI ? 'autonomous_agent' : (isLegitWorkAgent(user_agent) ? 'human' : 'bot'),
         environment: 'production',
         notes: `Device scan ${scanId}: ${allFindings.map(f => f.label).join('; ')}`,
         obfuscation_detected: sigFindings.length > 0,
