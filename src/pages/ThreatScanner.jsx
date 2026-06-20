@@ -183,7 +183,7 @@ export default function ThreatScanner() {
                       <Badge className={`font-mono text-[8px] rounded-full border px-2 py-1 ${threat.status === 'destroyed' || threat.status === 'cleared' ? 'bg-green-500/10 border-green-500/20 text-green-500' : threat.status === 'locked' ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-amber-400/10 border-amber-400/20 text-amber-400'}`}>
                         {threat.status?.toUpperCase()}
                       </Badge>
-                      {threat.status === 'detected' && (
+                      {(threat.status === 'detected' || threat.status === 'cycle_1' || threat.status === 'cycle_2' || threat.status === 'cycle_3') && (
                         <Button
                           size="sm"
                           variant="destructive"
