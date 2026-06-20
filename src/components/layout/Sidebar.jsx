@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Shield, Activity, Bug, FileText, Settings, CreditCard, Radiation, Menu, X, User, ShieldAlert, Mail } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Shield, Activity, Bug, FileText, Settings, CreditCard, Radiation, Menu, X, User, ShieldAlert, Mail, ChevronLeft } from 'lucide-react';
 import NotificationBell from '../notifications/NotificationBell';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -27,9 +27,13 @@ const mobileBottomNav = [
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
+const ROOT_PATHS = ['/', '/dashboard'];
+
 export default function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isRootTab = ROOT_PATHS.includes(location.pathname);
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
   const navItems = allNavItems.filter(item => !item.adminOnly || isAdmin);
@@ -90,8 +94,20 @@ export default function Sidebar() {
       </aside>
 
       {/* ── MOBILE TOP BAR ── */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3 flex items-center justify-between">
+      <header
+        className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3 flex items-center justify-between"
+        style={{ paddingTop: `calc(0.75rem + env(safe-area-inset-top))` }}
+      >
         <div className="flex items-center gap-2">
+          {!isRootTab && (
+            <button
+              onClick={() => navigate(-1)}
+              className="p-1.5 rounded-lg hover:bg-secondary transition-colors mr-1"
+              aria-label="Go back"
+            >
+              <ChevronLeft className="w-5 h-5 text-muted-foreground" />
+            </button>
+          )}
           <div className="relative">
             <Shield className="w-6 h-6 text-primary" />
             <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
@@ -158,7 +174,7 @@ export default function Sidebar() {
       )}
 
       {/* ── MOBILE BOTTOM NAV ── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border flex">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border flex" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {mobileBottomNav.map(({ path, icon: Icon, label, highlight }) => {
           const isActive = location.pathname === path;
           return (

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import usePullToRefresh from '@/hooks/usePullToRefresh';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
@@ -169,6 +170,7 @@ export default function ThreatLog() {
   const [activeTab, setActiveTab] = useState('THREATS');
   const [analyzingAI, setAnalyzingAI] = useState(false);
   const [aiResult, setAiResult] = useState(null);
+  const containerRef = useRef(null);
 
   const { data: threats = [], isLoading: loadingThreats, refetch } = useQuery({
     queryKey: ['threats-log'],
@@ -176,11 +178,14 @@ export default function ThreatLog() {
     refetchInterval: 8000,
   });
 
-  const { data: anomalies = [], isLoading: loadingAnomalies } = useQuery({
+  const { data: anomalies = [], isLoading: loadingAnomalies, refetch: refetchAnomalies } = useQuery({
     queryKey: ['anomalies-log'],
     queryFn: () => base44.entities.ZeroDayAnomaly.list('-created_date', 30),
     refetchInterval: 8000,
   });
+
+  const handleRefresh = async () => { await Promise.all([refetch(), refetchAnomalies()]); };
+  usePullToRefresh(handleRefresh, containerRef);
 
   const activeThreats = threats.filter(t => !['destroyed', 'cleared'].includes(t.status));
   const openAnomalies = anomalies.filter(a => a.status !== 'neutralized');
@@ -199,7 +204,7 @@ export default function ThreatLog() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 pb-24 space-y-5">
+    <div ref={containerRef} className="min-h-screen bg-background p-4 pb-24 space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

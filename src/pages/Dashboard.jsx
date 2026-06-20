@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { Shield, AlertTriangle, Lock, Skull, ChevronDown, ChevronUp, Bug, Radiation, ShieldAlert, FileText } from 'lucide-react';
+import usePullToRefresh from '@/hooks/usePullToRefresh';
 
 import ThreatCounter from '../components/dashboard/ThreatCounter';
 import CustomerThreatFeed from '../components/dashboard/CustomerThreatFeed';
@@ -40,14 +41,16 @@ const quickLinks = [
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { data: threats = [] } = useQuery({
+  const containerRef = useRef(null);
+
+  const { data: threats = [], refetch: refetchThreats } = useQuery({
     queryKey: ['threats'],
     queryFn: () => base44.entities.Threat.list('-created_date', 50),
     initialData: [],
     refetchInterval: 5000,
   });
 
-  const { data: events = [] } = useQuery({
+  const { data: events = [], refetch: refetchEvents } = useQuery({
     queryKey: ['events'],
     queryFn: () => base44.entities.SecurityEvent.list('-created_date', 30),
     initialData: [],
@@ -89,13 +92,16 @@ export default function Dashboard() {
     refetchInterval: 5000,
   });
 
+  const handleRefresh = async () => { await Promise.all([refetchThreats(), refetchEvents()]); };
+  usePullToRefresh(handleRefresh, containerRef);
+
   const activeThreats = threats.filter(t => !['locked', 'destroyed', 'cleared'].includes(t.status));
   const lockedThreats = threats.filter(t => t.status === 'locked');
   const destroyedThreats = threats.filter(t => t.status === 'destroyed');
   const blockedEvents = firewallLogs.filter(log => String(log.action_taken || 'blocked').toLowerCase().includes('block'));
 
   return (
-    <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+    <div ref={containerRef} className="p-4 md:p-6 space-y-4 md:space-y-6">
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
