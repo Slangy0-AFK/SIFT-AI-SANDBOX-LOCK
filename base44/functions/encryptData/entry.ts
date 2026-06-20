@@ -38,14 +38,30 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Derive a 256-bit key from the ENCRYPTION_KEY string using SHA-256
+    async function deriveKey(keyStr) {
+      const encoder = new TextEncoder();
+      const rawKey = await crypto.subtle.digest('SHA-256', encoder.encode(keyStr));
+      return crypto.subtle.importKey('raw', rawKey, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+    }
+
     if (action === 'encrypt') {
       if (!data) {
         return Response.json({ error: 'data is required' }, { status: 400 });
       }
-      
-      const CryptoJS = await import('npm:crypto-js@4.2.0');
-      const encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), ENCRYPTION_KEY).toString();
-      
+
+      const encoder = new TextEncoder();
+      const plaintext = encoder.encode(JSON.stringify(data));
+      const iv = crypto.getRandomValues(new Uint8Array(12)); // 96-bit random IV
+      const cryptoKey = await deriveKey(ENCRYPTION_KEY);
+      const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, cryptoKey, plaintext);
+
+      // Pack iv + ciphertext into a single base64 string
+      const combined = new Uint8Array(iv.byteLength + ciphertext.byteLength);
+      combined.set(iv, 0);
+      combined.set(new Uint8Array(ciphertext), iv.byteLength);
+      const encrypted = btoa(String.fromCharCode(...combined));
+
       await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',
@@ -56,7 +72,7 @@ Deno.serve(async (req) => {
       return Response.json({
         success: true,
         encrypted,
-        algorithm: 'AES-256',
+        algorithm: 'AES-256-GCM',
       });
     }
 
@@ -70,9 +86,12 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'data is required' }, { status: 400 });
       }
 
-      const CryptoJS = await import('npm:crypto-js@4.2.0');
-      const bytes = CryptoJS.AES.decrypt(data, ENCRYPTION_KEY);
-      const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+      const combined = Uint8Array.from(atob(data), c => c.charCodeAt(0));
+      const iv = combined.slice(0, 12);
+      const ciphertext = combined.slice(12);
+      const cryptoKey = await deriveKey(ENCRYPTION_KEY);
+      const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, cryptoKey, ciphertext);
+      const decrypted = JSON.parse(new TextDecoder().decode(plaintext));
 
       return Response.json({
         success: true,
