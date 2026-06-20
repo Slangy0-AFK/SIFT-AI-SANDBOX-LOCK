@@ -134,7 +134,7 @@ export default function NotificationBell() {
                         <div className="font-mono text-[10px] font-semibold text-foreground leading-tight">{n.title}</div>
                         <div className="font-mono text-[9px] text-muted-foreground mt-0.5 leading-tight">{n.detail}</div>
                         <div className="font-mono text-[8px] text-muted-foreground/60 mt-1">
-                          {n.time.toLocaleTimeString()}
+                          {n.time.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                         </div>
                       </div>
                     </div>

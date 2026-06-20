@@ -82,7 +82,7 @@ export default function ZeroDayFeed({ anomalies = [] }) {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <span className="font-mono text-[8px] text-muted-foreground">
-                      {new Date(a.created_date).toLocaleTimeString()}
+                      {new Date(a.created_date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                     </span>
                     {isExpanded ? (
                       <ChevronUp className="w-4 h-4 text-muted-foreground" />

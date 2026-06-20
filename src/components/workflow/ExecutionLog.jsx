@@ -37,7 +37,7 @@ export default function ExecutionLog({ executions = [] }) {
                 {exec.status.toUpperCase()}
               </Badge>
               <span className="font-mono text-[8px] text-muted-foreground">
-                {new Date(exec.created_date).toLocaleTimeString()}
+                {new Date(exec.created_date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
               </span>
             </div>
             {actionsLog.length > 0 && (

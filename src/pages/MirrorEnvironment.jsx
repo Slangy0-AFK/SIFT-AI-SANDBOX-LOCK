@@ -226,7 +226,7 @@ export default function MirrorEnvironment() {
                       </p>
                     </div>
                     <span className="font-mono text-[9px] text-muted-foreground">
-                      {session.created_date ? format(new Date(session.created_date), 'HH:mm') : ''}
+                      {session.created_date ? format(new Date(session.created_date), 'MMM d, HH:mm:ss') : ''}
                     </span>
                   </motion.div>
                 ))}

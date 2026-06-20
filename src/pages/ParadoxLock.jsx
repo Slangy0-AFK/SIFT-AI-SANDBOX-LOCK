@@ -74,7 +74,7 @@ export default function ParadoxLock() {
                           <p className="font-mono text-[9px] text-muted-foreground mt-0.5 line-clamp-2">{threat.notes}</p>
                         </div>
                         <span className="font-mono text-[9px] text-muted-foreground flex-shrink-0">
-                          {threat.created_date ? format(new Date(threat.created_date), 'HH:mm:ss') : ''}
+                          {threat.created_date ? format(new Date(threat.created_date), 'MMM d, HH:mm:ss') : ''}
                         </span>
                       </div>
                     ))}

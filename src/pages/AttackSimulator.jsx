@@ -105,7 +105,7 @@ export default function AttackSimulator() {
   const createEvent  = useMutation({ mutationFn: (d) => base44.entities.SecurityEvent.create(d) });
 
   const addLog = (msg) => {
-    const ts = new Date().toLocaleTimeString('en-US', { hour12: false });
+    const ts = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
     setLog(prev => [`[${ts}] ${msg}`, ...prev].slice(0, 60));
   };
 

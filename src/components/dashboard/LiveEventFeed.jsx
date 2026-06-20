@@ -23,9 +23,9 @@ export default function LiveEventFeed({ events = [] }) {
   // Format time in user's timezone
   const formatTime = (dateString) => {
     if (!dateString) return '--:--:--';
-    return new Date(dateString).toLocaleTimeString([], { 
+    return new Date(dateString).toLocaleString([], { month: 'short', day: 'numeric',  
       hour: '2-digit', minute: '2-digit', second: '2-digit'
-    });
+     });
   };
 
   return (
