@@ -19,7 +19,7 @@ export default function ThreatScanner() {
   const { data: deviceThreats = [], refetch: refetchDeviceThreats, isFetching: loadingDeviceThreats } = useQuery({
     queryKey: ['device-threats'],
     queryFn: async () => {
-      return base44.entities.Threat.list('-created_date', 50);
+      return base44.entities.Threat.list('-created_date', 2000);
     },
     initialData: [],
     refetchInterval: 10000,
@@ -28,7 +28,7 @@ export default function ThreatScanner() {
   const { data: scanSessions = [], refetch: refetchSessions } = useQuery({
     queryKey: ['scan-sessions'],
     queryFn: async () => {
-      return base44.entities.ScanSession.list('-created_date', 50);
+      return base44.entities.ScanSession.list('-created_date', 2000);
     },
     initialData: [],
     refetchInterval: 5000,
@@ -56,17 +56,14 @@ export default function ThreatScanner() {
   const activeThreats = deviceThreats.filter(t => !['locked', 'destroyed', 'cleared'].includes(t.status));
   const activeThreatCount = activeThreats.length;
   const criticalCount = activeThreats.filter((t) => t.threat_level === 'critical').length;
-  const recentSessions = scanSessions.filter((s) => {
-    const sessionDate = new Date(s.created_date);
-    const hourAgo = new Date(Date.now() - 3600000);
-    return sessionDate > hourAgo;
-  });
+  const totalScansCount = scanSessions.length;
+  const totalAttemptsCount = deviceThreats.length;
   
   const activeAnomalies = anomalies.filter(a => a.status !== 'neutralized');
 
   return (
     <div className="min-h-screen bg-background p-4 pb-24 md:p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <ScanLine className="w-5 h-5 text-primary" />
@@ -76,10 +73,10 @@ export default function ThreatScanner() {
             Real-time device scanning for hidden threats, injected scripts, hardware anomalies & network security
           </p>
         </div>
-        <div className="flex flex-col gap-2 w-full sm:w-auto">
-          <div className="grid grid-cols-3 gap-2">
+        <div className="flex flex-col gap-2 w-full lg:w-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="rounded-2xl border border-border bg-card p-3">
-              <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">Active threats</p>
+              <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">Active</p>
               <p className="font-mono text-2xl font-bold text-destructive mt-2">{activeThreatCount}</p>
             </div>
             <div className="rounded-2xl border border-border bg-card p-3">
@@ -87,8 +84,12 @@ export default function ThreatScanner() {
               <p className="font-mono text-2xl font-bold text-destructive mt-2">{criticalCount}</p>
             </div>
             <div className="rounded-2xl border border-border bg-card p-3">
-              <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">Scans (1hr)</p>
-              <p className="font-mono text-2xl font-bold text-primary mt-2">{recentSessions.length}</p>
+              <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">Total Scans</p>
+              <p className="font-mono text-2xl font-bold text-primary mt-2">{totalScansCount}</p>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-3">
+              <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">Attempts</p>
+              <p className="font-mono text-2xl font-bold text-amber-400 mt-2">{totalAttemptsCount}</p>
             </div>
           </div>
           {activeThreats.some(t => t.status === 'detected' || t.status.startsWith('cycle_')) && (
