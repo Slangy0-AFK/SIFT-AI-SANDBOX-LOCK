@@ -118,7 +118,6 @@ const quickLinks = [
   { path: '/zero-day', icon: Radiation, label: 'Zero-Day', color: 'text-accent' },
   { path: '/threat-intel', icon: ShieldAlert, label: 'Threat Intel', color: 'text-accent' },
   { path: '/firewall', icon: Shield, label: 'Firewall', color: 'text-primary' },
-  { path: '/threat-log', icon: FileText, label: 'Threat Log', color: 'text-primary' },
   { path: '/mirror-env', icon: Bug, label: 'Mirror Env', color: 'text-green-400' },
 ];
 

@@ -13,7 +13,6 @@ const allNavItems = [
   { path: '/threat-scanner', icon: Mail, label: 'Threat Scanner', highlight: true },
 
   { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
-  { path: '/threat-log', icon: FileText, label: 'Threat Log' },
   { path: '/profile', icon: User, label: 'Profile' },
   { path: '/subscription', icon: CreditCard, label: 'Subscription' },
   { path: '/settings', icon: Settings, label: 'Settings' },
@@ -23,7 +22,6 @@ const allNavItems = [
 const mobileBottomNav = [
   { path: '/', icon: Activity, label: 'Dashboard' },
   { path: '/zero-day', icon: Radiation, label: 'Zero-Day', highlight: true },
-  { path: '/threat-log', icon: FileText, label: 'Threats' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 

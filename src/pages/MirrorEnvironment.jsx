@@ -65,29 +65,8 @@ export default function MirrorEnvironment() {
         <div>
           <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">MIRROR ENVIRONMENT</h1>
           <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
-            HONEYPOTS · TARPITS · DECEPTION LAYER
+            HONEYPOTS · TARPITS · DECEPTION LAYER (AUTO-DEPLOYED)
           </p>
-        </div>
-        <div className="flex gap-3">
-          <Button
-            size="sm"
-            className="font-mono text-xs"
-            onClick={() => deployDecoy('honeypot')}
-            disabled={!!deploying}
-          >
-            {deploying === 'honeypot' ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : <Bug className="w-3 h-3 mr-2" />}
-            Deploy Honeypot
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="font-mono text-xs"
-            onClick={() => deployDecoy('tarpit')}
-            disabled={!!deploying}
-          >
-            {deploying === 'tarpit' ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : <Clock className="w-3 h-3 mr-2" />}
-            Deploy Tarpit
-          </Button>
         </div>
       </div>
 
@@ -190,7 +169,7 @@ export default function MirrorEnvironment() {
             {sessions.length === 0 ? (
               <div className="text-center py-8">
                 <Eye className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="font-mono text-xs text-muted-foreground">No deception sessions. Deploy a honeypot or tarpit to begin.</p>
+                <p className="font-mono text-xs text-muted-foreground">No deception sessions currently active. Systems are monitoring and will auto-deploy when needed.</p>
               </div>
             ) : (
               <div className="space-y-2">

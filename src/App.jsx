@@ -10,9 +10,10 @@ import Dashboard from '@/pages/Dashboard';
 import ZeroDayCenter from '@/pages/ZeroDayCenter';
 import ThreatIntelligence from '@/pages/ThreatIntelligence';
 import FirewallDashboard from '@/pages/FirewallDashboard';
+import FirewallRules from '@/pages/FirewallRules';
+import FirewallLogs from '@/pages/FirewallLogs';
 import ThreatScanner from '@/pages/ThreatScanner';
 import MirrorEnvironment from '@/pages/MirrorEnvironment';
-import ThreatLog from '@/pages/ThreatLog';
 import UserProfile from '@/pages/UserProfile';
 import SubscriptionPage from '@/pages/SubscriptionPage';
 import SettingsPage from '@/pages/SettingsPage';
@@ -55,9 +56,10 @@ function AppRoutes() {
           <Route path="/zero-day" element={<ZeroDayCenter />} />
           <Route path="/threat-intel" element={<ThreatIntelligence />} />
           <Route path="/firewall" element={<FirewallDashboard />} />
+          <Route path="/firewall/rules" element={<FirewallRules />} />
+          <Route path="/firewall/logs" element={<FirewallLogs />} />
           <Route path="/threat-scanner" element={<ThreatScanner />} />
           <Route path="/mirror-env" element={<MirrorEnvironment />} />
-          <Route path="/threat-log" element={<ThreatLog />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/subscription" element={<SubscriptionPage />} />
           <Route path="/settings" element={<SettingsPage />} />

@@ -24,7 +24,7 @@ const PLANS = {
   },
   pro: {
     name: 'Pro',
-    price: { monthly: 29.99, annual: 23.99 },
+    price: { monthly: 0, annual: 0 },
     color: 'text-primary',
     border: 'border-primary/40',
     badge: 'Best Value',
@@ -72,7 +72,7 @@ export default function PlanCard({ planKey, billingCycle, currentPlan, onSelect,
           {betaMode ? (
             <span className="font-mono text-3xl font-bold text-primary">Beta Access</span>
           ) : price === 0 ? (
-            <span className="font-mono text-3xl font-bold text-foreground">Free</span>
+            <span className="font-mono text-3xl font-bold text-foreground">Free for now</span>
           ) : (
             <>
               <span className="font-mono text-3xl font-bold text-foreground">${price}</span>
