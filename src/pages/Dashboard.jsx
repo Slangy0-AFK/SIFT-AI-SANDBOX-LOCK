@@ -134,7 +134,7 @@ export default function Dashboard() {
 
   const { data: threats = [], refetch: refetchThreats } = useQuery({
     queryKey: ['threats'],
-    queryFn: () => base44.asServiceRole.entities.Threat.list('-created_date', 100),
+    queryFn: () => base44.entities.Threat.list('-created_date', 100),
     initialData: [],
     refetchInterval: 5000,
   });

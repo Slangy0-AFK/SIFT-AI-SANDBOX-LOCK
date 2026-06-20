@@ -284,7 +284,7 @@ export default function ThreatLog() {
 
             {loadingThreats ? (
               <div className="flex justify-center py-10"><Loader2 className="w-5 h-5 text-primary animate-spin" /></div>
-            ) : threats.length === 0 ? (
+            ) : activeThreats.length === 0 ? (
               <div className="text-center py-12 rounded-2xl bg-green-500/5 border border-green-500/15">
                 <CheckCircle2 className="w-10 h-10 text-green-400 mx-auto mb-3" />
                 <p className="font-mono text-sm text-green-400 font-semibold">System Clean</p>
@@ -292,7 +292,7 @@ export default function ThreatLog() {
               </div>
             ) : (
               <div className="space-y-2">
-                {threats.map(t => <ThreatCard key={t.id} threat={t} onBlock={() => queryClient.invalidateQueries({ queryKey: ['threats-log'] })} />)}
+                {activeThreats.map(t => <ThreatCard key={t.id} threat={t} onBlock={() => queryClient.invalidateQueries({ queryKey: ['threats-log'] })} />)}
               </div>
             )}
           </motion.div>
@@ -302,7 +302,7 @@ export default function ThreatLog() {
           <motion.div key="anomalies" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
             {loadingAnomalies ? (
               <div className="flex justify-center py-10"><Loader2 className="w-5 h-5 text-primary animate-spin" /></div>
-            ) : anomalies.length === 0 ? (
+            ) : openAnomalies.length === 0 ? (
               <div className="text-center py-12 rounded-2xl bg-green-500/5 border border-green-500/15">
                 <Shield className="w-10 h-10 text-green-400 mx-auto mb-3" />
                 <p className="font-mono text-sm text-green-400 font-semibold">No Anomalies</p>
@@ -310,7 +310,7 @@ export default function ThreatLog() {
               </div>
             ) : (
               <div className="space-y-2">
-                {anomalies.map(a => <AnomalyCard key={a.id} anomaly={a} />)}
+                {openAnomalies.map(a => <AnomalyCard key={a.id} anomaly={a} />)}
               </div>
             )}
           </motion.div>

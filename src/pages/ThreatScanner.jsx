@@ -18,7 +18,7 @@ export default function ThreatScanner() {
   const { data: deviceThreats = [], refetch: refetchDeviceThreats, isFetching: loadingDeviceThreats } = useQuery({
     queryKey: ['device-threats'],
     queryFn: async () => {
-      return base44.asServiceRole.entities.Threat.list('-created_date', 50);
+      return base44.entities.Threat.list('-created_date', 50);
     },
     initialData: [],
     refetchInterval: 10000,
@@ -27,7 +27,7 @@ export default function ThreatScanner() {
   const { data: scanSessions = [], refetch: refetchSessions } = useQuery({
     queryKey: ['scan-sessions'],
     queryFn: async () => {
-      return base44.asServiceRole.entities.ScanSession.list('-created_date', 50);
+      return base44.entities.ScanSession.list('-created_date', 50);
     },
     initialData: [],
     refetchInterval: 5000,
@@ -52,13 +52,16 @@ export default function ThreatScanner() {
     };
   }, []);
 
-  const activeThreatCount = deviceThreats.filter((t) => t.status === 'detected').length;
-  const criticalCount = deviceThreats.filter((t) => t.threat_level === 'critical').length;
+  const activeThreats = deviceThreats.filter(t => !['locked', 'destroyed', 'cleared'].includes(t.status));
+  const activeThreatCount = activeThreats.length;
+  const criticalCount = activeThreats.filter((t) => t.threat_level === 'critical').length;
   const recentSessions = scanSessions.filter((s) => {
     const sessionDate = new Date(s.created_date);
     const hourAgo = new Date(Date.now() - 3600000);
     return sessionDate > hourAgo;
   });
+  
+  const activeAnomalies = anomalies.filter(a => a.status !== 'neutralized');
 
   return (
     <div className="min-h-screen bg-background p-4 pb-24 md:p-6 space-y-6">
@@ -150,7 +153,7 @@ export default function ThreatScanner() {
             <div className="rounded-2xl border border-border/50 bg-secondary/10 p-4 text-center font-mono text-[10px] text-muted-foreground flex items-center justify-center gap-2">
               <Loader2 className="w-3 h-3 animate-spin" /> Loading threats...
             </div>
-          ) : deviceThreats.length === 0 ? (
+          ) : activeThreats.length === 0 ? (
             <div className="rounded-2xl border border-border/50 bg-green-500/10 p-4 text-center">
               <ShieldCheck className="w-8 h-8 text-green-400 mx-auto mb-2" />
               <p className="font-mono text-[10px] text-green-400 font-semibold">NO DEVICE THREATS DETECTED</p>
@@ -158,7 +161,7 @@ export default function ThreatScanner() {
             </div>
           ) : (
             <div className="space-y-2">
-              {deviceThreats.slice(0, 10).map((threat) => (
+              {activeThreats.slice(0, 10).map((threat) => (
                 <div key={threat.id} className="rounded-xl border border-border/50 bg-secondary/10 p-3 hover:border-destructive/30 transition">
                   <div className="flex items-start justify-between gap-3">
                     <button
@@ -232,13 +235,13 @@ export default function ThreatScanner() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {anomalies.length === 0 ? (
+          {activeAnomalies.length === 0 ? (
             <div className="rounded-2xl border border-border/50 bg-secondary/10 p-4 text-center font-mono text-[10px] text-muted-foreground">
               No zero-day anomalies detected
             </div>
           ) : (
             <div className="space-y-2">
-              {anomalies.slice(0, 5).map((anomaly) => (
+              {activeAnomalies.slice(0, 5).map((anomaly) => (
                 <div key={anomaly.id} className="rounded-xl border border-border/50 bg-secondary/10 p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
