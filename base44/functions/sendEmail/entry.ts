@@ -15,9 +15,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields: to, subject, body' }, { status: 400 });
     }
 
-    // Restrict: users can only send emails to themselves; admins can send to any address
+    // Restrict: users can only send emails to themselves
     if (user.role !== 'admin' && to !== user.email) {
       return Response.json({ error: 'Forbidden: you may only send emails to your own address' }, { status: 403 });
+    }
+
+    // Restrict admin target to registered system users only
+    if (user.role === 'admin' && to !== user.email) {
+      const targetUsers = await base44.asServiceRole.entities.User.filter({ email: to });
+      if (targetUsers.length === 0) {
+        return Response.json({ error: 'Forbidden: Admins may only email registered users' }, { status: 403 });
+      }
     }
 
     await base44.integrations.Core.SendEmail({
