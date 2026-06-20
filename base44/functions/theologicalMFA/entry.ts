@@ -37,8 +37,7 @@ import speakeasy from 'npm:speakeasy@2.0.0';
 // ── Config ────────────────────────────────────────────────────────────────────
 const MAX_INPUT_LENGTH = 512;
 const ALLOWED_INPUT_PATTERN = /^[\x20-\x7E\t\n\r]*$/; // standard UTF-8 printable only
-const HARDWARE_PRODUCTION_MODE = Deno.env.get('HARDWARE_PRODUCTION_MODE') === 'true';
-const VALID_ACTIONS = new Set(['get_challenge', 'human_authenticate', 'agent_authenticate', 'simulate']);
+const VALID_ACTIONS = new Set(['get_challenge', 'gate_verify', 'human_authenticate', 'agent_authenticate', 'simulate']);
 
 function sanitizeInput(input) {
   if (typeof input !== 'string') return { valid: false, reason: 'non_string' };
@@ -48,10 +47,6 @@ function sanitizeInput(input) {
 }
 
 function getSecureEntropy() {
-  if (HARDWARE_PRODUCTION_MODE) {
-    throw new Error('HARDWARE_PRODUCTION_MODE: physical QRNG device not connected. Refusing software fallback.');
-  }
-
   const buf = new Uint8Array(4);
   crypto.getRandomValues(buf);
   return (buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3]) >>> 0;
@@ -151,6 +146,42 @@ Deno.serve(async (req) => {
 
     if (action === 'get_challenge') {
       return Response.json({ challenge: AUTH_CHALLENGE });
+    }
+
+    // ── Pre-login gate: no auth required, just answer check + strikes ──────────
+    if (action === 'gate_verify') {
+      const { answer } = body;
+      const inputCheck = sanitizeInput(answer || '');
+      if (!inputCheck.valid) {
+        return Response.json({ error: 'Invalid input', reason: inputCheck.reason }, { status: 400 });
+      }
+      if (!answer || answer.trim().length === 0) {
+        return Response.json({ error: 'Answer is required' }, { status: 400 });
+      }
+      if (answer.trim().toLowerCase() !== EXPECTED_ANSWER.trim().toLowerCase()) {
+        const strike = await recordStrike(base44, sourceId);
+        if (strike.count >= 3) {
+          await runParadoxTarpit(200);
+          await base44.asServiceRole.entities.SecurityEvent.create({
+            event_type: 'threat_locked',
+            severity: 'fatal',
+            details: `Strike 3 — Wrong gate answer from ${sourceId}. Lockout engaged.`,
+            environment: 'tarpit',
+          }).catch(() => {});
+          return Response.json({ locked: true, strike: 3, reason: 'Strike 3: Lockout engaged.' }, { status: 429 });
+        }
+        await new Promise((r) => setTimeout(r, strike.delay));
+        return Response.json({ success: false, strike: strike.count, message: `Incorrect answer. Strike ${strike.count}/3.` }, { status: 403 });
+      }
+      // Correct answer — issue a short-lived gate token stored in SecurityEvent
+      const gateToken = createQrngPad(getSecureEntropy()) + createQrngPad(getSecureEntropy());
+      await base44.asServiceRole.entities.SecurityEvent.create({
+        event_type: 'access_granted',
+        severity: 'info',
+        details: `gate_token:${gateToken}:${Date.now() + 300000}`,
+        environment: 'production',
+      }).catch(() => {});
+      return Response.json({ success: true, gate_token: gateToken });
     }
 
     if (action === 'simulate') {

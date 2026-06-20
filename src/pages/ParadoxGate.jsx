@@ -1,32 +1,28 @@
 /**
  * ParadoxGate — Pre-login security challenge gate.
- * This page sits BEFORE the platform login. Users must pass the challenge
- * before they are redirected to the actual login flow.
+ * Runs BEFORE platform auth. Users answer the challenge; on success they are
+ * redirected to the platform login page. No session token required.
  */
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Shield, Lock, User, Bot, Key, AlertTriangle, Loader2, CheckCircle2, XCircle, Zap } from 'lucide-react';
+import { Shield, Lock, AlertTriangle, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 
 const SESSION_KEY = 'aegis_gate_passed';
 
 export default function ParadoxGate() {
-  const [corridor, setCorridor] = useState(null);
-  const [response, setResponse] = useState('');
-  const [totpCode, setTotpCode] = useState('');
-  const [zkpProof, setZkpProof] = useState('');
+  const [answer, setAnswer] = useState('');
   const [result, setResult] = useState(null);
   const [strikeCount, setStrikeCount] = useState(0);
   const [challenge, setChallenge] = useState('');
   const [loadingChallenge, setLoadingChallenge] = useState(true);
 
   useEffect(() => {
-    // If already passed this session, go straight to login
+    // Already passed this session — skip straight to login
     if (sessionStorage.getItem(SESSION_KEY) === 'true') {
-      base44.auth.redirectToLogin(window.location.origin + '/dashboard');
+      base44.auth.redirectToLogin('/dashboard');
       return;
     }
     base44.functions.invoke('theologicalMFA', { action: 'get_challenge' })
@@ -35,13 +31,12 @@ export default function ParadoxGate() {
       .finally(() => setLoadingChallenge(false));
   }, []);
 
-  const authMutation = useMutation({
-    mutationFn: async () => {
-      const action = corridor === 'human' ? 'human_authenticate' : 'agent_authenticate';
-      const payload = { action, response };
-      if (corridor === 'human') payload.totp_code = totpCode;
-      if (corridor === 'agent') payload.agent_zkp = zkpProof;
-      const res = await base44.functions.invoke('theologicalMFA', payload);
+  const verifyMutation = useMutation({
+    mutationFn: async (selectedAnswer) => {
+      const res = await base44.functions.invoke('theologicalMFA', {
+        action: 'gate_verify',
+        answer: selectedAnswer,
+      });
       return res.data;
     },
     onSuccess: (data) => {
@@ -50,19 +45,32 @@ export default function ParadoxGate() {
       if (data.success) {
         sessionStorage.setItem(SESSION_KEY, 'true');
         setTimeout(() => {
-          base44.auth.redirectToLogin(window.location.origin + '/dashboard');
-        }, 1500);
+          base44.auth.redirectToLogin('/dashboard');
+        }, 1200);
       }
+    },
+    onError: (err) => {
+      const data = err?.response?.data || { message: 'Verification failed. Try again.' };
+      setResult(data);
+      if (data.strike) setStrikeCount(data.strike);
     },
   });
 
+  const handleAnswer = (val) => {
+    setAnswer(val);
+    setResult(null);
+    verifyMutation.mutate(val);
+  };
+
   const reset = () => {
     setResult(null);
-    setResponse('');
-    setTotpCode('');
-    setZkpProof('');
-    setCorridor(null);
+    setAnswer('');
+    setStrikeCount(0);
   };
+
+  const isLocked = result?.locked;
+  const isSuccess = result?.success;
+  const isPending = verifyMutation.isPending;
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
@@ -86,14 +94,14 @@ export default function ParadoxGate() {
           </div>
           <div className="flex items-center justify-center gap-2 pt-1">
             <Lock className="w-3 h-3 text-primary" />
-            <span className="font-mono text-xs text-muted-foreground tracking-widest">SECURITY GATEWAY</span>
+            <span className="font-mono text-xs text-muted-foreground tracking-widest">SECURITY GATEWAY — AUTHORIZATION REQUIRED</span>
           </div>
         </div>
 
-        {/* Challenge Card */}
+        {/* Gate Card */}
         <div className="bg-card border border-border rounded-xl p-6 space-y-5">
 
-          {/* Challenge Text */}
+          {/* Challenge */}
           <div className="bg-background rounded-lg p-4 border border-primary/20 text-center">
             <p className="font-mono text-[10px] text-muted-foreground mb-2 tracking-widest">UNIVERSAL CHALLENGE</p>
             {loadingChallenge ? (
@@ -118,91 +126,52 @@ export default function ParadoxGate() {
             </div>
           )}
 
-          {/* Corridor Selection */}
-          {!corridor && !result && (
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => setCorridor('human')}
-                className="p-3 rounded-lg border border-green-500/20 bg-green-500/5 text-left hover:opacity-80 transition-opacity"
+          {/* Answer Buttons */}
+          {!isLocked && !isSuccess && (
+            <div className="flex gap-3">
+              <Button
+                className="flex-1 font-mono text-sm h-12"
+                variant={answer === 'Yes' ? 'default' : 'outline'}
+                onClick={() => handleAnswer('Yes')}
+                disabled={isPending}
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <User className="w-3 h-3 text-green-400" />
-                  <span className="font-mono text-[9px] font-bold text-green-400">HUMAN</span>
-                </div>
-                <p className="font-mono text-[9px] text-muted-foreground leading-relaxed">Answer Yes or No + TOTP code</p>
-              </button>
-              <button
-                onClick={() => setCorridor('agent')}
-                className="p-3 rounded-lg border border-destructive/20 bg-destructive/5 text-left hover:opacity-80 transition-opacity"
+                {isPending && answer === 'Yes' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'YES'}
+              </Button>
+              <Button
+                className="flex-1 font-mono text-sm h-12"
+                variant={answer === 'No' ? 'default' : 'outline'}
+                onClick={() => handleAnswer('No')}
+                disabled={isPending}
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <Bot className="w-3 h-3 text-destructive" />
-                  <span className="font-mono text-[9px] font-bold text-destructive">AGENT</span>
-                </div>
-                <p className="font-mono text-[9px] text-muted-foreground leading-relaxed">ZKP cryptographic proof required</p>
-              </button>
+                {isPending && answer === 'No' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'NO'}
+              </Button>
             </div>
           )}
 
+          {/* Result */}
           <AnimatePresence>
-            {/* Human Corridor */}
-            {corridor === 'human' && !result && (
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
-                <div className="flex gap-2">
-                  <Button size="sm" variant={response === 'Yes' ? 'default' : 'outline'} className="font-mono text-xs flex-1" onClick={() => setResponse('Yes')}>Yes</Button>
-                  <Button size="sm" variant={response === 'No' ? 'default' : 'outline'} className="font-mono text-xs flex-1" onClick={() => setResponse('No')}>No</Button>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1">
-                    <Key className="w-3 h-3 text-primary" />
-                    <span className="font-mono text-[9px] text-muted-foreground">TOTP 6-DIGIT CODE</span>
-                  </div>
-                  <Input
-                    className="font-mono text-sm tracking-[0.3em] text-center"
-                    placeholder="000000"
-                    maxLength={6}
-                    value={totpCode}
-                    onChange={e => setTotpCode(e.target.value.replace(/\D/g, ''))}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button className="flex-1 font-mono text-xs" onClick={() => authMutation.mutate()} disabled={!response || totpCode.length !== 6 || authMutation.isPending}>
-                    {authMutation.isPending ? <><Loader2 className="w-3 h-3 mr-2 animate-spin" />Verifying...</> : 'Authenticate'}
-                  </Button>
-                  <Button variant="outline" size="sm" className="font-mono text-xs" onClick={reset}>Back</Button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Agent Corridor */}
-            {corridor === 'agent' && !result && (
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
-                <Input className="font-mono text-xs" placeholder="ZKP hex proof (min 64 chars)" value={zkpProof} onChange={e => setZkpProof(e.target.value)} />
-                <div className="flex gap-2">
-                  <Button className="flex-1 font-mono text-xs" onClick={() => authMutation.mutate()} disabled={authMutation.isPending}>
-                    {authMutation.isPending ? <><Loader2 className="w-3 h-3 mr-2 animate-spin" />Challenging...</> : <><Zap className="w-3 h-3 mr-2" />Submit ZKP</>}
-                  </Button>
-                  <Button variant="outline" size="sm" className="font-mono text-xs" onClick={reset}>Back</Button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Result */}
             {result && (
-              <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} className={`rounded-xl p-4 border text-center space-y-2 ${
-                result.locked ? 'bg-destructive/10 border-destructive/30' :
-                result.success ? 'bg-green-500/10 border-green-500/30' :
-                'bg-amber-500/10 border-amber-500/30'
-              }`}>
-                {result.locked ? <AlertTriangle className="w-8 h-8 text-destructive mx-auto" /> :
-                  result.success ? <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto" /> :
-                  <XCircle className="w-8 h-8 text-amber-400 mx-auto" />}
-                <p className={`font-mono text-sm font-bold ${result.locked ? 'text-destructive' : result.success ? 'text-green-400' : 'text-amber-400'}`}>
-                  {result.locked ? 'STRIKE 3 — LOCKOUT' : result.success ? 'VERIFIED — REDIRECTING...' : `STRIKE ${result.strike || '?'} / 3`}
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className={`rounded-xl p-4 border text-center space-y-2 ${
+                  isLocked ? 'bg-destructive/10 border-destructive/30' :
+                  isSuccess ? 'bg-green-500/10 border-green-500/30' :
+                  'bg-amber-500/10 border-amber-500/30'
+                }`}
+              >
+                {isLocked ? <AlertTriangle className="w-7 h-7 text-destructive mx-auto" /> :
+                  isSuccess ? <CheckCircle2 className="w-7 h-7 text-green-400 mx-auto" /> :
+                  <XCircle className="w-7 h-7 text-amber-400 mx-auto" />}
+                <p className={`font-mono text-sm font-bold ${isLocked ? 'text-destructive' : isSuccess ? 'text-green-400' : 'text-amber-400'}`}>
+                  {isLocked ? 'STRIKE 3 — LOCKOUT ENGAGED' :
+                   isSuccess ? 'VERIFIED — REDIRECTING TO LOGIN...' :
+                   `STRIKE ${result.strike || '?'} / 3 — INCORRECT`}
                 </p>
                 <p className="font-mono text-[10px] text-muted-foreground">{result.message || result.reason}</p>
-                {!result.locked && !result.success && (
-                  <Button size="sm" variant="outline" className="font-mono text-xs mt-2" onClick={reset}>Try Again</Button>
+                {!isLocked && !isSuccess && (
+                  <Button size="sm" variant="outline" className="font-mono text-xs mt-1" onClick={reset}>Try Again</Button>
                 )}
               </motion.div>
             )}
