@@ -54,6 +54,12 @@
           "created_by_id": "{{user.id}}"
         },
         {
+          "user_id": "{{user.id}}"
+        },
+        {
+          "subscriber_id": "{{user.id}}"
+        },
+        {
           "user_condition": {
             "role": "admin"
           }
@@ -63,10 +69,10 @@
     "read": {
       "$or": [
         {
-          "data.user_id": "{{user.id}}"
+          "user_id": "{{user.id}}"
         },
         {
-          "data.subscriber_id": "{{user.id}}"
+          "subscriber_id": "{{user.id}}"
         },
         {
           "user_condition": {
@@ -78,10 +84,10 @@
     "update": {
       "$or": [
         {
-          "data.user_id": "{{user.id}}"
+          "user_id": "{{user.id}}"
         },
         {
-          "data.subscriber_id": "{{user.id}}"
+          "subscriber_id": "{{user.id}}"
         },
         {
           "user_condition": {
@@ -93,10 +99,10 @@
     "delete": {
       "$or": [
         {
-          "data.user_id": "{{user.id}}"
+          "user_id": "{{user.id}}"
         },
         {
-          "data.subscriber_id": "{{user.id}}"
+          "subscriber_id": "{{user.id}}"
         },
         {
           "user_condition": {

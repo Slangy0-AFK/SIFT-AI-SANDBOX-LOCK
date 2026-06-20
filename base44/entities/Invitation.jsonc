@@ -70,7 +70,7 @@
     "create": {
       "$or": [
         {
-          "data.subscriber_id": "{{user.id}}"
+          "subscriber_id": "{{user.id}}"
         },
         {
           "user_condition": {
@@ -82,10 +82,10 @@
     "read": {
       "$or": [
         {
-          "data.subscriber_id": "{{user.id}}"
+          "subscriber_id": "{{user.id}}"
         },
         {
-          "data.invitee_email": "{{user.email}}"
+          "invitee_email": "{{user.email}}"
         },
         {
           "user_condition": {
@@ -97,10 +97,10 @@
     "update": {
       "$or": [
         {
-          "data.subscriber_id": "{{user.id}}"
+          "subscriber_id": "{{user.id}}"
         },
         {
-          "data.invitee_email": "{{user.email}}"
+          "invitee_email": "{{user.email}}"
         },
         {
           "user_condition": {
@@ -112,7 +112,7 @@
     "delete": {
       "$or": [
         {
-          "data.subscriber_id": "{{user.id}}"
+          "subscriber_id": "{{user.id}}"
         },
         {
           "user_condition": {
