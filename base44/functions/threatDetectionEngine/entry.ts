@@ -322,6 +322,23 @@ Return JSON:
         protocol: 'tcp',
       });
       console.log(`[AEGIS] AI ATTACK BLOCKED: ${threat.source_ip} | Type: ${analysis.ai_attack_type} | Confidence: ${analysis.confidence_score}%`);
+
+      if (threat.user_id) {
+        try {
+          const users = await base44Service.entities.User.filter({ id: threat.user_id });
+          const targetUser = users[0];
+          if (targetUser && targetUser.email) {
+            await base44Service.integrations.Core.SendEmail({
+              to: targetUser.email,
+              subject: '🚨 Sift-AI — Autonomous AI Attack Blocked on Your Account',
+              body: `Hi ${targetUser.full_name || targetUser.email},\n\nSift-AI's real-time threat engine has detected and automatically blocked an autonomous AI attack targeting your device or account.\n\nIP Address: ${threat.source_ip}\nAttack Type: ${analysis.ai_attack_type}\nConfidence: ${analysis.confidence_score}%\n\nThe attacker's IP address has been permanently blocked at the firewall level.\n\n— Sift-AI Security`,
+            });
+          }
+        } catch (e) {
+          console.error('[AEGIS] Failed to send AI attack notification:', e.message);
+        }
+      }
+
       return { threat_id: threat.id, source_ip: threat.source_ip, old_status: threat.status, new_status: 'locked', action: 'ai_attack_rejected', threat_score: 100, agent_type: 'autonomous_agent', ai_confidence: analysis.confidence_score };
     }
     
@@ -402,6 +419,23 @@ Return JSON:
         protocol: 'tcp',
       });
       console.log(`[AEGIS] AI ATTACK BLOCKED: ${threat.source_ip} | Sig: "${aiSig}"`);
+
+      if (threat.user_id) {
+        try {
+          const users = await base44Service.entities.User.filter({ id: threat.user_id });
+          const targetUser = users[0];
+          if (targetUser && targetUser.email) {
+            await base44Service.integrations.Core.SendEmail({
+              to: targetUser.email,
+              subject: '🚨 Sift-AI — Autonomous AI Attack Blocked on Your Account',
+              body: `Hi ${targetUser.full_name || targetUser.email},\n\nSift-AI's real-time threat engine has detected and automatically blocked an autonomous AI attack targeting your device or account.\n\nIP Address: ${threat.source_ip}\nAttack Signature: ${aiSig}\n\nThe attacker's IP address has been permanently blocked at the firewall level.\n\n— Sift-AI Security`,
+            });
+          }
+        } catch (e) {
+          console.error('[AEGIS] Failed to send AI attack notification:', e.message);
+        }
+      }
+
       return { threat_id: threat.id, source_ip: threat.source_ip, old_status: threat.status, new_status: 'locked', action: 'ai_attack_rejected', threat_score: 100, agent_type: 'autonomous_agent' };
     }
   }
