@@ -71,7 +71,7 @@ export default function MirrorEnvironment() {
       </div>
 
       {/* Concept Cards */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="border-amber-400/20 bg-amber-400/5">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
@@ -108,44 +108,44 @@ export default function MirrorEnvironment() {
         <CardHeader>
           <CardTitle className="font-mono text-xs tracking-wider">MIRROR ARCHITECTURE</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center gap-4 py-6">
+        <CardContent className="overflow-x-auto">
+          <div className="flex items-center justify-start lg:justify-center gap-2 md:gap-4 py-6 min-w-max pb-4 px-2">
             <div className="text-center">
-              <div className="w-20 h-20 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-2">
-                <Globe className="w-8 h-8 text-green-400" />
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-2 mx-auto">
+                <Globe className="w-6 h-6 md:w-8 md:h-8 text-green-400" />
               </div>
               <span className="font-mono text-[9px] text-green-400">PRODUCTION</span>
             </div>
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-1 px-1 md:px-0">
               <Wifi className="w-4 h-4 text-primary animate-pulse" />
-              <div className="w-24 h-px bg-primary/30" />
+              <div className="w-12 md:w-24 h-px bg-primary/30" />
               <span className="font-mono text-[8px] text-muted-foreground">MIRROR SYNC</span>
             </div>
             <div className="text-center">
-              <div className="w-20 h-20 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-2">
-                <Shield className="w-8 h-8 text-primary" />
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-2 mx-auto">
+                <Shield className="w-6 h-6 md:w-8 md:h-8 text-primary" />
               </div>
               <span className="font-mono text-[9px] text-primary">MIRROR ENV</span>
             </div>
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-1 px-1 md:px-0">
               <AlertTriangle className="w-4 h-4 text-amber-400" />
-              <div className="w-24 h-px bg-amber-400/30" />
+              <div className="w-12 md:w-24 h-px bg-amber-400/30" />
               <span className="font-mono text-[8px] text-muted-foreground">REDIRECT</span>
             </div>
             <div className="text-center">
-              <div className="w-20 h-20 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center mb-2">
-                <Bug className="w-8 h-8 text-amber-400" />
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center mb-2 mx-auto">
+                <Bug className="w-6 h-6 md:w-8 md:h-8 text-amber-400" />
               </div>
               <span className="font-mono text-[9px] text-amber-400">HONEYPOT</span>
             </div>
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-1 px-1 md:px-0">
               <Clock className="w-4 h-4 text-accent" />
-              <div className="w-24 h-px bg-accent/30" />
+              <div className="w-12 md:w-24 h-px bg-accent/30" />
               <span className="font-mono text-[8px] text-muted-foreground">THROTTLE</span>
             </div>
             <div className="text-center">
-              <div className="w-20 h-20 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mb-2">
-                <Clock className="w-8 h-8 text-accent" />
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mb-2 mx-auto">
+                <Clock className="w-6 h-6 md:w-8 md:h-8 text-accent" />
               </div>
               <span className="font-mono text-[9px] text-accent">TARPIT</span>
             </div>
