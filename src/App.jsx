@@ -5,6 +5,7 @@ import { queryClientInstance } from '@/lib/query-client';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
 import AppLayout from '@/components/layout/AppLayout';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import Dashboard from '@/pages/Dashboard';
 import ZeroDayCenter from '@/pages/ZeroDayCenter';
 import ThreatIntelligence from '@/pages/ThreatIntelligence';
@@ -19,6 +20,10 @@ import PageNotFound from '@/lib/PageNotFound';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import useRealTimeSync from '@/hooks/useRealTimeSync';
 import ParadoxGate from '@/pages/ParadoxGate';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
 
 // Add page imports here
 
@@ -40,20 +45,27 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/" element={<ParadoxGate />} />
-      <Route element={<AppLayout />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/zero-day" element={<ZeroDayCenter />} />
-        <Route path="/threat-intel" element={<ThreatIntelligence />} />
-        <Route path="/firewall" element={<FirewallDashboard />} />
-        <Route path="/threat-scanner" element={<ThreatScanner />} />
-        <Route path="/mirror-env" element={<MirrorEnvironment />} />
-        <Route path="/threat-log" element={<ThreatLog />} />
-        <Route path="/profile" element={<UserProfile />} />
-        <Route path="/subscription" element={<SubscriptionPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="*" element={<PageNotFound />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+        <Route element={<AppLayout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/paradox-gate" element={<ParadoxGate />} />
+          <Route path="/zero-day" element={<ZeroDayCenter />} />
+          <Route path="/threat-intel" element={<ThreatIntelligence />} />
+          <Route path="/firewall" element={<FirewallDashboard />} />
+          <Route path="/threat-scanner" element={<ThreatScanner />} />
+          <Route path="/mirror-env" element={<MirrorEnvironment />} />
+          <Route path="/threat-log" element={<ThreatLog />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/subscription" element={<SubscriptionPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+        </Route>
       </Route>
+      <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 }
