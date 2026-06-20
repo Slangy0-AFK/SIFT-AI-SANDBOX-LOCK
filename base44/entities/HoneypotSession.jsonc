@@ -2,6 +2,9 @@
   "name": "HoneypotSession",
   "type": "object",
   "properties": {
+    "user_id": {
+      "type": "string"
+    },
     "session_type": {
       "type": "string",
       "enum": [
@@ -22,8 +25,7 @@
       "default": 0
     },
     "data_captured": {
-      "type": "string",
-      "description": "Summary of data captured from the attacker"
+      "type": "string"
     },
     "status": {
       "type": "string",
@@ -43,24 +45,44 @@
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        }
+      ]
     },
     "read": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        }
+      ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        }
+      ]
     }
   }
 }
