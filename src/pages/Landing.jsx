@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Activity, Bug, ArrowRight, ShieldCheck, Loader2, ShieldAlert, Terminal, Zap, Lock, ScanLine, CheckCircle2 } from 'lucide-react';
+import { Shield, Activity, Bug, ArrowRight, ShieldCheck, Loader2, ShieldAlert, Terminal, Zap, Lock, ScanLine, CheckCircle2, Users } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -173,6 +174,22 @@ function PublicScanner() {
 }
 
 export default function Landing() {
+  const [visitCount, setVisitCount] = useState(null);
+
+  useEffect(() => {
+    const recordVisit = async () => {
+      try {
+        const res = await base44.functions.invoke('trackVisit', {});
+        if (res.data?.visits) {
+          setVisitCount(res.data.visits);
+        }
+      } catch (e) {
+        console.error('Failed to track visit');
+      }
+    };
+    recordVisit();
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       
@@ -321,6 +338,24 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* Visitor Counter */}
+      <AnimatePresence>
+        {visitCount !== null && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="fixed bottom-4 left-4 z-50 bg-card/80 backdrop-blur-md border border-primary/20 rounded-full px-3 py-1.5 flex items-center gap-2 shadow-lg shadow-primary/5"
+          >
+            <div className="relative flex items-center justify-center">
+              <span className="absolute w-full h-full bg-primary/20 rounded-full animate-ping" />
+              <Users className="w-3.5 h-3.5 text-primary relative" />
+            </div>
+            <span className="font-mono text-xs font-bold text-foreground">{visitCount.toLocaleString()}</span>
+            <span className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase hidden sm:inline">Visitors</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

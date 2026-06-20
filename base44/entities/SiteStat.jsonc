@@ -1,0 +1,16 @@
+{
+  "name": "SiteStat",
+  "type": "object",
+  "properties": {
+    "total_visits": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "rls": {
+    "create": false,
+    "read": false,
+    "update": false,
+    "delete": false
+  }
+}
