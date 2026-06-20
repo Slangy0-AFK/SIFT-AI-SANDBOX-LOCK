@@ -122,13 +122,6 @@ iframe[src*="built-with"] {
 }
 
 /* Hide any floating buttons from Base44 */
-div[style*="position: fixed"][style*="bottom"],
-div[style*="position: fixed"][style*="right"],
-div[style*="position: fixed"][style*="z-index"],
-[class*="floating"],
-[class*="badge"],
-[data-testid*="edit"],
-[data-testid*="base44"],
 #base44-floating-button,
 .base44-floating-button,
 [role="button"][aria-label*="base44"],
