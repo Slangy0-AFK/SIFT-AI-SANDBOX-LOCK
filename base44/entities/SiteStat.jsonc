@@ -8,9 +8,9 @@
     }
   },
   "rls": {
-    "create": false,
-    "read": false,
-    "update": false,
-    "delete": false
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
   }
 }
