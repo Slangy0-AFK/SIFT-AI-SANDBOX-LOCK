@@ -2,9 +2,11 @@
   "name": "ZeroDayAnomaly",
   "type": "object",
   "properties": {
+    "user_id": {
+      "type": "string"
+    },
     "anomaly_signature": {
-      "type": "string",
-      "description": "Auto-generated unique signature hash"
+      "type": "string"
     },
     "anomaly_type": {
       "type": "string",
@@ -46,8 +48,7 @@
       "default": "detected"
     },
     "agent_id": {
-      "type": "string",
-      "description": "Which guardian agent detected this"
+      "type": "string"
     },
     "source_ip": {
       "type": "string"
@@ -66,8 +67,7 @@
       "default": "production"
     },
     "confidence_score": {
-      "type": "number",
-      "description": "0-100 confidence score of anomaly detection"
+      "type": "number"
     },
     "encoding_detected": {
       "type": "string",
@@ -79,12 +79,10 @@
         "unicode",
         "mixed",
         "unknown"
-      ],
-      "description": "Type of encoding detected in payload"
+      ]
     },
     "obfuscation_level": {
       "type": "number",
-      "description": "1-10 obfuscation complexity score",
       "minimum": 1,
       "maximum": 10
     },
@@ -102,39 +100,42 @@
     "create": {
       "$or": [
         {
-          "created_by_id": "{{user.id}}"
+          "data.user_id": "{{user.id}}"
         },
         {
-          "user_condition": {
-            "role": "admin"
-          }
+          "created_by_id": "{{user.id}}"
         }
       ]
     },
     "read": {
       "$or": [
         {
-          "created_by_id": "{{user.id}}"
-        },
-        {
           "data.user_id": "{{user.id}}"
         },
         {
-          "user_condition": {
-            "role": "admin"
-          }
+          "created_by_id": "{{user.id}}"
         }
       ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        }
+      ]
     }
   }
 }
