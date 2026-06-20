@@ -2,6 +2,9 @@
   "name": "FirewallRule",
   "type": "object",
   "properties": {
+    "user_id": {
+      "type": "string"
+    },
     "rule_name": {
       "type": "string",
       "description": "Descriptive name for the firewall rule"
@@ -27,15 +30,15 @@
     },
     "source_ip": {
       "type": "string",
-      "description": "Source IP or CIDR range (e.g., 192.168.1.0/24)"
+      "description": "Source IP or CIDR range"
     },
     "source_ip_range": {
       "type": "string",
-      "description": "IP range in format start-end (e.g., 192.168.1.1-192.168.1.100)"
+      "description": "IP range in format start-end"
     },
     "destination_port": {
       "type": "string",
-      "description": "Port or port range (e.g., 80, 443, 8000-9000)"
+      "description": "Port or port range"
     },
     "protocol": {
       "type": "string",
@@ -85,24 +88,44 @@
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        }
+      ]
     },
     "read": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        }
+      ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        }
+      ]
     }
   }
 }
