@@ -133,14 +133,14 @@ export default function Dashboard() {
 
   const { data: threats = [], refetch: refetchThreats } = useQuery({
     queryKey: ['threats'],
-    queryFn: () => base44.entities.Threat.list('-created_date', 100),
+    queryFn: () => base44.entities.Threat.list('-created_date', 1000),
     initialData: [],
     refetchInterval: 5000,
   });
 
   const { data: events = [], refetch: refetchEvents } = useQuery({
     queryKey: ['events'],
-    queryFn: () => base44.entities.SecurityEvent.list('-created_date', 30),
+    queryFn: () => base44.entities.SecurityEvent.list('-created_date', 500),
     initialData: [],
     refetchInterval: 5000,
   });
@@ -154,21 +154,21 @@ export default function Dashboard() {
 
   const { data: anomalies = [] } = useQuery({
     queryKey: ['anomalies-risk'],
-    queryFn: () => base44.entities.ZeroDayAnomaly.list('-created_date', 50),
+    queryFn: () => base44.entities.ZeroDayAnomaly.list('-created_date', 500),
     initialData: [],
     refetchInterval: 5000,
   });
 
   const { data: emailThreats = [] } = useQuery({
     queryKey: ['email-threats'],
-    queryFn: () => base44.entities.EmailThreat.list('-scanned_date', 50),
+    queryFn: () => base44.entities.EmailThreat.list('-scanned_date', 500),
     initialData: [],
     refetchInterval: 7000,
   });
 
   const { data: scanSessions = [] } = useQuery({
     queryKey: ['scan-sessions'],
-    queryFn: () => base44.entities.ScanSession.list('-created_date', 50),
+    queryFn: () => base44.entities.ScanSession.list('-created_date', 500),
     initialData: [],
     refetchInterval: 10000,
   });

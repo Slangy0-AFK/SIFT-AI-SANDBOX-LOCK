@@ -3,14 +3,7 @@ import { motion } from 'framer-motion';
 import { Copy, Bug, Clock } from 'lucide-react';
 
 export default function MirrorStatus({ honeypotSessions = [] }) {
-  const [mirrorHealth, setMirrorHealth] = useState(98);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMirrorHealth(95 + Math.random() * 5);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+  const mirrorHealth = honeypotSessions.length > 0 ? 98.4 : 100.0;
 
   const activeSessions = honeypotSessions.filter(s => s.status === 'active');
 

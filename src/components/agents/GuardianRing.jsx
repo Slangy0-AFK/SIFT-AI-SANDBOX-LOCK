@@ -20,14 +20,16 @@ export default function GuardianRing({ anomalies = [] }) {
   const [activeAgent, setActiveAgent] = useState(null);
   const [pulseIds, setPulseIds] = useState([]);
 
+  // Removed fake data pulse simulation
   useEffect(() => {
-    const interval = setInterval(() => {
-      const randomId = Math.floor(Math.random() * 12) + 1;
-      setPulseIds(prev => [...prev, randomId]);
-      setTimeout(() => setPulseIds(prev => prev.filter(id => id !== randomId)), 1200);
-    }, 800);
-    return () => clearInterval(interval);
-  }, []);
+    if (anomalies.length > 0) {
+      // Pulse agents that recently caught anomalies (simulated routing by anomaly id)
+      const ids = anomalies.slice(0, 3).map(a => (a.agent_id ? parseInt(a.agent_id, 10) : 12)).filter(id => !isNaN(id) && id >= 1 && id <= 12);
+      setPulseIds(ids);
+    } else {
+      setPulseIds([]);
+    }
+  }, [anomalies]);
 
   const cx = 100, cy = 100, radius = 75;
 
