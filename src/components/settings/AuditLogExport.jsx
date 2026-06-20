@@ -54,7 +54,7 @@ export default function AuditLogExport() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `aegis-audit-log-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      a.download = `sift-ai-audit-log-${format(new Date(), 'yyyy-MM-dd')}.csv`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success('Audit log exported successfully');
@@ -77,7 +77,7 @@ export default function AuditLogExport() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `aegis-audit-log-${format(new Date(), 'yyyy-MM-dd')}.json`;
+      a.download = `sift-ai-audit-log-${format(new Date(), 'yyyy-MM-dd')}.json`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success('Audit log exported as JSON');

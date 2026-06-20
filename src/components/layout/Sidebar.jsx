@@ -50,7 +50,7 @@ export default function Sidebar() {
               <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
             </div>
             <div className="flex-1">
-              <h1 className="font-mono text-sm font-bold text-foreground tracking-wider">AEGIS</h1>
+              <h1 className="font-mono text-sm font-bold text-foreground tracking-wider">SIFT-AI</h1>
               <p className="font-mono text-[10px] text-muted-foreground tracking-widest">QUANTUM SHIELD</p>
             </div>
             <NotificationBell />
@@ -113,7 +113,7 @@ export default function Sidebar() {
             <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
           </div>
           <div>
-            <span className="font-mono text-sm font-bold text-foreground tracking-wider">AEGIS</span>
+            <span className="font-mono text-sm font-bold text-foreground tracking-wider">SIFT-AI</span>
             <span className="font-mono text-[9px] text-muted-foreground tracking-widest ml-2">QUANTUM SHIELD</span>
           </div>
         </div>

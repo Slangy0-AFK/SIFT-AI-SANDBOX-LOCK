@@ -76,8 +76,8 @@ export default function PhoneRecovery() {
     // Password update is handled by the platform auth — log the recovery event
     await base44.functions.invoke('sendEmail', {
       to: 'self',
-      subject: 'AEGIS — Password Changed via Phone Recovery',
-      body: 'Your AEGIS account password was changed using phone recovery.',
+      subject: 'SIFT-AI — Password Changed via Phone Recovery',
+      body: 'Your SIFT-AI account password was changed using phone recovery.',
     }).catch(() => {});
     setLoading(false);
     toast.success('Password updated successfully');

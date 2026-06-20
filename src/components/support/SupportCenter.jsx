@@ -31,7 +31,7 @@ export default function SupportCenter() {
   useEffect(() => { base44.auth.me().then(setUser).catch(() => {}); }, []);
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Hello! I\'m the AEGIS AI assistant. Ask me anything about your security setup, threats, or how to use the platform.' }
+    { role: 'assistant', content: 'Hello! I\'m the SIFT-AI AI assistant. Ask me anything about your security setup, threats, or how to use the platform.' }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -51,7 +51,7 @@ export default function SupportCenter() {
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setLoading(true);
     const reply = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are the AEGIS Quantum Shield AI support assistant. Answer the user's question helpfully and concisely. Context: AEGIS is a cybersecurity platform featuring Base Chain pipeline, Paradox Lock (AI bot blocker), QRNG cycles, Mirror Environment (honeypots/tarpits), Zero-Day detection, and workflow automation.\n\nUser question: ${userMsg}`,
+      prompt: `You are the SIFT-AI Quantum Shield AI support assistant. Answer the user's question helpfully and concisely. Context: SIFT-AI is a cybersecurity platform featuring Base Chain pipeline, Paradox Lock (AI bot blocker), QRNG cycles, Mirror Environment (honeypots/tarpits), Zero-Day detection, and workflow automation.\n\nUser question: ${userMsg}`,
     });
     setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
     setLoading(false);
@@ -60,8 +60,8 @@ export default function SupportCenter() {
   const submitFeedback = async () => {
     if (!feedback.trim() || !user) return;
     await base44.integrations.Core.SendEmail({
-      to: 'support@aegis-shield.app',
-      subject: 'AEGIS User Feedback',
+      to: 'support@sift-ai-shield.app',
+      subject: 'SIFT-AI User Feedback',
       body: feedback,
     });
     setFeedbackSent(true);

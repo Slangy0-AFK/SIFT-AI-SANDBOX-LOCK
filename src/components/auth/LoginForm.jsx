@@ -53,16 +53,16 @@ export default function LoginForm() {
       const enrollEmail = email;
       
       // Generate unique enrollment code
-      const enrollmentCode = `AEGIS-${Math.random().toString(36).substring(2, 11).toUpperCase()}`;
+      const enrollmentCode = `SIFT-AI-${Math.random().toString(36).substring(2, 11).toUpperCase()}`;
       
       // Send SMS/Text with enrollment code and link
-      const message = `AEGIS Quantum Shield: Your device enrollment code is ${enrollmentCode}. Visit your app to complete setup. Code valid for 24 hours.`;
+      const message = `SIFT-AI Quantum Shield: Your device enrollment code is ${enrollmentCode}. Visit your app to complete setup. Code valid for 24 hours.`;
       
       await base44.integrations.Core.SendEmail({
         to: enrollEmail,
-        subject: `AEGIS Device Enrollment Code: ${enrollmentCode}`,
+        subject: `SIFT-AI Device Enrollment Code: ${enrollmentCode}`,
         body: `
-          <h2>AEGIS Device Enrollment</h2>
+          <h2>SIFT-AI Device Enrollment</h2>
           <p>Your device has been registered for automatic enrollment.</p>
           <p><strong>Enrollment Code:</strong> ${enrollmentCode}</p>
           <p><strong>Registered Phone:</strong> ${devicePhone}</p>
@@ -70,7 +70,7 @@ export default function LoginForm() {
           <p>This code is valid for 24 hours.</p>
           <p>If you did not request this enrollment, please ignore this message.</p>
           <hr />
-          <p><em>AEGIS Quantum Shield - Next Generation Security</em></p>
+          <p><em>SIFT-AI Quantum Shield - Next Generation Security</em></p>
         `,
       });
 
@@ -85,7 +85,7 @@ export default function LoginForm() {
         status: 'pending'
       };
       
-      localStorage.setItem(`aegis_enrollment_${enrollmentCode}`, JSON.stringify(enrollmentData));
+      localStorage.setItem(`sift-ai_enrollment_${enrollmentCode}`, JSON.stringify(enrollmentData));
       
       setEnrollmentSent(true);
       toast.success(`Enrollment code sent via ${enrollmentMethod}! Code: ${enrollmentCode}`);
@@ -114,7 +114,7 @@ export default function LoginForm() {
           <CardHeader className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
               <Shield className="w-8 h-8 text-primary" />
-              <span className="font-mono text-lg font-bold">AEGIS</span>
+              <span className="font-mono text-lg font-bold">SIFT-AI</span>
             </div>
             <CardTitle className="font-mono text-lg">Quantum Shield</CardTitle>
             <CardDescription className="font-mono text-[10px] tracking-widest mt-2">
@@ -312,7 +312,7 @@ export default function LoginForm() {
             {/* Footer */}
             <div className="text-center">
               <p className="font-mono text-[9px] text-muted-foreground">
-                Protected by AEGIS Quantum Shield
+                Protected by SIFT-AI Quantum Shield
               </p>
               <Badge className="mt-2 font-mono text-[8px] bg-green-400/10 text-green-400 border-green-400/20 border">
                 ✓ Enterprise Security

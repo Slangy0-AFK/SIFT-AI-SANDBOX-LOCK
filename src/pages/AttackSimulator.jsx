@@ -317,7 +317,7 @@ export default function AttackSimulator() {
             <div className="w-3 h-3 rounded-full bg-destructive/70" />
             <div className="w-3 h-3 rounded-full bg-amber-400/70" />
             <div className="w-3 h-3 rounded-full bg-green-400/70" />
-            <span className="font-mono text-[10px] text-muted-foreground ml-2 tracking-wider">AEGIS — SECURITY LOG</span>
+            <span className="font-mono text-[10px] text-muted-foreground ml-2 tracking-wider">SIFT-AI — SECURITY LOG</span>
           </div>
           <div ref={logRef} className="flex-1 p-4 overflow-y-auto max-h-[520px] space-y-0.5 font-mono text-[10px]">
             {log.length === 0 ? (

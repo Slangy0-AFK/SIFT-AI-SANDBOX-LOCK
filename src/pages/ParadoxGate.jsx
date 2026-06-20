@@ -10,7 +10,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Shield, Lock, AlertTriangle, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 
-const SESSION_KEY = 'aegis_gate_passed';
+const SESSION_KEY = 'sift-ai_gate_passed';
 
 export default function ParadoxGate() {
   const [answer, setAnswer] = useState('');
@@ -88,7 +88,7 @@ export default function ParadoxGate() {
               <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
             </div>
             <div>
-              <h1 className="font-mono text-xl font-bold text-foreground tracking-wider">AEGIS</h1>
+              <h1 className="font-mono text-xl font-bold text-foreground tracking-wider">SIFT-AI</h1>
               <p className="font-mono text-[10px] text-muted-foreground tracking-widest">QUANTUM SHIELD</p>
             </div>
           </div>

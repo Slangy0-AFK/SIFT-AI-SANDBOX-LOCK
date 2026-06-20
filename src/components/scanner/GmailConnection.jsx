@@ -130,7 +130,7 @@ export default function GmailConnection({ onConnected }) {
         <Alert className="bg-blue-500/10 border-blue-500/30">
           <Mail className="w-4 h-4 text-blue-500" />
           <AlertDescription className="text-sm">
-            You'll be asked to grant AEGIS permission to read and manage your Gmail labels.
+            You'll be asked to grant SIFT-AI permission to read and manage your Gmail labels.
             This allows us to scan for threats and mark suspicious emails.
           </AlertDescription>
         </Alert>
@@ -163,7 +163,7 @@ export default function GmailConnection({ onConnected }) {
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
-          By connecting, you agree to let AEGIS scan your Gmail for security threats.
+          By connecting, you agree to let SIFT-AI scan your Gmail for security threats.
           You can disconnect at any time.
         </p>
       </CardContent>

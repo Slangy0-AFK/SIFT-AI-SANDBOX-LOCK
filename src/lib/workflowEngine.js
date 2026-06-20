@@ -71,7 +71,7 @@ async function executeAction(action, eventData) {
       break;
     }
     case 'escalate_to_agent': {
-      const agentName = action.params?.agent || 'AEGIS-X';
+      const agentName = action.params?.agent || 'SIFT-AI-X';
       log.message = `Escalated to agent ${agentName} for manual review.`;
       if (eventData.id) {
         await base44.entities.ZeroDayAnomaly.update(eventData.id, {

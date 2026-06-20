@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
-const APP_NAME = 'AEGIS Quantum Shield';
+const APP_NAME = 'SIFT-AI Quantum Shield';
 
 export default function TermsAcceptanceModal({ onComplete }) {
   const [accepted, setAccepted] = useState(false);
@@ -30,7 +30,7 @@ export default function TermsAcceptanceModal({ onComplete }) {
         terms_version: '2026-05-21'
       });
 
-      toast.success('Terms accepted. Welcome to AEGIS!');
+      toast.success('Terms accepted. Welcome to SIFT-AI!');
       onComplete?.();
     } catch (err) {
       toast.error('Failed to record acceptance: ' + err.message);
@@ -75,7 +75,7 @@ export default function TermsAcceptanceModal({ onComplete }) {
                 <section className="space-y-1">
                   <h3 className="font-mono text-xs font-bold text-foreground">1. Service Agreement</h3>
                   <p>
-                    By using AEGIS Quantum Shield, you agree to our Terms of Service and Privacy Policy.
+                    By using SIFT-AI Quantum Shield, you agree to our Terms of Service and Privacy Policy.
                     This is a professional cybersecurity platform for threat detection and security monitoring.
                   </p>
                 </section>
@@ -116,7 +116,7 @@ export default function TermsAcceptanceModal({ onComplete }) {
                 <section className="space-y-1">
                   <h3 className="font-mono text-xs font-bold text-foreground">6. Limitation of Liability</h3>
                   <p>
-                    AEGIS is not liable for indirect or consequential damages from service use,
+                    SIFT-AI is not liable for indirect or consequential damages from service use,
                     including data breaches or security incidents.
                   </p>
                 </section>

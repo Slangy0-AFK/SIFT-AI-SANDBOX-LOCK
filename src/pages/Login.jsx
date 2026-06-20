@@ -9,7 +9,7 @@ import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import TermsAgreementModal from "@/components/onboarding/TermsAgreementModal";
 
-const TERMS_STORAGE_KEY = 'aegis_terms_accepted';
+const TERMS_STORAGE_KEY = 'sift-ai_terms_accepted';
 
 export default function Login() {
   const [email, setEmail] = useState("");

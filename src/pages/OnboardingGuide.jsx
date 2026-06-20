@@ -35,7 +35,7 @@ export default function OnboardingGuide() {
               <CheckCircle className="w-6 h-6 text-primary" />
             </div>
             <div className="flex-1">
-              <h3 className="font-mono text-sm font-bold text-foreground">WELCOME TO AEGIS QUANTUM SHIELD</h3>
+              <h3 className="font-mono text-sm font-bold text-foreground">WELCOME TO SIFT-AI QUANTUM SHIELD</h3>
               <p className="font-mono text-[10px] text-muted-foreground mt-1 leading-relaxed">
                 Your security dashboard is now fully configured. Start by exploring the Command Center to see real-time threat monitoring, 
                 then try the Attack Simulator to test your defenses.
@@ -79,7 +79,7 @@ export default function OnboardingGuide() {
       <Card>
         <CardHeader>
           <CardTitle className="font-mono text-xs tracking-wider">QUICK TIPS</CardTitle>
-          <CardDescription className="font-mono text-[9px]">Get the most out of AEGIS</CardDescription>
+          <CardDescription className="font-mono text-[9px]">Get the most out of SIFT-AI</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

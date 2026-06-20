@@ -52,7 +52,7 @@ const CHECKLIST = [
     category: 'App Content & Security',
     items: [
       { label: 'App content rating submitted in Play Console', status: 'action', note: 'Complete the content rating questionnaire in Play Console → App Content → Content Rating' },
-      { label: 'App targets a professional/enterprise audience (not children)', status: 'pass', note: 'AEGIS is a cybersecurity SaaS for professionals' },
+      { label: 'App targets a professional/enterprise audience (not children)', status: 'pass', note: 'SIFT-AI is a cybersecurity SaaS for professionals' },
       { label: 'Sensitive permissions justified (if any)', status: 'pass', note: 'No dangerous/sensitive Android permissions required' },
       { label: 'No malware, deceptive behavior, or unauthorized data access', status: 'pass', note: 'All data access is user-initiated and authorized' },
     ],
@@ -94,7 +94,7 @@ export default function ComplianceChecklist() {
         </div>
       </div>
       <p className="font-mono text-[10px] text-muted-foreground tracking-widest">
-        AEGIS QUANTUM SHIELD · PLAY STORE READINESS CHECKLIST
+        SIFT-AI QUANTUM SHIELD · PLAY STORE READINESS CHECKLIST
       </p>
 
       {/* Score */}

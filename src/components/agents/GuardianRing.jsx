@@ -13,7 +13,7 @@ const AGENTS = [
   { id: 9, name: 'FORGE', role: 'Firmware Auditor', desc: 'Deep scans firmware and BIOS layers for rootkit activity', color: '#f97316', angle: 240 },
   { id: 10, name: 'MIRAGE', role: 'AI Adversarial Shield', desc: 'Detects and counters AI-generated adversarial attack vectors', color: '#06b6d4', angle: 270 },
   { id: 11, name: 'VORTEX', role: 'Side-Channel Detector', desc: 'Monitors timing, power, and EM side-channel leakage', color: '#84cc16', angle: 300 },
-  { id: 12, name: 'AEGIS-X', role: 'Command Override', desc: 'Master agent — coordinates all 11 agents and escalates critical events', color: '#ffffff', angle: 330 },
+  { id: 12, name: 'SIFT-AI-X', role: 'Command Override', desc: 'Master agent — coordinates all 11 agents and escalates critical events', color: '#ffffff', angle: 330 },
 ];
 
 export default function GuardianRing({ anomalies = [] }) {

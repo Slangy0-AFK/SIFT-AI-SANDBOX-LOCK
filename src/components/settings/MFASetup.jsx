@@ -47,8 +47,8 @@ export default function MFASetup() {
     setLoading(true);
     await base44.integrations.Core.SendEmail({
       to: user.email,
-      subject: 'AEGIS MFA Setup — Verification Required',
-      body: `You have requested to enable Multi-Factor Authentication on your AEGIS Quantum Shield account.\n\nTo confirm this action, please return to the app and click "Confirm & Enable MFA".\n\nIf you did not request this, please ignore this email and ensure your account is secure.`,
+      subject: 'SIFT-AI MFA Setup — Verification Required',
+      body: `You have requested to enable Multi-Factor Authentication on your SIFT-AI Quantum Shield account.\n\nTo confirm this action, please return to the app and click "Confirm & Enable MFA".\n\nIf you did not request this, please ignore this email and ensure your account is secure.`,
     });
     toast.success(`Confirmation email sent to ${user.email}`);
     setStep('verify');
@@ -80,7 +80,7 @@ export default function MFASetup() {
           )}
         </CardTitle>
         <p className="font-mono text-[9px] text-muted-foreground mt-1">
-          Add an extra layer of security to your AEGIS account
+          Add an extra layer of security to your SIFT-AI account
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -222,7 +222,7 @@ export default function MFASetup() {
             ) : (
               <div className="space-y-3">
                 <p className="font-mono text-[9px] text-muted-foreground">
-                  Open your authenticator app and enter the 6-digit code shown for AEGIS.
+                  Open your authenticator app and enter the 6-digit code shown for SIFT-AI.
                 </p>
                 <Input
                   placeholder="000000"

@@ -182,7 +182,7 @@ async function collectDeviceSignals() {
   return signals;
 }
 
-const PREFS_KEY = 'aegis_scan_prefs';
+const PREFS_KEY = 'sift-ai_scan_prefs';
 function loadPrefs() {
   try { return JSON.parse(localStorage.getItem(PREFS_KEY)) || { notifications: true, autoScan: false }; }
   catch { return { notifications: true, autoScan: false }; }

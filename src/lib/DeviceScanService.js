@@ -1,7 +1,7 @@
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
-const PREFS_KEY = 'aegis_device_prefs';
+const PREFS_KEY = 'sift-ai_device_prefs';
 const SCAN_INTERVAL = 4 * 60 * 1000; // 4 minutes — proactive
 
 let scanInterval = null;
@@ -51,7 +51,7 @@ async function runBackgroundScan() {
       if (prefs.notifications) {
         toast.error(msg, { duration: 6000 });
         if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('AEGIS Security Alert', { body: msg, icon: '/favicon.ico' });
+          new Notification('SIFT-AI Security Alert', { body: msg, icon: '/favicon.ico' });
         }
       }
       // Auto-neutralize immediately on threat detection

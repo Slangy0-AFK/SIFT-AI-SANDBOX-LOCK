@@ -85,8 +85,8 @@ export default function OnboardingPermissions() {
       setStep(step + 1);
     } else {
       // Save preferences and complete onboarding
-      localStorage.setItem('aegis_onboarding_complete', 'true');
-      localStorage.setItem('aegis_device_permissions', JSON.stringify(devicePermissions));
+      localStorage.setItem('sift-ai_onboarding_complete', 'true');
+      localStorage.setItem('sift-ai_device_permissions', JSON.stringify(devicePermissions));
       toast.success('Setup complete! Redirecting...');
       // Navigate to welcome page
       window.location.href = '/';
@@ -340,7 +340,7 @@ export default function OnboardingPermissions() {
           <Button
             variant="ghost"
             onClick={() => {
-              localStorage.setItem('aegis_onboarding_complete', 'true');
+              localStorage.setItem('sift-ai_onboarding_complete', 'true');
               toast.success('Setup skipped. You can configure this later in Settings.');
             }}
             className="w-full mt-4 font-mono text-xs text-muted-foreground"

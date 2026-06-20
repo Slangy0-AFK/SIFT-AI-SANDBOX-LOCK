@@ -163,7 +163,7 @@ export default function AcceptInvitePage() {
         <div className="text-center mb-6">
           <Shield className="w-12 h-12 text-primary mx-auto mb-3" />
           <h1 className="font-mono text-2xl font-bold text-white mb-2">
-            AEGIS Quantum Shield
+            SIFT-AI Quantum Shield
           </h1>
           <p className="font-mono text-xs text-purple-200">
             Family Security Enrollment

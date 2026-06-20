@@ -12,7 +12,7 @@ import { motion } from 'framer-motion';
 
 const ANOMALY_TYPES = ['behavioral', 'polymorphic', 'memory_injection', 'side_channel', 'supply_chain', 'ai_adversarial', 'fileless', 'firmware', 'unknown'];
 const SEVERITIES = ['info', 'warning', 'critical', 'fatal'];
-const AGENTS = ['SENTINEL', 'CIPHER', 'PHANTOM', 'ORACLE', 'WRAITH', 'BASTION', 'NEXUS', 'SPECTER', 'FORGE', 'MIRAGE', 'VORTEX', 'AEGIS-X'];
+const AGENTS = ['SENTINEL', 'CIPHER', 'PHANTOM', 'ORACLE', 'WRAITH', 'BASTION', 'NEXUS', 'SPECTER', 'FORGE', 'MIRAGE', 'VORTEX', 'SIFT-AI-X'];
 
 export default function ZeroDayCenter() {
   const queryClient = useQueryClient();
@@ -28,7 +28,7 @@ export default function ZeroDayCenter() {
     mutationFn: async (anomaly) => {
       return base44.entities.ZeroDayAnomaly.update(anomaly.id, {
         status: 'contained',
-        mitigation_applied: `Quarantined by ${AGENTS[parseInt(anomaly.agent_id || 1) - 1] || 'AEGIS-X'}`,
+        mitigation_applied: `Quarantined by ${AGENTS[parseInt(anomaly.agent_id || 1) - 1] || 'SIFT-AI-X'}`,
       });
     },
     onSuccess: () => {
@@ -42,7 +42,7 @@ export default function ZeroDayCenter() {
       const active = anomalies.filter(a => ['detected', 'analyzing', 'escalated'].includes(a.status));
       return Promise.all(active.map(a => base44.entities.ZeroDayAnomaly.update(a.id, {
         status: 'neutralized',
-        mitigation_applied: 'AEGIS-X Mass Neutralization Protocol',
+        mitigation_applied: 'SIFT-AI-X Mass Neutralization Protocol',
       })));
     },
     onSuccess: () => {

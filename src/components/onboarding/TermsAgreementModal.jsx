@@ -4,7 +4,7 @@ import { Shield, FileText, CheckCircle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
-const STORAGE_KEY = 'aegis_terms_accepted';
+const STORAGE_KEY = 'sift-ai_terms_accepted';
 
 export default function TermsAgreementModal() {
   const [visible, setVisible] = useState(false);
@@ -44,7 +44,7 @@ export default function TermsAgreementModal() {
                 <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
               </div>
               <div>
-                <h2 className="font-mono text-sm font-bold text-foreground tracking-wider">AEGIS QUANTUM SHIELD</h2>
+                <h2 className="font-mono text-sm font-bold text-foreground tracking-wider">SIFT-AI QUANTUM SHIELD</h2>
                 <p className="font-mono text-[9px] text-muted-foreground tracking-widest">TERMS OF SERVICE AGREEMENT</p>
               </div>
             </div>
@@ -52,7 +52,7 @@ export default function TermsAgreementModal() {
             {/* Body */}
             <div className="px-6 py-5 space-y-4">
               <p className="font-mono text-[11px] text-muted-foreground leading-relaxed">
-                Before accessing the AEGIS security platform, please review and agree to our Terms of Service and Privacy Policy.
+                Before accessing the SIFT-AI security platform, please review and agree to our Terms of Service and Privacy Policy.
               </p>
 
               {/* Key points */}
@@ -104,7 +104,7 @@ export default function TermsAgreementModal() {
                 onClick={handleAccept}
               >
                 <Shield className="w-3.5 h-3.5 mr-2" />
-                ACCEPT & ENTER AEGIS
+                ACCEPT & ENTER SIFT-AI
               </Button>
               {!agreed && (
                 <p className="font-mono text-[9px] text-muted-foreground text-center mt-2">

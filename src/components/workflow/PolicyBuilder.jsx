@@ -46,7 +46,7 @@ const ACTION_PARAMS = {
   block_ip: [{ key: 'ip', placeholder: 'IP (leave blank to use event IP)' }],
   block_ip_range: [{ key: 'range', placeholder: 'CIDR range (e.g. 192.168.1.0/24)' }],
   migrate_to_secure: [{ key: 'target_env', placeholder: 'Target env: honeypot / mirror / tarpit' }],
-  escalate_to_agent: [{ key: 'agent', placeholder: 'Agent name (e.g. AEGIS-X)' }],
+  escalate_to_agent: [{ key: 'agent', placeholder: 'Agent name (e.g. SIFT-AI-X)' }],
   create_security_event: [
     { key: 'severity', placeholder: 'Severity: info/warning/critical/fatal' },
     { key: 'message', placeholder: 'Event message' },

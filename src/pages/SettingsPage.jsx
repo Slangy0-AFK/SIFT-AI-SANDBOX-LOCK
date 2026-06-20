@@ -33,11 +33,11 @@ export default function SettingsPage() {
       toast.error('Please type DELETE to confirm');
       return;
     }
-    const privacyEmail = import.meta.env.VITE_PRIVACY_EMAIL || 'privacy@aegis-security.app';
+    const privacyEmail = import.meta.env.VITE_PRIVACY_EMAIL || 'privacy@sift-ai-security.app';
     await base44.integrations.Core.SendEmail({
       to: privacyEmail,
       subject: 'Account Deletion Request',
-      body: `User ${user?.email || 'unknown'} (ID: ${user?.id || 'unknown'}) has requested full account deletion from AEGIS Quantum Shield.`,
+      body: `User ${user?.email || 'unknown'} (ID: ${user?.id || 'unknown'}) has requested full account deletion from SIFT-AI Quantum Shield.`,
     });
     toast.success('Account deletion request submitted. Your account will be removed within 30 days.');
     setShowDeleteAccount(false);
@@ -258,7 +258,7 @@ export default function SettingsPage() {
               <UserX className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
               <div className="flex-1">
                 <div className="font-mono text-[11px] font-semibold text-foreground">Delete My Account</div>
-                <div className="font-mono text-[10px] text-muted-foreground mt-0.5">Permanently remove your AEGIS account and all associated data within 30 days.</div>
+                <div className="font-mono text-[10px] text-muted-foreground mt-0.5">Permanently remove your SIFT-AI account and all associated data within 30 days.</div>
               </div>
             </div>
             {!showDeleteAccount ? (

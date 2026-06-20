@@ -3,8 +3,8 @@ import { FileText, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const LAST_UPDATED = 'May 21, 2026';
-const APP_NAME = 'AEGIS Quantum Shield';
-const CONTACT_EMAIL = import.meta.env.VITE_LEGAL_EMAIL || 'support@aegis-security.app';
+const APP_NAME = 'SIFT-AI Quantum Shield';
+const CONTACT_EMAIL = import.meta.env.VITE_LEGAL_EMAIL || 'support@sift-ai-security.app';
 
 export default function RefundPolicy() {
   return (
@@ -27,7 +27,7 @@ export default function RefundPolicy() {
         <section className="space-y-2">
           <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">1. Overview</h2>
           <p>
-            This Refund Policy explains your rights and our procedures for processing refunds for AEGIS Quantum Shield subscriptions
+            This Refund Policy explains your rights and our procedures for processing refunds for SIFT-AI Quantum Shield subscriptions
             and in-app purchases. By purchasing our service, you agree to the terms outlined in this policy.
           </p>
         </section>
@@ -92,7 +92,7 @@ export default function RefundPolicy() {
             <li>Failure to use the service after purchase</li>
             <li>Account termination due to Terms of Service violations</li>
             <li>Issues caused by unauthorized device modifications or rooting/jailbreaking</li>
-            <li>Third-party app conflicts not caused by AEGIS</li>
+            <li>Third-party app conflicts not caused by SIFT-AI</li>
             <li>Purchases made more than 90 days ago (except billing errors)</li>
           </ul>
         </section>
@@ -100,7 +100,7 @@ export default function RefundPolicy() {
         <section className="space-y-2">
           <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">7. Subscription Cancellations</h2>
           <p>
-            <span className="text-foreground font-semibold">Cancellation Method:</span> Cancel anytime through Google Play Store → Subscriptions → AEGIS Quantum Shield → Cancel.
+            <span className="text-foreground font-semibold">Cancellation Method:</span> Cancel anytime through Google Play Store → Subscriptions → SIFT-AI Quantum Shield → Cancel.
           </p>
           <p>
             <span className="text-foreground font-semibold">Effective Date:</span> Cancellations take effect at the end of your current billing period.
