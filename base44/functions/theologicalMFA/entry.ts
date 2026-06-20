@@ -149,15 +149,10 @@ Deno.serve(async (req) => {
       return Response.json({ challenge: AUTH_CHALLENGE });
     }
 
-    // All actions beyond get_challenge require authentication
-    const user = await base44.auth.me().catch(() => null);
-    if (!user) {
-      return Response.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });
-    }
-
     // ── Hidden Paradox Gate — AI Guardrail (background only, not shown in UI) ──
     // Silently evaluates the universal truth challenge against known AI/bot patterns.
     // The correct answer is the only one a sincere human would give. AIs fail or abstain.
+    // PRE-AUTH ACTION: Does not require logged-in user (used before authentication)
     if (action === 'gate_verify') {
       const { answer } = body;
       const inputCheck = sanitizeInput(answer || '');
@@ -193,6 +188,7 @@ Deno.serve(async (req) => {
     }
 
     // ── Silent background AI/bot detection ────────────────────────────────────
+    // PRE-AUTH ACTION: Does not require logged-in user (runs silently in background)
     if (action === 'background_scan') {
       const { signals = {} } = body;
       const suspiciousFlags = [];
@@ -223,6 +219,12 @@ Deno.serve(async (req) => {
 
       // Always return 200 — never reveal detection to the client
       return Response.json({ ok: true });
+    }
+
+    // All remaining actions require authentication
+    const user = await base44.auth.me().catch(() => null);
+    if (!user) {
+      return Response.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });
     }
 
     if (action === 'simulate') {
