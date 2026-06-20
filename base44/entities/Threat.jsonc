@@ -47,8 +47,7 @@
       "default": 0
     },
     "base_chain_signature": {
-      "type": "string",
-      "description": "The computed base chain hash"
+      "type": "string"
     },
     "environment": {
       "type": "string",
@@ -81,13 +80,11 @@
         "unicode",
         "mixed"
       ],
-      "default": "none",
-      "description": "Encoding method detected in threat payload"
+      "default": "none"
     },
     "obfuscation_detected": {
       "type": "boolean",
-      "default": false,
-      "description": "Whether obfuscation techniques were detected"
+      "default": false
     },
     "notes": {
       "type": "string"
@@ -104,11 +101,6 @@
         },
         {
           "created_by_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
         }
       ]
     },
@@ -119,11 +111,6 @@
         },
         {
           "created_by_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
         }
       ]
     },
@@ -134,18 +121,18 @@
         },
         {
           "created_by_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
         }
       ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        }
+      ]
     }
   }
 }
