@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import { useAlertNotifications } from '../notifications/useAlertNotifications';
 import TermsAgreementModal from '../onboarding/TermsAgreementModal';
 import useParadoxBackground from '@/hooks/useParadoxBackground';
+import { useAutoRegisterDevice } from '@/hooks/useAutoRegisterDevice';
 
 function AlertWatcher() {
   useAlertNotifications();
@@ -16,6 +17,8 @@ function ParadoxWatcher() {
 }
 
 export default function AppLayout() {
+  useAutoRegisterDevice();
+
   return (
     <div className="min-h-screen bg-background">
       <AlertWatcher />
