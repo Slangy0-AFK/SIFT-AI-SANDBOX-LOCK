@@ -37,7 +37,7 @@ import speakeasy from 'npm:speakeasy@2.0.0';
 // ── Config ────────────────────────────────────────────────────────────────────
 const MAX_INPUT_LENGTH = 512;
 const ALLOWED_INPUT_PATTERN = /^[\x20-\x7E\t\n\r]*$/; // standard UTF-8 printable only
-const VALID_ACTIONS = new Set(['get_challenge', 'gate_verify', 'human_authenticate', 'agent_authenticate', 'simulate', 'background_scan']);
+const VALID_ACTIONS = new Set(['get_challenge', 'human_authenticate', 'agent_authenticate', 'simulate', 'background_scan']);
 
 function sanitizeInput(input) {
   if (typeof input !== 'string') return { valid: false, reason: 'non_string' };
@@ -148,9 +148,13 @@ Deno.serve(async (req) => {
       return Response.json({ challenge: AUTH_CHALLENGE });
     }
 
+    // All actions beyond get_challenge require authentication
+    const user = await base44.auth.me().catch(() => null);
+    if (!user) {
+      return Response.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });
+    }
+
     // ── Silent background AI/bot detection ────────────────────────────────────
-    // Runs invisibly after login. Checks passive browser signals for automation.
-    // Normal human users are never blocked — only logged for analysis.
     if (action === 'background_scan') {
       const { signals = {} } = body;
       const suspiciousFlags = [];
@@ -183,46 +187,6 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true });
     }
 
-    // ── Pre-login gate: HUMAN-ONLY RULE ────────────────────────────────────────
-    // The challenge is a universal truth question (e.g. a sincere faith declaration).
-    // RULE: AI systems cannot truthfully affirm personal belief — this gate is
-    // designed to block automated agents, bots, and AI crawlers from entering.
-    // Humans answer Yes or No freely; the correct answer reflects universal truth.
-    if (action === 'gate_verify') {
-      const { answer } = body;
-      const inputCheck = sanitizeInput(answer || '');
-      if (!inputCheck.valid) {
-        return Response.json({ error: 'Invalid input', reason: inputCheck.reason }, { status: 400 });
-      }
-      if (!answer || answer.trim().length === 0) {
-        return Response.json({ error: 'Answer is required' }, { status: 400 });
-      }
-      if (answer.trim().toLowerCase() !== EXPECTED_ANSWER.trim().toLowerCase()) {
-        const strike = await recordStrike(base44, sourceId);
-        if (strike.count >= 3) {
-          await runParadoxTarpit(200);
-          await base44.asServiceRole.entities.SecurityEvent.create({
-            event_type: 'threat_locked',
-            severity: 'fatal',
-            details: `Strike 3 — Wrong gate answer from ${sourceId}. Lockout engaged.`,
-            environment: 'tarpit',
-          }).catch(() => {});
-          return Response.json({ locked: true, strike: 3, reason: 'Strike 3: Lockout engaged.' }, { status: 429 });
-        }
-        await new Promise((r) => setTimeout(r, strike.delay));
-        return Response.json({ success: false, strike: strike.count, message: `Incorrect answer. Strike ${strike.count}/3.` }, { status: 403 });
-      }
-      // Correct answer — issue a short-lived gate token stored in SecurityEvent
-      const gateToken = createQrngPad(getSecureEntropy()) + createQrngPad(getSecureEntropy());
-      await base44.asServiceRole.entities.SecurityEvent.create({
-        event_type: 'access_granted',
-        severity: 'info',
-        details: `gate_token:${gateToken}:${Date.now() + 300000}`,
-        environment: 'production',
-      }).catch(() => {});
-      return Response.json({ success: true, gate_token: gateToken });
-    }
-
     if (action === 'simulate') {
       const isHuman = corridor === 'human';
       return Response.json({
@@ -236,11 +200,6 @@ Deno.serve(async (req) => {
           ? 'Use the human corridor to validate MFA and response logic.'
           : 'Submit an agent_zkp value of at least 64 characters.',
       });
-    }
-
-    const user = await base44.auth.me().catch(() => null);
-    if (!user) {
-      return Response.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });
     }
 
     if (rawBody.length > MAX_INPUT_LENGTH || !ALLOWED_INPUT_PATTERN.test(rawBody)) {

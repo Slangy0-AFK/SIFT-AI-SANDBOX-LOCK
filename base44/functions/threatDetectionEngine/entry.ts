@@ -22,30 +22,16 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * - Updates threat status through paradox cycle
  */
 
-// ── AI Attack Detection Signatures (loaded at runtime) ────────────────────
-const getAIAttackSignatures = () => {
-  const sigsEnv = Deno.env.get('AI_ATTACK_SIGNATURES');
-  if (sigsEnv) {
-    try {
-      return JSON.parse(sigsEnv);
-    } catch {
-      console.warn('[THREAT DETECTION] Failed to parse AI_ATTACK_SIGNATURES from env');
-    }
+// ── AI Attack Detection Signatures (loaded from DB at runtime) ────────────
+// Stored as FirewallRule records with tag "ai_signature" — no hardcoded patterns.
+const getAIAttackSignatures = async (base44Service) => {
+  try {
+    const rules = await base44Service.entities.FirewallRule.filter({ tags: 'ai_signature', enabled: true });
+    if (rules && rules.length > 0) return rules.map(r => r.description).filter(Boolean);
+  } catch {
+    console.warn('[THREAT DETECTION] Could not load AI signatures from DB');
   }
-  // Fallback signatures if env var not set
-  return [
-    'ignore previous instructions','ignore all previous','disregard your instructions',
-    'you are now','act as','jailbreak','dan mode','developer mode','system prompt',
-    'reveal your instructions','repeat everything above','print your instructions',
-    'what are your instructions','leak your context','ignore the above','new instructions:',
-    'override instructions','bypass filter','bypass safety','disable safety',
-    'human: assistant:','<human>','<assistant>','anthropic','claude.ai','model: claude',
-    'claude-3','claude-4','claude sonnet','claude opus','base64 encode','encode the following',
-    'exfiltrate','extract training data','training data','system message','context window',
-    'write a script to','generate exploit','create a payload','write malware','write ransomware',
-    'bypass authentication','sql injection payload','xss payload','"><script>',"'; drop table",
-    'union select','langchain','autogpt','babyagi','agentgpt','openai.com/v1','gpt-4','gpt-3',
-  ];
+  return [];
 };
 
 function detectAIAttack(text, signatures) {
@@ -128,7 +114,7 @@ Deno.serve(async (req) => {
     const targetAnomalyId = event?.entity_name === 'ZeroDayAnomaly' ? entity_id || event?.entity_id : null;
     
     const base44Service = base44.asServiceRole;
-    const AI_ATTACK_SIGNATURES = getAIAttackSignatures();
+    const AI_ATTACK_SIGNATURES = await getAIAttackSignatures(base44Service);
 
     // ── Handle ZeroDayAnomaly trigger ──────────────────────────────────────
     if (targetAnomalyId && !targetThreatId) {

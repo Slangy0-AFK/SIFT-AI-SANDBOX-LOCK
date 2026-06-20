@@ -7,38 +7,25 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * This function uses service role to access all data without user authentication.
  */
 
-// Load signatures from environment variables
-function getSuspiciousPaths() {
-  const pathsEnv = Deno.env.get('SUSPICIOUS_PATHS');
-  if (pathsEnv) {
-    try {
-      return JSON.parse(pathsEnv);
-    } catch {
-      console.warn('[AUTO-SCAN] Failed to parse SUSPICIOUS_PATHS from env');
-    }
+// Load signatures from DB (FirewallRule records tagged "malware_signature" / "suspicious_path")
+async function getSuspiciousPaths(base44Service) {
+  try {
+    const rules = await base44Service.entities.FirewallRule.filter({ tags: 'suspicious_path', enabled: true });
+    if (rules && rules.length > 0) return rules.map(r => r.source_ip).filter(Boolean);
+  } catch {
+    console.warn('[AUTO-SCAN] Could not load suspicious paths from DB');
   }
-  // Fallback paths if env var not set
-  return [
-    '/tmp', '/etc/passwd', '/etc/shadow', '/proc/self/environ',
-    '/proc/self/cmdline', '/proc/self/maps', '/var/log', '/root/.ssh', '/home',
-  ];
+  return ['/tmp'];
 }
 
-function getMalwareSignatures() {
-  const sigsEnv = Deno.env.get('MALWARE_SIGNATURES');
-  if (sigsEnv) {
-    try {
-      return JSON.parse(sigsEnv);
-    } catch {
-      console.warn('[AUTO-SCAN] Failed to parse MALWARE_SIGNATURES from env');
-    }
+async function getMalwareSignatures(base44Service) {
+  try {
+    const rules = await base44Service.entities.FirewallRule.filter({ tags: 'malware_signature', enabled: true });
+    if (rules && rules.length > 0) return rules.map(r => r.description).filter(Boolean);
+  } catch {
+    console.warn('[AUTO-SCAN] Could not load malware signatures from DB');
   }
-  // Fallback signatures if env var not set
-  return [
-    'eval(base64_decode', 'exec($_POST', 'system($_GET', 'passthru(',
-    'shell_exec(', '/bin/bash -i', 'nc -e /bin/sh', 'python -c "import socket',
-    'curl | bash', 'wget -O- | sh',
-  ];
+  return [];
 }
 
 async function checkFileAccess(path) {
@@ -155,9 +142,11 @@ Deno.serve(async (req) => {
     
     console.log(`[AUTO-SCAN] Found ${activeDevices.length} active devices`);
 
-    // Load signatures at runtime
-    const SUSPICIOUS_PATHS = getSuspiciousPaths();
-    const MALWARE_SIGNATURES = getMalwareSignatures();
+    // Load signatures from DB at runtime
+    const [SUSPICIOUS_PATHS, MALWARE_SIGNATURES] = await Promise.all([
+      getSuspiciousPaths(base44Service),
+      getMalwareSignatures(base44Service),
+    ]);
 
     // Run system-level checks (these are environment-wide, not per-device)
     const [fileAccessResults, malwareFindings, envFindings, baseChainResults] = await Promise.all([
