@@ -9,8 +9,8 @@ export default async function handler(req) {
     
     let stat;
     if (stats.length === 0) {
-      // Initialize with a base number to make the demo look active
-      stat = await base44.asServiceRole.entities.SiteStat.create({ total_visits: 1248 });
+      // Initialize accurate tracking starting at 1
+      stat = await base44.asServiceRole.entities.SiteStat.create({ total_visits: 1 });
     } else {
       stat = stats[0];
       // Increment the counter
