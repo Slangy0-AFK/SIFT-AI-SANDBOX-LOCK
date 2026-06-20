@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Lock, Bug, Clock, Atom, FileText, ClipboardList, UserX, Trash2, AlertTriangle, Bot, User, ShieldAlert, Cpu, Wifi, HardDrive, ShieldX, ShieldCheck } from 'lucide-react';
+import { Shield, Lock, Bug, Clock, Atom, FileText, ClipboardList, UserX, AlertTriangle, Bot, User, ShieldAlert, Cpu, Wifi, HardDrive, ShieldX, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
@@ -21,28 +21,11 @@ import AdminKeyClaim from '../components/settings/AdminKeyClaim';
 export default function SettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
-  const [showDeleteData, setShowDeleteData] = useState(false);
-  const [deletingData, setDeletingData] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['me'],
     queryFn: () => base44.auth.me(),
   });
-
-  const handleDeleteData = async () => {
-    if (!user) return;
-    setDeletingData(true);
-    // Send deletion request email
-    const privacyEmail = import.meta.env.VITE_PRIVACY_EMAIL || 'privacy@aegis-security.app';
-    await base44.integrations.Core.SendEmail({
-      to: privacyEmail,
-      subject: 'Data Deletion Request',
-      body: `User ${user?.email || 'unknown'} has requested deletion of all their data from AEGIS Quantum Shield. Please process this request within 30 days as required by applicable privacy laws.`,
-    });
-    toast.success('Data deletion request submitted. You will be notified within 30 days.');
-    setShowDeleteData(false);
-    setDeletingData(false);
-  };
 
   const handleDeleteAccount = async () => {
     if (!user) return;
@@ -266,37 +249,8 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
-            Google Play requires all apps to provide account and data deletion options. Use the actions below to submit a request.
+            Google Play requires all apps to provide account deletion options. Use the action below to submit a request.
           </p>
-
-          {/* Delete Data */}
-          <div className="border border-border rounded-xl p-4 space-y-3">
-            <div className="flex items-start gap-3">
-              <Trash2 className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-              <div className="flex-1">
-                <div className="font-mono text-[11px] font-semibold text-foreground">Delete My Data</div>
-                <div className="font-mono text-[10px] text-muted-foreground mt-0.5">Request deletion of all security logs, threat data, and analytics associated with your account.</div>
-              </div>
-            </div>
-            {!showDeleteData ? (
-              <Button size="sm" variant="outline" className="font-mono text-xs border-amber-400/30 text-amber-400 hover:bg-amber-400/10" onClick={() => setShowDeleteData(true)}>
-                Request Data Deletion
-              </Button>
-            ) : (
-              <div className="space-y-2">
-                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-400/10 border border-amber-400/20">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400 mt-0.5 flex-shrink-0" />
-                  <p className="font-mono text-[10px] text-amber-400">This will permanently delete all your data. This action cannot be undone.</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="font-mono text-xs" onClick={() => setShowDeleteData(false)}>Cancel</Button>
-                  <Button size="sm" className="font-mono text-xs bg-amber-500 hover:bg-amber-600 text-black" onClick={handleDeleteData} disabled={deletingData}>
-                    {deletingData ? 'Submitting...' : 'Confirm Delete Data'}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
 
           {/* Delete Account */}
           <div className="border border-destructive/20 rounded-xl p-4 space-y-3">
