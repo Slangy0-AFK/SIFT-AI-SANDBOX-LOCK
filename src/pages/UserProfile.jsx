@@ -217,25 +217,6 @@ export default function UserProfile() {
         </CardContent>
       </Card>
 
-      {/* Account Actions */}
-      <Card className="border-destructive/30">
-        <CardHeader>
-          <CardTitle className="font-mono text-xs tracking-wider text-destructive flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4" /> DANGER ZONE
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-mono text-[11px] font-semibold text-foreground">Delete Account</p>
-              <p className="font-mono text-[9px] text-muted-foreground">Permanently delete your account and all data</p>
-            </div>
-            <Button variant="destructive" size="sm" className="font-mono text-xs">
-              Delete Account
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
