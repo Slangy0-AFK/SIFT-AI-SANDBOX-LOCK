@@ -32,6 +32,12 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       
+      {/* Development Banner */}
+      <div className="bg-primary/10 border-b border-primary/20 text-primary px-4 py-2 text-center text-xs font-medium z-50 relative flex items-center justify-center gap-2">
+        <Activity className="w-3 h-3" />
+        Note: The platform is currently under active development, but is completely free to try.
+      </div>
+
       {/* Header */}
       <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
