@@ -21,19 +21,42 @@ export default async function handler(req) {
       return Response.json({ error: 'Unauthorized origin' }, { status: 403 });
     }
 
+    const ip = req.headers.get('cf-connecting-ip') || req.headers.get('x-forwarded-for') || 'unknown';
+    // Format current date in user timezone (America/Chicago) or UTC based on environment needs, using ISO string part.
+    // Deno runtime doesn't have formatChicagoTime utility directly easily available, so we just use UTC date as a proxy for 'day' tracking.
+    const today = new Date().toISOString().split('T')[0];
+
     // Using service role to securely track visits (intentionally public telemetry)
     const stats = await base44.asServiceRole.entities.SiteStat.list();
+    let stat = stats.length > 0 ? stats[0] : null;
+
+    let shouldIncrement = false;
     
-    let stat;
-    if (stats.length === 0) {
+    if (ip !== 'unknown') {
+      const existingVisits = await base44.asServiceRole.entities.DailyVisitor.filter({
+        ip_address: ip,
+        visit_date: today
+      });
+      
+      if (existingVisits.length === 0) {
+        shouldIncrement = true;
+        await base44.asServiceRole.entities.DailyVisitor.create({
+          ip_address: ip,
+          visit_date: today
+        });
+      }
+    } else {
+      // Fallback if IP cannot be detected for some reason
+      shouldIncrement = true;
+    }
+    
+    if (!stat) {
       // In a completely public context, provide a dummy created_by_id to avoid auth.me() calls
       stat = await base44.asServiceRole.entities.SiteStat.create({ 
-        total_visits: 1,
+        total_visits: shouldIncrement ? 1 : 0,
         created_by_id: 'system_tracker'
       });
-    } else {
-      stat = stats[0];
-      // Increment the counter
+    } else if (shouldIncrement) {
       stat = await base44.asServiceRole.entities.SiteStat.update(stat.id, { 
         total_visits: (stat.total_visits || 0) + 1 
       });
