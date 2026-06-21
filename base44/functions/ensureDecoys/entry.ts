@@ -11,12 +11,14 @@ Deno.serve(async (req) => {
 
     const currentUser = await base44.auth.me().catch(() => null);
 
-    if (currentUser && !isScheduler) {
+    if (isScheduler) {
+      // Called by scheduler or automation
+      users = await base44Service.entities.User.list();
+    } else if (currentUser) {
       // Called by a specific user from the dashboard
       users = [currentUser];
     } else {
-      // Called by scheduler or automation
-      users = await base44Service.entities.User.list();
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'content-type': 'application/json' } });
     }
     
     let createdCount = 0;
