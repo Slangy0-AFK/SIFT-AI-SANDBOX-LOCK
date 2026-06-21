@@ -179,6 +179,35 @@ export default function MirrorDemo() {
           </CardContent>
         </Card>
 
+        {/* Terminology Guide */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <Card className="border-border bg-card shadow-sm hover:border-amber-500/30 transition-colors">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Bug className="w-4 h-4 text-amber-500" /> HONEYPOT
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                A decoy system designed to look like a vulnerable target. It lures in malicious actors and autonomous bots, tracking their behavior, methods, and signatures while keeping them away from actual production data.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border bg-card shadow-sm hover:border-primary/30 transition-colors">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" /> TARPIT
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                A defensive mechanism that intentionally delays incoming connections. By slowing down responses to suspicious requests, it exhausts the resources of automated scanners and bots, making their attacks inefficient.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Live Feed */}
         <Card className="border-border shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border">
@@ -242,16 +271,21 @@ export default function MirrorDemo() {
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
-                      <div className="flex-1 sm:w-32 h-1.5 bg-secondary rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full rounded-full ${session.type === 'honeypot' ? 'bg-amber-500' : 'bg-primary'}`} 
-                          style={{ width: `${Math.min(100, (session.interactions / 50) * 100)}%` }} 
-                        />
+                    <div className="flex flex-col items-end gap-1 w-full sm:w-auto">
+                      <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <div className="flex flex-col gap-1 w-full sm:w-32">
+                          <span className="text-[8px] text-muted-foreground font-semibold uppercase tracking-wider">Threat Intensity</span>
+                          <div className="h-1.5 bg-secondary rounded-full overflow-hidden w-full">
+                            <div 
+                              className={`h-full rounded-full ${session.type === 'honeypot' ? 'bg-amber-500' : 'bg-primary'}`} 
+                              style={{ width: `${Math.min(100, (session.interactions / 50) * 100)}%` }} 
+                            />
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap text-right mt-3">
+                          {session.timestamp ? formatLocalTime(session.timestamp) : ''}
+                        </span>
                       </div>
-                      <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap text-right">
-                        {session.timestamp ? formatLocalTime(session.timestamp) : ''}
-                      </span>
                     </div>
                   </motion.div>
                 ))}
