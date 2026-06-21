@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aegis-v1';
+const CACHE_NAME = 'aegis-v2';
 const ASSETS = [
   '/',
   '/index.html',
@@ -29,6 +29,31 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  
+  // Skip caching for dev environment assets
+  if (
+    url.pathname.startsWith('/src/') ||
+    url.pathname.startsWith('/node_modules/') ||
+    url.pathname.startsWith('/@vite/') ||
+    url.pathname.startsWith('/@react-refresh') ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.jsx') ||
+    url.pathname.endsWith('.css') ||
+    url.hostname === 'localhost' ||
+    url.hostname === '127.0.0.1'
+  ) {
+    return event.respondWith(fetch(event.request));
+  }
+
+  // Network-first for API requests
+  if (url.pathname.startsWith('/api/') || url.pathname.includes('base44')) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
       return cached || fetch(event.request);
