@@ -11,7 +11,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatChicagoTime } from '@/lib/utils';
 import FeatureGate from '@/components/subscription/FeatureGate';
 import AuditLogExport from '../components/settings/AuditLogExport';
-import MFASetup from '../components/security/MFASetup';
 import PasswordReset from '../components/security/PasswordReset';
 import SlackIntegrationSetup from '../components/settings/SlackIntegrationSetup';
 import { Badge } from '@/components/ui/badge';
@@ -226,10 +225,6 @@ export default function SettingsPage() {
       </div>
 
       {/* Security Tools */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <MFASetup />
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <SlackIntegrationSetup />
       </div>
