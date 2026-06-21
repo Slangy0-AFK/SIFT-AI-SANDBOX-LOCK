@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Shield, Bug, Activity, Clock, ShieldAlert, ArrowLeft, Globe, Wifi, AlertTriangle } from 'lucide-react';
+import { Shield, Bug, Activity, Clock, ShieldAlert, ArrowLeft, Globe, Wifi, AlertTriangle, ScanLine, Lock, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import PublicScanner from '@/components/scanner/PublicScanner';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
@@ -18,6 +19,7 @@ export default function MirrorDemo() {
   const [visitorIp, setVisitorIp] = useState(null);
   
   const [paradoxOpen, setParadoxOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [paradoxAnswer, setParadoxAnswer] = useState("");
   const [honeypot, setHoneypot] = useState("");
   const [paradoxStats, setParadoxStats] = useState({ 
@@ -110,7 +112,7 @@ export default function MirrorDemo() {
     
     setSessions(initialSessions);
 
-    // Simulate incoming threats
+    // Simulate incoming threats faster to feel more live
     const interval = setInterval(() => {
       setSessions(prev => {
         let guestSession = null;
@@ -120,30 +122,41 @@ export default function MirrorDemo() {
           if (s.id === 'guest-tarpit-session') {
             guestSession = {
               ...s,
-              duration: s.duration + 4,
-              interactions: s.interactions + Math.floor(Math.random() * 3)
+              duration: s.duration + 2, // updating every 2 seconds roughly
+              interactions: s.interactions + (Math.random() > 0.5 ? 1 : 0)
             };
           } else {
-            others.push(s);
+            others.push({
+              ...s,
+              duration: s.duration + 2,
+              interactions: s.interactions + (Math.random() > 0.7 ? 1 : 0)
+            });
           }
         });
 
-        const newSession = {
-          id: `demo-${Math.random().toString(36).substr(2, 9)}`,
-          type: Math.random() > 0.6 ? 'honeypot' : 'tarpit',
-          ip: getRandomIP(),
-          duration: 0,
-          interactions: 1,
-          timestamp: new Date().toISOString()
-        };
+        const shouldAddNew = Math.random() > 0.4;
+        let nextSessions = [...others];
         
-        const nextSessions = [newSession, ...others].slice(0, 14);
+        if (shouldAddNew) {
+          const newSession = {
+            id: `demo-${Math.random().toString(36).substr(2, 9)}`,
+            type: Math.random() > 0.5 ? 'honeypot' : 'tarpit',
+            ip: getRandomIP(),
+            duration: 0,
+            interactions: 1,
+            timestamp: new Date().toISOString()
+          };
+          nextSessions = [newSession, ...others].slice(0, 14);
+        }
+        
         if (guestSession) {
+          // Keep guest session at the top
+          nextSessions = nextSessions.filter(s => s.id !== 'guest-tarpit-session');
           nextSessions.unshift(guestSession);
         }
         return nextSessions;
       });
-    }, 4500);
+    }, 2000);
 
     return () => clearInterval(interval);
   }, [isGuest, visitorIp]);
@@ -152,12 +165,21 @@ export default function MirrorDemo() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       {isGuest && (
-        <div className="bg-amber-500/20 border-b border-amber-500/30 text-amber-500 p-3 text-center font-mono text-xs flex items-center justify-center gap-2">
-          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-          <span>This is a Guest Demo — Deception layers are active for demonstration purposes. Your connection may be slowed.</span>
+        <div className="bg-amber-500/10 border-b border-amber-500/30 text-amber-500 p-3 text-center font-mono text-xs flex flex-col sm:flex-row items-center justify-center gap-2 relative z-50">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🧪</span>
+            <span className="font-bold uppercase tracking-wider">Guest Demo Mode</span>
+            <span className="hidden sm:inline">—</span>
+            <span>Free to test. Deception layers (TarPit & Honeypot) are actively running. Your connection may be slowed or trapped for demonstration purposes.</span>
+          </div>
+          <Link to="/">
+            <Button size="sm" variant="outline" className="h-7 text-[10px] uppercase font-bold border-amber-500/50 text-amber-500 hover:bg-amber-500/10 ml-2 shadow-[0_0_10px_rgba(245,158,11,0.2)]">
+              Exit Demo / Safe Mode
+            </Button>
+          </Link>
         </div>
       )}
-      <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/">
@@ -188,7 +210,7 @@ export default function MirrorDemo() {
               </Badge>
             </div>
             <p className="font-mono text-sm text-muted-foreground mt-2 max-w-2xl">
-              Public demonstration of Sift-AI's mirror routing. Production traffic is routed normally, while suspicious signatures are seamlessly redirected to adaptive honeypots and tarpits.
+              Public demonstration of Sift-AI's personal device scanner and protector using Mirror Architecture. Production traffic is routed normally, while suspicious signatures are seamlessly redirected to adaptive honeypots and tarpits.
             </p>
             <div className="mt-3 p-3 bg-secondary/30 border border-border rounded-lg max-w-2xl flex items-start gap-3">
               <Activity className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
@@ -198,22 +220,22 @@ export default function MirrorDemo() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
+            <Button variant="outline" onClick={() => setScannerOpen(true)} className="font-mono shadow-[0_0_15px_rgba(var(--primary),0.2)] border-primary/50 text-primary w-full h-10 gap-2 uppercase tracking-widest font-bold">
+              <ScanLine className="w-4 h-4 animate-pulse" /> Test My Device
+            </Button>
             <div className="flex flex-col items-center">
               <Button 
                 variant="outline" 
-                className="font-mono shadow-lg shadow-primary/10 border-primary/30 w-full"
+                className="font-mono shadow-lg shadow-purple-500/20 border-purple-500/30 text-purple-400 hover:bg-purple-500/10 w-full h-10 gap-2"
                 onClick={() => setParadoxOpen(true)}
               >
-                Paradox Gate
+                <Lock className="w-4 h-4" /> Paradox Gate
               </Button>
               <div className="font-mono text-[9px] text-muted-foreground mt-1 flex flex-col items-center leading-tight">
                 <span>Human: {paradoxStats.humanTries} try / {paradoxStats.humanBreaches} brch</span>
                 <span>Robot: {paradoxStats.robotTries} try / {paradoxStats.robotBreaches} brch</span>
               </div>
             </div>
-            <Link to="/register">
-              <Button className="font-mono shadow-lg shadow-primary/20 h-9">Enable For Your App</Button>
-            </Link>
           </div>
         </div>
 
@@ -346,6 +368,19 @@ export default function MirrorDemo() {
           </CardContent>
         </Card>
       </main>
+
+      {scannerOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full relative">
+            <Button variant="ghost" size="icon" className="absolute -top-12 right-0 text-white hover:bg-white/10" onClick={() => setScannerOpen(false)}>
+              <X className="w-6 h-6" />
+            </Button>
+            <Card className="border-primary/20 shadow-2xl shadow-primary/10 bg-card/90 backdrop-blur-xl">
+              <PublicScanner />
+            </Card>
+          </div>
+        </div>
+      )}
 
       {paradoxOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">

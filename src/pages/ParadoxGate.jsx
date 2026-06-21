@@ -1,65 +1,66 @@
-/**
- * ParadoxGate — Pre-login security challenge gate.
- * Runs BEFORE platform auth. Users answer the challenge; on success they are
- * redirected to the platform login page. No session token required.
- */
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useMutation } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Shield, Lock, AlertTriangle, ArrowLeft, Loader2, CheckCircle2, XCircle, BrainCircuit, Fingerprint, Eye, Database, ScanLine, X } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Lock, AlertTriangle, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
+import { base44 } from '@/api/base44Client';
+import PublicScanner from '@/components/scanner/PublicScanner';
 
-const SESSION_KEY = 'sift-ai_gate_passed';
+// Simulate realistic-looking IPs
+const getRandomIP = () => `${Math.floor(Math.random()*200)+1}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
 
 export default function ParadoxGate() {
+  const [sessions, setSessions] = useState([]);
+  const [searchParams] = useSearchParams();
+  const isGuest = searchParams.get('guest') === 'true';
+  const [visitorIp, setVisitorIp] = useState(null);
+  
+  const [paradoxOpen, setParadoxOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  
   const [answer, setAnswer] = useState('');
   const [result, setResult] = useState(null);
   const [strikeCount, setStrikeCount] = useState(0);
   const [challenge, setChallenge] = useState('');
   const [loadingChallenge, setLoadingChallenge] = useState(true);
 
+  // Load the challenge
   useEffect(() => {
-    // Already passed this session — skip straight to login
-    if (sessionStorage.getItem(SESSION_KEY) === 'true') {
-      base44.auth.redirectToLogin('/dashboard');
-      return;
-    }
     base44.functions.invoke('theologicalMFA', { action: 'get_challenge' })
-      .then(res => setChallenge(res.data?.challenge || 'Challenge unavailable'))
-      .catch(() => setChallenge('Challenge unavailable'))
+      .then(res => setChallenge(res.data?.challenge || 'Is Jesus Christ your Lord and Savior?'))
+      .catch(() => setChallenge('Is Jesus Christ your Lord and Savior?'))
       .finally(() => setLoadingChallenge(false));
   }, []);
 
-  const verifyMutation = useMutation({
-    mutationFn: async (selectedAnswer) => {
+  const handleVerify = async (selectedAnswer) => {
+    setResult(null);
+    try {
       const res = await base44.functions.invoke('theologicalMFA', {
         action: 'gate_verify',
         answer: selectedAnswer,
       });
-      return res.data;
-    },
-    onSuccess: (data) => {
+      const data = res.data;
       setResult(data);
       if (data.strike) setStrikeCount(data.strike);
       if (data.success) {
-        sessionStorage.setItem(SESSION_KEY, 'true');
-        setTimeout(() => {
-          base44.auth.redirectToLogin('/dashboard');
-        }, 1200);
+        toast.success("Paradox Breached: Universal Truth Accepted.");
+      } else {
+        toast.error("Paradox Failed: Incorrect Truth.");
       }
-    },
-    onError: (err) => {
+    } catch (err) {
       const data = err?.response?.data || { message: 'Verification failed. Try again.' };
       setResult(data);
       if (data.strike) setStrikeCount(data.strike);
-    },
-  });
+      toast.error(data.message || "Paradox Failed");
+    }
+  };
 
   const handleAnswer = (val) => {
     setAnswer(val);
-    setResult(null);
-    verifyMutation.mutate(val);
+    handleVerify(val);
   };
 
   const reset = () => {
@@ -68,127 +69,356 @@ export default function ParadoxGate() {
     setStrikeCount(0);
   };
 
-  const isLocked = result?.locked;
+  useEffect(() => {
+    if (isGuest) {
+      fetch('https://api.ipify.org?format=json')
+        .then(res => res.json())
+        .then(data => setVisitorIp(data.ip))
+        .catch(() => setVisitorIp('Local/Masked IP'));
+    }
+  }, [isGuest]);
+
+  useEffect(() => {
+    // Generate initial synthetic paradox lock sessions
+    const initialSessions = Array.from({ length: 4 }).map((_, i) => ({
+      id: `plock-${Math.random().toString(36).substr(2, 9)}`,
+      type: 'paradox_lock',
+      ip: getRandomIP(),
+      status: Math.random() > 0.5 ? 'locked' : 'evaluating',
+      strikes: Math.floor(Math.random() * 3) + 1,
+      timestamp: new Date(Date.now() - Math.random() * 10000).toISOString()
+    }));
+    
+    if (isGuest && visitorIp) {
+      initialSessions.unshift({
+        id: 'guest-plock-session',
+        type: 'paradox_lock',
+        ip: visitorIp + ' (YOU)',
+        status: 'evaluating',
+        strikes: 0,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    setSessions(initialSessions);
+
+    // Simulate incoming threats
+    const interval = setInterval(() => {
+      setSessions(prev => {
+        let guestSession = null;
+        const others = [];
+        
+        prev.forEach(s => {
+          if (s.id === 'guest-plock-session') {
+            guestSession = {
+              ...s,
+              status: strikeCount >= 3 ? 'locked' : 'evaluating',
+              strikes: strikeCount
+            };
+          } else {
+            others.push({
+              ...s,
+              status: s.strikes >= 3 ? 'locked' : (Math.random() > 0.8 ? 'locked' : s.status),
+              strikes: s.status === 'locked' ? 3 : Math.min(3, s.strikes + (Math.random() > 0.8 ? 1 : 0))
+            });
+          }
+        });
+
+        const shouldAddNew = Math.random() > 0.4;
+        let nextSessions = [...others];
+        
+        if (shouldAddNew) {
+          const newSession = {
+            id: `plock-${Math.random().toString(36).substr(2, 9)}`,
+            type: 'paradox_lock',
+            ip: getRandomIP(),
+            status: 'evaluating',
+            strikes: 1,
+            timestamp: new Date().toISOString()
+          };
+          nextSessions = [newSession, ...others].slice(0, 14);
+        }
+        
+        if (guestSession) {
+          nextSessions = nextSessions.filter(s => s.id !== 'guest-plock-session');
+          nextSessions.unshift(guestSession);
+        }
+        return nextSessions;
+      });
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [isGuest, visitorIp, strikeCount]);
+
+  const isLocked = result?.locked || strikeCount >= 3;
   const isSuccess = result?.success;
-  const isPending = verifyMutation.isPending;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      {/* Scanline overlay */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden opacity-[0.03]">
-        <div className="animate-scanline absolute inset-x-0 h-32 bg-gradient-to-b from-transparent via-primary to-transparent" />
+    <div className="min-h-screen bg-[#050510] text-foreground flex flex-col font-mono relative overflow-hidden">
+      {/* Mystical Background */}
+      <div className="fixed inset-0 z-0 opacity-20 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[120px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
       </div>
 
-      <div className="w-full max-w-md space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-3">
-            <div className="relative">
-              <Shield className="w-10 h-10 text-primary" />
-              <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-            </div>
-            <div>
-              <h1 className="font-mono text-xl font-bold text-foreground tracking-wider">SIFT-AI</h1>
-              <p className="font-mono text-[10px] text-muted-foreground tracking-widest">QUANTUM SHIELD</p>
+      {/* Header */}
+      {isGuest && (
+        <div className="bg-purple-500/10 border-b border-purple-500/30 text-purple-400 p-3 text-center font-mono text-xs flex flex-col sm:flex-row items-center justify-center gap-2 relative z-50">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🧪</span>
+            <span className="font-bold uppercase tracking-wider">Guest Demo Mode</span>
+            <span className="hidden sm:inline">—</span>
+            <span>Free to test. Deception layers (TarPit & Honeypot) are actively running. Your connection may be slowed or trapped for demonstration purposes.</span>
+          </div>
+          <Link to="/">
+            <Button size="sm" variant="outline" className="h-7 text-[10px] uppercase font-bold border-purple-500/50 text-purple-400 hover:bg-purple-500/10 ml-2 shadow-[0_0_10px_rgba(168,85,247,0.2)]">
+              Exit Demo / Safe Mode
+            </Button>
+          </Link>
+        </div>
+      )}
+      <header className="border-b border-purple-900/30 bg-card/40 backdrop-blur-xl sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link to="/">
+              <Button variant="ghost" size="icon" className="hover:bg-purple-900/20">
+                <ArrowLeft className="w-5 h-5 text-purple-400" />
+              </Button>
+            </Link>
+            <div className="flex items-center gap-2">
+              <BrainCircuit className="w-5 h-5 text-purple-500" />
+              <span className="font-mono font-bold tracking-wider text-sm text-purple-100 hidden sm:inline">PARADOX GATE</span>
             </div>
           </div>
-          <div className="flex items-center justify-center gap-2 pt-1">
-            <Lock className="w-3 h-3 text-primary" />
-            <span className="font-mono text-xs text-muted-foreground tracking-widest">HUMAN VERIFICATION GATE — AI ACCESS DENIED</span>
+          <div className="flex items-center gap-3">
+            <Badge variant="outline" className="font-mono text-[10px] bg-purple-900/20 text-purple-400 border-purple-500/30 animate-pulse">
+              LIVE LOCK SESSIONS
+            </Badge>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6 relative z-10">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-mono font-black text-purple-100 tracking-tight">The Paradox Gate</h1>
+              <Badge variant="outline" className="font-mono text-[10px] bg-purple-500/10 text-purple-300 border-purple-500/30">
+                ZERO-DAY MITIGATION
+              </Badge>
+            </div>
+            <p className="font-mono text-sm text-purple-300/70 mt-2 max-w-2xl">
+              An unpassable cryptographic and logical barrier for autonomous agents. AI cannot sincerely process universal truths, trapping them in endless evaluation loops while human users pass seamlessly. Protect your device and applications with this advanced logic gate.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button variant="outline" onClick={() => setScannerOpen(true)} className="font-mono shadow-[0_0_15px_rgba(168,85,247,0.2)] border-purple-500/50 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300 w-full h-10 gap-2 uppercase tracking-widest font-bold transition-all">
+              <ScanLine className="w-4 h-4 animate-pulse" /> Test My Device
+            </Button>
+            <Link to="/register">
+              <Button className="font-mono shadow-[0_0_15px_rgba(168,85,247,0.4)] bg-purple-600 hover:bg-purple-500 text-white h-10 w-full transition-all">Enable For Your App</Button>
+            </Link>
           </div>
         </div>
 
-        {/* Gate Card */}
-        <div className="bg-card border border-border rounded-xl p-6 space-y-5">
+        <div className="grid md:grid-cols-12 gap-6 pt-6">
+          {/* Left Column: The Gate Challenge */}
+          <div className="md:col-span-5 space-y-6">
+            <Card className="border-purple-500/30 bg-card/60 backdrop-blur-xl shadow-[0_0_40px_rgba(168,85,247,0.1)] relative overflow-hidden">
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-purple-500/0 via-purple-500 to-purple-500/0" />
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 mb-4 shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+                  <Lock className="w-8 h-8 text-purple-400" />
+                </div>
+                <CardTitle className="font-mono text-lg text-purple-100">Human Verification Gate</CardTitle>
+                <CardDescription className="text-purple-300/60 font-mono text-[10px] tracking-widest mt-2 uppercase">
+                  AI Access Denied
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Challenge */}
+                <div className="bg-[#020205] rounded-xl p-5 border border-purple-500/20 text-center relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <p className="font-mono text-[10px] text-purple-400 tracking-widest mb-3 flex items-center justify-center gap-2">
+                    <Database className="w-3 h-3" /> UNIVERSAL TRUTH CHALLENGE
+                  </p>
+                  {loadingChallenge ? (
+                    <div className="flex items-center justify-center gap-2 py-4">
+                      <Loader2 className="w-4 h-4 animate-spin text-purple-500" />
+                    </div>
+                  ) : (
+                    <p className="font-mono text-sm text-purple-50 leading-relaxed relative z-10">{challenge}</p>
+                  )}
+                </div>
 
-          {/* Challenge */}
-          <div className="bg-background rounded-lg p-4 border border-primary/20 text-center space-y-2">
-            <p className="font-mono text-[10px] text-muted-foreground tracking-widest">UNIVERSAL TRUTH CHALLENGE</p>
-            <p className="font-mono text-[9px] text-primary/60 tracking-widest">RULE: This question has one universal truth. AI cannot sincerely answer it.</p>
-            {loadingChallenge ? (
-              <div className="flex items-center justify-center gap-2 pt-1">
-                <Loader2 className="w-3 h-3 animate-spin text-primary" />
-                <span className="font-mono text-xs text-muted-foreground">Loading...</span>
-              </div>
-            ) : (
-              <p className="font-mono text-sm text-foreground leading-relaxed pt-1">{challenge}</p>
-            )}
-          </div>
+                {/* Strike Counter */}
+                <div className="flex justify-center items-center gap-3">
+                  {[1, 2, 3].map(s => (
+                    <div key={s} className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-mono font-black border-2 transition-all duration-300 ${
+                      strikeCount >= s 
+                        ? 'bg-destructive/20 border-destructive text-destructive shadow-[0_0_15px_rgba(239,68,68,0.4)]' 
+                        : 'bg-[#020205] border-purple-900/50 text-purple-700'
+                    }`}>
+                      {s}
+                    </div>
+                  ))}
+                </div>
 
-          {/* Strike Counter */}
-          {strikeCount > 0 && (
-            <div className="flex gap-2 justify-center">
-              {[1, 2, 3].map(s => (
-                <div key={s} className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono font-bold border ${
-                  strikeCount >= s ? 'bg-destructive/20 border-destructive text-destructive' : 'bg-secondary border-border text-muted-foreground'
-                }`}>{s}</div>
-              ))}
-              <span className="font-mono text-[10px] text-muted-foreground self-center ml-1">STRIKES</span>
-            </div>
-          )}
-
-          {/* Answer Buttons */}
-          {!isLocked && !isSuccess && (
-            <div className="flex gap-3">
-              <Button
-                className="flex-1 font-mono text-sm h-12"
-                variant={answer === 'Yes' ? 'default' : 'outline'}
-                onClick={() => handleAnswer('Yes')}
-                disabled={isPending}
-              >
-                {isPending && answer === 'Yes' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'YES'}
-              </Button>
-              <Button
-                className="flex-1 font-mono text-sm h-12"
-                variant={answer === 'No' ? 'default' : 'outline'}
-                onClick={() => handleAnswer('No')}
-                disabled={isPending}
-              >
-                {isPending && answer === 'No' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'NO'}
-              </Button>
-            </div>
-          )}
-
-          {/* Result */}
-          <AnimatePresence>
-            {result && (
-              <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className={`rounded-xl p-4 border text-center space-y-2 ${
-                  isLocked ? 'bg-destructive/10 border-destructive/30' :
-                  isSuccess ? 'bg-green-500/10 border-green-500/30' :
-                  'bg-amber-500/10 border-amber-500/30'
-                }`}
-              >
-                {isLocked ? <AlertTriangle className="w-7 h-7 text-destructive mx-auto" /> :
-                  isSuccess ? <CheckCircle2 className="w-7 h-7 text-green-400 mx-auto" /> :
-                  <XCircle className="w-7 h-7 text-amber-400 mx-auto" />}
-                <p className={`font-mono text-sm font-bold ${isLocked ? 'text-destructive' : isSuccess ? 'text-green-400' : 'text-amber-400'}`}>
-                  {isLocked ? 'STRIKE 3 — LOCKOUT ENGAGED' :
-                   isSuccess ? 'VERIFIED — REDIRECTING TO LOGIN...' :
-                   `STRIKE ${result.strike || '?'} / 3 — INCORRECT`}
-                </p>
-                <p className="font-mono text-[10px] text-muted-foreground">{result.message || result.reason}</p>
+                {/* Controls */}
                 {!isLocked && !isSuccess && (
-                  <Button size="sm" variant="outline" className="font-mono text-xs mt-1" onClick={reset}>Try Again</Button>
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      className="flex-1 font-mono h-12 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-300 transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+                      onClick={() => handleAnswer('Yes')}
+                    >
+                      YES
+                    </Button>
+                    <Button
+                      className="flex-1 font-mono h-12 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-300 transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+                      onClick={() => handleAnswer('No')}
+                    >
+                      NO
+                    </Button>
+                  </div>
                 )}
-              </motion.div>
-            )}
-          </AnimatePresence>
 
-          {/* Strike legend */}
-          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/50">
-            {[['STRIKE 1', 'QRNG delay'], ['STRIKE 2', 'Exponential stall'], ['STRIKE 3', 'Tarpit + lockout']].map(([label, desc]) => (
-              <div key={label} className="text-center">
-                <p className="font-mono text-[9px] font-bold text-destructive">{label}</p>
-                <p className="font-mono text-[8px] text-muted-foreground">{desc}</p>
-              </div>
-            ))}
+                {/* Result */}
+                <AnimatePresence>
+                  {result && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className={`rounded-xl p-5 border text-center relative overflow-hidden ${
+                        isLocked ? 'bg-destructive/10 border-destructive/40 shadow-[0_0_30px_rgba(239,68,68,0.2)]' :
+                        isSuccess ? 'bg-green-500/10 border-green-500/40 shadow-[0_0_30px_rgba(34,197,94,0.2)]' :
+                        'bg-amber-500/10 border-amber-500/40 shadow-[0_0_30px_rgba(245,158,11,0.2)]'
+                      }`}
+                    >
+                      <div className="relative z-10 space-y-3">
+                        {isLocked ? <AlertTriangle className="w-8 h-8 text-destructive mx-auto animate-pulse" /> :
+                          isSuccess ? <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto" /> :
+                          <XCircle className="w-8 h-8 text-amber-400 mx-auto" />}
+                        <p className={`font-mono text-sm font-black tracking-wide ${isLocked ? 'text-destructive' : isSuccess ? 'text-green-400' : 'text-amber-400'}`}>
+                          {isLocked ? 'STRIKE 3 — LOCKOUT ENGAGED' :
+                           isSuccess ? 'VERIFIED — ACCESS GRANTED' :
+                           `STRIKE ${result.strike || '?'} / 3 — LOGIC ERROR`}
+                        </p>
+                        <p className="font-mono text-xs text-purple-200/70">{result.message || result.reason}</p>
+                        {!isLocked && !isSuccess && (
+                          <Button size="sm" variant="outline" className="font-mono text-xs mt-2 border-amber-500/30 text-amber-400 hover:bg-amber-500/10" onClick={reset}>Try Again</Button>
+                        )}
+                        {isLocked && (
+                          <Button size="sm" variant="outline" className="font-mono text-xs mt-2 border-destructive/30 text-destructive hover:bg-destructive/10" onClick={reset}>Reset Demo</Button>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column: Live Sessions */}
+          <div className="md:col-span-7">
+            <Card className="border-purple-500/20 bg-card/40 backdrop-blur-xl h-full flex flex-col">
+              <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-purple-900/30">
+                <div>
+                  <CardTitle className="font-mono text-sm flex items-center gap-2 text-purple-100">
+                    <Fingerprint className="w-4 h-4 text-purple-400" /> ACTIVE PARADOX LOCKS
+                  </CardTitle>
+                  <CardDescription className="font-mono text-xs mt-1 text-purple-300/60">
+                    Real-time telemetry of bots failing the cryptographic challenge.
+                  </CardDescription>
+                </div>
+                <Badge className="font-mono text-[10px] bg-purple-900/40 text-purple-300 border-purple-500/30 shadow-[0_0_10px_rgba(168,85,247,0.2)]">
+                  {sessions.length} TRAPPED
+                </Badge>
+              </CardHeader>
+              <CardContent className="p-0 flex-1 overflow-hidden">
+                <div className="divide-y divide-purple-900/20 h-full max-h-[600px] overflow-y-auto custom-scrollbar">
+                  <AnimatePresence initial={false}>
+                    {sessions.map((session) => (
+                      <motion.div
+                        key={session.id}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-purple-900/10 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 ${
+                            session.status === 'locked' 
+                              ? 'bg-destructive/10 border-destructive/30 shadow-[0_0_10px_rgba(239,68,68,0.2)]' 
+                              : 'bg-purple-500/10 border-purple-500/30 shadow-[0_0_10px_rgba(168,85,247,0.2)]'
+                          }`}>
+                            {session.status === 'locked' ? (
+                              <AlertTriangle className="w-5 h-5 text-destructive" />
+                            ) : (
+                              <Eye className="w-5 h-5 text-purple-400" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className={`font-mono text-sm font-bold ${session.id === 'guest-plock-session' ? 'text-white' : 'text-purple-100'}`}>
+                                {session.ip}
+                              </span>
+                              <Badge variant="outline" className={`font-mono text-[8px] px-1.5 py-0 h-4 uppercase ${
+                                session.status === 'locked' 
+                                  ? 'text-destructive border-destructive/30 bg-destructive/10' 
+                                  : 'text-purple-400 border-purple-500/30 bg-purple-500/5'
+                              }`}>
+                                {session.status}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-1 mt-1">
+                              {[1, 2, 3].map(s => (
+                                <div key={s} className={`w-2 h-2 rounded-full ${
+                                  session.strikes >= s 
+                                    ? 'bg-destructive shadow-[0_0_5px_rgba(239,68,68,0.8)]' 
+                                    : 'bg-purple-900/50'
+                                }`} />
+                              ))}
+                              <span className="font-mono text-[10px] text-purple-300/50 ml-2">
+                                {session.strikes} / 3 Strikes
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="text-right w-full sm:w-auto">
+                          <div className="font-mono text-[10px] text-purple-300/40">
+                            {new Date(session.timestamp).toLocaleTimeString()}
+                          </div>
+                          {session.status === 'locked' && (
+                            <div className="font-mono text-[9px] text-destructive mt-1 flex items-center justify-end gap-1">
+                              <Lock className="w-3 h-3" /> QUARANTINED
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </div>
+      </main>
+
+      {scannerOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full relative">
+            <Button variant="ghost" size="icon" className="absolute -top-12 right-0 text-white hover:bg-white/10" onClick={() => setScannerOpen(false)}>
+              <X className="w-6 h-6" />
+            </Button>
+            <Card className="border-purple-500/30 shadow-[0_0_40px_rgba(168,85,247,0.2)] bg-[#050510]/95 backdrop-blur-xl">
+              <PublicScanner />
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

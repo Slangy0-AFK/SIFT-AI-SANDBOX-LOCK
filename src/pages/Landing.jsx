@@ -6,172 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const SCAN_STEPS = [
-  { id: 'env', label: 'Environment Initialization', detail: 'Validating browser signature & WebGL fingerprint...' },
-  { id: 'network', label: 'Network Telemetry', detail: 'Analyzing routing anomalies and DNS leaks...' },
-  { id: 'storage', label: 'Local Storage Audit', detail: 'Checking for persistent tracking payloads...' },
-  { id: 'heuristics', label: 'Behavioral Heuristics', detail: 'Testing for automation and headless flags...' },
-  { id: 'verify', label: 'Signature Verification', detail: 'Cross-referencing Sift-AI threat database...' },
-];
-
-function PublicScanner() {
-  const [scanning, setScanning] = useState(false);
-  const [stepIndex, setStepIndex] = useState(-1);
-  const [results, setResults] = useState(null);
-
-  const runScan = async () => {
-    if (scanning) return;
-    setScanning(true);
-    setResults(null);
-    
-    let anomalies = 0;
-    let warnings = 0;
-
-    // Step 0: Env
-    setStepIndex(0);
-    await new Promise(r => setTimeout(r, 700));
-    if (navigator.webdriver) anomalies++;
-    if (!navigator.languages || navigator.languages.length === 0) anomalies++;
-    if (window.cdc_adoQpoasnfa76pfcZLmcfl_Array) anomalies++; // Puppeteer flag
-
-    // Step 1: Network
-    setStepIndex(1);
-    await new Promise(r => setTimeout(r, 700));
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    if (!tz) warnings++;
-    if (navigator.connection && navigator.connection.saveData) warnings++;
-
-    // Step 2: Storage
-    setStepIndex(2);
-    await new Promise(r => setTimeout(r, 800));
-    try {
-      const estimate = await navigator.storage?.estimate();
-      // Unusually high storage usage might indicate local caching/trackers
-      if (estimate && estimate.usage > 1024 * 1024 * 200) warnings++; 
-    } catch(e) {}
-
-    // Step 3: Heuristics & Hardware
-    setStepIndex(3);
-    await new Promise(r => setTimeout(r, 900));
-    try {
-      const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (gl) {
-        const ext = gl.getExtension('WEBGL_debug_renderer_info');
-        const renderer = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)?.toLowerCase() : '';
-        if (renderer.includes('swiftshader') || renderer.includes('llvmpipe')) {
-          anomalies++; // Common in headless browsers
-        }
-      }
-    } catch(e) {}
-
-    if (navigator.hardwareConcurrency === 1) warnings++;
-
-    // Step 4: Verify
-    setStepIndex(4);
-    await new Promise(r => setTimeout(r, 1000));
-    
-    setStepIndex(SCAN_STEPS.length);
-    setResults({ 
-      clean: anomalies === 0 && warnings === 0, 
-      threats: anomalies,
-      warnings: warnings
-    });
-    setScanning(false);
-  };
-
-  return (
-    <div className="w-full">
-      <CardHeader className="pb-3 border-b border-border/50">
-        <div className="flex items-center justify-between">
-          <CardTitle className="font-mono text-sm tracking-wider flex items-center gap-2">
-            <Terminal className="w-4 h-4 text-primary" /> TEST MY DEVICE
-          </CardTitle>
-        </div>
-        <p className="font-mono text-[10px] text-muted-foreground tracking-wide mt-1">
-          Run a quick, client-side simulation of the Sift-AI detection engine.
-        </p>
-      </CardHeader>
-      <CardContent className="pt-4 space-y-4">
-        <div className="space-y-2">
-          {SCAN_STEPS.map((step, i) => {
-            const done = stepIndex > i;
-            const active = stepIndex === i && scanning;
-            const pending = !done && !active;
-            return (
-              <motion.div
-                key={step.id}
-                animate={{ opacity: pending && stepIndex >= 0 ? 0.3 : 1 }}
-                className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
-                  active ? 'bg-primary/10 border-primary/30' : 
-                  done ? 'bg-green-500/5 border-green-500/20' : 
-                  'bg-secondary/30 border-border/50'
-                }`}
-              >
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                  active ? 'bg-primary animate-pulse' : 
-                  done ? 'bg-green-400' : 'bg-muted-foreground/30'
-                }`} />
-                <div className="flex-1 min-w-0">
-                  <span className={`font-mono text-xs font-semibold ${
-                    active ? 'text-primary' : 
-                    done ? 'text-green-400' : 'text-muted-foreground'
-                  }`}>{step.label}</span>
-                  {active && <p className="font-mono text-[10px] text-muted-foreground mt-0.5">{step.detail}</p>}
-                </div>
-                {active && <Loader2 className="w-4 h-4 text-primary animate-spin flex-shrink-0" />}
-                {done && <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />}
-              </motion.div>
-            );
-          })}
-        </div>
-
-        <AnimatePresence>
-          {results && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className={`mt-4 p-4 rounded-xl border ${
-                results.clean 
-                  ? 'bg-green-500/10 border-green-500/30' 
-                  : 'bg-amber-500/10 border-amber-500/30'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                {results.clean ? (
-                  <ShieldCheck className="w-8 h-8 text-green-400" />
-                ) : (
-                  <ShieldAlert className="w-8 h-8 text-amber-500" />
-                )}
-                <div>
-                  <p className={`font-mono text-sm font-bold ${results.clean ? 'text-green-400' : 'text-amber-500'}`}>
-                    {results.clean ? 'DEVICE APPEARS SECURE' : `${results.threats} ANOMALIES DETECTED`}
-                  </p>
-                  <p className="font-mono text-xs text-muted-foreground mt-1">
-                    {results.clean 
-                      ? 'No immediate browser-level threats detected in this quick scan.' 
-                      : 'Some tracking scripts or anomalies were identified.'}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 flex justify-end">
-                <Link to="/register">
-                  <Button size="sm" className="font-mono">Get Full Protection</Button>
-                </Link>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {!scanning && !results && (
-          <Button onClick={runScan} className="w-full font-mono mt-2" size="lg">
-            <ScanLine className="w-4 h-4 mr-2" /> Start Device Scan
-          </Button>
-        )}
-      </CardContent>
-    </div>
-  );
-}
+import PublicScanner from '@/components/scanner/PublicScanner';
 
 export default function Landing() {
   const [visitCount, setVisitCount] = useState(null);
@@ -247,14 +82,19 @@ export default function Landing() {
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4 w-full sm:w-auto">
-              <Link to="/register" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full font-mono gap-2 h-12 px-8">
-                  Start Free Trial <ArrowRight className="w-4 h-4" />
+              <Link to="/mirror-demo?guest=true" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full font-mono gap-2 h-12 px-8 shadow-[0_0_20px_rgba(var(--primary),0.3)] hover:shadow-[0_0_30px_rgba(var(--primary),0.5)] transition-all">
+                  Launch Mirror Demo <Activity className="w-4 h-4" />
                 </Button>
               </Link>
-              <Link to="/mirror-demo?guest=true" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full font-mono gap-2 h-12 px-8 border-primary/30 text-primary hover:bg-primary/10">
-                  Launch Free Demo <Activity className="w-4 h-4" />
+              <Link to="/paradox-gate?guest=true" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="w-full font-mono gap-2 h-12 px-8 border-purple-500/50 text-purple-400 hover:bg-purple-500/10 shadow-[0_0_15px_rgba(168,85,247,0.2)] hover:shadow-[0_0_25px_rgba(168,85,247,0.4)] transition-all">
+                  Enter Paradox Gate <Lock className="w-4 h-4" />
+                </Button>
+              </Link>
+              <Link to="/register" className="w-full sm:w-auto">
+                <Button size="lg" variant="secondary" className="w-full font-mono gap-2 h-12 px-8">
+                  Start Free Trial <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -262,25 +102,53 @@ export default function Landing() {
         </section>
 
         {/* Public Scanner Section */}
-        <section className="py-16 bg-secondary/20 border-y border-border/50">
-          <div className="max-w-4xl mx-auto px-4">
-            <div className="grid md:grid-cols-2 gap-10 items-center">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-bold font-mono text-foreground mb-4">
-                  Check Your Exposure
-                </h2>
-                <p className="font-mono text-sm text-muted-foreground mb-6 leading-relaxed">
-                  Run a lightweight, browser-based diagnostic test to identify potential tracking scripts, unsafe extensions, or environmental anomalies without installing any software.
-                </p>
-                <ul className="space-y-3 font-mono text-xs text-muted-foreground mb-8">
-                  <li className="flex items-center gap-2"><Lock className="w-4 h-4 text-primary" /> No data leaves your browser</li>
-                  <li className="flex items-center gap-2"><Zap className="w-4 h-4 text-primary" /> AI-powered heuristic check</li>
-                  <li className="flex items-center gap-2"><Bug className="w-4 h-4 text-primary" /> Identifies tracking beacons</li>
-                </ul>
+        <section className="py-20 bg-background relative overflow-hidden border-y border-border/50 shadow-[inset_0_0_100px_rgba(var(--primary),0.05)]">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+          <div className="max-w-5xl mx-auto px-4 relative z-10">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-black font-mono text-foreground mb-4 tracking-tight uppercase">
+                Is Your Device <span className="text-destructive">Compromised?</span>
+              </h2>
+              <p className="font-mono text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                Run our lightweight, AI-powered browser diagnostic to instantly expose hidden tracking scripts, headless automation flags, and environmental anomalies. <strong className="text-foreground">100% Client-Side. No software installation required.</strong>
+              </p>
+            </div>
+            <div className="grid md:grid-cols-12 gap-8 items-center">
+              <div className="md:col-span-5 order-2 md:order-1 space-y-6 bg-secondary/20 p-6 rounded-2xl border border-border/50">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Lock className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-mono font-bold text-sm">Zero Data Extraction</h4>
+                    <p className="font-mono text-xs text-muted-foreground mt-1">All telemetry is analyzed directly within your browser. We never store your personal data.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Zap className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-mono font-bold text-sm">Heuristic AI Engine</h4>
+                    <p className="font-mono text-xs text-muted-foreground mt-1">Identifies unknown threats by analyzing hardware anomalies and behavioral patterns.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Bug className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-mono font-bold text-sm">Deep Script Inspection</h4>
+                    <p className="font-mono text-xs text-muted-foreground mt-1">Detects obfuscated code, cryptominers, and tracking beacons running silently.</p>
+                  </div>
+                </div>
               </div>
-              <Card className="border-primary/20 shadow-2xl shadow-primary/5 bg-card/80 backdrop-blur">
-                <PublicScanner />
-              </Card>
+              <div className="md:col-span-7 order-1 md:order-2">
+                <Card className="border-primary/30 shadow-[0_0_40px_rgba(var(--primary),0.15)] bg-card/90 backdrop-blur-xl relative overflow-hidden transform transition-all hover:scale-[1.01] duration-300">
+                  <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
+                  <PublicScanner />
+                </Card>
+              </div>
             </div>
           </div>
         </section>

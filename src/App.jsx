@@ -28,6 +28,7 @@ import About from '@/pages/About';
 import Contact from '@/pages/Contact';
 import Landing from '@/pages/Landing';
 import MirrorDemo from '@/pages/MirrorDemo';
+import ParadoxGate from '@/pages/ParadoxGate';
 
 // Add page imports here
 
@@ -51,6 +52,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/mirror-demo" element={<MirrorDemo />} />
+      <Route path="/paradox-gate" element={<ParadoxGate />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
