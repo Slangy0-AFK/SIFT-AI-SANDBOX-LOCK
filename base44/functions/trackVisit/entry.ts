@@ -13,13 +13,7 @@ export default async function handler(req) {
       // Ignore auth errors for unauthenticated public visitors
     }
 
-    // Basic origin/referer validation to prevent direct unauthorized API abuse
-    const origin = req.headers.get('origin');
-    const referer = req.headers.get('referer');
-    if (!user && (origin && !origin.includes(new URL(req.url).hostname)) && 
-        (referer && !referer.includes(new URL(req.url).hostname))) {
-      return Response.json({ error: 'Unauthorized origin' }, { status: 403 });
-    }
+    // Removed strict origin check to allow previews and valid cross-origin requests
 
     const ip = req.headers.get('cf-connecting-ip') || req.headers.get('x-forwarded-for') || 'unknown';
     // Format current date in user timezone (America/Chicago) or UTC based on environment needs, using ISO string part.

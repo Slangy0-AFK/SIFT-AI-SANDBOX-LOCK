@@ -4,17 +4,12 @@ export default async function handler(req) {
   try {
     const base44 = createClientFromRequest(req);
 
-    const origin = req.headers.get('origin');
-    const referer = req.headers.get('referer');
     let user = null;
     try {
       user = await base44.auth.me();
     } catch (e) {}
-
-    if (!user && (origin && !origin.includes(new URL(req.url).hostname)) && 
-        (referer && !referer.includes(new URL(req.url).hostname))) {
-      return Response.json({ error: 'Unauthorized origin' }, { status: 403 });
-    }
+    
+    // Removed strict origin check to allow previews and valid cross-origin requests
 
     const stats = await base44.asServiceRole.entities.SiteStat.list();
     
