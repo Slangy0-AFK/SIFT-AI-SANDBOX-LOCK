@@ -20,9 +20,18 @@ Deno.serve(async (req) => {
     
     // Verify invitation acceptance is authorized by the inviter
     // Invitation tokens are single-use and time-limited, so this is secure
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized: Must be logged in to accept invitation' }, { status: 401 });
+    // Allow: scheduler secret header, entity automation, or authenticated user
+    const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
+    const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
+    const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
+    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
+
+    let user = null;
+    if (!isScheduler && !isAutomation) {
+      user = await base44.auth.me().catch(() => null);
+      if (!user) {
+        return Response.json({ error: 'Unauthorized: Must be logged in to accept invitation' }, { status: 401 });
+      }
     }
 
     // Find invitation by token

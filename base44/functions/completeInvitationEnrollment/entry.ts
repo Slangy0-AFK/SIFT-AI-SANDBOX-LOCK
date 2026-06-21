@@ -12,9 +12,18 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     
     // Authenticate user (the invitee)
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized - You must be logged in' }, { status: 401 });
+    // Allow: scheduler secret header, entity automation, or authenticated user
+    const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
+    const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
+    const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
+    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
+
+    let user = null;
+    if (!isScheduler && !isAutomation) {
+      user = await base44.auth.me().catch(() => null);
+      if (!user) {
+        return Response.json({ error: 'Unauthorized - You must be logged in' }, { status: 401 });
+      }
     }
 
     // Parse request

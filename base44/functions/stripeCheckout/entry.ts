@@ -22,10 +22,18 @@ import Stripe from 'npm:stripe@14.0.0';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    // Allow: scheduler secret header, entity automation, or authenticated user
+    const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
+    const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
+    const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
+    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
 
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    let user = null;
+    if (!isScheduler && !isAutomation) {
+      user = await base44.auth.me().catch(() => null);
+      if (!user) {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      }
     }
 
     // BETA MODE - Stripe disabled

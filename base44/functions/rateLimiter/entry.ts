@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     // Also allow authenticated users (admin only for direct calls)
     let isAuthorized = isInternalCall;
     if (!isAuthorized) {
-      const user = await base44.auth.me();
+      const user = await base44.auth.me().catch(() => null);
       isAuthorized = user && user.role === 'admin';
     }
 
