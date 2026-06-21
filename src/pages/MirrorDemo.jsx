@@ -57,9 +57,15 @@ export default function MirrorDemo() {
     
     loadRealSessions();
 
+    // Local tick timer to animate durations between network polls
+    const tickTimer = setInterval(() => {
+      setSessions(prev => prev.map(s => ({ ...s, duration: s.duration + 1 })));
+    }, 1000);
+
     return () => {
       mounted = false;
       clearTimeout(timeout);
+      clearInterval(tickTimer);
     };
   }, []);
 

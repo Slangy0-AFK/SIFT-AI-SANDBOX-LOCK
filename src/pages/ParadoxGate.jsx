@@ -144,7 +144,8 @@ export default function ParadoxGate() {
              ip: ip,
              status: e.event_type === 'threat_locked' ? 'locked' : (e.event_type === 'access_granted' ? 'passed' : 'evaluating'),
              strikes: e.event_type === 'threat_locked' ? 3 : (e.event_type === 'access_granted' ? 0 : 1),
-             timestamp: e.created_date
+             timestamp: e.created_date,
+             seconds_since: Math.floor((Date.now() - new Date(e.created_date).getTime()) / 1000)
            }
         });
         setSessions(realSessions);
@@ -159,9 +160,14 @@ export default function ParadoxGate() {
     
     loadRealSessions();
 
+    const tickTimer = setInterval(() => {
+      setSessions(prev => prev.map(s => ({ ...s, seconds_since: (s.seconds_since || 0) + 1 })));
+    }, 1000);
+
     return () => {
       mounted = false;
       clearTimeout(timeout);
+      clearInterval(tickTimer);
     };
   }, []);
 
@@ -441,8 +447,13 @@ export default function ParadoxGate() {
                         </div>
                         
                         <div className="text-right w-full sm:w-auto">
-                          <div className="text-[10px] text-muted-foreground font-medium">
-                            {formatChicagoTime(session.timestamp)}
+                          <div className="text-[10px] text-muted-foreground font-medium flex flex-col items-end gap-1">
+                            <span>{formatChicagoTime(session.timestamp)}</span>
+                            {session.seconds_since !== undefined && (
+                              <span className="text-[9px] opacity-70">
+                                {session.seconds_since}s ago
+                              </span>
+                            )}
                           </div>
                           {session.status === 'locked' && (
                             <div className="text-[9px] text-destructive mt-1 flex items-center justify-end gap-1 font-bold">
