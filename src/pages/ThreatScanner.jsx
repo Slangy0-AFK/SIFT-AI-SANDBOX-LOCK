@@ -163,6 +163,29 @@ export default function ThreatScanner() {
                   <ShieldBan className="w-3 h-3 mr-1" /> Stop Active
                 </Button>
               )}
+              {scanSessions.some(s => s.status === 'complete' || s.status === 'error') && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                  onClick={async () => {
+                    if (window.confirm('Are you sure you want to clear all completed scan logs?')) {
+                      try {
+                        const completed = scanSessions.filter(s => s.status === 'complete' || s.status === 'error');
+                        for (const s of completed) {
+                          await base44.entities.ScanSession.delete(s.id);
+                        }
+                        toast.success('Scan logs cleared');
+                        refetchSessions();
+                      } catch (err) {
+                        toast.error('Failed to clear logs');
+                      }
+                    }
+                  }}
+                >
+                  Clear Logs
+                </Button>
+              )}
               <Button variant="outline" size="sm" onClick={() => { refetchSessions(); toast.success('Sessions refreshed'); }}>
                 <Zap className="w-3 h-3 mr-1" /> Refresh
               </Button>

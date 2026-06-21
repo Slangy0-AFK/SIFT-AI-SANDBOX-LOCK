@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { 
   Shield, Cpu, CheckCircle2, 
   Loader2, RefreshCw, Target, Activity, Eye
@@ -16,7 +17,7 @@ export default function RealTimeThreatMonitor() {
   const [aiAnalysis, setAiAnalysis] = useState(null);
 
   // Real-time threat feed
-  const { data: threats = [], refetch } = useQuery({
+  const { data: threats = [], refetch: refetchThreats } = useQuery({
     queryKey: ['threats-live'],
     queryFn: () => base44.entities.Threat.list('-created_date', 10),
     initialData: [],
@@ -24,7 +25,7 @@ export default function RealTimeThreatMonitor() {
   });
 
   // Real-time anomaly feed
-  const { data: anomalies = [] } = useQuery({
+  const { data: anomalies = [], refetch: refetchAnomalies } = useQuery({
     queryKey: ['anomalies-live'],
     queryFn: () => base44.entities.ZeroDayAnomaly.list('-created_date', 10),
     initialData: [],
@@ -78,7 +79,7 @@ export default function RealTimeThreatMonitor() {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => refetch()}
+            onClick={() => { refetchThreats(); refetchAnomalies(); toast.success('Monitor refreshed'); }}
             className="font-mono text-[9px] h-7"
           >
             <RefreshCw className="w-3 h-3 mr-1" /> Refresh
