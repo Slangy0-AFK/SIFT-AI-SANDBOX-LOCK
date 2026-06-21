@@ -49,7 +49,7 @@ function ThreatMatrix() {
                     <span className={`font-mono text-[10px] font-bold ${cat.color}`}>{cat.label}</span>
                     <Badge variant="outline" className="font-mono text-[7px] text-green-400 border-green-400/30">COVERED</Badge>
                   </div>
-                  <p className="font-mono text-[9px] text-muted-foreground mt-0.5 leading-relaxed">{cat.description}</p>
+                  <p className="font-mono text-[11px] text-foreground/80 mt-0.5 leading-relaxed font-medium">{cat.description}</p>
                 </div>
               </div>
             );
