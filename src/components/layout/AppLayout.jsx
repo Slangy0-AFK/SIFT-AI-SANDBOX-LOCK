@@ -26,7 +26,7 @@ export default function AppLayout() {
       <TermsAgreementModal />
       <Sidebar />
       {/* desktop: offset for sidebar | mobile: offset for top bar + bottom nav */}
-      <main className="md:ml-64 min-h-screen pt-0 md:pt-0 mt-14 md:mt-0 mb-16 md:mb-0">
+      <main className="md:ml-64 min-h-screen pt-0 md:pt-0 mt-14 md:mt-0 pb-24 md:pb-12">
         <Outlet />
       </main>
     </div>
