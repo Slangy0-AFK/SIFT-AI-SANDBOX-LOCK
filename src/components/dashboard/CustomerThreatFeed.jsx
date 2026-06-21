@@ -4,7 +4,7 @@ import { Shield, Bug, AlertTriangle, Cpu, Mail, ShieldAlert, ChevronDown } from 
 import { formatLocalTime, formatChicagoTime } from '@/lib/utils';
 
 const typeMeta = {
-  threat: { label: 'Threat', icon: AlertTriangle, color: 'text-accent bg-accent/10 border-accent/20' },
+  threat: { label: 'Threat', icon: AlertTriangle, color: 'text-fuchsia-400 bg-fuchsia-400/10 border-fuchsia-400/20' },
   event: { label: 'Event', icon: Shield, color: 'text-blue-400 bg-blue-400/10 border-blue-400/20' },
   zeroday: { label: 'Zero-Day', icon: Bug, color: 'text-purple-400 bg-purple-400/10 border-purple-400/20' },
   email_threat: { label: 'Email Threat', icon: Mail, color: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },

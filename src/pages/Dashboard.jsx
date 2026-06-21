@@ -115,8 +115,8 @@ function ThreatScannerSection({ threats, refetchThreats }) {
 }
 
 const quickLinks = [
-  { path: '/zero-day', icon: Radiation, label: 'Zero-Day', color: 'text-accent' },
-  { path: '/threat-intel', icon: ShieldAlert, label: 'Threat Intel', color: 'text-accent' },
+  { path: '/zero-day', icon: Radiation, label: 'Zero-Day', color: 'text-fuchsia-400' },
+  { path: '/threat-intel', icon: ShieldAlert, label: 'Threat Intel', color: 'text-fuchsia-400' },
   { path: '/firewall', icon: Shield, label: 'Firewall', color: 'text-primary' },
   { path: '/mirror-env', icon: Bug, label: 'Mirror Env', color: 'text-green-400' },
 ];
@@ -233,7 +233,7 @@ export default function Dashboard() {
 
       {/* Stats — 2x2 on mobile, 4-col on desktop */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <ThreatCounter label="Active Threats" value={activeThreats.length} color="text-accent" icon={AlertTriangle} />
+        <ThreatCounter label="Active Threats" value={activeThreats.length} color="text-fuchsia-400" icon={AlertTriangle} />
         <ThreatCounter label="Locked Out" value={lockedThreats.length} color="text-amber-400" icon={Lock} />
         <ThreatCounter label="Destroyed" value={destroyedThreats.length} color="text-destructive" icon={Skull} />
         <ThreatCounter label="Firewall Blocks" value={blockedEvents.length} color="text-teal-400" icon={ShieldAlert} />

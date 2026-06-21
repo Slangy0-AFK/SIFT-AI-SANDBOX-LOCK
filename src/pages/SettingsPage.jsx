@@ -210,7 +210,7 @@ export default function SettingsPage() {
               { label: 'QRNG Cycles', icon: Atom, color: 'text-primary' },
               { label: 'Mirror Environment', icon: Shield, color: 'text-primary' },
               { label: 'Honeypots', icon: Bug, color: 'text-amber-400' },
-              { label: 'Tarpits', icon: Clock, color: 'text-accent' },
+              { label: 'Tarpits', icon: Clock, color: 'text-fuchsia-400' },
             ].map(({ label, icon: Icon, color }) => (
               <div key={label} className="flex items-center gap-2 p-2 rounded bg-secondary/20 border border-border/30">
                 <Icon className={`w-3 h-3 ${color} flex-shrink-0`} />

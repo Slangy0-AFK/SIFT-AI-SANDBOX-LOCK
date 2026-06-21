@@ -87,12 +87,12 @@ export default function MirrorEnvironment() {
           </CardContent>
         </Card>
 
-        <Card className="border-accent/30 bg-accent/10">
+        <Card className="border-fuchsia-400/30 bg-fuchsia-400/10">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-accent" />
-              <CardTitle className="font-mono text-xs tracking-wider text-foreground">TARPITS</CardTitle>
-              <Badge className="ml-auto font-mono text-[9px] bg-accent/10 text-accent border-accent/30">{tarpitCount}</Badge>
+              <Clock className="w-5 h-5 text-fuchsia-400" />
+              <CardTitle className="font-mono text-xs tracking-wider text-fuchsia-400">TARPITS</CardTitle>
+              <Badge className="ml-auto font-mono text-[9px] bg-fuchsia-400/10 text-fuchsia-400 border-fuchsia-400/30">{tarpitCount}</Badge>
             </div>
           </CardHeader>
           <CardContent>
@@ -139,15 +139,15 @@ export default function MirrorEnvironment() {
               <span className="font-mono text-[9px] text-amber-400">HONEYPOT</span>
             </div>
             <div className="flex flex-col items-center gap-1 px-1 md:px-0">
-              <Clock className="w-4 h-4 text-accent" />
-              <div className="w-12 md:w-24 h-px bg-accent/30" />
+              <Clock className="w-4 h-4 text-fuchsia-400" />
+              <div className="w-12 md:w-24 h-px bg-fuchsia-400/30" />
               <span className="font-mono text-[8px] text-foreground">THROTTLE</span>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-accent/10 border border-accent/30 flex items-center justify-center mb-2 mx-auto">
-                <Clock className="w-6 h-6 md:w-8 md:h-8 text-accent opacity-100" />
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-fuchsia-400/10 border border-fuchsia-400/30 flex items-center justify-center mb-2 mx-auto">
+                <Clock className="w-6 h-6 md:w-8 md:h-8 text-fuchsia-400 opacity-100" />
               </div>
-              <span className="font-mono text-[10px] font-bold text-accent">TARPIT</span>
+              <span className="font-mono text-[10px] font-bold text-fuchsia-400">TARPIT</span>
             </div>
           </div>
         </CardContent>
@@ -184,13 +184,13 @@ export default function MirrorEnvironment() {
                     {session.session_type === 'honeypot' ? (
                       <Bug className="w-4 h-4 text-amber-400" />
                     ) : (
-                      <Clock className="w-4 h-4 text-accent" />
+                      <Clock className="w-4 h-4 text-fuchsia-400" />
                     )}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-[10px] font-semibold text-foreground">{session.source_ip}</span>
                         <Badge variant="outline" className={`font-mono text-[8px] ${
-                          session.session_type === 'honeypot' ? 'text-amber-400 border-amber-400/30' : 'text-accent border-accent/30'
+                          session.session_type === 'honeypot' ? 'text-amber-400 border-amber-400/30' : 'text-fuchsia-400 border-fuchsia-400/30'
                         }`}>
                           {session.session_type?.toUpperCase()}
                         </Badge>

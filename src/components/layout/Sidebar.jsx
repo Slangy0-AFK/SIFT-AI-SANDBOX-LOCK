@@ -69,7 +69,7 @@ export default function Sidebar() {
                   isActive
                     ? 'bg-primary/10 text-primary border border-primary/20'
                     : highlight
-                    ? 'text-accent border border-accent/20 hover:bg-accent/10'
+                    ? 'text-fuchsia-400 border border-fuchsia-400/20 hover:bg-fuchsia-400/10'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                 }`}
               >
@@ -185,7 +185,7 @@ export default function Sidebar() {
                 isActive
                   ? 'text-primary'
                   : highlight
-                  ? 'text-accent'
+                  ? 'text-fuchsia-400'
                   : 'text-muted-foreground'
               }`}
             >

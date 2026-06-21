@@ -13,7 +13,7 @@ const THREAT_CATEGORIES = [
     description: 'Autonomous bots & LLM-based adversarial agents'
   },
   {
-    icon: FileWarning, label: 'Zero-Day Anomalies', color: 'text-accent',
+    icon: FileWarning, label: 'Zero-Day Anomalies', color: 'text-fuchsia-400',
     description: 'Behavioral anomalies and polymorphic execution patterns'
   },
   {
@@ -46,7 +46,7 @@ function ThreatMatrix() {
                 <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${cat.color}`} />
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-[11px] font-bold text-foreground">{cat.label}</span>
+                    <span className={`font-mono text-[11px] font-bold ${cat.color}`}>{cat.label}</span>
                     <Badge variant="outline" className="font-mono text-[7px] text-green-400 border-green-400/30">COVERED</Badge>
                   </div>
                   <p className="font-mono text-[11px] text-foreground/80 mt-0.5 leading-relaxed font-medium">{cat.description}</p>
