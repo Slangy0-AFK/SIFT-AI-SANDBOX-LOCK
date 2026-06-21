@@ -29,6 +29,7 @@ export default function MirrorDemo() {
   useEffect(() => {
     let mounted = true;
     
+    let timeout;
     const loadRealSessions = async () => {
       try {
         const res = await base44.functions.invoke('getDemoTelemetry');
@@ -47,15 +48,18 @@ export default function MirrorDemo() {
         setSessions(realSessions);
       } catch (err) {
         console.error("Failed to load real sessions", err);
+      } finally {
+        if (mounted) {
+          timeout = setTimeout(loadRealSessions, 15000);
+        }
       }
     };
     
     loadRealSessions();
-    const interval = setInterval(loadRealSessions, 3000);
 
     return () => {
       mounted = false;
-      clearInterval(interval);
+      clearTimeout(timeout);
     };
   }, []);
 
