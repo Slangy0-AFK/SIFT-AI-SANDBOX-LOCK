@@ -36,14 +36,19 @@ export default function MirrorDemo() {
         if (!mounted) return;
         
         const hSessions = res.data.honeypotSessions || [];
-        const realSessions = hSessions.map(s => ({
-          id: s.id,
-          type: s.session_type || 'tarpit',
-          ip: s.source_ip || 'Unknown',
-          duration: s.duration_seconds || 0,
-          interactions: s.interactions || 0,
-          timestamp: s.created_date
-        }));
+        const realSessions = hSessions.map(s => {
+          const snapshotTime = new Date(s.updated_date || s.created_date).getTime();
+          const elapsed = Math.max(0, Math.floor((Date.now() - snapshotTime) / 1000));
+          return {
+            id: s.id,
+            type: s.session_type || 'tarpit',
+            ip: s.source_ip || 'Unknown',
+            duration: s.status === 'completed' ? (s.duration_seconds || 0) : (s.duration_seconds || 0) + elapsed,
+            interactions: s.interactions || 0,
+            timestamp: s.created_date,
+            status: s.status || 'active'
+          };
+        });
         
         setSessions(realSessions);
       } catch (err) {
@@ -59,7 +64,7 @@ export default function MirrorDemo() {
 
     // Local tick timer to animate durations between network polls
     const tickTimer = setInterval(() => {
-      setSessions(prev => prev.map(s => ({ ...s, duration: s.duration + 1 })));
+      setSessions(prev => prev.map(s => s.status === 'completed' ? s : { ...s, duration: s.duration + 1 }));
     }, 1000);
 
     return () => {
@@ -270,11 +275,20 @@ export default function MirrorDemo() {
                           }`}>
                             {session.type}
                           </Badge>
+                          {session.status === 'completed' ? (
+                            <Badge variant="outline" className="text-[8px] px-1.5 py-0 h-4 uppercase text-green-500 border-green-500/30 bg-green-500/5 ml-1">
+                              NEUTRALIZED
+                            </Badge>
+                          ) : (
+                            <span className="text-[9px] font-bold text-destructive animate-pulse ml-2 flex items-center gap-1">
+                              <Activity className="w-3 h-3" /> NEUTRALIZING
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2 font-medium">
                           <span>{session.interactions} interactions</span>
                           <span>&bull;</span>
-                          <span>{session.duration}s trapped</span>
+                          <span>{session.status === 'completed' ? 'Neutralized after' : 'Trapped for'} {session.duration}s</span>
                         </p>
                       </div>
                     </div>
