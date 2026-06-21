@@ -154,8 +154,18 @@ function analyzeNetworkSignals(network = {}) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
+    const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
+    const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
+    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
+
+    let user = null;
+    if (!isScheduler && !isAutomation) {
+      user = await base44.auth.me().catch(() => null);
+      if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    } else {
+      user = { id: 'system_automation', email: 'system@automation.local', full_name: 'System Automation' };
+    }
 
     const body = await req.json().catch(() => ({}));
     const {

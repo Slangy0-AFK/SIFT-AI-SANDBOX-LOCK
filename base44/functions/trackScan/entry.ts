@@ -4,10 +4,17 @@ export default async function handler(req) {
   try {
     const base44 = createClientFromRequest(req);
 
+    const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
+    const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
+    const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
+    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
+
     let user = null;
-    try {
-      user = await base44.auth.me();
-    } catch (e) {}
+    if (!isScheduler && !isAutomation) {
+      user = await base44.auth.me().catch(() => null);
+    } else {
+      user = { id: 'system_automation', role: 'admin' };
+    }
     
     // Removed strict origin check to allow previews and valid cross-origin requests
 
