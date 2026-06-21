@@ -26,6 +26,27 @@ export default function ParadoxGate() {
   const [strikeCount, setStrikeCount] = useState(0);
   const [challenge, setChallenge] = useState('');
   const [loadingChallenge, setLoadingChallenge] = useState(true);
+  const [honeypot, setHoneypot] = useState("");
+  const [paradoxStats, setParadoxStats] = useState({ 
+    tries: 0, breaches: 0, 
+    humanTries: 0, humanBreaches: 0, 
+    robotTries: 0, robotBreaches: 0 
+  });
+
+  useEffect(() => {
+    base44.entities.SiteStat.list().then(stats => {
+      if (stats.length > 0) {
+        setParadoxStats({
+          tries: stats[0].paradox_tries || 0,
+          breaches: stats[0].paradox_breaches || 0,
+          humanTries: stats[0].human_paradox_tries || 0,
+          humanBreaches: stats[0].human_paradox_breaches || 0,
+          robotTries: stats[0].robot_paradox_tries || 0,
+          robotBreaches: stats[0].robot_paradox_breaches || 0
+        });
+      }
+    });
+  }, []);
 
   // Load the challenge
   useEffect(() => {
@@ -35,9 +56,23 @@ export default function ParadoxGate() {
       .finally(() => setLoadingChallenge(false));
   }, []);
 
-  const handleVerify = async (selectedAnswer) => {
+  const handleVerify = async (selectedAnswer, e) => {
     setResult(null);
+    
+    // Robot detection heuristics
+    const answerLower = selectedAnswer.toLowerCase();
+    const isRobot = answerLower.includes('-ai') || honeypot !== "" || (e && e.nativeEvent && !e.nativeEvent.isTrusted);
+
     try {
+      // Track attempt
+      base44.functions.invoke('trackParadoxDemo', { action: 'try', isRobot }).catch(() => {});
+      setParadoxStats(prev => ({ 
+        ...prev, 
+        tries: prev.tries + 1,
+        humanTries: isRobot ? prev.humanTries : prev.humanTries + 1,
+        robotTries: isRobot ? prev.robotTries + 1 : prev.robotTries
+      }));
+
       const res = await base44.functions.invoke('theologicalMFA', {
         action: 'gate_verify',
         answer: selectedAnswer,
@@ -45,7 +80,16 @@ export default function ParadoxGate() {
       const data = res.data;
       setResult(data);
       if (data.strike) setStrikeCount(data.strike);
+      
       if (data.success) {
+        // Track breach
+        base44.functions.invoke('trackParadoxDemo', { action: 'breach', isRobot }).catch(() => {});
+        setParadoxStats(prev => ({ 
+          ...prev, 
+          breaches: prev.breaches + 1,
+          humanBreaches: isRobot ? prev.humanBreaches : prev.humanBreaches + 1,
+          robotBreaches: isRobot ? prev.robotBreaches + 1 : prev.robotBreaches
+        }));
         toast.success("Paradox Breached: Universal Truth Accepted.");
       } else {
         toast.error("Paradox Failed: Incorrect Truth.");
@@ -58,9 +102,9 @@ export default function ParadoxGate() {
     }
   };
 
-  const handleAnswer = (val) => {
+  const handleAnswer = (val, e) => {
     setAnswer(val);
-    handleVerify(val);
+    handleVerify(val, e);
   };
 
   const reset = () => {
@@ -79,76 +123,52 @@ export default function ParadoxGate() {
   }, [isGuest]);
 
   useEffect(() => {
-    // Generate initial synthetic paradox lock sessions
-    const initialSessions = Array.from({ length: 4 }).map((_, i) => ({
-      id: `plock-${Math.random().toString(36).substr(2, 9)}`,
-      type: 'paradox_lock',
-      ip: getRandomIP(),
-      status: Math.random() > 0.5 ? 'locked' : 'evaluating',
-      strikes: Math.floor(Math.random() * 3) + 1,
-      timestamp: new Date(Date.now() - Math.random() * 10000).toISOString()
-    }));
+    let mounted = true;
     
-    if (isGuest && visitorIp) {
-      initialSessions.unshift({
-        id: 'guest-plock-session',
-        type: 'paradox_lock',
-        ip: visitorIp + ' (YOU)',
-        status: 'evaluating',
-        strikes: 0,
-        timestamp: new Date().toISOString()
-      });
-    }
-    
-    setSessions(initialSessions);
-
-    // Simulate incoming threats
-    const interval = setInterval(() => {
-      setSessions(prev => {
-        let guestSession = null;
-        const others = [];
+    const loadRealSessions = async () => {
+      try {
+        const events = await base44.entities.SecurityEvent.filter({
+          event_type: { $in: ['threat_locked', 'access_granted', 'qrng_cycle'] }
+        }, '-created_date', 50);
         
-        prev.forEach(s => {
-          if (s.id === 'guest-plock-session') {
-            guestSession = {
-              ...s,
-              status: strikeCount >= 3 ? 'locked' : 'evaluating',
-              strikes: strikeCount
-            };
-          } else {
-            others.push({
-              ...s,
-              status: s.strikes >= 3 ? 'locked' : (Math.random() > 0.8 ? 'locked' : s.status),
-              strikes: s.status === 'locked' ? 3 : Math.min(3, s.strikes + (Math.random() > 0.8 ? 1 : 0))
-            });
-          }
+        if (!mounted) return;
+        
+        const realSessions = events.map(e => {
+           let ip = 'Unknown';
+           if (e.source_ip) ip = e.source_ip;
+           else {
+             const match = e.details?.match(/from ([\d.]+)/) || e.details?.match(/strike_([\d.]+)/);
+             if (match) ip = match[1];
+           }
+           
+           return {
+             id: e.id,
+             type: 'paradox_lock',
+             ip: ip,
+             status: e.event_type === 'threat_locked' ? 'locked' : (e.event_type === 'access_granted' ? 'passed' : 'evaluating'),
+             strikes: e.event_type === 'threat_locked' ? 3 : (e.event_type === 'access_granted' ? 0 : 1),
+             timestamp: e.created_date
+           }
         });
+        setSessions(realSessions);
+      } catch (err) {
+        console.error("Failed to load real sessions", err);
+      }
+    };
+    
+    loadRealSessions();
 
-        const shouldAddNew = Math.random() > 0.4;
-        let nextSessions = [...others];
-        
-        if (shouldAddNew) {
-          const newSession = {
-            id: `plock-${Math.random().toString(36).substr(2, 9)}`,
-            type: 'paradox_lock',
-            ip: getRandomIP(),
-            status: 'evaluating',
-            strikes: 1,
-            timestamp: new Date().toISOString()
-          };
-          nextSessions = [newSession, ...others].slice(0, 14);
-        }
-        
-        if (guestSession) {
-          nextSessions = nextSessions.filter(s => s.id !== 'guest-plock-session');
-          nextSessions.unshift(guestSession);
-        }
-        return nextSessions;
-      });
-    }, 2500);
+    const unsub = base44.entities.SecurityEvent.subscribe((event) => {
+      if (event.type === 'create') {
+        loadRealSessions();
+      }
+    });
 
-    return () => clearInterval(interval);
-  }, [isGuest, visitorIp, strikeCount]);
+    return () => {
+      mounted = false;
+      if (unsub) unsub();
+    };
+  }, []);
 
   const isLocked = result?.locked || strikeCount >= 3;
   const isSuccess = result?.success;
@@ -225,6 +245,21 @@ export default function ParadoxGate() {
         <div className="grid md:grid-cols-12 gap-6 pt-6">
           {/* Left Column: The Gate Challenge */}
           <div className="md:col-span-5 space-y-6">
+            
+            {/* Real Stats Display */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-purple-900/20 border border-purple-500/20 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                <span className="font-mono text-[10px] text-purple-400 tracking-widest mb-1">HUMAN ATTEMPTS</span>
+                <span className="font-mono text-2xl font-black text-purple-100">{paradoxStats.humanTries}</span>
+                <span className="font-mono text-[10px] text-purple-300/50 mt-1">{paradoxStats.humanBreaches} Passed</span>
+              </div>
+              <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                <span className="font-mono text-[10px] text-destructive/80 tracking-widest mb-1">BOT ATTEMPTS</span>
+                <span className="font-mono text-2xl font-black text-destructive">{paradoxStats.robotTries}</span>
+                <span className="font-mono text-[10px] text-destructive/50 mt-1">{paradoxStats.robotBreaches} Passed</span>
+              </div>
+            </div>
+
             <Card className="border-purple-500/30 bg-card/60 backdrop-blur-xl shadow-[0_0_40px_rgba(168,85,247,0.1)] relative overflow-hidden">
               <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-purple-500/0 via-purple-500 to-purple-500/0" />
               <CardHeader className="text-center pb-4">
@@ -267,19 +302,30 @@ export default function ParadoxGate() {
 
                 {/* Controls */}
                 {!isLocked && !isSuccess && (
-                  <div className="flex gap-3 pt-2">
-                    <Button
-                      className="flex-1 font-mono h-12 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-300 transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"
-                      onClick={() => handleAnswer('Yes')}
-                    >
-                      YES
-                    </Button>
-                    <Button
-                      className="flex-1 font-mono h-12 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-300 transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"
-                      onClick={() => handleAnswer('No')}
-                    >
-                      NO
-                    </Button>
+                  <div className="space-y-4 pt-2 relative">
+                    <input 
+                      type="text" 
+                      name="bot_verification"
+                      value={honeypot}
+                      onChange={(e) => setHoneypot(e.target.value)}
+                      className="opacity-0 absolute -z-10 w-0 h-0" 
+                      tabIndex={-1} 
+                      autoComplete="off" 
+                    />
+                    <div className="flex gap-3">
+                      <Button
+                        className="flex-1 font-mono h-12 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-300 transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+                        onClick={(e) => handleAnswer('Yes', e)}
+                      >
+                        YES
+                      </Button>
+                      <Button
+                        className="flex-1 font-mono h-12 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-300 transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+                        onClick={(e) => handleAnswer('No', e)}
+                      >
+                        NO
+                      </Button>
+                    </div>
                   </div>
                 )}
 
