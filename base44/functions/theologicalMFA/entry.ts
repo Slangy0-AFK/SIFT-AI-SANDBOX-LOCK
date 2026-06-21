@@ -146,7 +146,8 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'get_challenge') {
-      return Response.json({ challenge: AUTH_CHALLENGE });
+      // Trade Secret Protection: Never leak the actual challenge over the API
+      return Response.json({ challenge: "[REDACTED PROPRIETARY INQUIRY]\n\nThis paradox question is protected as a trade secret. Please affirm the universal truth to proceed." });
     }
 
     // ── Hidden Paradox Gate — AI Guardrail (background only, not shown in UI) ──

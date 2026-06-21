@@ -283,7 +283,25 @@ export default function ParadoxGate() {
                       <Loader2 className="w-4 h-4 animate-spin text-purple-500" />
                     </div>
                   ) : (
-                    <p className="font-mono text-sm text-purple-50 leading-relaxed relative z-10">{challenge}</p>
+                    <div className="relative z-10 space-y-3 text-center">
+                      <div className="inline-block bg-purple-950/50 border border-purple-500/30 px-3 py-1 rounded text-purple-300 text-xs font-bold tracking-widest mb-2">
+                        TRADE SECRET PROTECTION ACTIVE
+                      </div>
+                      <p className="font-mono text-sm text-purple-50 leading-relaxed">
+                        {challenge.split('\n').map((line, i) => (
+                          <React.Fragment key={i}>
+                            {line.includes('[REDACTED') ? (
+                              <span className="bg-purple-100 text-purple-900 px-2 py-0.5 rounded-sm font-black mx-1 tracking-widest inline-block transform hover:scale-105 transition-transform">
+                                {line}
+                              </span>
+                            ) : (
+                              line
+                            )}
+                            <br />
+                          </React.Fragment>
+                        ))}
+                      </p>
+                    </div>
                   )}
                 </div>
 
