@@ -8,9 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PublicScanner from '@/components/scanner/PublicScanner';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
-
-// Simulate realistic-looking IPs
-const getRandomIP = () => `${Math.floor(Math.random()*200)+1}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+import { formatChicagoTime } from '@/lib/utils';
 
 export default function MirrorDemo() {
   const [sessions, setSessions] = useState([]);
@@ -29,77 +27,39 @@ export default function MirrorDemo() {
   }, [isGuest]);
 
   useEffect(() => {
-    // Generate initial synthetic sessions
-    const initialSessions = Array.from({ length: 4 }).map((_, i) => ({
-      id: `demo-${Math.random().toString(36).substr(2, 9)}`,
-      type: Math.random() > 0.5 ? 'honeypot' : 'tarpit',
-      ip: getRandomIP(),
-      duration: Math.floor(Math.random() * 300),
-      interactions: Math.floor(Math.random() * 50),
-      timestamp: new Date(Date.now() - Math.random() * 10000).toISOString()
-    }));
+    let mounted = true;
     
-    if (isGuest && visitorIp) {
-      initialSessions.unshift({
-        id: 'guest-tarpit-session',
-        type: 'tarpit',
-        ip: visitorIp + ' (YOU)',
-        duration: 0,
-        interactions: 1,
-        timestamp: new Date().toISOString()
-      });
-    }
+    const loadRealSessions = async () => {
+      try {
+        const hSessions = await base44.entities.HoneypotSession.filter({ status: 'active' }, '-created_date', 50);
+        if (!mounted) return;
+        
+        const realSessions = hSessions.map(s => ({
+          id: s.id,
+          type: s.session_type || 'tarpit',
+          ip: s.source_ip || 'Unknown',
+          duration: s.duration_seconds || 0,
+          interactions: s.interactions || 0,
+          timestamp: s.created_date
+        }));
+        
+        setSessions(realSessions);
+      } catch (err) {
+        console.error("Failed to load real sessions", err);
+      }
+    };
     
-    setSessions(initialSessions);
+    loadRealSessions();
 
-    // Simulate incoming threats faster to feel more live
-    const interval = setInterval(() => {
-      setSessions(prev => {
-        let guestSession = null;
-        const others = [];
-        
-        prev.forEach(s => {
-          if (s.id === 'guest-tarpit-session') {
-            guestSession = {
-              ...s,
-              duration: s.duration + 2, // updating every 2 seconds roughly
-              interactions: s.interactions + (Math.random() > 0.5 ? 1 : 0)
-            };
-          } else {
-            others.push({
-              ...s,
-              duration: s.duration + 2,
-              interactions: s.interactions + (Math.random() > 0.7 ? 1 : 0)
-            });
-          }
-        });
+    const unsub = base44.entities.HoneypotSession.subscribe(() => {
+      loadRealSessions();
+    });
 
-        const shouldAddNew = Math.random() > 0.4;
-        let nextSessions = [...others];
-        
-        if (shouldAddNew) {
-          const newSession = {
-            id: `demo-${Math.random().toString(36).substr(2, 9)}`,
-            type: Math.random() > 0.5 ? 'honeypot' : 'tarpit',
-            ip: getRandomIP(),
-            duration: 0,
-            interactions: 1,
-            timestamp: new Date().toISOString()
-          };
-          nextSessions = [newSession, ...others].slice(0, 14);
-        }
-        
-        if (guestSession) {
-          // Keep guest session at the top
-          nextSessions = nextSessions.filter(s => s.id !== 'guest-tarpit-session');
-          nextSessions.unshift(guestSession);
-        }
-        return nextSessions;
-      });
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [isGuest, visitorIp]);
+    return () => {
+      mounted = false;
+      if (unsub) unsub();
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -227,7 +187,7 @@ export default function MirrorDemo() {
                 <Activity className="w-4 h-4 text-primary" /> LIVE INTERCEPTIONS
               </CardTitle>
               <CardDescription className="text-xs mt-1">
-                Real-time simulated telemetry of trapped anomalous sessions.
+                Real-time live telemetry of trapped anomalous sessions.
               </CardDescription>
             </div>
             <Badge variant="secondary" className="text-[10px]">
@@ -236,6 +196,11 @@ export default function MirrorDemo() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-border max-h-[500px] overflow-y-auto">
+              {sessions.length === 0 && (
+                <div className="p-8 text-center text-muted-foreground text-xs">
+                  No active interceptions at this time. Systems monitoring...
+                </div>
+              )}
               <AnimatePresence initial={false}>
                 {sessions.map((session) => (
                   <motion.div
@@ -284,8 +249,8 @@ export default function MirrorDemo() {
                           style={{ width: `${Math.min(100, (session.interactions / 50) * 100)}%` }} 
                         />
                       </div>
-                      <span className="text-[10px] font-medium text-muted-foreground w-16 text-right">
-                        {new Date(session.timestamp).toLocaleTimeString()}
+                      <span className="text-[10px] font-medium text-muted-foreground w-20 text-right">
+                        {session.timestamp ? formatChicagoTime(session.timestamp) : ''}
                       </span>
                     </div>
                   </motion.div>
