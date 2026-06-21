@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PublicScanner from '@/components/scanner/PublicScanner';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
-import { formatChicagoTime } from '@/lib/utils';
+import { formatLocalTime } from '@/lib/utils';
 
 export default function MirrorDemo() {
   const [sessions, setSessions] = useState([]);
@@ -249,8 +249,8 @@ export default function MirrorDemo() {
                           style={{ width: `${Math.min(100, (session.interactions / 50) * 100)}%` }} 
                         />
                       </div>
-                      <span className="text-[10px] font-medium text-muted-foreground w-20 text-right">
-                        {session.timestamp ? formatChicagoTime(session.timestamp) : ''}
+                      <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap text-right">
+                        {session.timestamp ? formatLocalTime(session.timestamp) : ''}
                       </span>
                     </div>
                   </motion.div>

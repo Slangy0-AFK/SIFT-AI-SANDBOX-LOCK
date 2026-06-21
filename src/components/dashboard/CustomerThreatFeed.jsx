@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Bug, AlertTriangle, Cpu, Mail, ShieldAlert, ChevronDown } from 'lucide-react';
-import { formatChicagoTime } from '@/lib/utils';
+import { formatLocalTime, formatChicagoTime } from '@/lib/utils';
 
 const typeMeta = {
   threat: { label: 'Threat', icon: AlertTriangle, color: 'text-accent bg-accent/10 border-accent/20' },
@@ -243,7 +243,7 @@ export default function CustomerThreatFeed({ threats = [], events = [], anomalie
                     {eventText.meta && <p className="font-mono text-[8px] text-muted-foreground mt-1 truncate">{eventText.meta}</p>}
                   </div>
                   <span className="font-mono text-[9px] text-muted-foreground whitespace-nowrap">
-                    {formatChicagoTime(getTimestamp(item))}
+                    {formatLocalTime(getTimestamp(item))}
                   </span>
                 </motion.div>
               );
