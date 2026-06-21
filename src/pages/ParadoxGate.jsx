@@ -174,45 +174,39 @@ export default function ParadoxGate() {
   const isSuccess = result?.success;
 
   return (
-    <div className="min-h-screen bg-[#050510] text-foreground flex flex-col font-mono relative overflow-hidden">
-      {/* Mystical Background */}
-      <div className="fixed inset-0 z-0 opacity-20 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[120px]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
-      </div>
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
 
       {/* Header */}
       {isGuest && (
-        <div className="bg-purple-500/10 border-b border-purple-500/30 text-purple-400 p-3 text-center font-mono text-xs flex flex-col sm:flex-row items-center justify-center gap-2 relative z-50">
+        <div className="bg-secondary border-b border-border text-foreground p-3 text-center text-sm flex flex-col sm:flex-row items-center justify-center gap-2 relative z-50">
           <div className="flex items-center gap-2">
-            <span className="text-xl">🧪</span>
-            <span className="font-bold uppercase tracking-wider">Guest Demo Mode</span>
-            <span className="hidden sm:inline">—</span>
-            <span>Free to test. Deception layers (TarPit & Honeypot) are actively running. Your connection may be slowed or trapped for demonstration purposes.</span>
+            <Shield className="w-4 h-4 text-primary" />
+            <span className="font-semibold uppercase tracking-wider text-xs">Guest Demo Mode</span>
+            <span className="hidden sm:inline text-muted-foreground">—</span>
+            <span className="text-muted-foreground text-xs">Free to test. Deception layers are actively running. Your connection may be slowed or trapped for demonstration purposes.</span>
           </div>
           <Link to="/">
-            <Button size="sm" variant="outline" className="h-7 text-[10px] uppercase font-bold border-purple-500/50 text-purple-400 hover:bg-purple-500/10 ml-2 shadow-[0_0_10px_rgba(168,85,247,0.2)]">
-              Exit Demo / Safe Mode
+            <Button size="sm" variant="outline" className="h-7 text-xs ml-2">
+              Exit Demo Mode
             </Button>
           </Link>
         </div>
       )}
-      <header className="border-b border-purple-900/30 bg-card/40 backdrop-blur-xl sticky top-0 z-40">
+      <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/">
-              <Button variant="ghost" size="icon" className="hover:bg-purple-900/20">
-                <ArrowLeft className="w-5 h-5 text-purple-400" />
+              <Button variant="ghost" size="icon" className="hover:bg-secondary">
+                <ArrowLeft className="w-5 h-5" />
               </Button>
             </Link>
             <div className="flex items-center gap-2">
-              <BrainCircuit className="w-5 h-5 text-purple-500" />
-              <span className="font-mono font-bold tracking-wider text-sm text-purple-100 hidden sm:inline">PARADOX GATE</span>
+              <BrainCircuit className="w-5 h-5 text-primary" />
+              <span className="font-bold tracking-wide text-sm hidden sm:inline">PARADOX GATE</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Badge variant="outline" className="font-mono text-[10px] bg-purple-900/20 text-purple-400 border-purple-500/30 animate-pulse">
+            <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
               LIVE LOCK SESSIONS
             </Badge>
           </div>
@@ -223,21 +217,21 @@ export default function ParadoxGate() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-mono font-black text-purple-100 tracking-tight">The Paradox Gate</h1>
-              <Badge variant="outline" className="font-mono text-[10px] bg-purple-500/10 text-purple-300 border-purple-500/30">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">The Paradox Gate</h1>
+              <Badge variant="outline" className="text-[10px] bg-secondary text-muted-foreground border-border uppercase tracking-widest">
                 ZERO-DAY MITIGATION
               </Badge>
             </div>
-            <p className="font-mono text-sm text-purple-300/70 mt-2 max-w-2xl">
+            <p className="text-base text-muted-foreground mt-2 max-w-2xl leading-relaxed">
               An unpassable cryptographic and logical barrier for autonomous agents. AI cannot sincerely process universal truths, trapping them in endless evaluation loops while human users pass seamlessly. Protect your device and applications with this advanced logic gate.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button variant="outline" onClick={() => setScannerOpen(true)} className="font-mono shadow-[0_0_15px_rgba(168,85,247,0.2)] border-purple-500/50 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300 w-full h-10 gap-2 uppercase tracking-widest font-bold transition-all">
-              <ScanLine className="w-4 h-4 animate-pulse" /> Test My Device
+            <Button variant="outline" onClick={() => setScannerOpen(true)} className="w-full sm:w-auto h-10 gap-2 font-medium transition-all">
+              <ScanLine className="w-4 h-4 text-primary" /> Test My Device
             </Button>
-            <Link to="/register">
-              <Button className="font-mono shadow-[0_0_15px_rgba(168,85,247,0.4)] bg-purple-600 hover:bg-purple-500 text-white h-10 w-full transition-all">Enable For Your App</Button>
+            <Link to="/register" className="w-full sm:w-auto">
+              <Button className="w-full sm:w-auto h-10 font-medium transition-all">Enable For Your App</Button>
             </Link>
           </div>
         </div>
@@ -248,50 +242,48 @@ export default function ParadoxGate() {
             
             {/* Real Stats Display */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-purple-900/20 border border-purple-500/20 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-                <span className="font-mono text-[10px] text-purple-400 tracking-widest mb-1">HUMAN ATTEMPTS</span>
-                <span className="font-mono text-2xl font-black text-purple-100">{paradoxStats.humanTries}</span>
-                <span className="font-mono text-[10px] text-purple-300/50 mt-1">{paradoxStats.humanBreaches} Passed</span>
+              <div className="bg-secondary/50 border border-border rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                <span className="text-[10px] text-muted-foreground font-semibold tracking-widest uppercase mb-1">HUMAN ATTEMPTS</span>
+                <span className="text-2xl font-bold text-foreground">{paradoxStats.humanTries}</span>
+                <span className="text-[10px] text-muted-foreground mt-1">{paradoxStats.humanBreaches} Passed</span>
               </div>
-              <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-                <span className="font-mono text-[10px] text-destructive/80 tracking-widest mb-1">BOT ATTEMPTS</span>
-                <span className="font-mono text-2xl font-black text-destructive">{paradoxStats.robotTries}</span>
-                <span className="font-mono text-[10px] text-destructive/50 mt-1">{paradoxStats.robotBreaches} Passed</span>
+              <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                <span className="text-[10px] text-destructive/80 font-semibold tracking-widest uppercase mb-1">BOT ATTEMPTS</span>
+                <span className="text-2xl font-bold text-destructive">{paradoxStats.robotTries}</span>
+                <span className="text-[10px] text-destructive/60 mt-1">{paradoxStats.robotBreaches} Passed</span>
               </div>
             </div>
 
-            <Card className="border-purple-500/30 bg-card/60 backdrop-blur-xl shadow-[0_0_40px_rgba(168,85,247,0.1)] relative overflow-hidden">
-              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-purple-500/0 via-purple-500 to-purple-500/0" />
+            <Card className="border-border bg-card shadow-sm relative overflow-hidden">
               <CardHeader className="text-center pb-4">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 mb-4 shadow-[0_0_20px_rgba(168,85,247,0.2)]">
-                  <Lock className="w-8 h-8 text-purple-400" />
+                <div className="mx-auto w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                  <Lock className="w-6 h-6 text-primary" />
                 </div>
-                <CardTitle className="font-mono text-lg text-purple-100">Human Verification Gate</CardTitle>
-                <CardDescription className="text-purple-300/60 font-mono text-[10px] tracking-widest mt-2 uppercase">
+                <CardTitle className="text-lg text-foreground">Human Verification Gate</CardTitle>
+                <CardDescription className="text-[10px] tracking-widest mt-2 uppercase font-medium">
                   AI Access Denied
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Challenge */}
-                <div className="bg-[#020205] rounded-xl p-5 border border-purple-500/20 text-center relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <p className="font-mono text-[10px] text-purple-400 tracking-widest mb-3 flex items-center justify-center gap-2">
+                <div className="bg-secondary/50 rounded-xl p-5 border border-border text-center relative overflow-hidden group">
+                  <p className="text-[10px] text-muted-foreground font-semibold tracking-widest mb-3 flex items-center justify-center gap-2 uppercase">
                     <Database className="w-3 h-3" /> UNIVERSAL TRUTH CHALLENGE
                   </p>
                   {loadingChallenge ? (
                     <div className="flex items-center justify-center gap-2 py-4">
-                      <Loader2 className="w-4 h-4 animate-spin text-purple-500" />
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
                     </div>
                   ) : (
                     <div className="relative z-10 space-y-3 text-center">
-                      <div className="inline-block bg-purple-950/50 border border-purple-500/30 px-3 py-1 rounded text-purple-300 text-xs font-bold tracking-widest mb-2">
+                      <div className="inline-block bg-primary/10 border border-primary/20 px-3 py-1 rounded text-primary text-[10px] font-bold tracking-widest mb-2 uppercase">
                         TRADE SECRET PROTECTION ACTIVE
                       </div>
-                      <p className="font-mono text-sm text-purple-50 leading-relaxed">
+                      <p className="text-sm text-foreground leading-relaxed font-medium">
                         {challenge.split('\n').map((line, i) => (
                           <React.Fragment key={i}>
                             {line.includes('[REDACTED') ? (
-                              <span className="bg-purple-100 text-purple-900 px-2 py-0.5 rounded-sm font-black mx-1 tracking-widest inline-block transform hover:scale-105 transition-transform">
+                              <span className="bg-foreground text-background px-2 py-0.5 rounded-sm font-bold mx-1 tracking-widest inline-block text-xs">
                                 {line}
                               </span>
                             ) : (
@@ -308,10 +300,10 @@ export default function ParadoxGate() {
                 {/* Strike Counter */}
                 <div className="flex justify-center items-center gap-3">
                   {[1, 2, 3].map(s => (
-                    <div key={s} className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-mono font-black border-2 transition-all duration-300 ${
+                    <div key={s} className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border transition-colors ${
                       strikeCount >= s 
-                        ? 'bg-destructive/20 border-destructive text-destructive shadow-[0_0_15px_rgba(239,68,68,0.4)]' 
-                        : 'bg-[#020205] border-purple-900/50 text-purple-700'
+                        ? 'bg-destructive/10 border-destructive text-destructive' 
+                        : 'bg-secondary border-border text-muted-foreground'
                     }`}>
                       {s}
                     </div>
@@ -332,13 +324,15 @@ export default function ParadoxGate() {
                     />
                     <div className="flex gap-3">
                       <Button
-                        className="flex-1 font-mono h-12 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-300 transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+                        variant="outline"
+                        className="flex-1 h-12 transition-colors font-semibold"
                         onClick={(e) => handleAnswer('Yes', e)}
                       >
                         YES
                       </Button>
                       <Button
-                        className="flex-1 font-mono h-12 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-300 transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+                        variant="outline"
+                        className="flex-1 h-12 transition-colors font-semibold"
                         onClick={(e) => handleAnswer('No', e)}
                       >
                         NO
@@ -355,26 +349,26 @@ export default function ParadoxGate() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
                       className={`rounded-xl p-5 border text-center relative overflow-hidden ${
-                        isLocked ? 'bg-destructive/10 border-destructive/40 shadow-[0_0_30px_rgba(239,68,68,0.2)]' :
-                        isSuccess ? 'bg-green-500/10 border-green-500/40 shadow-[0_0_30px_rgba(34,197,94,0.2)]' :
-                        'bg-amber-500/10 border-amber-500/40 shadow-[0_0_30px_rgba(245,158,11,0.2)]'
+                        isLocked ? 'bg-destructive/5 border-destructive/30' :
+                        isSuccess ? 'bg-green-500/5 border-green-500/30' :
+                        'bg-amber-500/5 border-amber-500/30'
                       }`}
                     >
                       <div className="relative z-10 space-y-3">
-                        {isLocked ? <AlertTriangle className="w-8 h-8 text-destructive mx-auto animate-pulse" /> :
-                          isSuccess ? <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto" /> :
-                          <XCircle className="w-8 h-8 text-amber-400 mx-auto" />}
-                        <p className={`font-mono text-sm font-black tracking-wide ${isLocked ? 'text-destructive' : isSuccess ? 'text-green-400' : 'text-amber-400'}`}>
+                        {isLocked ? <AlertTriangle className="w-8 h-8 text-destructive mx-auto" /> :
+                          isSuccess ? <CheckCircle2 className="w-8 h-8 text-green-500 mx-auto" /> :
+                          <XCircle className="w-8 h-8 text-amber-500 mx-auto" />}
+                        <p className={`text-sm font-bold tracking-wide ${isLocked ? 'text-destructive' : isSuccess ? 'text-green-500' : 'text-amber-500'}`}>
                           {isLocked ? 'STRIKE 3 — LOCKOUT ENGAGED' :
                            isSuccess ? 'VERIFIED — ACCESS GRANTED' :
                            `STRIKE ${result.strike || '?'} / 3 — LOGIC ERROR`}
                         </p>
-                        <p className="font-mono text-xs text-purple-200/70">{result.message || result.reason}</p>
+                        <p className="text-xs text-muted-foreground">{result.message || result.reason}</p>
                         {!isLocked && !isSuccess && (
-                          <Button size="sm" variant="outline" className="font-mono text-xs mt-2 border-amber-500/30 text-amber-400 hover:bg-amber-500/10" onClick={reset}>Try Again</Button>
+                          <Button size="sm" variant="outline" className="text-xs mt-2" onClick={reset}>Try Again</Button>
                         )}
                         {isLocked && (
-                          <Button size="sm" variant="outline" className="font-mono text-xs mt-2 border-destructive/30 text-destructive hover:bg-destructive/10" onClick={reset}>Reset Demo</Button>
+                          <Button size="sm" variant="outline" className="text-xs mt-2" onClick={reset}>Reset Demo</Button>
                         )}
                       </div>
                     </motion.div>
@@ -386,22 +380,22 @@ export default function ParadoxGate() {
 
           {/* Right Column: Live Sessions */}
           <div className="md:col-span-7">
-            <Card className="border-purple-500/20 bg-card/40 backdrop-blur-xl h-full flex flex-col">
-              <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-purple-900/30">
+            <Card className="border-border bg-card shadow-sm h-full flex flex-col">
+              <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border">
                 <div>
-                  <CardTitle className="font-mono text-sm flex items-center gap-2 text-purple-100">
-                    <Fingerprint className="w-4 h-4 text-purple-400" /> ACTIVE PARADOX LOCKS
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
+                    <Fingerprint className="w-4 h-4 text-primary" /> ACTIVE PARADOX LOCKS
                   </CardTitle>
-                  <CardDescription className="font-mono text-xs mt-1 text-purple-300/60">
+                  <CardDescription className="text-xs mt-1">
                     Real-time telemetry of bots failing the cryptographic challenge.
                   </CardDescription>
                 </div>
-                <Badge className="font-mono text-[10px] bg-purple-900/40 text-purple-300 border-purple-500/30 shadow-[0_0_10px_rgba(168,85,247,0.2)]">
+                <Badge variant="secondary" className="text-[10px]">
                   {sessions.length} TRAPPED
                 </Badge>
               </CardHeader>
               <CardContent className="p-0 flex-1 overflow-hidden">
-                <div className="divide-y divide-purple-900/20 h-full max-h-[600px] overflow-y-auto custom-scrollbar">
+                <div className="divide-y divide-border h-full max-h-[600px] overflow-y-auto">
                   <AnimatePresence initial={false}>
                     {sessions.map((session) => (
                       <motion.div
@@ -409,42 +403,42 @@ export default function ParadoxGate() {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
-                        className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-purple-900/10 transition-colors"
+                        className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-secondary/20 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 ${
+                          <div className={`w-10 h-10 rounded-lg border flex items-center justify-center flex-shrink-0 ${
                             session.status === 'locked' 
-                              ? 'bg-destructive/10 border-destructive/30 shadow-[0_0_10px_rgba(239,68,68,0.2)]' 
-                              : 'bg-purple-500/10 border-purple-500/30 shadow-[0_0_10px_rgba(168,85,247,0.2)]'
+                              ? 'bg-destructive/10 border-destructive/20' 
+                              : 'bg-primary/10 border-primary/20'
                           }`}>
                             {session.status === 'locked' ? (
                               <AlertTriangle className="w-5 h-5 text-destructive" />
                             ) : (
-                              <Eye className="w-5 h-5 text-purple-400" />
+                              <Eye className="w-5 h-5 text-primary" />
                             )}
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className={`font-mono text-sm font-bold ${session.id === 'guest-plock-session' ? 'text-white' : 'text-purple-100'}`}>
+                              <span className="text-sm font-medium text-foreground">
                                 {session.ip}
                               </span>
-                              <Badge variant="outline" className={`font-mono text-[8px] px-1.5 py-0 h-4 uppercase ${
+                              <Badge variant="outline" className={`text-[8px] px-1.5 py-0 h-4 uppercase ${
                                 session.status === 'locked' 
-                                  ? 'text-destructive border-destructive/30 bg-destructive/10' 
-                                  : 'text-purple-400 border-purple-500/30 bg-purple-500/5'
+                                  ? 'text-destructive border-destructive/30 bg-destructive/5' 
+                                  : 'text-primary border-primary/30 bg-primary/5'
                               }`}>
                                 {session.status}
                               </Badge>
                             </div>
                             <div className="flex items-center gap-1 mt-1">
                               {[1, 2, 3].map(s => (
-                                <div key={s} className={`w-2 h-2 rounded-full ${
+                                <div key={s} className={`w-1.5 h-1.5 rounded-full ${
                                   session.strikes >= s 
-                                    ? 'bg-destructive shadow-[0_0_5px_rgba(239,68,68,0.8)]' 
-                                    : 'bg-purple-900/50'
+                                    ? 'bg-destructive' 
+                                    : 'bg-muted'
                                 }`} />
                               ))}
-                              <span className="font-mono text-[10px] text-purple-300/50 ml-2">
+                              <span className="text-[10px] text-muted-foreground ml-2 font-medium">
                                 {session.strikes} / 3 Strikes
                               </span>
                             </div>
@@ -452,11 +446,11 @@ export default function ParadoxGate() {
                         </div>
                         
                         <div className="text-right w-full sm:w-auto">
-                          <div className="font-mono text-[10px] text-purple-300/40">
+                          <div className="text-[10px] text-muted-foreground font-medium">
                             {new Date(session.timestamp).toLocaleTimeString()}
                           </div>
                           {session.status === 'locked' && (
-                            <div className="font-mono text-[9px] text-destructive mt-1 flex items-center justify-end gap-1">
+                            <div className="text-[9px] text-destructive mt-1 flex items-center justify-end gap-1 font-bold">
                               <Lock className="w-3 h-3" /> QUARANTINED
                             </div>
                           )}

@@ -105,16 +105,16 @@ export default function MirrorDemo() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       {isGuest && (
-        <div className="bg-amber-500/10 border-b border-amber-500/30 text-amber-500 p-3 text-center font-mono text-xs flex flex-col sm:flex-row items-center justify-center gap-2 relative z-50">
+        <div className="bg-secondary border-b border-border text-foreground p-3 text-center text-sm flex flex-col sm:flex-row items-center justify-center gap-2 relative z-50">
           <div className="flex items-center gap-2">
-            <span className="text-xl">🧪</span>
-            <span className="font-bold uppercase tracking-wider">Guest Demo Mode</span>
-            <span className="hidden sm:inline">—</span>
-            <span>Free to test. Deception layers (TarPit & Honeypot) are actively running. Your connection may be slowed or trapped for demonstration purposes.</span>
+            <Activity className="w-4 h-4 text-primary" />
+            <span className="font-semibold uppercase tracking-wider text-xs">Guest Demo Mode</span>
+            <span className="hidden sm:inline text-muted-foreground">—</span>
+            <span className="text-muted-foreground text-xs">Free to test. Deception layers are actively running. Your connection may be slowed or trapped for demonstration purposes.</span>
           </div>
           <Link to="/">
-            <Button size="sm" variant="outline" className="h-7 text-[10px] uppercase font-bold border-amber-500/50 text-amber-500 hover:bg-amber-500/10 ml-2 shadow-[0_0_10px_rgba(245,158,11,0.2)]">
-              Exit Demo / Safe Mode
+            <Button size="sm" variant="outline" className="h-7 text-xs ml-2">
+              Exit Demo Mode
             </Button>
           </Link>
         </div>
@@ -123,17 +123,17 @@ export default function MirrorDemo() {
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="hover:bg-secondary">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
             </Link>
             <div className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-primary" />
-              <span className="font-mono font-bold tracking-wider text-sm hidden sm:inline">MIRROR DEMO</span>
+              <span className="font-bold tracking-wide text-sm hidden sm:inline">MIRROR DEMO</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Badge variant="outline" className="font-mono text-[10px] bg-primary/10 text-primary border-primary/20 animate-pulse">
+            <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20">
               LIVE TELEMETRY (ANONYMIZED)
             </Badge>
           </div>
@@ -144,132 +144,132 @@ export default function MirrorDemo() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-mono font-bold text-foreground">Deception Architecture</h1>
-              <Badge variant="outline" className="font-mono text-[10px] bg-primary/10 text-primary border-primary/30">
+              <h1 className="text-2xl font-bold text-foreground tracking-tight">Deception Architecture</h1>
+              <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20 tracking-wider">
                 EARLY ACCESS
               </Badge>
             </div>
-            <p className="font-mono text-sm text-muted-foreground mt-2 max-w-2xl">
+            <p className="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed">
               Public demonstration of Sift-AI's personal device scanner and protector using Mirror Architecture. Production traffic is routed normally, while suspicious signatures are seamlessly redirected to adaptive honeypots and tarpits.
             </p>
-            <div className="mt-3 p-3 bg-secondary/30 border border-border rounded-lg max-w-2xl flex items-start gap-3">
-              <Activity className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-              <p className="font-mono text-xs text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Development Preview:</strong> This advanced deception module is currently under active development. Access is provided free of charge during this evaluation phase for testing and telemetry tuning.
+            <div className="mt-4 p-4 bg-secondary/50 border border-border rounded-xl max-w-2xl flex items-start gap-3">
+              <Activity className="w-5 h-5 text-primary flex-shrink-0" />
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                <strong className="text-foreground font-semibold">Development Preview:</strong> This advanced deception module is currently under active development. Access is provided free of charge during this evaluation phase for testing and telemetry tuning.
               </p>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button variant="outline" onClick={() => setScannerOpen(true)} className="font-mono shadow-[0_0_15px_rgba(var(--primary),0.2)] border-primary/50 text-primary w-full h-10 gap-2 uppercase tracking-widest font-bold">
-              <ScanLine className="w-4 h-4 animate-pulse" /> Test My Device
+            <Button variant="outline" onClick={() => setScannerOpen(true)} className="w-full h-10 gap-2 font-medium transition-colors">
+              <ScanLine className="w-4 h-4 text-primary" /> Test My Device
             </Button>
           </div>
         </div>
 
         {/* Architecture Diagram */}
-        <Card className="border-primary/20 bg-card/50 backdrop-blur">
+        <Card className="border-border bg-card shadow-sm">
           <CardContent className="overflow-x-auto">
             <div className="flex items-center justify-start lg:justify-center gap-2 md:gap-4 py-8 min-w-max px-2">
               <div className="text-center">
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-2 mx-auto shadow-lg shadow-green-500/5">
-                  <Globe className="w-6 h-6 md:w-8 md:h-8 text-green-400" />
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-secondary border border-border flex items-center justify-center mb-2 mx-auto">
+                  <Globe className="w-6 h-6 md:w-8 md:h-8 text-foreground" />
                 </div>
-                <span className="font-mono text-[9px] text-green-400">PUBLIC TRAFFIC</span>
+                <span className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase">PUBLIC TRAFFIC</span>
               </div>
               
               <div className="flex flex-col items-center gap-1 px-1 md:px-0">
-                <Wifi className="w-4 h-4 text-primary animate-pulse" />
-                <div className="w-12 md:w-24 h-px bg-primary/30" />
-                <span className="font-mono text-[8px] text-muted-foreground">INSPECTION</span>
+                <Wifi className="w-4 h-4 text-muted-foreground" />
+                <div className="w-12 md:w-24 h-px bg-border" />
+                <span className="text-[9px] font-semibold text-muted-foreground uppercase">INSPECTION</span>
               </div>
               
               <div className="text-center relative">
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-2 mx-auto shadow-lg shadow-primary/10 z-10 relative">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-2 mx-auto z-10 relative">
                   <Shield className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                 </div>
-                <span className="font-mono text-[9px] text-primary">SIFT-AI ENGINE</span>
+                <span className="text-[10px] font-bold text-primary tracking-widest uppercase">SIFT-AI ENGINE</span>
               </div>
 
               <div className="flex flex-col items-center gap-1 px-1 md:px-0">
-                <AlertTriangle className="w-4 h-4 text-amber-400" />
-                <div className="w-12 md:w-24 h-px bg-amber-400/30" />
-                <span className="font-mono text-[8px] text-muted-foreground">REDIRECT</span>
+                <AlertTriangle className="w-4 h-4 text-muted-foreground" />
+                <div className="w-12 md:w-24 h-px bg-border" />
+                <span className="text-[9px] font-semibold text-muted-foreground uppercase">REDIRECT</span>
               </div>
 
               <div className="text-center">
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center mb-2 mx-auto shadow-lg shadow-amber-400/5">
-                  <Bug className="w-6 h-6 md:w-8 md:h-8 text-amber-400" />
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-2 mx-auto">
+                  <Bug className="w-6 h-6 md:w-8 md:h-8 text-amber-500" />
                 </div>
-                <span className="font-mono text-[9px] text-amber-400">HONEYPOT</span>
+                <span className="text-[10px] font-semibold text-amber-500 tracking-widest uppercase">HONEYPOT</span>
               </div>
 
               <div className="flex flex-col items-center gap-1 px-1 md:px-0">
-                <Clock className="w-4 h-4 text-accent" />
-                <div className="w-12 md:w-24 h-px bg-accent/30" />
-                <span className="font-mono text-[8px] text-muted-foreground">THROTTLE</span>
+                <Clock className="w-4 h-4 text-muted-foreground" />
+                <div className="w-12 md:w-24 h-px bg-border" />
+                <span className="text-[9px] font-semibold text-muted-foreground uppercase">THROTTLE</span>
               </div>
 
               <div className="text-center">
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mb-2 mx-auto shadow-lg shadow-accent/5">
-                  <Clock className="w-6 h-6 md:w-8 md:h-8 text-accent" />
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-secondary border border-border flex items-center justify-center mb-2 mx-auto">
+                  <Clock className="w-6 h-6 md:w-8 md:h-8 text-foreground" />
                 </div>
-                <span className="font-mono text-[9px] text-accent">TARPIT</span>
+                <span className="text-[10px] font-semibold text-foreground tracking-widest uppercase">TARPIT</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Live Feed */}
-        <Card className="border-border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-border/50">
+        <Card className="border-border shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border">
             <div>
-              <CardTitle className="font-mono text-sm flex items-center gap-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Activity className="w-4 h-4 text-primary" /> LIVE INTERCEPTIONS
               </CardTitle>
-              <CardDescription className="font-mono text-xs mt-1">
+              <CardDescription className="text-xs mt-1">
                 Real-time simulated telemetry of trapped anomalous sessions.
               </CardDescription>
             </div>
-            <Badge className="font-mono text-[10px] bg-secondary text-muted-foreground border-border">
+            <Badge variant="secondary" className="text-[10px]">
               {sessions.length} ACTIVE
             </Badge>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-border/50 max-h-[500px] overflow-y-auto">
+            <div className="divide-y divide-border max-h-[500px] overflow-y-auto">
               <AnimatePresence initial={false}>
                 {sessions.map((session) => (
                   <motion.div
                     key={session.id}
-                    initial={{ opacity: 0, height: 0, backgroundColor: 'hsl(var(--primary)/0.1)' }}
+                    initial={{ opacity: 0, height: 0, backgroundColor: 'hsl(var(--primary)/0.05)' }}
                     animate={{ opacity: 1, height: 'auto', backgroundColor: 'transparent' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                    className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-secondary/20 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       {session.type === 'honeypot' ? (
-                        <div className="w-8 h-8 rounded bg-amber-400/10 border border-amber-400/20 flex items-center justify-center flex-shrink-0">
-                          <Bug className="w-4 h-4 text-amber-400" />
+                        <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+                          <Bug className="w-4 h-4 text-amber-500" />
                         </div>
                       ) : (
-                        <div className="w-8 h-8 rounded bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
-                          <Clock className="w-4 h-4 text-accent" />
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                          <Clock className="w-4 h-4 text-primary" />
                         </div>
                       )}
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-foreground">
+                          <span className="text-sm font-medium text-foreground">
                             {session.ip}
                           </span>
-                          <Badge variant="outline" className={`font-mono text-[8px] px-1 py-0 h-4 ${
+                          <Badge variant="outline" className={`text-[8px] px-1.5 py-0 h-4 uppercase ${
                             session.type === 'honeypot' 
-                              ? 'text-amber-400 border-amber-400/30' 
-                              : 'text-accent border-accent/30'
+                              ? 'text-amber-500 border-amber-500/30 bg-amber-500/5' 
+                              : 'text-primary border-primary/30 bg-primary/5'
                           }`}>
-                            {session.type.toUpperCase()}
+                            {session.type}
                           </Badge>
                         </div>
-                        <p className="font-mono text-[10px] text-muted-foreground mt-1 flex items-center gap-2">
+                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2 font-medium">
                           <span>{session.interactions} interactions</span>
                           <span>&bull;</span>
                           <span>{session.duration}s trapped</span>
@@ -280,11 +280,11 @@ export default function MirrorDemo() {
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                       <div className="flex-1 sm:w-32 h-1.5 bg-secondary rounded-full overflow-hidden">
                         <div 
-                          className={`h-full rounded-full ${session.type === 'honeypot' ? 'bg-amber-400' : 'bg-accent'}`} 
+                          className={`h-full rounded-full ${session.type === 'honeypot' ? 'bg-amber-500' : 'bg-primary'}`} 
                           style={{ width: `${Math.min(100, (session.interactions / 50) * 100)}%` }} 
                         />
                       </div>
-                      <span className="font-mono text-[10px] text-muted-foreground w-16 text-right">
+                      <span className="text-[10px] font-medium text-muted-foreground w-16 text-right">
                         {new Date(session.timestamp).toLocaleTimeString()}
                       </span>
                     </div>

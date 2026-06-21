@@ -75,18 +75,18 @@ export default function PublicScanner() {
 
   return (
     <div className="w-full">
-      <CardHeader className="pb-3 border-b border-border/50">
+      <CardHeader className="pb-4 border-b border-border">
         <div className="flex items-center justify-between">
-          <CardTitle className="font-mono text-sm tracking-wider flex items-center gap-2">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <Terminal className="w-4 h-4 text-primary" /> TEST MY DEVICE
           </CardTitle>
         </div>
-        <p className="font-mono text-[10px] text-muted-foreground tracking-wide mt-1">
+        <p className="text-xs text-muted-foreground mt-2">
           Run a quick, client-side simulation of the Sift-AI detection engine.
         </p>
       </CardHeader>
-      <CardContent className="pt-4 space-y-4">
-        <div className="space-y-2">
+      <CardContent className="pt-6 space-y-4">
+        <div className="space-y-3">
           {SCAN_STEPS.map((step, i) => {
             const done = stepIndex > i;
             const active = stepIndex === i && scanning;
@@ -94,26 +94,26 @@ export default function PublicScanner() {
             return (
               <motion.div
                 key={step.id}
-                animate={{ opacity: pending && stepIndex >= 0 ? 0.3 : 1 }}
+                animate={{ opacity: pending && stepIndex >= 0 ? 0.4 : 1 }}
                 className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
-                  active ? 'bg-primary/10 border-primary/30' : 
+                  active ? 'bg-primary/5 border-primary/20' : 
                   done ? 'bg-green-500/5 border-green-500/20' : 
                   'bg-secondary/30 border-border/50'
                 }`}
               >
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
                   active ? 'bg-primary animate-pulse' : 
-                  done ? 'bg-green-400' : 'bg-muted-foreground/30'
+                  done ? 'bg-green-500' : 'bg-muted-foreground/30'
                 }`} />
                 <div className="flex-1 min-w-0">
-                  <span className={`font-mono text-xs font-semibold ${
+                  <span className={`text-sm font-medium ${
                     active ? 'text-primary' : 
-                    done ? 'text-green-400' : 'text-muted-foreground'
+                    done ? 'text-green-500' : 'text-muted-foreground'
                   }`}>{step.label}</span>
-                  {active && <p className="font-mono text-[10px] text-muted-foreground mt-0.5">{step.detail}</p>}
+                  {active && <p className="text-xs text-muted-foreground mt-0.5">{step.detail}</p>}
                 </div>
                 {active && <Loader2 className="w-4 h-4 text-primary animate-spin flex-shrink-0" />}
-                {done && <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />}
+                {done && <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />}
               </motion.div>
             );
           })}
@@ -124,23 +124,23 @@ export default function PublicScanner() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`mt-4 p-4 rounded-xl border ${
+              className={`mt-6 p-4 rounded-xl border ${
                 results.clean 
-                  ? 'bg-green-500/10 border-green-500/30' 
-                  : 'bg-amber-500/10 border-amber-500/30'
+                  ? 'bg-green-500/5 border-green-500/20' 
+                  : 'bg-amber-500/5 border-amber-500/20'
               }`}
             >
               <div className="flex items-center gap-3">
                 {results.clean ? (
-                  <ShieldCheck className="w-8 h-8 text-green-400" />
+                  <ShieldCheck className="w-8 h-8 text-green-500" />
                 ) : (
                   <ShieldAlert className="w-8 h-8 text-amber-500" />
                 )}
                 <div>
-                  <p className={`font-mono text-sm font-bold ${results.clean ? 'text-green-400' : 'text-amber-500'}`}>
+                  <p className={`text-sm font-bold ${results.clean ? 'text-green-500' : 'text-amber-500'}`}>
                     {results.clean ? 'DEVICE APPEARS SECURE' : `${results.threats} ANOMALIES DETECTED`}
                   </p>
-                  <p className="font-mono text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {results.clean 
                       ? 'No immediate browser-level threats detected in this quick scan.' 
                       : 'Some tracking scripts or anomalies were identified.'}
@@ -149,7 +149,7 @@ export default function PublicScanner() {
               </div>
               <div className="mt-4 flex justify-end">
                 <Link to="/register">
-                  <Button size="sm" className="font-mono">Get Full Protection</Button>
+                  <Button size="sm" className="font-medium">Get Full Protection</Button>
                 </Link>
               </div>
             </motion.div>
@@ -157,8 +157,8 @@ export default function PublicScanner() {
         </AnimatePresence>
 
         {!scanning && !results && (
-          <Button onClick={runScan} className="w-full font-mono mt-4 h-14 text-base shadow-[0_0_20px_rgba(var(--primary),0.2)] hover:shadow-[0_0_30px_rgba(var(--primary),0.4)] transition-all uppercase tracking-widest font-bold" size="lg">
-            <ScanLine className="w-5 h-5 mr-3 animate-pulse" /> Test My Device Now
+          <Button onClick={runScan} className="w-full mt-6 h-12 text-sm font-semibold transition-all" size="lg">
+            <ScanLine className="w-4 h-4 mr-2" /> Test My Device Now
           </Button>
         )}
       </CardContent>
