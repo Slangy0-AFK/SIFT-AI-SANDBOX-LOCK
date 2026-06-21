@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Lock, Bug, Clock, Atom, FileText, ClipboardList, UserX, AlertTriangle, Bot, User, ShieldAlert, Cpu, Wifi, HardDrive, ShieldX, ShieldCheck } from 'lucide-react';
+import { Shield, Lock, Bug, Clock, Atom, FileText, ClipboardList, UserX, AlertTriangle, Bot, User, ShieldAlert, Cpu, Wifi, HardDrive, ShieldX, ShieldCheck, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
@@ -249,6 +249,20 @@ export default function SettingsPage() {
           <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
             Google Play requires all apps to provide account deletion options. Use the action below to submit a request.
           </p>
+
+          {/* Log Out */}
+          <div className="border border-border/50 rounded-xl p-4 space-y-3">
+            <div className="flex items-start gap-3">
+              <LogOut className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <div className="font-mono text-[11px] font-semibold text-foreground">Log Out</div>
+                <div className="font-mono text-[10px] text-muted-foreground mt-0.5">Securely end your current session.</div>
+              </div>
+            </div>
+            <Button size="sm" variant="outline" className="font-mono text-xs" onClick={() => base44.auth.logout()}>
+              Log Out
+            </Button>
+          </div>
 
           {/* Delete Account */}
           <div className="border border-destructive/20 rounded-xl p-4 space-y-3">
