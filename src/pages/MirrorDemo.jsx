@@ -31,9 +31,10 @@ export default function MirrorDemo() {
     
     const loadRealSessions = async () => {
       try {
-        const hSessions = await base44.entities.HoneypotSession.filter({ status: 'active' }, '-created_date', 50);
+        const res = await base44.functions.invoke('getDemoTelemetry');
         if (!mounted) return;
         
+        const hSessions = res.data.honeypotSessions || [];
         const realSessions = hSessions.map(s => ({
           id: s.id,
           type: s.session_type || 'tarpit',
@@ -50,14 +51,11 @@ export default function MirrorDemo() {
     };
     
     loadRealSessions();
-
-    const unsub = base44.entities.HoneypotSession.subscribe(() => {
-      loadRealSessions();
-    });
+    const interval = setInterval(loadRealSessions, 3000);
 
     return () => {
       mounted = false;
-      if (unsub) unsub();
+      clearInterval(interval);
     };
   }, []);
 

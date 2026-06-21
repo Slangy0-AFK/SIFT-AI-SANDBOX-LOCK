@@ -34,21 +34,6 @@ export default function ParadoxGate() {
     robotTries: 0, robotBreaches: 0 
   });
 
-  useEffect(() => {
-    base44.entities.SiteStat.list().then(stats => {
-      if (stats.length > 0) {
-        setParadoxStats({
-          tries: stats[0].paradox_tries || 0,
-          breaches: stats[0].paradox_breaches || 0,
-          humanTries: stats[0].human_paradox_tries || 0,
-          humanBreaches: stats[0].human_paradox_breaches || 0,
-          robotTries: stats[0].robot_paradox_tries || 0,
-          robotBreaches: stats[0].robot_paradox_breaches || 0
-        });
-      }
-    });
-  }, []);
-
   // Load the challenge
   useEffect(() => {
     base44.functions.invoke('theologicalMFA', { action: 'get_challenge' })
@@ -129,17 +114,26 @@ export default function ParadoxGate() {
     
     const loadRealSessions = async () => {
       try {
-        const events = await base44.entities.SecurityEvent.filter({
-          event_type: { $in: ['threat_locked', 'access_granted', 'qrng_cycle'] }
-        }, '-created_date', 50);
-        
+        const res = await base44.functions.invoke('getDemoTelemetry');
         if (!mounted) return;
+
+        if (res.data.stats) {
+          setParadoxStats({
+            tries: res.data.stats.paradox_tries || 0,
+            breaches: res.data.stats.paradox_breaches || 0,
+            humanTries: res.data.stats.human_paradox_tries || 0,
+            humanBreaches: res.data.stats.human_paradox_breaches || 0,
+            robotTries: res.data.stats.robot_paradox_tries || 0,
+            robotBreaches: res.data.stats.robot_paradox_breaches || 0
+          });
+        }
         
+        const events = res.data.securityEvents || [];
         const realSessions = events.map(e => {
            let ip = 'Unknown';
            if (e.source_ip) ip = e.source_ip;
            else {
-             const match = e.details?.match(/from ([\d.]+)/) || e.details?.match(/strike_([\d.]+)/);
+             const match = e.details?.match(/from ([\d.x]+)/) || e.details?.match(/strike_([\d.x]+)/);
              if (match) ip = match[1];
            }
            
@@ -159,16 +153,11 @@ export default function ParadoxGate() {
     };
     
     loadRealSessions();
-
-    const unsub = base44.entities.SecurityEvent.subscribe((event) => {
-      if (event.type === 'create') {
-        loadRealSessions();
-      }
-    });
+    const interval = setInterval(loadRealSessions, 3000);
 
     return () => {
       mounted = false;
-      if (unsub) unsub();
+      clearInterval(interval);
     };
   }, []);
 
