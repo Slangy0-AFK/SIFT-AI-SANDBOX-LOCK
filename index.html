@@ -9,7 +9,7 @@
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <title>AEGIS Quantum Shield - Security Intelligence</title>
-    <script type="module" crossorigin src="/assets/index-D1pFLtah.js"></script>
+    <script type="module" crossorigin src="/assets/index-Cpvz4HBa.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-C1oxBUxF.css">
     <script type="module">
 if (window.self === window.top) {
@@ -46,5 +46,16 @@ if (window.self === window.top) {
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Always unregister stale service workers and clear caches before loading the app
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          registrations.forEach(r => r.unregister());
+        });
+        if (window.caches) {
+          caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+        }
+      }
+    </script>
   </body>
 </html>
