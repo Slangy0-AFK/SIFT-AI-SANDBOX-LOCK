@@ -113,70 +113,36 @@ export default function SubscriptionPage() {
       </div>
 
       {/* Current plan status */}
-      <Card className={`border-2 ${currentPlan === 'pro' ? 'border-primary/30' : 'border-border'}`}>
+      <Card className="border-2 border-primary/30">
         <CardContent className="pt-5 pb-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-xl ${currentPlan === 'pro' ? 'bg-primary/10' : 'bg-secondary'} border border-border`}>
-                <Shield className={`w-6 h-6 ${planColor}`} />
+              <div className="p-3 rounded-xl bg-primary/10 border border-border">
+                <Shield className="w-6 h-6 text-primary" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-sm font-bold text-foreground">
-                    {PLANS[currentPlan].name} Plan
+                    Beta Plan
                   </span>
-                  {currentSub?.status === 'trial' && currentSub?.renewal_date && (
-                    <span className="font-mono text-[9px] text-primary mr-2">
-                      Trial ends {new Date(currentSub.renewal_date).toLocaleDateString()}
-                    </span>
-                  )}
-                  <Badge className={`font-mono text-[8px] ${currentPlan === 'pro' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-secondary text-muted-foreground'} border`}>
-                    {currentSub?.status === 'trial' ? 'TRIAL' : (currentSub?.status?.toUpperCase() || 'FREE')}
+                  <Badge className="font-mono text-[8px] bg-primary/10 text-primary border-primary/20 border">
+                    ACTIVE
                   </Badge>
                 </div>
                 <div className="flex items-center gap-3 mt-1">
                   <span className="font-mono text-[10px] text-muted-foreground">
                     <Smartphone className="w-3 h-3 inline mr-1" />
-                    {activeDevices.length}/{maxDevices} devices used
+                    {activeDevices.length}/Unlimited devices used
                   </span>
-                  {currentSub?.renewal_date && (
-                    <span className="font-mono text-[10px] text-muted-foreground">
-                      <RefreshCw className="w-3 h-3 inline mr-1" />
-                      Renews {new Date(currentSub.renewal_date).toLocaleDateString()}
-                    </span>
-                  )}
-                  {currentPlan !== 'free' && (
-                    <button
-                      onClick={handleToggleAutoPay}
-                      disabled={togglingAutoPay}
-                      className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-secondary/50 hover:bg-secondary border border-border transition-colors"
-                    >
-                      {currentSub?.auto_pay === false ? (
-                        <>
-                          <ToggleLeft className="w-3.5 h-3.5 text-muted-foreground" />
-                          <span className="font-mono text-[9px] text-muted-foreground">Auto-pay Off</span>
-                        </>
-                      ) : (
-                        <>
-                          <ToggleRight className="w-3.5 h-3.5 text-primary" />
-                          <span className="font-mono text-[9px] text-primary">Auto-pay On</span>
-                        </>
-                      )}
-                    </button>
-                  )}
                 </div>
               </div>
             </div>
-            {currentPlan !== 'free' && (
-              <div className="text-right">
-                <div className="font-mono text-2xl font-bold text-foreground">
-                  ${currentSub?.billing_cycle === 'annual'
-                    ? PLANS[currentPlan].price.annual
-                    : PLANS[currentPlan].price.monthly}
-                </div>
-                <div className="font-mono text-[9px] text-muted-foreground">per month</div>
+            <div className="text-right">
+              <div className="font-mono text-2xl font-bold text-foreground">
+                $0
               </div>
-            )}
+              <div className="font-mono text-[9px] text-muted-foreground">per month</div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -194,42 +160,23 @@ export default function SubscriptionPage() {
       </Card>
 
       {/* Invitation Manager */}
-      {currentPlan !== 'free' && (
-        <InvitationManager subscription={currentSub} />
-      )}
+      <InvitationManager subscription={currentSub} />
 
       {/* Beta Mode Notice */}
       <Card className="border-primary/30 bg-primary/5">
         <CardHeader>
           <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2 text-primary">
-            <Shield className="w-4 h-4" /> BETA MODE - FULL ACCESS
+            <Shield className="w-4 h-4" /> STRICTLY BETA MODE
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
-            Pro plan is currently free during beta testing. Your account has full access to all features — 
-            no payment required. When billing goes live, all purchases will be processed securely through Google Play.
+            SIFT-AI is currently in strict beta testing. Your account has full, unrestricted access to all features — including Zero-Day, Threat Intel, and Threat Scanner — at no cost.
           </p>
         </CardContent>
       </Card>
 
-      {/* Plans */}
-      <div>
-        <h2 className="font-mono text-xs font-semibold tracking-wider text-muted-foreground uppercase mb-4">
-          Select Plan (Beta Access)
-        </h2>
-
-        <div className="grid grid-cols-1 gap-4">
-          <PlanCard
-            planKey="pro"
-            billingCycle={billingCycle}
-            currentPlan={currentPlan}
-            onSelect={handleSelectPlan}
-            loading={false}
-            betaMode={true}
-          />
-        </div>
-      </div>
+      {/* Plans hidden for beta */}
 
       {/* Support Center */}
       <SupportCenter />

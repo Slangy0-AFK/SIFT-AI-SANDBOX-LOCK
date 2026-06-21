@@ -7,10 +7,10 @@ import { base44 } from '@/api/base44Client';
 
 const allNavItems = [
   { path: '/dashboard', icon: Activity, label: 'Command Center' },
-  { path: '/zero-day', icon: Radiation, label: 'Zero-Day Center', highlight: true },
-  { path: '/threat-intel', icon: ShieldAlert, label: 'Threat Intel', highlight: true },
+  { path: '/zero-day', icon: Radiation, label: 'Zero-Day Center' },
+  { path: '/threat-intel', icon: ShieldAlert, label: 'Threat Intel' },
   { path: '/firewall', icon: Shield, label: 'Firewall' },
-  { path: '/threat-scanner', icon: Mail, label: 'Threat Scanner', highlight: true },
+  { path: '/threat-scanner', icon: Mail, label: 'Threat Scanner' },
 
   { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
   { path: '/profile', icon: User, label: 'Profile' },
@@ -23,7 +23,7 @@ const allNavItems = [
 // Bottom nav shows 5 most-used items on mobile
 const mobileBottomNav = [
   { path: '/', icon: Activity, label: 'Dashboard' },
-  { path: '/zero-day', icon: Radiation, label: 'Zero-Day', highlight: true },
+  { path: '/zero-day', icon: Radiation, label: 'Zero-Day' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
