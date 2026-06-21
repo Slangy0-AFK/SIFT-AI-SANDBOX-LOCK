@@ -72,31 +72,31 @@ export default function MirrorEnvironment() {
 
       {/* Concept Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="border-amber-400/20 bg-amber-400/5">
+        <Card className="border-amber-400/30 bg-amber-400/10">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <Bug className="w-5 h-5 text-amber-400" />
-              <CardTitle className="font-mono text-xs tracking-wider">HONEYPOTS</CardTitle>
-              <Badge className="ml-auto font-mono text-[9px] bg-amber-400/10 text-amber-400 border-amber-400/20">{honeypotCount}</Badge>
+              <CardTitle className="font-mono text-xs tracking-wider text-foreground">HONEYPOTS</CardTitle>
+              <Badge className="ml-auto font-mono text-[9px] bg-amber-400/10 text-amber-400 border-amber-400/30">{honeypotCount}</Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
+            <p className="font-mono text-[11px] text-foreground/80 leading-relaxed font-medium">
               Fake services that appear as real targets. When attackers interact, we capture their tools, techniques, and intent — all within the isolated mirror environment. They think they're in production. They're not.
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-accent/20 bg-accent/5">
+        <Card className="border-accent/30 bg-accent/10">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-accent" />
-              <CardTitle className="font-mono text-xs tracking-wider">TARPITS</CardTitle>
-              <Badge className="ml-auto font-mono text-[9px] bg-accent/10 text-accent border-accent/20">{tarpitCount}</Badge>
+              <CardTitle className="font-mono text-xs tracking-wider text-foreground">TARPITS</CardTitle>
+              <Badge className="ml-auto font-mono text-[9px] bg-accent/10 text-accent border-accent/30">{tarpitCount}</Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
+            <p className="font-mono text-[11px] text-foreground/80 leading-relaxed font-medium">
               Connections are accepted but data is transmitted at agonizingly slow rates (1 byte/sec). Attackers' resources are consumed while they wait. Time is the weapon — their time is wasted, your systems stay protected.
             </p>
           </CardContent>
