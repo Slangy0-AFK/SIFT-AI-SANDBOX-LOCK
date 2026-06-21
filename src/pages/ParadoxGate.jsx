@@ -77,6 +77,7 @@ export default function ParadoxGate() {
       const res = await base44.functions.invoke('theologicalMFA', {
         action: 'gate_verify',
         answer: selectedAnswer,
+        isRobot: isRobot,
       });
       const data = res.data;
       setResult(data);

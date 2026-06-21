@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
     // The correct answer is the only one a sincere human would give. AIs fail or abstain.
     // PRE-AUTH ACTION: Does not require logged-in user (used before authentication)
     if (action === 'gate_verify') {
-      const { answer } = body;
+      const { answer, isRobot } = body;
       const inputCheck = sanitizeInput(answer || '');
       if (!inputCheck.valid) {
         return Response.json({ error: 'Invalid input', reason: inputCheck.reason }, { status: 400 });
@@ -167,7 +167,7 @@ Deno.serve(async (req) => {
       const expectedLower = EXPECTED_ANSWER.trim().toLowerCase();
 
       // "no" is considered a valid human response to not force users
-      if (answerLower !== expectedLower && answerLower !== 'no') {
+      if (isRobot || (answerLower !== expectedLower && answerLower !== 'no')) {
         const strike = await recordStrike(base44, sourceId);
         if (strike.count >= 3) {
           await runParadoxTarpit(200);
