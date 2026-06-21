@@ -22,10 +22,14 @@ Deno.serve(async (req) => {
     
     // If whitelist is configured, enforce it; otherwise allow all IPs
     if (whitelistedIPs.length > 0) {
-      // If IP is unknown/undetectable, fail-open to avoid blocking legitimate users
+      // If IP is unknown/undetectable, fail-closed to ensure security
       if (ip === 'unknown') {
-        console.warn('[IP_ACCESS] IP address could not be detected — allowing access (fail-open)');
-        return Response.json({ ip, allowed: true, warning: 'IP undetectable' });
+        console.warn('[IP_ACCESS] IP address could not be detected — blocking access (fail-closed)');
+        return Response.json({
+          ip,
+          allowed: false,
+          warning: 'Your IP address could not be verified'
+        }, { status: 403 });
       }
       const isAllowed = whitelistedIPs.includes(ip);
       if (!isAllowed) {
