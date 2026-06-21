@@ -8,6 +8,20 @@ Deno.serve(async (req) => {
     if (req.method !== 'POST') {
       return Response.json({ error: 'Method not allowed' }, { status: 405 });
     }
+
+    // Security validation: Require authentication or scheduler/automation bypass
+    const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
+    const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
+    const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
+    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
+
+    let user = null;
+    if (!isScheduler && !isAutomation) {
+      user = await base44.auth.me().catch(() => null);
+      if (!user) {
+        return Response.json({ error: 'Unauthorized: Authentication required to interact with decoys' }, { status: 401 });
+      }
+    }
     
     const body = await req.json();
 
