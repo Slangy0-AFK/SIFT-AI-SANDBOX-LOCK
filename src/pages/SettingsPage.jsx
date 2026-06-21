@@ -259,7 +259,7 @@ export default function SettingsPage() {
                 <div className="font-mono text-[10px] text-muted-foreground mt-0.5">Securely end your current session.</div>
               </div>
             </div>
-            <Button size="sm" variant="outline" className="font-mono text-xs" onClick={() => base44.auth.logout()}>
+            <Button size="sm" variant="outline" className="font-mono text-xs" onClick={() => base44.auth.logout('/')}>
               Log Out
             </Button>
           </div>
