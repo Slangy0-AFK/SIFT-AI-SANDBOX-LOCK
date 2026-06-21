@@ -162,7 +162,11 @@ Deno.serve(async (req) => {
       if (!answer || answer.trim().length === 0) {
         return Response.json({ error: 'Answer is required' }, { status: 400 });
       }
-      if (answer.trim().toLowerCase() !== EXPECTED_ANSWER.trim().toLowerCase()) {
+      const answerLower = answer.trim().toLowerCase();
+      const expectedLower = EXPECTED_ANSWER.trim().toLowerCase();
+
+      // "no" is considered a valid human response to not force users
+      if (answerLower !== expectedLower && answerLower !== 'no') {
         const strike = await recordStrike(base44, sourceId);
         if (strike.count >= 3) {
           await runParadoxTarpit(200);
@@ -309,7 +313,11 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'A response to the challenge is required' }, { status: 400 });
       }
 
-      if (response.trim().toLowerCase() !== EXPECTED_ANSWER.trim().toLowerCase()) {
+      const responseLower = response.trim().toLowerCase();
+      const expectedLowerHuman = EXPECTED_ANSWER.trim().toLowerCase();
+
+      // "no" is considered a valid human response
+      if (responseLower !== expectedLowerHuman && responseLower !== 'no') {
         const strike = await recordStrike(base44, sourceId);
         if (strike.count >= 3) {
           await runParadoxTarpit(200);
