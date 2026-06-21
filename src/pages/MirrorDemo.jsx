@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Shield, Bug, Activity, Clock, ShieldAlert, ArrowLeft, Globe, Wifi, AlertTriangle, ScanLine, Lock, X } from 'lucide-react';
+import { Shield, Bug, Activity, Clock, ShieldAlert, ArrowLeft, Globe, Wifi, AlertTriangle, ScanLine, Lock, X, Plus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,50 @@ export default function MirrorDemo() {
   const isGuest = searchParams.get('guest') === 'true';
   const [visitorIp, setVisitorIp] = useState(null);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [deploying, setDeploying] = useState(false);
+  const [neutralizingId, setNeutralizingId] = useState(null);
+
+  const deployDecoy = async () => {
+    setDeploying(true);
+    try {
+      await base44.functions.invoke('demoActions', { action: 'deploy_decoy' });
+      toast.success('New decoy deployed successfully');
+      // Force an immediate refresh
+      const res = await base44.functions.invoke('getDemoTelemetry');
+      const hSessions = res.data.honeypotSessions || [];
+      const realSessions = hSessions.map(s => {
+        const snapshotTime = new Date(s.updated_date || s.created_date).getTime();
+        const elapsed = Math.max(0, Math.floor((Date.now() - snapshotTime) / 1000));
+        return {
+          id: s.id,
+          type: s.session_type || 'tarpit',
+          ip: s.source_ip || 'Unknown',
+          duration: s.status === 'completed' ? (s.duration_seconds || 0) : (s.duration_seconds || 0) + elapsed,
+          interactions: s.interactions || 0,
+          timestamp: s.created_date,
+          status: s.status || 'active'
+        };
+      });
+      setSessions(realSessions);
+    } catch (err) {
+      toast.error('Failed to deploy decoy');
+    } finally {
+      setDeploying(false);
+    }
+  };
+
+  const neutralizeThreat = async (id) => {
+    setNeutralizingId(id);
+    try {
+      await base44.functions.invoke('demoActions', { action: 'neutralize', id });
+      toast.success('Threat neutralized successfully');
+      setSessions(prev => prev.map(s => s.id === id ? { ...s, status: 'completed' } : s));
+    } catch (err) {
+      toast.error('Failed to neutralize threat');
+    } finally {
+      setNeutralizingId(null);
+    }
+  };
 
   useEffect(() => {
     if (isGuest) {
@@ -133,6 +177,9 @@ export default function MirrorDemo() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
+            <Button variant="outline" onClick={deployDecoy} disabled={deploying} className="w-full h-10 gap-2 font-medium transition-colors border-primary/20 text-primary hover:bg-primary/10">
+              <Plus className="w-4 h-4" /> Deploy Decoy
+            </Button>
             <Button variant="outline" onClick={() => setScannerOpen(true)} className="w-full h-10 gap-2 font-medium transition-colors">
               <ScanLine className="w-4 h-4 text-primary" /> Test My Device
             </Button>
@@ -293,21 +340,34 @@ export default function MirrorDemo() {
                       </div>
                     </div>
                     
-                    <div className="flex flex-col items-end gap-1 w-full sm:w-auto">
-                      <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <div className="flex flex-col gap-1 w-full sm:w-32">
-                          <span className="text-[8px] text-muted-foreground font-semibold uppercase tracking-wider">Threat Intensity</span>
-                          <div className="h-1.5 bg-secondary rounded-full overflow-hidden w-full">
-                            <div 
-                              className={`h-full rounded-full ${session.type === 'honeypot' ? 'bg-amber-500' : 'bg-primary'}`} 
-                              style={{ width: `${Math.min(100, (session.interactions / 50) * 100)}%` }} 
-                            />
+                    <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 w-full sm:w-auto">
+                      <div className="flex flex-col items-end gap-1 w-full sm:w-auto">
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                          <div className="flex flex-col gap-1 w-full sm:w-32">
+                            <span className="text-[8px] text-muted-foreground font-semibold uppercase tracking-wider">Threat Intensity</span>
+                            <div className="h-1.5 bg-secondary rounded-full overflow-hidden w-full">
+                              <div 
+                                className={`h-full rounded-full ${session.type === 'honeypot' ? 'bg-amber-500' : 'bg-primary'}`} 
+                                style={{ width: `${Math.min(100, (session.interactions / 50) * 100)}%` }} 
+                              />
+                            </div>
                           </div>
+                          <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap text-right mt-3">
+                            {session.timestamp ? formatLocalTime(session.timestamp) : ''}
+                          </span>
                         </div>
-                        <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap text-right mt-3">
-                          {session.timestamp ? formatLocalTime(session.timestamp) : ''}
-                        </span>
                       </div>
+                      {session.status === 'active' && (
+                        <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          onClick={() => neutralizeThreat(session.id)}
+                          disabled={neutralizingId === session.id}
+                          className="h-7 text-[10px] uppercase font-bold tracking-wider w-full sm:w-auto"
+                        >
+                          {neutralizingId === session.id ? 'Neutralizing...' : 'Neutralize'}
+                        </Button>
+                      )}
                     </div>
                   </motion.div>
                 ))}
