@@ -141,13 +141,13 @@ export default function MirrorEnvironment() {
             <div className="flex flex-col items-center gap-1 px-1 md:px-0">
               <Clock className="w-4 h-4 text-accent" />
               <div className="w-12 md:w-24 h-px bg-accent/30" />
-              <span className="font-mono text-[8px] text-muted-foreground">THROTTLE</span>
+              <span className="font-mono text-[8px] text-foreground">THROTTLE</span>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mb-2 mx-auto">
-                <Clock className="w-6 h-6 md:w-8 md:h-8 text-accent" />
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-accent/10 border border-accent/30 flex items-center justify-center mb-2 mx-auto">
+                <Clock className="w-6 h-6 md:w-8 md:h-8 text-accent opacity-100" />
               </div>
-              <span className="font-mono text-[9px] text-accent">TARPIT</span>
+              <span className="font-mono text-[10px] font-bold text-accent">TARPIT</span>
             </div>
           </div>
         </CardContent>
