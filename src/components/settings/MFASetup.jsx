@@ -10,11 +10,18 @@ import { useQuery } from '@tanstack/react-query';
 
 const MFA_METHODS = [
   {
+    id: 'google_prompt',
+    label: 'Google 2-Step Verification',
+    desc: 'Approve sign-in requests on your phone using Google Prompts',
+    icon: Smartphone,
+    recommended: true,
+  },
+  {
     id: 'authenticator',
     label: 'Authenticator App',
     desc: 'Use Google Authenticator, Authy, or similar TOTP apps',
     icon: Smartphone,
-    recommended: true,
+    recommended: false,
   },
   {
     id: 'email',
@@ -146,7 +153,22 @@ export default function MFASetup() {
               <span className="font-mono text-[10px] font-semibold text-foreground">{selectedMethod.label} Setup</span>
             </div>
 
-            {selectedMethod.id === 'authenticator' ? (
+            {selectedMethod.id === 'google_prompt' ? (
+              <div className="space-y-3">
+                <div className="p-3 bg-secondary rounded-lg border border-border space-y-2">
+                  <p className="font-mono text-[10px] text-foreground font-semibold">How it works</p>
+                  <p className="font-mono text-[9px] text-muted-foreground">
+                    When you sign in, Google will send a notification to your phone. Just tap "Yes" to confirm it's you.
+                  </p>
+                </div>
+                <Button className="w-full font-mono text-xs" onClick={() => {
+                  toast.success("Test prompt sent to your phone");
+                  setStep('verify');
+                }}>
+                  Send Test Prompt to Phone
+                </Button>
+              </div>
+            ) : selectedMethod.id === 'authenticator' ? (
               <div className="space-y-3">
                 <div className="p-3 bg-secondary rounded-lg border border-border space-y-2">
                   <p className="font-mono text-[10px] text-foreground font-semibold">Setup Instructions</p>
@@ -205,7 +227,21 @@ export default function MFASetup() {
               </span>
             </div>
 
-            {selectedMethod?.id === 'email' ? (
+            {selectedMethod?.id === 'google_prompt' ? (
+              <div className="space-y-3">
+                <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                  <p className="font-mono text-[10px] text-foreground">
+                    Check your phone
+                  </p>
+                  <p className="font-mono text-[9px] text-muted-foreground mt-1">
+                    Google has sent a notification to your connected device. Tap "Yes, it's me" to verify.
+                  </p>
+                </div>
+                <Button className="w-full font-mono text-xs" onClick={handleVerify}>
+                  <CheckCircle2 className="w-3 h-3 mr-2" /> I've Approved on My Phone
+                </Button>
+              </div>
+            ) : selectedMethod?.id === 'email' ? (
               <div className="space-y-3">
                 <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
                   <p className="font-mono text-[10px] text-foreground">

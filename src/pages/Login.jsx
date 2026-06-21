@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
+import { LogIn, Mail, Lock, Loader2, Eye, EyeOff, Smartphone } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import TermsAgreementModal from "@/components/onboarding/TermsAgreementModal";
@@ -19,6 +19,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [show2Step, setShow2Step] = useState(false);
 
   useEffect(() => {
     const checkTerms = async () => {
@@ -41,6 +42,11 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!email || !password) return;
+    setShow2Step(true);
+  };
+
+  const handle2StepApprove = async () => {
     setError("");
     setLoading(true);
     try {
@@ -54,6 +60,7 @@ export default function Login() {
       }
     } catch (err) {
       setError(err.message || "Invalid email or password");
+      setShow2Step(false);
     } finally {
       setLoading(false);
     }
@@ -116,6 +123,27 @@ export default function Login() {
           </div>
         )}
 
+        {show2Step ? (
+          <div className="space-y-6 flex flex-col items-center justify-center py-4 text-center">
+            <Smartphone className="w-12 h-12 text-primary animate-pulse" />
+            <div>
+              <h3 className="font-semibold text-lg">Check your phone</h3>
+              <p className="text-sm text-muted-foreground mt-2">
+                Google 2-Step Verification requires your approval. Tap <strong>Yes, it's me</strong> on your phone or tablet to sign in.
+              </p>
+            </div>
+            <Button onClick={handle2StepApprove} className="w-full h-12 font-medium" disabled={loading}>
+              {loading ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Verifying...</>
+              ) : (
+                "Simulate Phone Approval"
+              )}
+            </Button>
+            <Button variant="ghost" onClick={() => setShow2Step(false)} className="text-xs">
+              Cancel
+            </Button>
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -174,6 +202,7 @@ export default function Login() {
             )}
           </Button>
         </form>
+        )}
       </AuthLayout>
 
       {showTerms && (
