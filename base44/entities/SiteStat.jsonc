@@ -6,6 +6,10 @@
       "type": "number",
       "default": 0
     },
+    "total_device_scans": {
+      "type": "number",
+      "default": 0
+    },
     "paradox_tries": {
       "type": "number",
       "default": 0

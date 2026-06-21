@@ -39,7 +39,13 @@ export default async function handler(req) {
       });
     }
     
-    return Response.json({ visits: stat.total_visits });
+    return Response.json({ 
+      visits: stat.total_visits, 
+      scans: stat.total_device_scans || 0,
+      paradoxTries: stat.paradox_tries || 0,
+      humanTries: stat.human_paradox_tries || 0,
+      robotTries: stat.robot_paradox_tries || 0
+    });
   } catch (error) {
     console.error('trackVisit error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });

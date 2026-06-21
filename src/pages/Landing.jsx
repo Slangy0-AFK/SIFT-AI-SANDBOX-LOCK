@@ -9,14 +9,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PublicScanner from '@/components/scanner/PublicScanner';
 
 export default function Landing() {
-  const [visitCount, setVisitCount] = useState(null);
+  const [stats, setStats] = useState({ visits: null, scans: null, paradoxTries: null });
 
   useEffect(() => {
     const recordVisit = async () => {
       try {
         const res = await base44.functions.invoke('trackVisit', {});
-        if (res.data?.visits) {
-          setVisitCount(res.data.visits);
+        if (res.data) {
+          setStats({
+            visits: res.data.visits,
+            scans: res.data.scans,
+            paradoxTries: res.data.paradoxTries
+          });
         }
       } catch (e) {
         console.error('Failed to track visit');
@@ -213,15 +217,29 @@ export default function Landing() {
 
       {/* Visitor Counter */}
       <AnimatePresence>
-        {visitCount !== null && (
+        {stats.visits !== null && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="fixed bottom-6 left-6 z-50 bg-card border border-border rounded-full px-4 py-2 flex items-center gap-2 shadow-sm"
+            className="fixed bottom-6 left-6 z-50 bg-card border border-border rounded-full px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 shadow-sm"
           >
-            <Users className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm font-semibold text-foreground">{visitCount.toLocaleString()}</span>
-            <span className="text-xs text-muted-foreground font-medium hidden sm:inline">Visitors</span>
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-semibold text-foreground">{stats.visits.toLocaleString()}</span>
+              <span className="text-xs text-muted-foreground font-medium hidden sm:inline">Visitors</span>
+            </div>
+            <div className="hidden sm:block w-px h-4 bg-border" />
+            <div className="flex items-center gap-2">
+              <ScanLine className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-semibold text-foreground">{stats.scans?.toLocaleString() || 0}</span>
+              <span className="text-xs text-muted-foreground font-medium hidden sm:inline">Scans Run</span>
+            </div>
+            <div className="hidden sm:block w-px h-4 bg-border" />
+            <div className="flex items-center gap-2">
+              <Lock className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-semibold text-foreground">{stats.paradoxTries?.toLocaleString() || 0}</span>
+              <span className="text-xs text-muted-foreground font-medium hidden sm:inline">Gate Tries</span>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

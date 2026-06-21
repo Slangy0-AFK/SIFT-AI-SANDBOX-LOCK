@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Terminal, Loader2, CheckCircle2, ShieldCheck, ShieldAlert, ScanLine } from 'lucide-react';
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { base44 } from '@/api/base44Client';
 
 export const SCAN_STEPS = [
   { id: 'env', label: 'Environment Initialization', detail: 'Validating browser signature & WebGL fingerprint...' },
@@ -22,6 +23,10 @@ export default function PublicScanner() {
     if (scanning) return;
     setScanning(true);
     setResults(null);
+    
+    try {
+      base44.functions.invoke('trackScan', {});
+    } catch(e) {}
     
     let anomalies = 0;
     let warnings = 0;

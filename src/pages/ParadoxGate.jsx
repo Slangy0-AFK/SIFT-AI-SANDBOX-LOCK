@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
+import { formatChicagoTime } from '@/lib/utils';
 import PublicScanner from '@/components/scanner/PublicScanner';
 
 // Simulate realistic-looking IPs
@@ -447,7 +448,7 @@ export default function ParadoxGate() {
                         
                         <div className="text-right w-full sm:w-auto">
                           <div className="text-[10px] text-muted-foreground font-medium">
-                            {new Date(session.timestamp).toLocaleTimeString()}
+                            {formatChicagoTime(session.timestamp)}
                           </div>
                           {session.status === 'locked' && (
                             <div className="text-[9px] text-destructive mt-1 flex items-center justify-end gap-1 font-bold">

@@ -9,6 +9,7 @@ import {
   Loader2, RefreshCw, Target, Activity, Eye
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatChicagoTime } from '@/lib/utils';
 
 export default function RealTimeThreatMonitor() {
   const [analyzingIp, setAnalyzingIp] = useState(null);
@@ -123,7 +124,7 @@ export default function RealTimeThreatMonitor() {
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-[8px] text-muted-foreground">
-                        Cycle: {threat.qrng_cycle || 0}
+                        {formatChicagoTime(threat.created_date)}
                       </span>
                       {threat.agent_type && (
                         <Badge variant="outline" className="font-mono text-[7px]">
@@ -178,7 +179,7 @@ export default function RealTimeThreatMonitor() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-[8px] text-muted-foreground">
-                      Confidence: {anomaly.confidence_score || 0}%
+                      {formatChicagoTime(anomaly.created_date)}
                     </span>
                     <Badge variant="outline" className="font-mono text-[7px]">
                       {anomaly.status?.toUpperCase()}
