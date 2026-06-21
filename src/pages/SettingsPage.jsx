@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Shield, Lock, Bug, Clock, Atom, FileText, ClipboardList, UserX, AlertTriangle, Bot, User, ShieldAlert, Cpu, Wifi, HardDrive, ShieldX, ShieldCheck, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
@@ -238,19 +239,14 @@ export default function SettingsPage() {
         <AuditLogExport />
       </div>
 
-      {/* Account Management — Google Play Required */}
-      <Card className="border-amber-400/20">
+      {/* Session Management */}
+      <Card>
         <CardHeader>
           <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
-            <UserX className="w-4 h-4 text-amber-400" /> ACCOUNT MANAGEMENT
+            <UserX className="w-4 h-4 text-muted-foreground" /> SESSION MANAGEMENT
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
-            Google Play requires all apps to provide account deletion options. Use the action below to submit a request.
-          </p>
-
-          {/* Log Out */}
+        <CardContent>
           <div className="border border-border/50 rounded-xl p-4 space-y-3">
             <div className="flex items-start gap-3">
               <LogOut className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
@@ -262,42 +258,6 @@ export default function SettingsPage() {
             <Button size="sm" variant="outline" className="font-mono text-xs" onClick={() => base44.auth.logout('/')}>
               Log Out
             </Button>
-          </div>
-
-          {/* Delete Account */}
-          <div className="border border-destructive/20 rounded-xl p-4 space-y-3">
-            <div className="flex items-start gap-3">
-              <UserX className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
-              <div className="flex-1">
-                <div className="font-mono text-[11px] font-semibold text-foreground">Delete My Account</div>
-                <div className="font-mono text-[10px] text-muted-foreground mt-0.5">Permanently remove your SIFT-AI account and all associated data within 30 days.</div>
-              </div>
-            </div>
-            {!showDeleteAccount ? (
-              <Button size="sm" variant="outline" className="font-mono text-xs border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => setShowDeleteAccount(true)}>
-                Delete Account
-              </Button>
-            ) : (
-              <div className="space-y-2">
-                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20">
-                  <AlertTriangle className="w-3.5 h-3.5 text-destructive mt-0.5 flex-shrink-0" />
-                  <p className="font-mono text-[10px] text-destructive">Your account and all data will be permanently deleted. Type <strong>DELETE</strong> to confirm.</p>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Type DELETE to confirm"
-                  value={deleteConfirm}
-                  onChange={e => setDeleteConfirm(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-destructive"
-                />
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="font-mono text-xs" onClick={() => { setShowDeleteAccount(false); setDeleteConfirm(''); }}>Cancel</Button>
-                  <Button size="sm" variant="destructive" className="font-mono text-xs" onClick={handleDeleteAccount}>
-                    Permanently Delete Account
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -328,6 +288,56 @@ export default function SettingsPage() {
 
         </CardContent>
       </Card>
+
+      {/* Delete Account Accordion */}
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="delete-account" className="border-destructive/20">
+          <AccordionTrigger className="font-mono text-xs text-destructive hover:no-underline px-4 py-3 rounded-lg bg-destructive/5 hover:bg-destructive/10 transition-colors">
+            <div className="flex items-center gap-2">
+              <UserX className="w-4 h-4" /> DANGER ZONE: DELETE ACCOUNT
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-4 px-4 pb-4 bg-destructive/5 border-t border-destructive/10 rounded-b-lg">
+            <p className="font-mono text-[10px] text-muted-foreground leading-relaxed mb-4">
+              Google Play requires all apps to provide account deletion options. Use the action below to submit a request.
+            </p>
+            <div className="border border-destructive/20 rounded-xl p-4 space-y-3 bg-background">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <div className="font-mono text-[11px] font-semibold text-foreground">Delete My Account</div>
+                  <div className="font-mono text-[10px] text-muted-foreground mt-0.5">Permanently remove your SIFT-AI account and all associated data within 30 days.</div>
+                </div>
+              </div>
+              {!showDeleteAccount ? (
+                <Button size="sm" variant="outline" className="font-mono text-xs border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => setShowDeleteAccount(true)}>
+                  Delete Account
+                </Button>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20">
+                    <AlertTriangle className="w-3.5 h-3.5 text-destructive mt-0.5 flex-shrink-0" />
+                    <p className="font-mono text-[10px] text-destructive">Your account and all data will be permanently deleted. Type <strong>DELETE</strong> to confirm.</p>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Type DELETE to confirm"
+                    value={deleteConfirm}
+                    onChange={e => setDeleteConfirm(e.target.value)}
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-destructive"
+                  />
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="font-mono text-xs" onClick={() => { setShowDeleteAccount(false); setDeleteConfirm(''); }}>Cancel</Button>
+                    <Button size="sm" variant="destructive" className="font-mono text-xs" onClick={handleDeleteAccount}>
+                      Permanently Delete Account
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
         </TabsContent>{/* end general */}
 
