@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import usePullToRefresh from '@/hooks/usePullToRefresh';
+import confetti from 'canvas-confetti';
 
 import ThreatCounter from '../components/dashboard/ThreatCounter';
 import CustomerThreatFeed from '../components/dashboard/CustomerThreatFeed';
@@ -49,6 +50,7 @@ function ThreatScannerSection({ threats, refetchThreats }) {
         reason: 'Manually neutralized from command center',
       });
       toast.success('✓ Threat neutralized — IP blocked');
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#00d4ff', '#10b981', '#f43f5e'] });
       await refetchThreats();
     } catch (err) {
       toast.error(err.message || 'Failed to neutralize');

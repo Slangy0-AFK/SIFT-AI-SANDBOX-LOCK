@@ -177,7 +177,7 @@ export default function ParadoxGate() {
         console.error("Failed to load real sessions", err);
       } finally {
         if (mounted) {
-          timeout = setTimeout(loadRealSessions, 15000);
+          timeout = setTimeout(loadRealSessions, 2000);
         }
       }
     };

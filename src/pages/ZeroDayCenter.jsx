@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import GuardianRing from '../components/agents/GuardianRing';
 import ZeroDayFeed from '../components/zeroday/ZeroDayFeed';
 import { motion } from 'framer-motion';
+import confetti from 'canvas-confetti';
 
 const ANOMALY_TYPES = ['behavioral', 'polymorphic', 'memory_injection', 'side_channel', 'supply_chain', 'ai_adversarial', 'fileless', 'firmware', 'unknown'];
 const SEVERITIES = ['info', 'warning', 'critical', 'fatal'];
@@ -48,6 +49,7 @@ export default function ZeroDayCenter() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['zero-day'] });
       toast.success('All active threats neutralized');
+      confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#00d4ff', '#10b981', '#f43f5e'] });
     },
   });
 

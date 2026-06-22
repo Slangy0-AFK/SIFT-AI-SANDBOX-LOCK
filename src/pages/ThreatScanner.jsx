@@ -9,6 +9,7 @@ import { Shield, ShieldAlert, ShieldCheck, Activity, ScanLine, Zap, AlertTriangl
 import { toast } from 'sonner';
 import { sendSlackNotification } from '@/lib/slack';
 import { formatChicagoTime } from '@/lib/utils';
+import confetti from 'canvas-confetti';
 
 export default function ThreatScanner() {
   const [selectedThreat, setSelectedThreat] = useState(null);
@@ -23,7 +24,7 @@ export default function ThreatScanner() {
       return base44.entities.Threat.list('-created_date', 2000);
     },
     initialData: [],
-    refetchInterval: 10000,
+    refetchInterval: 3000,
   });
 
   const { data: scanSessions = [], refetch: refetchSessions } = useQuery({
@@ -39,7 +40,7 @@ export default function ThreatScanner() {
     queryKey: ['device-anomalies'],
     queryFn: () => base44.entities.ZeroDayAnomaly.list('-created_date', 30),
     initialData: [],
-    refetchInterval: 15000,
+    refetchInterval: 3000,
   });
 
   useEffect(() => {
@@ -117,6 +118,7 @@ export default function ThreatScanner() {
                     count++;
                   }
                   toast.success(`✓ ${count} active threats neutralized`);
+                  confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#00d4ff', '#10b981', '#f43f5e'] });
                   await refetchDeviceThreats();
                 } catch (err) {
                   toast.error('Failed to neutralize all: ' + err.message);
@@ -393,6 +395,7 @@ export default function ThreatScanner() {
                         reason: 'Manually blocked from threat scanner',
                       });
                       toast.success(`✓ IP blocked — threat destroyed`);
+                      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#00d4ff', '#10b981', '#f43f5e'] });
                       await sendSlackNotification({ text: `*Threat Blocked* • IP: ${selectedThreat.source_ip} • Level: ${selectedThreat.threat_level}` });
                       await refetchDeviceThreats();
                       setSelectedThreat(null);
