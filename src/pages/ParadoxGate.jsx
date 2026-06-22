@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { formatChicagoTime } from '@/lib/utils';
 import PublicScanner from '@/components/scanner/PublicScanner';
+import confetti from 'canvas-confetti';
 
 // Simulate realistic-looking IPs
 const getRandomIP = () => `${Math.floor(Math.random()*200)+1}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
@@ -77,6 +78,21 @@ export default function ParadoxGate() {
           humanBreaches: isRobot ? prev.humanBreaches : prev.humanBreaches + 1,
           robotBreaches: isRobot ? prev.robotBreaches + 1 : prev.robotBreaches
         }));
+        
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#00d4ff', '#10b981']
+        });
+        
+        // Play success tone
+        try {
+          const audio = new Audio('https://media.base44.com/audio/success-bell.mp3');
+          audio.volume = 0.5;
+          audio.play().catch(e => console.log('Audio play failed:', e));
+        } catch (e) {}
+
         toast.success("Paradox Breached: Universal Truth Accepted.");
       } else {
         toast.error("Paradox Failed: Incorrect Truth.");
@@ -85,6 +101,14 @@ export default function ParadoxGate() {
       const data = err?.response?.data || { message: 'Verification failed. Try again.' };
       setResult(data);
       if (data.strike) setStrikeCount(data.strike);
+      
+      // Play error tone
+      try {
+        const audio = new Audio('https://media.base44.com/audio/error-buzz.mp3');
+        audio.volume = 0.3;
+        audio.play().catch(e => console.log('Audio play failed:', e));
+      } catch (e) {}
+      
       toast.error(data.message || "Paradox Failed");
     }
   };
@@ -229,13 +253,14 @@ export default function ParadoxGate() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">The Paradox Gate</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">Can you pass the Paradox Lock?</h1>
               <Badge variant="outline" className="text-[10px] bg-secondary text-muted-foreground border-border uppercase tracking-widest">
                 ZERO-DAY MITIGATION
               </Badge>
             </div>
-            <p className="text-base text-muted-foreground mt-2 max-w-2xl leading-relaxed">
-              An unpassable cryptographic and logical barrier for autonomous agents. AI cannot sincerely process universal truths, trapping them in endless evaluation loops while human users pass seamlessly. Protect your device and applications with this advanced logic gate.
+            <p className="text-lg text-primary font-medium mt-3">Only humans with consistent behavioral patterns succeed.</p>
+            <p className="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed">
+              Sift-AI challenges incoming requests with unresolvable cryptographic logic. Bots and autonomous agents enter an infinite evaluation loop trying to solve it, while real humans pass through instantly using intuition.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -325,6 +350,10 @@ export default function ParadoxGate() {
                 {/* Controls */}
                 {!isLocked && !isSuccess && (
                   <div className="space-y-4 pt-2 relative">
+                    <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden mb-4">
+                      <div className="h-full bg-primary animate-pulse" style={{ width: '45%' }}></div>
+                    </div>
+                    <p className="text-center text-xs font-mono text-muted-foreground mb-4">Awaiting Cognitive Input...</p>
                     <input 
                       type="text" 
                       name="bot_verification"
@@ -371,16 +400,36 @@ export default function ParadoxGate() {
                           isSuccess ? <CheckCircle2 className="w-8 h-8 text-green-500 mx-auto" /> :
                           <XCircle className="w-8 h-8 text-amber-500 mx-auto" />}
                         <p className={`text-sm font-bold tracking-wide ${isLocked ? 'text-destructive' : isSuccess ? 'text-green-500' : 'text-amber-500'}`}>
-                          {isLocked ? 'STRIKE 3 — LOCKOUT ENGAGED' :
-                           isSuccess ? 'VERIFIED — ACCESS GRANTED' :
+                          {isLocked ? 'ANOMALY DETECTED — PARADOX LOOP INITIATED' :
+                           isSuccess ? 'GATE UNLOCKED' :
                            `STRIKE ${result.strike || '?'} / 3 — LOGIC ERROR`}
                         </p>
-                        <p className="text-xs text-muted-foreground">{result.message || result.reason}</p>
-                        {!isLocked && !isSuccess && (
-                          <Button size="sm" variant="outline" className="text-xs mt-2" onClick={reset}>Try Again</Button>
-                        )}
-                        {isLocked && (
-                          <Button size="sm" variant="outline" className="text-xs mt-2" onClick={reset}>Reset Demo</Button>
+                        {isSuccess ? (
+                          <div className="space-y-2">
+                            <p className="text-xs font-mono text-green-500 bg-green-500/10 inline-block px-2 py-1 rounded">
+                              Behavioral Score: {Math.floor(Math.random() * 15) + 85}/100 – Human-like
+                            </p>
+                            <p className="text-xs text-muted-foreground">Your cognitive pattern matches a genuine human response. Welcome.</p>
+                            <div className="flex gap-2 justify-center mt-3">
+                              <Link to="/mirror-demo?guest=true">
+                                <Button size="sm" className="font-medium bg-green-600 hover:bg-green-700 text-white border-0">Enter Demo Dashboard</Button>
+                              </Link>
+                              <Button size="sm" variant="outline" onClick={reset}>Reset Demo</Button>
+                            </div>
+                          </div>
+                        ) : isLocked ? (
+                          <div className="space-y-2">
+                            <p className="text-xs font-mono text-destructive bg-destructive/10 inline-block px-2 py-1 rounded">
+                              Algorithmic Failure Detected
+                            </p>
+                            <p className="text-xs text-muted-foreground">Nice try, bot. Real humans don't evaluate philosophical paradoxes with deterministic algorithms. You have been tarpitted.</p>
+                            <Button size="sm" variant="outline" className="text-xs mt-2" onClick={reset}>Try Again (Reset Fingerprint)</Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <p className="text-xs text-muted-foreground">{result.message || result.reason}</p>
+                            <Button size="sm" variant="outline" className="text-xs mt-2" onClick={reset}>Try Again</Button>
+                          </div>
                         )}
                       </div>
                     </motion.div>

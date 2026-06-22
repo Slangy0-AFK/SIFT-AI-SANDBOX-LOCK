@@ -141,7 +141,7 @@ export default function PublicScanner() {
                 ) : (
                   <ShieldAlert className="w-8 h-8 text-amber-500" />
                 )}
-                <div>
+                <div className="flex-1">
                   <p className={`text-sm font-bold ${results.clean ? 'text-green-500' : 'text-amber-500'}`}>
                     {results.clean ? 'DEVICE APPEARS SECURE' : `${results.threats} ANOMALIES DETECTED`}
                   </p>
@@ -151,6 +151,12 @@ export default function PublicScanner() {
                       : 'Some tracking scripts or anomalies were identified.'}
                   </p>
                 </div>
+              </div>
+              <div className="mt-4 border-t border-border/50 pt-4 space-y-2 text-xs">
+                 <p className="font-mono text-muted-foreground"><span className="text-foreground">User-Agent:</span> {navigator.userAgent.split(' ')[0]}</p>
+                 <p className="font-mono text-muted-foreground"><span className="text-foreground">Screen Res:</span> {window.screen.width}x{window.screen.height}</p>
+                 <p className="font-mono text-muted-foreground"><span className="text-foreground">Language:</span> {navigator.language || 'Unknown'}</p>
+                 <p className="font-mono text-muted-foreground"><span className="text-foreground">Hardware Cores:</span> {navigator.hardwareConcurrency || 'Hidden'}</p>
               </div>
               <div className="mt-4 flex justify-end">
                 <Link to="/register">
