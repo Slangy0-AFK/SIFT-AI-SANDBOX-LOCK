@@ -3,23 +3,20 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    // Allow: scheduler secret header, entity automation, or authenticated user
+    // Allow: scheduler secret header or authenticated admin
     const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
-    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
 
     let user = null;
-    if (!isScheduler && !isAutomation) {
+    if (!isScheduler) {
       user = await base44.auth.me().catch(() => null);
-      if (!user) {
-        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
       }
     }
-
-    if (user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
+    
+    const actionUser = user ? user.email : 'System/Scheduler';
 
     const { action, rule_data } = await req.json();
 
@@ -49,7 +46,7 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',
-        details: `Firewall rule created: ${rule_data.rule_name} by ${user.email}`,
+        details: `Firewall rule created: ${rule_data.rule_name} by ${actionUser}`,
         environment: 'production',
       });
 
@@ -65,7 +62,7 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',
-        details: `Firewall rule updated: ${rule_id} by ${user.email}`,
+        details: `Firewall rule updated: ${rule_id} by ${actionUser}`,
         environment: 'production',
       });
 
@@ -81,7 +78,7 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',
-        details: `Firewall rule deleted: ${rule_id} by ${user.email}`,
+        details: `Firewall rule deleted: ${rule_id} by ${actionUser}`,
         environment: 'production',
       });
 

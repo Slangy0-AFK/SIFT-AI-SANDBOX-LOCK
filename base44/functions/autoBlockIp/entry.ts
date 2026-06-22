@@ -3,23 +3,20 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    // Allow: scheduler secret header, entity automation, or authenticated user
+    // Allow: scheduler secret header or authenticated admin
     const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
-    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
 
     let user = null;
-    if (!isScheduler && !isAutomation) {
+    if (!isScheduler) {
       user = await base44.auth.me().catch(() => null);
-      if (!user) {
-        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
       }
     }
-
-    if (user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
+    
+    const actionUser = user ? user.email : 'System/Scheduler';
 
     const { threat_id, source_ip, reason } = await req.json();
 
@@ -69,7 +66,7 @@ Deno.serve(async (req) => {
         protocol: 'any',
         direction: 'inbound',
         threat_level: tracedThreat?.threat_level || 'high',
-        blocked_reason: reason || `Threat auto-block by ${user.email}`,
+        blocked_reason: reason || `Threat auto-block by ${actionUser}`,
       });
     }
 
@@ -77,7 +74,7 @@ Deno.serve(async (req) => {
     if (tracedThreat?.id && tracedThreat.status !== 'destroyed' && tracedThreat.status !== 'cleared') {
       await base44.asServiceRole.entities.Threat.update(tracedThreat.id, {
         status: 'destroyed',
-        notes: (tracedThreat.notes || '') + ` | Auto-blocked by ${user.email} at ${new Date().toISOString()}`,
+        notes: (tracedThreat.notes || '') + ` | Auto-blocked by ${actionUser} at ${new Date().toISOString()}`,
       });
 
       // Log security event
@@ -85,12 +82,12 @@ Deno.serve(async (req) => {
         event_type: 'threat_destroyed',
         threat_id: String(threat_id || ip),
         severity: 'critical',
-        details: `IP ${ip} auto-blocked by ${user.email}. ${ruleId ? `Firewall rule created: ${ruleId}` : 'Already blocked.'}`,
+        details: `IP ${ip} auto-blocked by ${actionUser}. ${ruleId ? `Firewall rule created: ${ruleId}` : 'Already blocked.'}`,
         environment: 'production',
       });
     }
 
-    console.log(`Auto-blocked IP: ${ip} by ${user.email}`);
+    console.log(`Auto-blocked IP: ${ip} by ${actionUser}`);
 
     return Response.json({
       success: true,
