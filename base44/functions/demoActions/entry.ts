@@ -15,9 +15,6 @@ Deno.serve(async (req) => {
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
     const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
 
-    // For demo purposes, we allow unauthenticated requests to interact with the decoys
-    // In a strict production environment, this would be locked down:
-    /*
     let user = null;
     if (!isScheduler && !isAutomation) {
       user = await base44.auth.me().catch(() => null);
@@ -25,7 +22,6 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Unauthorized: Authentication required to interact with decoys' }, { status: 401 });
       }
     }
-    */
     
     const body = await req.json();
 

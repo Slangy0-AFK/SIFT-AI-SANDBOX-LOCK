@@ -158,16 +158,25 @@ async function collectDeviceSignals() {
     }
   } catch {}
 
-  // Detect suspicious injected scripts in the current page DOM
-  const scripts = Array.from(document.querySelectorAll('script'));
-  for (const s of scripts) {
-    const content = s.textContent || '';
-    const src = s.src || '';
-    if (src.startsWith('data:') || /eval\s*\(\s*atob/.test(content) ||
-        /fromCharCode\(\d+,\d+,\d+,\d+,\d+/.test(content) ||
-        /String\.prototype\.\w+\s*=\s*function/.test(content)) {
-      signals.suspicious_strings.push(content.slice(0, 200) || src.slice(0, 200));
+  // Detect suspicious injected scripts using server-fetched signatures
+  try {
+    const sigRes = await base44.functions.invoke('getThreatSignatures', {});
+    const signatures = sigRes?.data?.signatures || [];
+    const scripts = Array.from(document.querySelectorAll('script'));
+    for (const s of scripts) {
+      const content = s.textContent || '';
+      const src = s.src || '';
+      for (const { regexStr, type } of signatures) {
+        const match = new RegExp(regexStr.replace(/^\/|\/[gimsuy]*$/g, '')).test(content) ||
+                      (type === 'Data URI Injection' && src.startsWith('data:'));
+        if (match) {
+          signals.suspicious_strings.push(content.slice(0, 200) || src.slice(0, 200));
+          break;
+        }
+      }
     }
+  } catch {
+    // If signature fetch fails, proceed without script analysis
   }
 
   // Detect prototype tampering
