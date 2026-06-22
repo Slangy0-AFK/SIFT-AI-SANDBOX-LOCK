@@ -12,19 +12,22 @@ import { formatLocalTime, getRealisticDate } from '@/lib/utils';
 
 const QRNGCycle = ({ onDestruct, disabled, isNeutralizing }) => {
   const [active, setActive] = useState(false);
-  const [cycle, setCycle] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(3.0);
+  const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
-    if (active && cycle < 3) {
-      const t = setTimeout(() => setCycle(c => c + 1), 1000);
-      return () => clearTimeout(t);
-    } else if (active && cycle === 3) {
+    if (active && timeLeft > 0) {
+      const t = setInterval(() => {
+        setTimeLeft(c => Math.max(0, c - 0.1));
+      }, 100);
+      return () => clearInterval(t);
+    } else if (active && timeLeft === 0 && !completed) {
       if (!isNeutralizing) {
         onDestruct();
-        setCycle(4); // Prevent multiple calls
+        setCompleted(true);
       }
     }
-  }, [active, cycle, isNeutralizing, onDestruct]);
+  }, [active, timeLeft, isNeutralizing, onDestruct, completed]);
 
   if (!active) {
     return (
@@ -42,20 +45,20 @@ const QRNGCycle = ({ onDestruct, disabled, isNeutralizing }) => {
 
   return (
     <div className="flex items-center gap-3 px-3 py-1.5 rounded border border-destructive/50 bg-destructive/10 w-full sm:w-auto">
-      <div className="relative w-5 h-5 flex items-center justify-center flex-shrink-0">
+      <div className="relative w-7 h-7 flex items-center justify-center flex-shrink-0">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
           className="absolute inset-0 rounded-full border-2 border-destructive/20 border-t-destructive"
         />
-        <span className="text-[8px] font-bold text-destructive">{Math.min(cycle, 3)}</span>
+        <span className="text-[9px] font-bold text-destructive tabular-nums">{timeLeft.toFixed(1)}</span>
       </div>
       <div className="flex flex-col text-left">
         <span className="text-[9px] font-bold text-destructive uppercase tracking-widest">
           {isNeutralizing ? 'Destroying...' : 'Active QRNG'}
         </span>
         <span className="text-[8px] text-destructive/80 font-mono">
-          Cycle {Math.min(cycle, 3)}/3 to Destruction
+          T-minus {timeLeft.toFixed(1)}s to Destruction
         </span>
       </div>
     </div>
