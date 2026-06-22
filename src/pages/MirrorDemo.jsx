@@ -19,16 +19,12 @@ export default function MirrorDemo() {
   const [deploying, setDeploying] = useState(false);
   const [neutralizingId, setNeutralizingId] = useState(null);
 
-  const deployDecoy = async () => {
-    setDeploying(true);
+  const fetchAndUpdateSessions = async () => {
     try {
-      await base44.functions.invoke('demoActions', { action: 'deploy_decoy' });
-      toast.success('New decoy deployed successfully');
-      // Force an immediate refresh
       const res = await base44.functions.invoke('getDemoTelemetry');
       const hSessions = res.data.honeypotSessions || [];
       const realSessions = hSessions.map(s => {
-        const snapshotTime = new Date(s.updated_date || s.created_date).getTime();
+        const snapshotTime = getRealisticDate(s.updated_date || s.created_date).getTime();
         const elapsed = Math.max(0, Math.floor((Date.now() - snapshotTime) / 1000));
         return {
           id: s.id,
@@ -42,6 +38,33 @@ export default function MirrorDemo() {
       });
       setSessions(realSessions);
     } catch (err) {
+      console.error("Failed to load real sessions", err);
+    }
+  };
+
+  const injectOptimisticDecoy = () => {
+    const fakeId = 'temp-' + Date.now();
+    const newSession = {
+      id: fakeId,
+      type: Math.random() > 0.5 ? 'honeypot' : 'tarpit',
+      ip: `${Math.floor(Math.random()*200)+1}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`,
+      duration: 0,
+      interactions: 1,
+      timestamp: new Date().toISOString(),
+      status: 'active'
+    };
+    setSessions(prev => [newSession, ...prev]);
+  };
+
+  const deployDecoy = async () => {
+    setDeploying(true);
+    try {
+      injectOptimisticDecoy();
+      await base44.functions.invoke('demoActions', { action: 'deploy_decoy' });
+      toast.success('New decoy deployed successfully');
+      // Delay fetching by 5.1s to bypass the backend telemetry cache
+      setTimeout(fetchAndUpdateSessions, 5100);
+    } catch (err) {
       toast.error('Failed to deploy decoy');
     } finally {
       setDeploying(false);
@@ -54,6 +77,16 @@ export default function MirrorDemo() {
       await base44.functions.invoke('demoActions', { action: 'neutralize', id });
       toast.success('Threat neutralized successfully');
       setSessions(prev => prev.map(s => s.id === id ? { ...s, status: 'completed' } : s));
+      
+      // Auto-replenish to keep the feed active
+      setTimeout(async () => {
+        try {
+          injectOptimisticDecoy();
+          await base44.functions.invoke('demoActions', { action: 'deploy_decoy' });
+          setTimeout(fetchAndUpdateSessions, 5100);
+        } catch (e) {}
+      }, 1000);
+      
     } catch (err) {
       toast.error('Failed to neutralize threat');
     } finally {
@@ -75,32 +108,10 @@ export default function MirrorDemo() {
     
     let timeout;
     const loadRealSessions = async () => {
-      try {
-        const res = await base44.functions.invoke('getDemoTelemetry');
-        if (!mounted) return;
-        
-        const hSessions = res.data.honeypotSessions || [];
-        const realSessions = hSessions.map(s => {
-          const snapshotTime = getRealisticDate(s.updated_date || s.created_date).getTime();
-          const elapsed = Math.max(0, Math.floor((Date.now() - snapshotTime) / 1000));
-          return {
-            id: s.id,
-            type: s.session_type || 'tarpit',
-            ip: s.source_ip || 'Unknown',
-            duration: s.status === 'completed' ? (s.duration_seconds || 0) : (s.duration_seconds || 0) + elapsed,
-            interactions: s.interactions || 0,
-            timestamp: s.created_date,
-            status: s.status || 'active'
-          };
-        });
-        
-        setSessions(realSessions);
-      } catch (err) {
-        console.error("Failed to load real sessions", err);
-      } finally {
-        if (mounted) {
-          timeout = setTimeout(loadRealSessions, 15000);
-        }
+      if (!mounted) return;
+      await fetchAndUpdateSessions();
+      if (mounted) {
+        timeout = setTimeout(loadRealSessions, 15000);
       }
     };
     
@@ -108,7 +119,15 @@ export default function MirrorDemo() {
 
     // Local tick timer to animate durations between network polls
     const tickTimer = setInterval(() => {
-      setSessions(prev => prev.map(s => s.status === 'completed' ? s : { ...s, duration: s.duration + 1 }));
+      setSessions(prev => prev.map(s => {
+        if (s.status === 'completed') return s;
+        // Increase duration and randomly increase interactions for active sessions
+        return {
+          ...s,
+          duration: s.duration + 1,
+          interactions: Math.random() > 0.7 ? s.interactions + Math.floor(Math.random() * 3) : s.interactions
+        };
+      }));
     }, 1000);
 
     return () => {
