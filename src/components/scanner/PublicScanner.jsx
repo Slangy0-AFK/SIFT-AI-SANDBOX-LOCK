@@ -105,6 +105,18 @@ export default function PublicScanner() {
     if (document.querySelector('shadow-root-copilot') || document.querySelector('#copilot-sidebar')) {
       aiExtensions.push('Copilot Integrated AI');
     }
+    // Merlin AI
+    if (document.querySelector('merlin-drawer') || document.querySelector('merlin-chat')) {
+      aiExtensions.push('Merlin AI Assistant');
+    }
+    // Harpa AI
+    if (document.querySelector('harpa-drawer') || document.querySelector('harpa-app')) {
+      aiExtensions.push('Harpa AI');
+    }
+    // Sider
+    if (document.getElementById('sider-app') || document.querySelector('.sider-sidebar')) {
+      aiExtensions.push('Sider AI');
+    }
 
     setDetectedExtensions(aiExtensions);
     if (aiExtensions.length > 0) anomalies++;
