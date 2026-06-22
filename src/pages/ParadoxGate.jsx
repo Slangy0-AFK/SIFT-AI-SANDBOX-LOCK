@@ -412,7 +412,7 @@ export default function ParadoxGate() {
                             <p className="text-xs text-muted-foreground">Your cognitive pattern matches a genuine human response. Welcome.</p>
                             <div className="flex gap-2 justify-center mt-3">
                               <Link to="/mirror-demo?guest=true&tutorial=true">
-                                <Button size="sm" className="font-medium bg-green-600 hover:bg-green-700 text-white border-0">Enter Demo Dashboard</Button>
+                                <Button size="sm" className="font-medium bg-green-600 hover:bg-green-700 text-white border-0">Enter Artificial Console</Button>
                               </Link>
                               <Button size="sm" variant="outline" onClick={reset}>Reset Demo</Button>
                             </div>

@@ -21,11 +21,11 @@ export default function MirrorDemo() {
   const [tutorialStep, setTutorialStep] = useState(searchParams.get('tutorial') === 'true' ? 1 : 0);
 
   const tutorialSteps = [
-    {
-      title: "Welcome to the Mirror Demo",
-      description: "You've successfully verified your humanity through the Paradox Gate. This dashboard shows what happens to the bots that fail.",
-      icon: <Shield className="w-10 h-10 text-green-500" />
-    },
+  {
+    title: "Welcome to the Artificial Console",
+    description: "You've successfully verified your humanity through the Paradox Gate. This artificial console shows what happens to the bots that fail and lets you simulate attacks.",
+    icon: <Shield className="w-10 h-10 text-green-500" />
+  },
     {
       title: "Deception Architecture",
       description: "SIFT-AI doesn't just block attacks—it traps them. Bad actors are silently rerouted to fake servers (Honeypots) or slowed down infinitely (Tarpits).",
@@ -201,7 +201,7 @@ export default function MirrorDemo() {
             </Link>
             <div className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-primary" />
-              <span className="font-bold tracking-wide text-sm hidden sm:inline">MIRROR DEMO</span>
+              <span className="font-bold tracking-wide text-sm hidden sm:inline">ARTIFICIAL CONSOLE</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
