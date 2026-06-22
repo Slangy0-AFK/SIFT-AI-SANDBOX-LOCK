@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Shield, Cpu, Lock } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 export default function About() {
+  useEffect(() => {
+    base44.analytics.track({ eventName: 'view_about_page' });
+  }, []);
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center p-6 pt-12">
       <div className="max-w-3xl w-full mb-6">
@@ -35,6 +40,45 @@ export default function About() {
           </p>
         </CardContent>
       </Card>
+
+      <div className="max-w-3xl w-full grid md:grid-cols-2 gap-6 mt-6">
+        <Card className="border-border/50 bg-secondary/20">
+          <CardHeader>
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
+              <Cpu className="w-5 h-5 text-primary" />
+            </div>
+            <CardTitle className="text-lg">The Need for Math Logic</CardTitle>
+          </CardHeader>
+          <CardContent className="text-xs text-muted-foreground leading-relaxed">
+            <p>
+              Traditional CAPTCHAs rely on visual recognition, which modern vision-language models can solve faster than humans. By shifting verification to advanced cryptographic math logic and non-deterministic sequences, we force the attacking client to consume disproportionate computational resources. 
+              This algorithmic asymmetry ensures that automated bots reveal their synthetic nature through unnatural execution speeds, while remaining seamlessly solvable by genuine human cognition paths.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50 bg-secondary/20">
+          <CardHeader>
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
+              <Lock className="w-5 h-5 text-primary" />
+            </div>
+            <CardTitle className="text-lg">The Theological Paradox</CardTitle>
+          </CardHeader>
+          <CardContent className="text-xs text-muted-foreground leading-relaxed">
+            <p>
+              Large Language Models (LLMs) are trained to be universally helpful, highly logical, and consensus-driven. Our "Theological Paradox" leverages this architecture against them.
+              We present an unresolvable logical trap disguised as a philosophical or theological query. While a human easily recognizes the subjective or impossible nature of the prompt and bypasses it using intuition, an autonomous AI agent enters an infinite loop of attempting to mathematically resolve the paradox, triggering our detection heuristics.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="max-w-3xl w-full mt-12 text-center pb-12">
+        <h2 className="text-xl font-bold mb-4">Ready to secure your infrastructure?</h2>
+        <Link to="/register">
+          <Button size="lg" className="px-8 font-semibold">Start Free Trial</Button>
+        </Link>
+      </div>
     </div>
   );
 }

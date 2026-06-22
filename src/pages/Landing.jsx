@@ -13,6 +13,7 @@ export default function Landing() {
 
   useEffect(() => {
     const recordVisit = async () => {
+      base44.analytics.track({ eventName: 'landing_page_view' });
       try {
         const res = await base44.functions.invoke('trackVisit', {});
         if (res.data) {
@@ -162,12 +163,18 @@ export default function Landing() {
         </section>
         
         {/* Architecture / Features */}
-        <section className="py-20 border-t border-border/50">
+        <section className="py-20 lg:py-32 border-t border-border/50 bg-secondary/5">
           <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-center text-2xl md:text-3xl font-bold text-foreground mb-16">
-              Platform Architecture
-            </h2>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
+                Enterprise-Grade Defense Matrix
+              </h2>
+              <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                A unified architecture designed to outsmart, outlast, and neutralize the next generation of autonomous digital threats.
+              </p>
+            </div>
+            
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
               <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
@@ -204,6 +211,32 @@ export default function Landing() {
             </div>
           </div>
         </section>
+
+        {/* Call to Action */}
+        <section className="py-24 relative overflow-hidden bg-primary/5 border-t border-border/50">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-50" />
+          <div className="max-w-4xl mx-auto px-4 relative z-10 text-center">
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
+              Stop Reacting. Start Trapping.
+            </h2>
+            <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
+              Deploy Sift-AI Quantum Shield today and turn your infrastructure into a minefield for attackers. Instantly trap autonomous bots and expose vulnerabilities.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link to="/register" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full h-14 px-8 text-base font-semibold">
+                  Get Protected Now <ShieldCheck className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
+              <Link to="/contact" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="w-full h-14 px-8 text-base bg-transparent">
+                  Contact Enterprise Sales
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
       </main>
 
       {/* Footer */}
