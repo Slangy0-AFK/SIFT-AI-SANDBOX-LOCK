@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Shield, Bug, Activity, Clock, ShieldAlert, ArrowLeft, Globe, Wifi, AlertTriangle, ScanLine, Lock, X, Plus } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Shield, Bug, Activity, Clock, ShieldAlert, ArrowLeft, Globe, Wifi, AlertTriangle, ScanLine, Lock, X, Plus, ChevronRight, Check } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +18,30 @@ export default function MirrorDemo() {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [deploying, setDeploying] = useState(false);
   const [neutralizingId, setNeutralizingId] = useState(null);
+  const [tutorialStep, setTutorialStep] = useState(searchParams.get('tutorial') === 'true' ? 1 : 0);
+
+  const tutorialSteps = [
+    {
+      title: "Welcome to the Mirror Demo",
+      description: "You've successfully verified your humanity through the Paradox Gate. This dashboard shows what happens to the bots that fail.",
+      icon: <Shield className="w-10 h-10 text-green-500" />
+    },
+    {
+      title: "Deception Architecture",
+      description: "SIFT-AI doesn't just block attacks—it traps them. Bad actors are silently rerouted to fake servers (Honeypots) or slowed down infinitely (Tarpits).",
+      icon: <Globe className="w-10 h-10 text-primary" />
+    },
+    {
+      title: "Live Interception Feed",
+      description: "Watch bots get trapped in real-time. The system automatically drains their resources, but you can also manually neutralize them.",
+      icon: <Activity className="w-10 h-10 text-amber-500" />
+    },
+    {
+      title: "Take Control",
+      description: "Try simulating an attack by clicking 'Deploy Decoy', then watch it appear in the live feed. You are in full control.",
+      icon: <Bug className="w-10 h-10 text-destructive" />
+    }
+  ];
 
   const fetchAndUpdateSessions = async () => {
     try {
@@ -420,6 +444,79 @@ export default function MirrorDemo() {
           </div>
         </div>
       )}
+
+      <AnimatePresence>
+        {tutorialStep > 0 && (
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="max-w-md w-full"
+            >
+              <Card className="border-primary/30 shadow-[0_0_40px_rgba(14,165,233,0.15)] bg-card/95 backdrop-blur-xl overflow-hidden relative">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="absolute top-2 right-2 text-muted-foreground hover:text-foreground z-10" 
+                  onClick={() => setTutorialStep(0)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+                
+                <div className="h-1 bg-secondary w-full absolute top-0 left-0">
+                  <div 
+                    className="h-full bg-primary transition-all duration-300" 
+                    style={{ width: `${(tutorialStep / tutorialSteps.length) * 100}%` }}
+                  />
+                </div>
+
+                <CardContent className="pt-10 pb-6 px-8 text-center space-y-4">
+                  <div className="mx-auto w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+                    {tutorialSteps[tutorialStep - 1].icon}
+                  </div>
+                  <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                    {tutorialSteps[tutorialStep - 1].title}
+                  </h2>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {tutorialSteps[tutorialStep - 1].description}
+                  </p>
+                </CardContent>
+
+                <CardFooter className="px-8 pb-8 pt-0 flex justify-between items-center">
+                  <div className="flex gap-1.5">
+                    {tutorialSteps.map((_, i) => (
+                      <div 
+                        key={i} 
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          i === tutorialStep - 1 ? 'bg-primary' : 'bg-secondary'
+                        }`} 
+                      />
+                    ))}
+                  </div>
+                  
+                  <Button 
+                    onClick={() => {
+                      if (tutorialStep < tutorialSteps.length) {
+                        setTutorialStep(tutorialStep + 1);
+                      } else {
+                        setTutorialStep(0);
+                      }
+                    }}
+                    className="gap-2"
+                  >
+                    {tutorialStep < tutorialSteps.length ? (
+                      <>Next <ChevronRight className="w-4 h-4" /></>
+                    ) : (
+                      <>Get Started <Check className="w-4 h-4" /></>
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       </div>
     </div>
