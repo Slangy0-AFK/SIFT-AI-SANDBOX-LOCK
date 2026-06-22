@@ -7,9 +7,9 @@ Deno.serve(async (req) => {
   try {
     const now = Date.now();
     
-    // Simple 5-second in-memory cache to prevent internal rate-limiting 
-    // if multiple users/tabs hit the demo page concurrently.
-    if (cachedData && (now - lastFetch < 5000)) {
+    // Short 1.5-second in-memory cache to allow real-time UI polling (every 2-3s) 
+    // without hitting the DB too hard on concurrent requests.
+    if (cachedData && (now - lastFetch < 1500)) {
       return Response.json(cachedData);
     }
     
