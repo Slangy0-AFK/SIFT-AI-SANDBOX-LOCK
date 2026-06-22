@@ -10,6 +10,58 @@ import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { formatLocalTime, getRealisticDate } from '@/lib/utils';
 
+const QRNGCycle = ({ onDestruct, disabled, isNeutralizing }) => {
+  const [active, setActive] = useState(false);
+  const [cycle, setCycle] = useState(0);
+
+  useEffect(() => {
+    if (active && cycle < 3) {
+      const t = setTimeout(() => setCycle(c => c + 1), 1000);
+      return () => clearTimeout(t);
+    } else if (active && cycle === 3) {
+      if (!isNeutralizing) {
+        onDestruct();
+        setCycle(4); // Prevent multiple calls
+      }
+    }
+  }, [active, cycle, isNeutralizing, onDestruct]);
+
+  if (!active) {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setActive(true)}
+        disabled={disabled}
+        className="h-8 text-[10px] uppercase font-bold tracking-wider w-full sm:w-auto border-destructive/50 text-destructive hover:bg-destructive/10"
+      >
+        Initiate QRNG
+      </Button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 px-3 py-1.5 rounded border border-destructive/50 bg-destructive/10 w-full sm:w-auto">
+      <div className="relative w-5 h-5 flex items-center justify-center flex-shrink-0">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+          className="absolute inset-0 rounded-full border-2 border-destructive/20 border-t-destructive"
+        />
+        <span className="text-[8px] font-bold text-destructive">{Math.min(cycle, 3)}</span>
+      </div>
+      <div className="flex flex-col text-left">
+        <span className="text-[9px] font-bold text-destructive uppercase tracking-widest">
+          {isNeutralizing ? 'Destroying...' : 'Active QRNG'}
+        </span>
+        <span className="text-[8px] text-destructive/80 font-mono">
+          Cycle {Math.min(cycle, 3)}/3 to Destruction
+        </span>
+      </div>
+    </div>
+  );
+};
+
 export default function MirrorDemo() {
   const [sessions, setSessions] = useState([]);
   const [searchParams] = useSearchParams();
@@ -379,18 +431,18 @@ export default function MirrorDemo() {
                           </Badge>
                           {session.status === 'completed' ? (
                             <Badge variant="outline" className="text-[8px] px-1.5 py-0 h-4 uppercase text-green-500 border-green-500/30 bg-green-500/5 ml-1">
-                              NEUTRALIZED
+                              DESTROYED
                             </Badge>
                           ) : (
                             <span className="text-[9px] font-bold text-destructive animate-pulse ml-2 flex items-center gap-1">
-                              <Activity className="w-3 h-3" /> NEUTRALIZING
+                              <Activity className="w-3 h-3" /> DESTROYING
                             </span>
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2 font-medium">
                           <span>{session.interactions} interactions</span>
                           <span>&bull;</span>
-                          <span>{session.status === 'completed' ? 'Neutralized after' : 'Trapped for'} {session.duration}s</span>
+                          <span>{session.status === 'completed' ? 'Destroyed after' : 'Trapped for'} {session.duration}s</span>
                         </p>
                       </div>
                     </div>
@@ -413,15 +465,11 @@ export default function MirrorDemo() {
                         </div>
                       </div>
                       {session.status === 'active' && (
-                        <Button 
-                          variant="destructive" 
-                          size="sm" 
-                          onClick={() => neutralizeThreat(session.id)}
-                          disabled={neutralizingId === session.id}
-                          className="h-7 text-[10px] uppercase font-bold tracking-wider w-full sm:w-auto"
-                        >
-                          {neutralizingId === session.id ? 'Neutralizing...' : 'Neutralize'}
-                        </Button>
+                        <QRNGCycle 
+                          onDestruct={() => neutralizeThreat(session.id)} 
+                          disabled={neutralizingId !== null && neutralizingId !== session.id} 
+                          isNeutralizing={neutralizingId === session.id}
+                        />
                       )}
                     </div>
                   </motion.div>
