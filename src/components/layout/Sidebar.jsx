@@ -46,6 +46,12 @@ export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState({ Firewall: true });
+
+  const toggleMenu = (label) => {
+    setExpandedMenus(prev => ({ ...prev, [label]: !prev[label] }));
+  };
+
   const isRootTab = ROOT_PATHS.includes(location.pathname);
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
@@ -54,7 +60,7 @@ export default function Sidebar() {
   return (
     <>
       {/* ── DESKTOP SIDEBAR (hidden on mobile) ── */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-screen w-64 bg-card border-r border-border flex-col z-50">
+      <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-64 bg-card border-r border-border flex-col z-50">
         {/* Logo */}
         <div className="p-4 border-b border-border">
           <div className="flex items-center gap-3">
@@ -77,17 +83,23 @@ export default function Sidebar() {
             if (item.subItems) {
               const isSubActive = item.subItems.some(sub => location.pathname === sub.path);
               const SubMenuIcon = item.icon;
+              const isExpanded = expandedMenus[item.label];
+              
               return (
                 <div key={item.label} className="space-y-1">
-                  <div className={`flex items-center justify-between px-3 py-2.5 rounded-lg font-mono text-xs tracking-wide cursor-default ${
-                    isSubActive ? 'text-primary' : 'text-muted-foreground'
-                  }`}>
+                  <button 
+                    onClick={() => toggleMenu(item.label)}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-mono text-xs tracking-wide transition-colors ${
+                      isSubActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                    }`}
+                  >
                     <div className="flex items-center gap-3">
                       <SubMenuIcon className="w-4 h-4" />
                       {item.label}
                     </div>
-                    <ChevronDown className="w-4 h-4 opacity-50" />
-                  </div>
+                    {isExpanded ? <ChevronDown className="w-4 h-4 opacity-50" /> : <ChevronRight className="w-4 h-4 opacity-50" />}
+                  </button>
+                  {isExpanded && (
                   <div className="pl-9 space-y-1">
                     {item.subItems.map(sub => {
                       const isActive = location.pathname === sub.path;
@@ -106,6 +118,7 @@ export default function Sidebar() {
                       );
                     })}
                   </div>
+                  )}
                 </div>
               );
             }
@@ -146,7 +159,7 @@ export default function Sidebar() {
 
       {/* ── MOBILE TOP BAR ── */}
       <header
-        className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3 flex items-center justify-between"
+        className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3 flex items-center justify-between"
         style={{ paddingTop: `calc(0.75rem + env(safe-area-inset-top))` }}
       >
         <div className="flex items-center gap-2">
@@ -181,7 +194,7 @@ export default function Sidebar() {
 
       {/* ── MOBILE FULL MENU DRAWER ── */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-[100] flex">
+        <div className="lg:hidden fixed inset-0 z-[100] flex">
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileMenuOpen(false)} />
           {/* Drawer */}
@@ -196,12 +209,24 @@ export default function Sidebar() {
               {navItems.map((item) => {
                 if (item.subItems) {
                   const SubMenuIconMobile = item.icon;
+                  const isExpanded = expandedMenus[item.label];
+                  const isSubActive = item.subItems.some(sub => location.pathname === sub.path);
+                  
                   return (
                     <div key={item.label} className="space-y-1">
-                      <div className="flex items-center gap-3 px-3 py-3 rounded-lg font-mono text-xs tracking-wide text-muted-foreground">
-                        <SubMenuIconMobile className="w-4 h-4" />
-                        {item.label}
-                      </div>
+                      <button 
+                        onClick={() => toggleMenu(item.label)}
+                        className={`w-full flex items-center justify-between px-3 py-3 rounded-lg font-mono text-xs tracking-wide transition-colors ${
+                          isSubActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <SubMenuIconMobile className="w-4 h-4" />
+                          {item.label}
+                        </div>
+                        {isExpanded ? <ChevronDown className="w-4 h-4 opacity-50" /> : <ChevronRight className="w-4 h-4 opacity-50" />}
+                      </button>
+                      {isExpanded && (
                       <div className="pl-9 space-y-1">
                         {item.subItems.map(sub => {
                           const isActive = location.pathname === sub.path;
@@ -221,6 +246,7 @@ export default function Sidebar() {
                           );
                         })}
                       </div>
+                      )}
                     </div>
                   );
                 }
@@ -257,7 +283,7 @@ export default function Sidebar() {
       )}
 
       {/* ── MOBILE BOTTOM NAV ── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border flex" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border flex" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {mobileBottomNav.map(({ path, icon: Icon, label, highlight }) => {
           const isActive = location.pathname === path;
           return (

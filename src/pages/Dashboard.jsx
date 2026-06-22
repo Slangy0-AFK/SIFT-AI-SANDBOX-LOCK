@@ -91,7 +91,7 @@ function ThreatScannerSection({ threats, refetchThreats }) {
                       <span className="font-mono text-[9px] text-muted-foreground">{threat.agent_type === 'human' ? 'Human' : threat.agent_type}</span>
                     </div>
                     <p className="font-mono text-[10px] text-foreground mt-2 truncate">{threat.notes?.slice(0, 80) || 'Threat detected'}</p>
-                    <p className="font-mono text-[9px] text-muted-foreground mt-1">Device: {threat.created_by || 'Unknown'} • IP: {threat.source_ip}</p>
+                    <p className="font-mono text-[9px] text-muted-foreground mt-1 truncate">Device: {threat.created_by || 'Unknown'} • IP: {threat.source_ip}</p>
                   </div>
                   <Button
                     size="sm"
@@ -265,13 +265,13 @@ export default function Dashboard() {
       />
 
       {/* Secondary panels — collapsible on mobile, side-by-side on desktop */}
-      <div className="md:hidden space-y-3">
+      <div className="lg:hidden space-y-3">
         <CollapsiblePanel title="Mirror / Honeypot Status" icon={Bug} defaultOpen={false}>
           <MirrorStatus honeypotSessions={honeypots} />
         </CollapsiblePanel>
       </div>
 
-      <div className="hidden md:grid grid-cols-1 gap-6">
+      <div className="hidden lg:grid grid-cols-1 gap-6">
         <MirrorStatus honeypotSessions={honeypots} />
       </div>
 
