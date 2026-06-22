@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Bug, AlertTriangle, Cpu, Mail, ShieldAlert, ChevronDown } from 'lucide-react';
-import { formatLocalTime, formatChicagoTime } from '@/lib/utils';
+import { formatLocalTime, formatChicagoTime, getRealisticDate } from '@/lib/utils';
 
 const typeMeta = {
   threat: { label: 'Threat', icon: AlertTriangle, color: 'text-fuchsia-400 bg-fuchsia-400/10 border-fuchsia-400/20' },
@@ -25,7 +25,7 @@ const feedFilters = [
 ];
 
 function getTimestamp(item) {
-  return new Date(item.created_date || item.created_at || item.updated_date || Date.now()).getTime();
+  return getRealisticDate(item.created_date || item.created_at || item.updated_date || Date.now()).getTime();
 }
 
 function normalizeSeverity(value) {

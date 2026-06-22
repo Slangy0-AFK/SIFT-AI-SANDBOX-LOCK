@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
-import { formatChicagoTime } from '@/lib/utils';
+import { formatChicagoTime, getRealisticDate } from '@/lib/utils';
 import PublicScanner from '@/components/scanner/PublicScanner';
 import confetti from 'canvas-confetti';
 
@@ -169,7 +169,7 @@ export default function ParadoxGate() {
              status: e.event_type === 'threat_locked' ? 'locked' : (e.event_type === 'access_granted' ? 'passed' : 'evaluating'),
              strikes: e.event_type === 'threat_locked' ? 3 : (e.event_type === 'access_granted' ? 0 : 1),
              timestamp: e.created_date,
-             seconds_since: Math.floor((Date.now() - new Date(e.created_date).getTime()) / 1000)
+             seconds_since: Math.floor((Date.now() - getRealisticDate(e.created_date).getTime()) / 1000)
            }
         });
         setSessions(realSessions);

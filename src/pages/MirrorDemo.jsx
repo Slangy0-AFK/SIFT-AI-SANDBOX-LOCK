@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PublicScanner from '@/components/scanner/PublicScanner';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
-import { formatLocalTime } from '@/lib/utils';
+import { formatLocalTime, getRealisticDate } from '@/lib/utils';
 
 export default function MirrorDemo() {
   const [sessions, setSessions] = useState([]);
@@ -81,7 +81,7 @@ export default function MirrorDemo() {
         
         const hSessions = res.data.honeypotSessions || [];
         const realSessions = hSessions.map(s => {
-          const snapshotTime = new Date(s.updated_date || s.created_date).getTime();
+          const snapshotTime = getRealisticDate(s.updated_date || s.created_date).getTime();
           const elapsed = Math.max(0, Math.floor((Date.now() - snapshotTime) / 1000));
           return {
             id: s.id,
