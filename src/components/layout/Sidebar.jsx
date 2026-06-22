@@ -24,7 +24,7 @@ const allNavItems = [
     ]
   },
   { path: '/threat-scanner', icon: ShieldCheck, label: 'Device Scanner' },
-  { path: '/email-scanner', icon: Mail, label: 'Email Scanner' },
+  // { path: '/email-scanner', icon: Mail, label: 'Email Scanner' }, // Hidden for now, ready to reinstall
   { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
   { path: '/profile', icon: User, label: 'Profile' },
   { path: '/subscription', icon: CreditCard, label: 'Subscription' },
