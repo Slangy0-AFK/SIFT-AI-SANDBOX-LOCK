@@ -119,7 +119,19 @@ export default function MirrorDemo() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col relative">
+      <div 
+        className="fixed inset-0 z-0 opacity-20 pointer-events-none"
+        style={{
+          backgroundImage: 'url("https://images.unsplash.com/photo-1563206767-5b18f218e8de?auto=format&fit=crop&q=80&w=2069")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      />
+      <div className="fixed inset-0 z-0 bg-background/80 pointer-events-none" />
+      
+      <div className="relative z-10 flex flex-col flex-1">
       {/* Header */}
       {isGuest && (
         <div className="bg-secondary border-b border-border text-foreground p-3 text-center text-sm flex flex-col sm:flex-row items-center justify-center gap-2 relative z-50">
@@ -392,6 +404,7 @@ export default function MirrorDemo() {
         </div>
       )}
 
+      </div>
     </div>
   );
 }

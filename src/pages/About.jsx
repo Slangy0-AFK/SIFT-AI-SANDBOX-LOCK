@@ -11,9 +11,21 @@ export default function About() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center p-6 pt-12">
-      <div className="max-w-3xl w-full mb-6">
-        <Link to="/">
+    <div className="min-h-screen bg-background flex flex-col items-center p-6 pt-12 relative">
+      <div 
+        className="fixed inset-0 z-0 opacity-20 pointer-events-none"
+        style={{
+          backgroundImage: 'url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=2072")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      />
+      <div className="fixed inset-0 z-0 bg-background/80 pointer-events-none" />
+      
+      <div className="relative z-10 flex flex-col items-center w-full max-w-5xl">
+        <div className="max-w-3xl w-full mb-6">
+          <Link to="/">
           <Button variant="ghost" className="gap-2 -ml-4">
             <ArrowLeft className="w-4 h-4" /> Back to Home
           </Button>
@@ -78,6 +90,7 @@ export default function About() {
         <Link to="/register">
           <Button size="lg" className="px-8 font-semibold">Start Free Trial</Button>
         </Link>
+      </div>
       </div>
     </div>
   );

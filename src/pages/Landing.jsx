@@ -31,8 +31,19 @@ export default function Landing() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans relative">
+      <div 
+        className="fixed inset-0 z-0 opacity-20 pointer-events-none"
+        style={{
+          backgroundImage: 'url("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      />
+      <div className="fixed inset-0 z-0 bg-background/80 pointer-events-none" />
       
+      <div className="relative z-10 flex flex-col flex-1">
       {/* Development Banner */}
       <div className="bg-primary/10 border-b border-primary/20 text-primary px-4 py-2 text-center text-xs font-medium z-50 relative flex items-center justify-center gap-2">
         <Activity className="w-3 h-3" />
@@ -282,6 +293,7 @@ export default function Landing() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }
