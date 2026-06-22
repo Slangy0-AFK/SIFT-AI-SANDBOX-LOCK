@@ -17,10 +17,10 @@ Deno.serve(async (req) => {
     
     // Fetch telemetry securely for public demo pages using parallel promises
     const [honeypotSessions, securityEvents, stats] = await Promise.all([
-      base44.asServiceRole.entities.HoneypotSession.filter({ status: { $in: ['active', 'completed'] } }, '-updated_date', 15).catch(() => []),
+      base44.asServiceRole.entities.HoneypotSession.filter({ status: { $in: ['active', 'completed'] } }, '-created_date', 100).catch(() => []),
       base44.asServiceRole.entities.SecurityEvent.filter({
         event_type: { $in: ['threat_locked', 'access_granted', 'qrng_cycle'] }
-      }, '-created_date', 15).catch(() => []),
+      }, '-created_date', 100).catch(() => []),
       base44.asServiceRole.entities.SiteStat.list().catch(() => [])
     ]);
     
