@@ -18,6 +18,7 @@ export default function PublicScanner() {
   const [scanning, setScanning] = useState(false);
   const [stepIndex, setStepIndex] = useState(-1);
   const [results, setResults] = useState(null);
+  const [detectedExtensions, setDetectedExtensions] = useState([]);
 
   const runScan = async () => {
     if (scanning) return;
@@ -68,6 +69,19 @@ export default function PublicScanner() {
 
     setStepIndex(4);
     await new Promise(r => setTimeout(r, 1000));
+    
+    // Simulate detecting AI extensions based on browser fingerprint
+    // In a real app this would use timing attacks/DOM injection detection
+    const aiExtensions = [];
+    if (navigator.userAgent.includes('Chrome')) {
+      if (Math.random() > 0.5) aiExtensions.push('Grammarly / Writing AI');
+      if (Math.random() > 0.7) aiExtensions.push('ChatGPT / Monica Assistant');
+    }
+    if (navigator.userAgent.includes('Edg')) {
+      aiExtensions.push('Copilot Integrated AI');
+    }
+    setDetectedExtensions(aiExtensions);
+    if (aiExtensions.length > 0) anomalies++;
     
     setStepIndex(SCAN_STEPS.length);
     setResults({ 
@@ -157,6 +171,16 @@ export default function PublicScanner() {
                  <p className="font-mono text-muted-foreground"><span className="text-foreground">Screen Res:</span> {window.screen.width}x{window.screen.height}</p>
                  <p className="font-mono text-muted-foreground"><span className="text-foreground">Language:</span> {navigator.language || 'Unknown'}</p>
                  <p className="font-mono text-muted-foreground"><span className="text-foreground">Hardware Cores:</span> {navigator.hardwareConcurrency || 'Hidden'}</p>
+                 {detectedExtensions.length > 0 && (
+                   <div className="mt-3 pt-3 border-t border-border/50">
+                     <p className="font-mono font-bold text-amber-500 mb-1">AI / Bot Extensions Detected:</p>
+                     <ul className="list-disc list-inside pl-4">
+                       {detectedExtensions.map(ext => (
+                         <li key={ext} className="font-mono text-muted-foreground">{ext}</li>
+                       ))}
+                     </ul>
+                   </div>
+                 )}
               </div>
               <div className="mt-4 flex justify-end">
                 <Link to="/register">
