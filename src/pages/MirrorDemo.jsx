@@ -102,20 +102,32 @@ export default function MirrorDemo() {
     try {
       const res = await base44.functions.invoke('getDemoTelemetry');
       const hSessions = res.data.honeypotSessions || [];
-      const realSessions = hSessions.map(s => {
-        const snapshotTime = getRealisticDate(s.updated_date || s.created_date).getTime();
-        const elapsed = Math.max(0, Math.floor((Date.now() - snapshotTime) / 1000));
-        return {
-          id: s.id,
-          type: s.session_type || 'tarpit',
-          ip: s.source_ip || 'Unknown',
-          duration: s.status === 'completed' ? (s.duration_seconds || 0) : (s.duration_seconds || 0) + elapsed,
-          interactions: s.interactions || 0,
-          timestamp: s.created_date,
-          status: s.status || 'active'
-        };
+      
+      setSessions(prev => {
+        const newSessions = hSessions.map(s => {
+          const existing = prev.find(p => p.id === s.id);
+          if (existing && existing.status !== 'completed') {
+            return {
+              ...existing,
+              status: s.status || 'active'
+            };
+          }
+          const snapshotTime = getRealisticDate(s.updated_date || s.created_date).getTime();
+          const elapsed = Math.max(0, Math.floor((Date.now() - snapshotTime) / 1000));
+          return {
+            id: s.id,
+            type: s.session_type || 'tarpit',
+            ip: s.source_ip || 'Unknown',
+            duration: s.status === 'completed' ? (s.duration_seconds || 0) : (s.duration_seconds || 0) + elapsed,
+            interactions: s.interactions || 0,
+            timestamp: s.created_date,
+            status: s.status || 'active'
+          };
+        });
+        
+        const tempSessions = prev.filter(p => p.id.startsWith('temp-'));
+        return [...tempSessions, ...newSessions].slice(0, 5);
       });
-      setSessions(realSessions);
     } catch (err) {
       console.error("Failed to load real sessions", err);
     }
@@ -132,7 +144,7 @@ export default function MirrorDemo() {
       timestamp: new Date().toISOString(),
       status: 'active'
     };
-    setSessions(prev => [newSession, ...prev]);
+    setSessions(prev => [newSession, ...prev].slice(0, 5));
   };
 
   const deployDecoy = async () => {
