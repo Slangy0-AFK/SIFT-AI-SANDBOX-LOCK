@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity } from 'lucide-react';
-import { formatChicagoTime } from '@/lib/utils';
+import { formatChicagoTime, getRealisticDate } from '@/lib/utils';
 
 const MAX_POINTS = 20;
 
@@ -42,11 +42,11 @@ export default function RealTimeTracker() {
         const slotStart = now - windowMs + i * slotMs;
         const label = formatChicagoTime(new Date(slotStart));
         const t = threats.filter(r => {
-          const d = new Date(r.created_date).getTime();
+          const d = getRealisticDate(r.created_date).getTime();
           return d >= slotStart && d < slotStart + slotMs;
         }).length;
         const z = zerodays.filter(r => {
-          const d = new Date(r.created_date).getTime();
+          const d = getRealisticDate(r.created_date).getTime();
           return d >= slotStart && d < slotStart + slotMs;
         }).length;
         return buildPoint(label, t, z);
@@ -62,7 +62,7 @@ export default function RealTimeTracker() {
           label: `THREAT · ${t.threat_level?.toUpperCase() || 'UNKNOWN'}`,
           detail: t.source_ip || 'unknown IP',
           color: t.threat_level === 'critical' ? 'text-red-400' : 'text-amber-400',
-          time: new Date(t.created_date),
+          time: getRealisticDate(t.created_date),
         })),
         ...zerodays.slice(0, 4).map(z => ({
           id: `zd-${z.id}`,
@@ -70,7 +70,7 @@ export default function RealTimeTracker() {
           label: `ZERO-DAY · ${(z.anomaly_type || 'unknown').replace(/_/g, ' ').toUpperCase()}`,
           detail: `Agent #${z.agent_id || '?'} · ${z.source_ip || 'unknown'}`,
           color: z.severity === 'fatal' ? 'text-rose-300' : z.severity === 'critical' ? 'text-red-400' : 'text-purple-400',
-          time: new Date(z.created_date),
+          time: getRealisticDate(z.created_date),
         })),
       ].sort((a, b) => b.time - a.time).slice(0, 8);
 

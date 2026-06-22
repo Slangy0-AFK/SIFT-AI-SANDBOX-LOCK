@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Lock, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatChicagoTime } from '@/lib/utils';
 import TheologicalGateway from '@/components/paradox/TheologicalGateway';
 import DeviceScanner from '@/components/security/DeviceScanner';
 
@@ -74,7 +75,7 @@ export default function ParadoxLock() {
                           <p className="font-mono text-[9px] text-muted-foreground mt-0.5 line-clamp-2">{threat.notes}</p>
                         </div>
                         <span className="font-mono text-[9px] text-muted-foreground flex-shrink-0">
-                          {threat.created_date ? format(new Date(threat.created_date), 'MMM d, HH:mm:ss') : ''}
+                          {threat.created_date ? formatChicagoTime(threat.created_date, 'MMM d, HH:mm:ss') : ''}
                         </span>
                       </div>
                     ))}

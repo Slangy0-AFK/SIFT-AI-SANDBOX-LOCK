@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Minus, Activity, AlertTriangle, Brain } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getRealisticDate } from '@/lib/utils';
 
 function getRiskLevel(score) {
   if (score >= 80) return { label: 'CRITICAL', color: 'text-red-400', bg: 'bg-red-400', border: 'border-red-400/30' };
@@ -14,10 +15,10 @@ export default function PredictiveRiskScore({ threats = [], events = [], anomali
   const { score, factors, trend } = useMemo(() => {
     const now = Date.now();
     const oneHour = 60 * 60 * 1000;
-    const recentThreats = threats.filter(t => now - new Date(t.created_date).getTime() < oneHour);
+    const recentThreats = threats.filter(t => now - getRealisticDate(t.created_date).getTime() < oneHour);
     const criticalThreats = threats.filter(t => t.threat_level === 'critical' && t.status !== 'destroyed');
     const activeThreats = threats.filter(t => !['locked', 'destroyed', 'cleared'].includes(t.status));
-    const recentCriticalEvents = events.filter(e => e.severity === 'critical' && now - new Date(e.created_date).getTime() < 2 * oneHour);
+    const recentCriticalEvents = events.filter(e => e.severity === 'critical' && now - getRealisticDate(e.created_date).getTime() < 2 * oneHour);
     const fatalAnomalies = anomalies.filter(a => a.severity === 'fatal' && a.status !== 'neutralized');
 
     let s = 0;
@@ -61,9 +62,9 @@ export default function PredictiveRiskScore({ threats = [], events = [], anomali
     const finalScore = Math.min(Math.round(s), 100);
 
     // Trend: compare last 2h vs prev 2h
-    const last2h = threats.filter(t => now - new Date(t.created_date).getTime() < 2 * oneHour).length;
+    const last2h = threats.filter(t => now - getRealisticDate(t.created_date).getTime() < 2 * oneHour).length;
     const prev2h = threats.filter(t => {
-      const age = now - new Date(t.created_date).getTime();
+      const age = now - getRealisticDate(t.created_date).getTime();
       return age >= 2 * oneHour && age < 4 * oneHour;
     }).length;
     const trend = last2h > prev2h ? 'up' : last2h < prev2h ? 'down' : 'stable';

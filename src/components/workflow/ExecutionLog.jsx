@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, XCircle, SkipForward, Loader2 } from 'lucide-react';
+import { formatChicagoTime } from '@/lib/utils';
 
 const STATUS_META = {
   success: { icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-400/20' },
@@ -37,7 +38,7 @@ export default function ExecutionLog({ executions = [] }) {
                 {exec.status.toUpperCase()}
               </Badge>
               <span className="font-mono text-[8px] text-muted-foreground">
-                {new Date(exec.created_date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+                {formatChicagoTime(exec.created_date)}
               </span>
             </div>
             {actionsLog.length > 0 && (

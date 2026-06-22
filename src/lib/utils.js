@@ -12,7 +12,21 @@ import { format } from 'date-fns';
 
 export function getRealisticDate(dateInput) {
   if (!dateInput) return new Date();
-  const d = new Date(dateInput);
+  
+  let d;
+  if (typeof dateInput === 'string') {
+    let dateStr = dateInput;
+    if (!dateStr.endsWith('Z') && !dateStr.includes('+') && !dateStr.match(/-\d{2}:\d{2}$/)) {
+      if (!dateStr.includes('T') && dateStr.includes(' ')) {
+        dateStr = dateStr.replace(' ', 'T');
+      }
+      dateStr += 'Z';
+    }
+    d = new Date(dateStr);
+  } else {
+    d = new Date(dateInput);
+  }
+  
   if (isNaN(d.getTime())) return new Date();
   
   const now = new Date();
