@@ -11,7 +11,7 @@ import { formatChicagoTime } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const QRNGCycle = ({ onDestruct, disabled, isNeutralizing, buttonText = "Initiate QRNG" }) => {
-  const [active, setActive] = useState(false);
+  const [active, setActive] = useState(true);
   const [timeLeft, setTimeLeft] = useState(3.0);
   const [completed, setCompleted] = useState(false);
 

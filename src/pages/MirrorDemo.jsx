@@ -11,7 +11,7 @@ import { base44 } from '@/api/base44Client';
 import { formatLocalTime, getRealisticDate } from '@/lib/utils';
 
 const QRNGCycle = ({ onDestruct, disabled, isNeutralizing }) => {
-  const [active, setActive] = useState(false);
+  const [active, setActive] = useState(true);
   const [timeLeft, setTimeLeft] = useState(3.0);
   const [completed, setCompleted] = useState(false);
 
