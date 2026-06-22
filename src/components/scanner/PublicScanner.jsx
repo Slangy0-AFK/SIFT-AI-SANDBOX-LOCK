@@ -72,39 +72,40 @@ export default function PublicScanner() {
     
     // Perform comprehensive DOM and Window inspection for AI tools and extensions
     const aiExtensions = [];
+    const addExt = (name, brand, risk) => aiExtensions.push({ name, brand, risk });
     
     // Writing & Grammar AI
-    if (document.querySelector('grammarly-desktop-integration') || document.body.hasAttribute('data-gr-ext-installed') || document.querySelector('.grammarly-extension')) aiExtensions.push('Grammarly');
-    if (document.querySelector('wordtune-component') || document.querySelector('[data-wordtune]')) aiExtensions.push('Wordtune');
-    if (document.querySelector('quillbot-extension') || document.getElementById('quillbot-widget')) aiExtensions.push('QuillBot');
-    if (document.querySelector('hyperwrite-widget')) aiExtensions.push('HyperWrite');
-    if (document.getElementById('jasper-widget')) aiExtensions.push('Jasper AI');
+    if (document.querySelector('grammarly-desktop-integration') || document.body.hasAttribute('data-gr-ext-installed') || document.querySelector('.grammarly-extension')) addExt('Grammarly', 'Grammarly Inc.', 'Safe');
+    if (document.querySelector('wordtune-component') || document.querySelector('[data-wordtune]')) addExt('Wordtune', 'AI21 Labs', 'Safe');
+    if (document.querySelector('quillbot-extension') || document.getElementById('quillbot-widget')) addExt('QuillBot', 'Course Hero', 'Safe');
+    if (document.querySelector('hyperwrite-widget')) addExt('HyperWrite', 'OthersideAI', 'Moderate');
+    if (document.getElementById('jasper-widget')) addExt('Jasper AI', 'Jasper', 'Moderate');
 
     // Multi-purpose AI Assistants & Copilots
-    if (document.querySelector('shadow-root-copilot') || document.querySelector('#copilot-sidebar')) aiExtensions.push('Copilot Integrated AI');
-    if (document.getElementById('monica-content') || window.__MONICA_PLUGIN__) aiExtensions.push('Monica AI Assistant');
-    if (document.querySelector('merlin-drawer') || document.querySelector('merlin-chat')) aiExtensions.push('Merlin AI');
-    if (document.querySelector('harpa-drawer') || document.querySelector('harpa-app')) aiExtensions.push('Harpa AI');
-    if (document.getElementById('sider-app') || document.querySelector('.sider-sidebar')) aiExtensions.push('Sider AI');
-    if (document.querySelector('maxai-sidebar') || document.querySelector('usechatgpt-sidebar')) aiExtensions.push('MaxAI.me');
-    if (document.querySelector('aiprm-sidebar') || document.querySelector('[data-aiprm]')) aiExtensions.push('AIPRM');
-    if (document.getElementById('bito-app') || document.querySelector('bito-sidebar')) aiExtensions.push('Bito AI');
-    if (document.querySelector('perplexity-sidebar')) aiExtensions.push('Perplexity AI');
-    if (document.querySelector('webchatgpt-app')) aiExtensions.push('WebChatGPT');
-    if (document.getElementById('scispace-copilot')) aiExtensions.push('SciSpace Copilot');
-    if (document.querySelector('eightify-app')) aiExtensions.push('Eightify');
+    if (document.querySelector('shadow-root-copilot') || document.querySelector('#copilot-sidebar')) addExt('Copilot Integrated AI', 'Microsoft', 'Safe');
+    if (document.getElementById('monica-content') || window.__MONICA_PLUGIN__) addExt('Monica AI', 'Butterfly Effect', 'Moderate');
+    if (document.querySelector('merlin-drawer') || document.querySelector('merlin-chat')) addExt('Merlin AI', 'Foyer', 'Moderate');
+    if (document.querySelector('harpa-drawer') || document.querySelector('harpa-app')) addExt('Harpa AI', 'Harpa.ai', 'Moderate');
+    if (document.getElementById('sider-app') || document.querySelector('.sider-sidebar')) addExt('Sider AI', 'Sider.ai', 'Moderate');
+    if (document.querySelector('maxai-sidebar') || document.querySelector('usechatgpt-sidebar')) addExt('MaxAI.me', 'MaxAI', 'Moderate');
+    if (document.querySelector('aiprm-sidebar') || document.querySelector('[data-aiprm]')) addExt('AIPRM', 'AIPRM Corp', 'Moderate');
+    if (document.getElementById('bito-app') || document.querySelector('bito-sidebar')) addExt('Bito AI', 'Bito Inc.', 'Moderate');
+    if (document.querySelector('perplexity-sidebar')) addExt('Perplexity', 'Perplexity AI', 'Safe');
+    if (document.querySelector('webchatgpt-app')) addExt('WebChatGPT', 'Unknown Developer', 'High');
+    if (document.getElementById('scispace-copilot')) addExt('SciSpace Copilot', 'Typeset', 'Moderate');
+    if (document.querySelector('eightify-app')) addExt('Eightify', 'Eightify', 'Moderate');
 
     // Developer & System Tools
-    if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__) aiExtensions.push('React Developer Tools');
-    if (window.__REDUX_DEVTOOLS_EXTENSION__) aiExtensions.push('Redux DevTools');
-    if (window.__VUE_DEVTOOLS_GLOBAL_HOOK__) aiExtensions.push('Vue.js Devtools');
-    if (document.getElementById('loom-companion-mv3') || document.getElementById('loom-companion-shadow-root')) aiExtensions.push('Loom Companion');
-    if (document.querySelector('[data-dashlane-rid]') || document.getElementById('lastpass-notification-overlay')) aiExtensions.push('Password Manager');
+    if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__) addExt('React DevTools', 'Meta', 'Safe');
+    if (window.__REDUX_DEVTOOLS_EXTENSION__) addExt('Redux DevTools', 'Community', 'Safe');
+    if (window.__VUE_DEVTOOLS_GLOBAL_HOOK__) addExt('Vue.js Devtools', 'Vue.js', 'Safe');
+    if (document.getElementById('loom-companion-mv3') || document.getElementById('loom-companion-shadow-root')) addExt('Loom Companion', 'Atlassian', 'Safe');
+    if (document.querySelector('[data-dashlane-rid]') || document.getElementById('lastpass-notification-overlay')) addExt('Password Manager', 'Various', 'Safe');
 
     // Mobile / Native App Bridge Detection (Preparing for Native Apps)
     if (window.webkit?.messageHandlers || window.AndroidBridge || navigator.userAgent.includes('wv')) {
        // In a native app wrapper, we flag the presence of native bridges
-       aiExtensions.push('Native App Environment Detected');
+       addExt('Native App Bridge', 'System API', 'Unknown');
     }
 
     setDetectedExtensions(aiExtensions);
@@ -200,12 +201,29 @@ export default function PublicScanner() {
                  <p className="font-mono text-muted-foreground"><span className="text-foreground">Hardware Cores:</span> {navigator.hardwareConcurrency || 'Hidden'}</p>
                  {detectedExtensions.length > 0 && (
                    <div className="mt-3 pt-3 border-t border-border/50">
-                     <p className="font-mono font-bold text-amber-500 mb-1">AI / Bot Extensions Detected:</p>
-                     <ul className="list-disc list-inside pl-4">
-                       {detectedExtensions.map(ext => (
-                         <li key={ext} className="font-mono text-muted-foreground">{ext}</li>
+                     <p className="font-mono font-bold text-amber-500 mb-2">Detected Modifications & Extensions:</p>
+                     <div className="space-y-2">
+                       {detectedExtensions.map((ext, idx) => (
+                         <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 p-2 rounded bg-secondary/30 border border-border/50">
+                           <div>
+                             <span className="font-semibold text-foreground font-mono text-sm">{ext.name}</span>
+                             <span className="text-muted-foreground ml-2 text-[10px] uppercase font-sans">By {ext.brand}</span>
+                           </div>
+                           <div className="flex items-center gap-1.5">
+                             <div className={`w-1.5 h-1.5 rounded-full ${
+                               ext.risk === 'Safe' ? 'bg-green-500' : 
+                               ext.risk === 'Moderate' ? 'bg-amber-500' : 'bg-destructive'
+                             }`} />
+                             <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                               ext.risk === 'Safe' ? 'text-green-500' : 
+                               ext.risk === 'Moderate' ? 'text-amber-500' : 'text-destructive'
+                             }`}>
+                               {ext.risk === 'Safe' ? 'Safe / Verified' : ext.risk === 'Moderate' ? 'Data Sharing Risk' : 'Unverified / Unsafe'}
+                             </span>
+                           </div>
+                         </div>
                        ))}
-                     </ul>
+                     </div>
                    </div>
                  )}
               </div>
