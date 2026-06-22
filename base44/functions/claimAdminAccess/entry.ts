@@ -19,9 +19,9 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Only allow the specific email to claim admin (check against hashed value)
+    // Only allow the specific email to claim admin
     const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL');
-    if (!ADMIN_EMAIL || user.email !== ADMIN_EMAIL) {
+    if (!ADMIN_EMAIL || !user || user.email !== ADMIN_EMAIL) {
       return Response.json({ error: 'Access denied - not authorized for admin setup' }, { status: 403 });
     }
 
