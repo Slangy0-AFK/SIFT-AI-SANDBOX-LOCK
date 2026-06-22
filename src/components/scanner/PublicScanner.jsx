@@ -70,16 +70,42 @@ export default function PublicScanner() {
     setStepIndex(4);
     await new Promise(r => setTimeout(r, 1000));
     
-    // Simulate detecting AI extensions based on browser fingerprint
-    // In a real app this would use timing attacks/DOM injection detection
+    // Perform real DOM and Window inspection to detect actual installed extensions/injects
     const aiExtensions = [];
-    if (navigator.userAgent.includes('Chrome')) {
-      if (Math.random() > 0.5) aiExtensions.push('Grammarly / Writing AI');
-      if (Math.random() > 0.7) aiExtensions.push('ChatGPT / Monica Assistant');
+    
+    // Grammarly
+    if (document.querySelector('grammarly-desktop-integration') || document.body.hasAttribute('data-gr-ext-installed') || document.querySelector('.grammarly-extension')) {
+      aiExtensions.push('Grammarly / Writing AI');
     }
-    if (navigator.userAgent.includes('Edg')) {
+    // React DevTools
+    if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
+      aiExtensions.push('React Developer Tools');
+    }
+    // Redux DevTools
+    if (window.__REDUX_DEVTOOLS_EXTENSION__) {
+      aiExtensions.push('Redux DevTools');
+    }
+    // Vue DevTools
+    if (window.__VUE_DEVTOOLS_GLOBAL_HOOK__) {
+      aiExtensions.push('Vue.js Devtools');
+    }
+    // Monica AI
+    if (document.getElementById('monica-content') || window.__MONICA_PLUGIN__) {
+      aiExtensions.push('Monica AI Assistant');
+    }
+    // Loom
+    if (document.getElementById('loom-companion-mv3') || document.getElementById('loom-companion-shadow-root')) {
+      aiExtensions.push('Loom Companion');
+    }
+    // Dashlane / LastPass
+    if (document.querySelector('[data-dashlane-rid]') || document.getElementById('lastpass-notification-overlay')) {
+      aiExtensions.push('Password Manager Extension');
+    }
+    // Copilot / Generic AI injected panels
+    if (document.querySelector('shadow-root-copilot') || document.querySelector('#copilot-sidebar')) {
       aiExtensions.push('Copilot Integrated AI');
     }
+
     setDetectedExtensions(aiExtensions);
     if (aiExtensions.length > 0) anomalies++;
     
