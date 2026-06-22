@@ -29,6 +29,11 @@ import Contact from '@/pages/Contact';
 import Landing from '@/pages/Landing';
 import MirrorDemo from '@/pages/MirrorDemo';
 import ParadoxGate from '@/pages/ParadoxGate';
+import IpAllowlist from '@/pages/IpAllowlist';
+import SessionManagement from '@/pages/SessionManagement';
+import DataRetention from '@/pages/DataRetention';
+import AuditLogs from '@/pages/AuditLogs';
+import EmailScanner from '@/pages/EmailScanner';
 
 // Add page imports here
 
@@ -67,7 +72,12 @@ function AppRoutes() {
           <Route path="/firewall" element={<FirewallDashboard />} />
           <Route path="/firewall/rules" element={<FirewallRules />} />
           <Route path="/firewall/logs" element={<FirewallLogs />} />
+          <Route path="/firewall/ip-allowlist" element={<IpAllowlist />} />
+          <Route path="/firewall/sessions" element={<SessionManagement />} />
+          <Route path="/firewall/retention" element={<DataRetention />} />
+          <Route path="/firewall/audit-logs" element={<AuditLogs />} />
           <Route path="/threat-scanner" element={<ThreatScanner />} />
+          <Route path="/email-scanner" element={<EmailScanner />} />
           <Route path="/mirror-env" element={<MirrorEnvironment />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/subscription" element={<SubscriptionPage />} />

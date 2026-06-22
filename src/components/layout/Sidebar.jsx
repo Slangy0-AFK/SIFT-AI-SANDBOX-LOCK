@@ -5,13 +5,26 @@ import NotificationBell from '../notifications/NotificationBell';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
+import { ChevronDown, ChevronRight, Filter, ShieldCheck, Database, List } from 'lucide-react';
+
 const allNavItems = [
   { path: '/dashboard', icon: Activity, label: 'Command Center' },
   { path: '/zero-day', icon: Radiation, label: 'Zero-Day Center' },
   { path: '/threat-intel', icon: ShieldAlert, label: 'Threat Intel' },
-  { path: '/firewall', icon: Shield, label: 'Firewall' },
-  { path: '/threat-scanner', icon: Mail, label: 'Threat Scanner' },
-
+  { 
+    label: 'Firewall', icon: Shield, 
+    subItems: [
+      { path: '/firewall', label: 'Dashboard' },
+      { path: '/firewall/rules', label: 'Rules' },
+      { path: '/firewall/logs', label: 'Logs' },
+      { path: '/firewall/ip-allowlist', label: 'IP Allowlist' },
+      { path: '/firewall/sessions', label: 'Session Management' },
+      { path: '/firewall/retention', label: 'Data Retention' },
+      { path: '/firewall/audit-logs', label: 'Audit Logs' }
+    ]
+  },
+  { path: '/threat-scanner', icon: ShieldCheck, label: 'Device Scanner' },
+  { path: '/email-scanner', icon: Mail, label: 'Email Scanner' },
   { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
   { path: '/profile', icon: User, label: 'Profile' },
   { path: '/subscription', icon: CreditCard, label: 'Subscription' },
@@ -60,11 +73,48 @@ export default function Sidebar() {
 
         {/* Nav */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navItems.map(({ path, icon: Icon, label, highlight }) => {
+          {navItems.map((item) => {
+            if (item.subItems) {
+              const isSubActive = item.subItems.some(sub => location.pathname === sub.path);
+              const SubMenuIcon = item.icon;
+              return (
+                <div key={item.label} className="space-y-1">
+                  <div className={`flex items-center justify-between px-3 py-2.5 rounded-lg font-mono text-xs tracking-wide cursor-default ${
+                    isSubActive ? 'text-primary' : 'text-muted-foreground'
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      <SubMenuIcon className="w-4 h-4" />
+                      {item.label}
+                    </div>
+                    <ChevronDown className="w-4 h-4 opacity-50" />
+                  </div>
+                  <div className="pl-9 space-y-1">
+                    {item.subItems.map(sub => {
+                      const isActive = location.pathname === sub.path;
+                      return (
+                        <Link
+                          key={sub.path}
+                          to={sub.path}
+                          className={`flex items-center px-3 py-2 rounded-lg font-mono text-[11px] tracking-wide transition-all duration-200 ${
+                            isActive
+                              ? 'bg-primary/10 text-primary border border-primary/20'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                          }`}
+                        >
+                          {sub.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            }
+
+            const { path, icon: Icon, label, highlight } = item;
             const isActive = location.pathname === path;
             return (
               <Link
-                key={path}
+                key={path || label}
                 to={path}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-mono text-xs tracking-wide transition-all duration-200 ${
                   isActive
@@ -143,11 +193,43 @@ export default function Sidebar() {
               </button>
             </div>
             <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-              {navItems.map(({ path, icon: Icon, label, highlight }) => {
+              {navItems.map((item) => {
+                if (item.subItems) {
+                  const SubMenuIconMobile = item.icon;
+                  return (
+                    <div key={item.label} className="space-y-1">
+                      <div className="flex items-center gap-3 px-3 py-3 rounded-lg font-mono text-xs tracking-wide text-muted-foreground">
+                        <SubMenuIconMobile className="w-4 h-4" />
+                        {item.label}
+                      </div>
+                      <div className="pl-9 space-y-1">
+                        {item.subItems.map(sub => {
+                          const isActive = location.pathname === sub.path;
+                          return (
+                            <Link
+                              key={sub.path}
+                              to={sub.path}
+                              onClick={() => setMobileMenuOpen(false)}
+                              className={`flex items-center px-3 py-2 rounded-lg font-mono text-[11px] tracking-wide transition-all duration-200 ${
+                                isActive
+                                  ? 'bg-primary/10 text-primary border border-primary/20'
+                                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                              }`}
+                            >
+                              {sub.label}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                }
+
+                const { path, icon: Icon, label, highlight } = item;
                 const isActive = location.pathname === path;
                 return (
                   <Link
-                    key={path}
+                    key={path || label}
                     to={path}
                     onClick={() => setMobileMenuOpen(false)}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg font-mono text-xs tracking-wide transition-all duration-200 ${

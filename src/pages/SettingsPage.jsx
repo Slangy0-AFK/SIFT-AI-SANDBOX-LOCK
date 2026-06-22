@@ -227,6 +227,36 @@ export default function SettingsPage() {
       {/* Security Tools */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <SlackIntegrationSetup />
+        
+        {/* Custom Alert Routing */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-400" /> CUSTOM ALERT ROUTING
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="font-mono text-[10px] text-muted-foreground">
+              Configure specific thresholds for alerts (Slack/SMS) to avoid alert fatigue.
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-secondary/10">
+                <div>
+                  <p className="font-mono text-[10px] font-bold text-foreground">Zero-Day Anomalies</p>
+                  <p className="font-mono text-[9px] text-muted-foreground mt-0.5">Only alert on Critical/Fatal</p>
+                </div>
+                <Button size="sm" variant="outline" className="font-mono text-[9px] h-6 px-2">Configure</Button>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-secondary/10">
+                <div>
+                  <p className="font-mono text-[10px] font-bold text-foreground">Firewall Breaches</p>
+                  <p className="font-mono text-[9px] text-muted-foreground mt-0.5">Alert on All Breaches</p>
+                </div>
+                <Button size="sm" variant="outline" className="font-mono text-[9px] h-6 px-2">Configure</Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
