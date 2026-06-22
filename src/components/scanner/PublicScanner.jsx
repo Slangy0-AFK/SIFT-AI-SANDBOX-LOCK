@@ -70,52 +70,41 @@ export default function PublicScanner() {
     setStepIndex(4);
     await new Promise(r => setTimeout(r, 1000));
     
-    // Perform real DOM and Window inspection to detect actual installed extensions/injects
+    // Perform comprehensive DOM and Window inspection for AI tools and extensions
     const aiExtensions = [];
     
-    // Grammarly
-    if (document.querySelector('grammarly-desktop-integration') || document.body.hasAttribute('data-gr-ext-installed') || document.querySelector('.grammarly-extension')) {
-      aiExtensions.push('Grammarly / Writing AI');
-    }
-    // React DevTools
-    if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
-      aiExtensions.push('React Developer Tools');
-    }
-    // Redux DevTools
-    if (window.__REDUX_DEVTOOLS_EXTENSION__) {
-      aiExtensions.push('Redux DevTools');
-    }
-    // Vue DevTools
-    if (window.__VUE_DEVTOOLS_GLOBAL_HOOK__) {
-      aiExtensions.push('Vue.js Devtools');
-    }
-    // Monica AI
-    if (document.getElementById('monica-content') || window.__MONICA_PLUGIN__) {
-      aiExtensions.push('Monica AI Assistant');
-    }
-    // Loom
-    if (document.getElementById('loom-companion-mv3') || document.getElementById('loom-companion-shadow-root')) {
-      aiExtensions.push('Loom Companion');
-    }
-    // Dashlane / LastPass
-    if (document.querySelector('[data-dashlane-rid]') || document.getElementById('lastpass-notification-overlay')) {
-      aiExtensions.push('Password Manager Extension');
-    }
-    // Copilot / Generic AI injected panels
-    if (document.querySelector('shadow-root-copilot') || document.querySelector('#copilot-sidebar')) {
-      aiExtensions.push('Copilot Integrated AI');
-    }
-    // Merlin AI
-    if (document.querySelector('merlin-drawer') || document.querySelector('merlin-chat')) {
-      aiExtensions.push('Merlin AI Assistant');
-    }
-    // Harpa AI
-    if (document.querySelector('harpa-drawer') || document.querySelector('harpa-app')) {
-      aiExtensions.push('Harpa AI');
-    }
-    // Sider
-    if (document.getElementById('sider-app') || document.querySelector('.sider-sidebar')) {
-      aiExtensions.push('Sider AI');
+    // Writing & Grammar AI
+    if (document.querySelector('grammarly-desktop-integration') || document.body.hasAttribute('data-gr-ext-installed') || document.querySelector('.grammarly-extension')) aiExtensions.push('Grammarly');
+    if (document.querySelector('wordtune-component') || document.querySelector('[data-wordtune]')) aiExtensions.push('Wordtune');
+    if (document.querySelector('quillbot-extension') || document.getElementById('quillbot-widget')) aiExtensions.push('QuillBot');
+    if (document.querySelector('hyperwrite-widget')) aiExtensions.push('HyperWrite');
+    if (document.getElementById('jasper-widget')) aiExtensions.push('Jasper AI');
+
+    // Multi-purpose AI Assistants & Copilots
+    if (document.querySelector('shadow-root-copilot') || document.querySelector('#copilot-sidebar')) aiExtensions.push('Copilot Integrated AI');
+    if (document.getElementById('monica-content') || window.__MONICA_PLUGIN__) aiExtensions.push('Monica AI Assistant');
+    if (document.querySelector('merlin-drawer') || document.querySelector('merlin-chat')) aiExtensions.push('Merlin AI');
+    if (document.querySelector('harpa-drawer') || document.querySelector('harpa-app')) aiExtensions.push('Harpa AI');
+    if (document.getElementById('sider-app') || document.querySelector('.sider-sidebar')) aiExtensions.push('Sider AI');
+    if (document.querySelector('maxai-sidebar') || document.querySelector('usechatgpt-sidebar')) aiExtensions.push('MaxAI.me');
+    if (document.querySelector('aiprm-sidebar') || document.querySelector('[data-aiprm]')) aiExtensions.push('AIPRM');
+    if (document.getElementById('bito-app') || document.querySelector('bito-sidebar')) aiExtensions.push('Bito AI');
+    if (document.querySelector('perplexity-sidebar')) aiExtensions.push('Perplexity AI');
+    if (document.querySelector('webchatgpt-app')) aiExtensions.push('WebChatGPT');
+    if (document.getElementById('scispace-copilot')) aiExtensions.push('SciSpace Copilot');
+    if (document.querySelector('eightify-app')) aiExtensions.push('Eightify');
+
+    // Developer & System Tools
+    if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__) aiExtensions.push('React Developer Tools');
+    if (window.__REDUX_DEVTOOLS_EXTENSION__) aiExtensions.push('Redux DevTools');
+    if (window.__VUE_DEVTOOLS_GLOBAL_HOOK__) aiExtensions.push('Vue.js Devtools');
+    if (document.getElementById('loom-companion-mv3') || document.getElementById('loom-companion-shadow-root')) aiExtensions.push('Loom Companion');
+    if (document.querySelector('[data-dashlane-rid]') || document.getElementById('lastpass-notification-overlay')) aiExtensions.push('Password Manager');
+
+    // Mobile / Native App Bridge Detection (Preparing for Native Apps)
+    if (window.webkit?.messageHandlers || window.AndroidBridge || navigator.userAgent.includes('wv')) {
+       // In a native app wrapper, we flag the presence of native bridges
+       aiExtensions.push('Native App Environment Detected');
     }
 
     setDetectedExtensions(aiExtensions);
