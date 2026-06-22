@@ -23,11 +23,13 @@ export default function ParadoxLock() {
 
   return (
     <div className="p-4 md:p-6 space-y-4 md:space-y-6 max-w-3xl mx-auto">
-      <div>
-        <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">SECURITY COMMAND CENTER</h1>
-        <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
-          DEVICE PROTECTION & AUTHENTICATION LAYER
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">SECURITY COMMAND CENTER</h1>
+          <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+            DEVICE PROTECTION & AUTHENTICATION LAYER · ARTIFICIAL CONSOLE
+          </p>
+        </div>
       </div>
 
       <DeviceScanner />

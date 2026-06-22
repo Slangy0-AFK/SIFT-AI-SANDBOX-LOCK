@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FeatureGate from '@/components/subscription/FeatureGate';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -8,6 +8,62 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Bug, Clock, Eye, Loader2, Wifi, Globe, Shield, AlertTriangle } from 'lucide-react';
 import { formatChicagoTime } from '@/lib/utils';
+import { toast } from 'sonner';
+
+const QRNGCycle = ({ onDestruct, disabled, isNeutralizing, buttonText = "Initiate QRNG" }) => {
+  const [active, setActive] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(3.0);
+  const [completed, setCompleted] = useState(false);
+
+  useEffect(() => {
+    if (active && timeLeft > 0) {
+      const t = setInterval(() => {
+        setTimeLeft(c => Math.max(0, c - 0.1));
+      }, 100);
+      return () => clearInterval(t);
+    } else if (active && timeLeft === 0 && !completed) {
+      if (!isNeutralizing) {
+        onDestruct();
+        setCompleted(true);
+      }
+    }
+  }, [active, timeLeft, isNeutralizing, onDestruct, completed]);
+
+  if (!active) {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setActive(true)}
+        disabled={disabled}
+        className="h-8 text-[10px] uppercase font-bold tracking-wider w-full sm:w-auto border-destructive/50 text-destructive hover:bg-destructive/10"
+      >
+        {buttonText}
+      </Button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 px-3 py-1.5 rounded border border-destructive/50 bg-destructive/10 w-full sm:w-auto mt-2">
+      <div className="relative w-7 h-7 flex items-center justify-center flex-shrink-0">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+          className="absolute inset-0 rounded-full border-2 border-destructive/20 border-t-destructive"
+        />
+        <span className="text-[9px] font-bold text-destructive tabular-nums">{timeLeft.toFixed(1)}</span>
+      </div>
+      <div className="flex flex-col text-left">
+        <span className="text-[9px] font-bold text-destructive uppercase tracking-widest">
+          {isNeutralizing ? 'Destroying...' : 'Active QRNG'}
+        </span>
+        <span className="text-[8px] text-destructive/80 font-mono">
+          T-minus {timeLeft.toFixed(1)}s to Destruction
+        </span>
+      </div>
+    </div>
+  );
+};
 
 export default function MirrorEnvironment() {
   const [deploying, setDeploying] = useState(null);
@@ -26,6 +82,14 @@ export default function MirrorEnvironment() {
 
   const createEventMutation = useMutation({
     mutationFn: (data) => base44.entities.SecurityEvent.create(data),
+  });
+
+  const neutralizeMutation = useMutation({
+    mutationFn: (id) => base44.entities.HoneypotSession.update(id, { status: 'destroyed' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['honeypot-sessions'] });
+      toast.success('Session destroyed successfully');
+    }
   });
 
   const deployDecoy = async (type) => {
@@ -204,9 +268,18 @@ export default function MirrorEnvironment() {
                         {session.data_captured || `${session.interactions} interactions`}
                       </p>
                     </div>
-                    <span className="font-mono text-[9px] text-muted-foreground">
-                      {session.created_date ? formatChicagoTime(session.created_date) : ''}
-                    </span>
+                    <div className="flex flex-col items-end gap-2">
+                      <span className="font-mono text-[9px] text-muted-foreground">
+                        {session.created_date ? formatChicagoTime(session.created_date) : ''}
+                      </span>
+                      {session.status === 'active' && (
+                        <QRNGCycle 
+                          onDestruct={() => neutralizeMutation.mutate(session.id)}
+                          disabled={neutralizeMutation.isPending}
+                          isNeutralizing={neutralizeMutation.isPending && neutralizeMutation.variables === session.id}
+                        />
+                      )}
+                    </div>
                   </motion.div>
                 ))}
               </div>

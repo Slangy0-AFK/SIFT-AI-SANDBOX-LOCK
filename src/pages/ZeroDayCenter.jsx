@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import FeatureGate from '@/components/subscription/FeatureGate';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -14,6 +14,61 @@ import confetti from 'canvas-confetti';
 const ANOMALY_TYPES = ['behavioral', 'polymorphic', 'memory_injection', 'side_channel', 'supply_chain', 'ai_adversarial', 'fileless', 'firmware', 'unknown'];
 const SEVERITIES = ['info', 'warning', 'critical', 'fatal'];
 const AGENTS = ['SENTINEL', 'CIPHER', 'PHANTOM', 'ORACLE', 'WRAITH', 'BASTION', 'NEXUS', 'SPECTER', 'FORGE', 'MIRAGE', 'VORTEX', 'SIFT-AI-X'];
+
+const QRNGCycle = ({ onDestruct, disabled, isNeutralizing, buttonText = "Initiate QRNG" }) => {
+  const [active, setActive] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(3.0);
+  const [completed, setCompleted] = useState(false);
+
+  useEffect(() => {
+    if (active && timeLeft > 0) {
+      const t = setInterval(() => {
+        setTimeLeft(c => Math.max(0, c - 0.1));
+      }, 100);
+      return () => clearInterval(t);
+    } else if (active && timeLeft === 0 && !completed) {
+      if (!isNeutralizing) {
+        onDestruct();
+        setCompleted(true);
+      }
+    }
+  }, [active, timeLeft, isNeutralizing, onDestruct, completed]);
+
+  if (!active) {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setActive(true)}
+        disabled={disabled}
+        className="h-8 text-[10px] uppercase font-bold tracking-wider w-full sm:w-auto border-destructive/50 text-destructive hover:bg-destructive/10"
+      >
+        {buttonText}
+      </Button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 px-3 py-1.5 rounded border border-destructive/50 bg-destructive/10 w-full sm:w-auto">
+      <div className="relative w-7 h-7 flex items-center justify-center flex-shrink-0">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+          className="absolute inset-0 rounded-full border-2 border-destructive/20 border-t-destructive"
+        />
+        <span className="text-[9px] font-bold text-destructive tabular-nums">{timeLeft.toFixed(1)}</span>
+      </div>
+      <div className="flex flex-col text-left">
+        <span className="text-[9px] font-bold text-destructive uppercase tracking-widest">
+          {isNeutralizing ? 'Destroying...' : 'Active QRNG'}
+        </span>
+        <span className="text-[8px] text-destructive/80 font-mono">
+          T-minus {timeLeft.toFixed(1)}s to Destruction
+        </span>
+      </div>
+    </div>
+  );
+};
 
 export default function ZeroDayCenter() {
   const queryClient = useQueryClient();
@@ -73,10 +128,12 @@ export default function ZeroDayCenter() {
           </p>
         </div>
         {stats.active > 0 && (
-           <Button size="sm" variant="outline" className="font-mono text-[10px] border-red-400/30 text-red-400 hover:bg-red-400/10"
-             onClick={() => neutralizeAll.mutate()} disabled={neutralizeAll.isPending}>
-             <Shield className="w-3 h-3 mr-1" /> Neutralize All ({stats.active})
-           </Button>
+           <QRNGCycle 
+             onDestruct={() => neutralizeAll.mutate()} 
+             disabled={neutralizeAll.isPending} 
+             isNeutralizing={neutralizeAll.isPending}
+             buttonText={`Mass QRNG Neutralize (${stats.active})`}
+           />
          )}
       </div>
 
