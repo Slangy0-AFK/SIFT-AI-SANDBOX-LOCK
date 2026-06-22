@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-export default async function handler(req) {
+Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
@@ -20,7 +20,8 @@ export default async function handler(req) {
 
     // Removed strict origin check to allow previews and valid cross-origin requests
 
-    const ip = req.headers.get('cf-connecting-ip') || req.headers.get('x-forwarded-for') || 'unknown';
+    const forwardedIps = req.headers.get('x-forwarded-for');
+    const ip = req.headers.get('cf-connecting-ip') || (forwardedIps ? forwardedIps.split(',')[0].trim() : 'unknown');
     // Format current date in user timezone (America/Chicago) or UTC based on environment needs, using ISO string part.
     // Deno runtime doesn't have formatChicagoTime utility directly easily available, so we just use UTC date as a proxy for 'day' tracking.
     const today = new Date().toISOString().split('T')[0];
@@ -72,6 +73,4 @@ export default async function handler(req) {
     console.error('trackVisit error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
-}
-
-Deno.serve(handler);
+});

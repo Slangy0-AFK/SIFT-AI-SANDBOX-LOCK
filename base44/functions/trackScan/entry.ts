@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-export default async function handler(req) {
+Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
@@ -38,6 +38,4 @@ export default async function handler(req) {
     console.error('trackScan error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
-}
-
-Deno.serve(handler);
+});
