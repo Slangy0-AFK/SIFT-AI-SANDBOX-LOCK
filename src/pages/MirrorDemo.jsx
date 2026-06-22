@@ -189,11 +189,9 @@ export default function MirrorDemo() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-            {!isGuest && (
-              <Button variant="outline" onClick={deployDecoy} disabled={deploying} className="w-full h-10 gap-2 font-medium transition-colors border-primary/20 text-primary hover:bg-primary/10">
-                <Plus className="w-4 h-4" /> Deploy Decoy
-              </Button>
-            )}
+            <Button variant="outline" onClick={deployDecoy} disabled={deploying} className="w-full h-10 gap-2 font-medium transition-colors border-primary/20 text-primary hover:bg-primary/10">
+              <Plus className="w-4 h-4" /> Deploy Decoy
+            </Button>
             <Button variant="outline" onClick={() => setScannerOpen(true)} className="w-full h-10 gap-2 font-medium transition-colors">
               <ScanLine className="w-4 h-4 text-primary" /> Test My Device
             </Button>
@@ -371,7 +369,7 @@ export default function MirrorDemo() {
                           </span>
                         </div>
                       </div>
-                      {session.status === 'active' && !isGuest && (
+                      {session.status === 'active' && (
                         <Button 
                           variant="destructive" 
                           size="sm" 

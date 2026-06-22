@@ -46,13 +46,14 @@ export default function Sidebar() {
         <div className="p-4 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Shield className="w-8 h-8 text-primary" />
-              <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
+              <img 
+                src="https://media.base44.com/images/public/6a0db3181169f42924052c0d/650b247a7_amazon.PNG" 
+                alt="Sift.ai Logo" 
+                className="h-10 w-auto rounded-sm object-contain"
+              />
+              <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse border-2 border-card" />
             </div>
-            <div className="flex-1">
-              <h1 className="font-mono text-sm font-bold text-foreground tracking-wider">SIFT-AI</h1>
-              <p className="font-mono text-[10px] text-muted-foreground tracking-widest">QUANTUM SHIELD</p>
-            </div>
+            <div className="flex-1" />
             <NotificationBell />
           </div>
         </div>
@@ -109,12 +110,12 @@ export default function Sidebar() {
             </button>
           )}
           <div className="relative">
-            <Shield className="w-6 h-6 text-primary" />
-            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-          </div>
-          <div>
-            <span className="font-mono text-sm font-bold text-foreground tracking-wider">SIFT-AI</span>
-            <span className="font-mono text-[9px] text-muted-foreground tracking-widest ml-2">QUANTUM SHIELD</span>
+            <img 
+              src="https://media.base44.com/images/public/6a0db3181169f42924052c0d/650b247a7_amazon.PNG" 
+              alt="Sift.ai Logo" 
+              className="h-8 w-auto rounded-sm object-contain"
+            />
+            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full animate-pulse border-2 border-card" />
           </div>
         </div>
         <div className="flex items-center gap-2">

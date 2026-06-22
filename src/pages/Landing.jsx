@@ -54,10 +54,12 @@ export default function Landing() {
       <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="relative">
-              <Shield className="w-6 h-6 text-primary" />
-            </div>
-            <span className="font-bold text-sm tracking-wide">SIFT-AI</span>
+            <img 
+              src="https://media.base44.com/images/public/6a0db3181169f42924052c0d/650b247a7_amazon.PNG" 
+              alt="Sift.ai Logo" 
+              className="h-8 w-auto rounded-sm object-contain"
+            />
+            {/* <span className="font-bold text-sm tracking-wide">sift.ai</span> */}
           </div>
           
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
