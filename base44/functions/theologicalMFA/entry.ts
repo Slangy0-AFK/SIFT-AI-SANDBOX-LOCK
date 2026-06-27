@@ -367,7 +367,6 @@ Deno.serve(async (req) => {
         corridor: 'user',
         message: 'Access granted. Challenge response validated successfully.',
         qrng_otp: qrngPad,
-        challenge: AUTH_CHALLENGE,
       });
     }
 
