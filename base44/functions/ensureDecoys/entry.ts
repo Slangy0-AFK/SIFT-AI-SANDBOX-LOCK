@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const base44Service = base44.asServiceRole;
+    const serviceClient = base44.asServiceRole;
     
     let users = [];
     const authHeader = req.headers.get('Authorization') || '';
@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
 
     if (isScheduler) {
       // Called by scheduler or automation
-      users = await base44Service.entities.User.list();
+      users = await serviceClient.entities.User.list();
     } else if (currentUser) {
       // Called by a specific user from the dashboard
       users = [currentUser];
@@ -24,18 +24,18 @@ Deno.serve(async (req) => {
     let createdCount = 0;
 
     for (const user of users) {
-      const userHoneypots = await base44Service.entities.HoneypotSession.filter({ user_id: user.id, status: 'active' });
+      const userHoneypots = await serviceClient.entities.HoneypotSession.filter({ user_id: user.id, status: 'active' });
       
       const hasHoneypot = userHoneypots.some(s => s.session_type === 'honeypot');
       const hasTarpit = userHoneypots.some(s => s.session_type === 'tarpit');
 
       if (!hasHoneypot) {
-        await deployDecoy(base44Service, user.id, 'honeypot');
+        await deployDecoy(serviceClient, user.id, 'honeypot');
         createdCount++;
       }
       
       if (!hasTarpit) {
-        await deployDecoy(base44Service, user.id, 'tarpit');
+        await deployDecoy(serviceClient, user.id, 'tarpit');
         createdCount++;
       }
     }
@@ -49,10 +49,10 @@ Deno.serve(async (req) => {
   }
 });
 
-async function deployDecoy(base44Service, userId, type) {
+async function deployDecoy(serviceClient, userId, type) {
   const ip = `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
   
-  await base44Service.entities.HoneypotSession.create({
+  await serviceClient.entities.HoneypotSession.create({
     user_id: userId,
     session_type: type,
     source_ip: ip,
@@ -64,7 +64,7 @@ async function deployDecoy(base44Service, userId, type) {
     status: 'active',
   });
 
-  await base44Service.entities.SecurityEvent.create({
+  await serviceClient.entities.SecurityEvent.create({
     user_id: userId,
     event_type: type === 'honeypot' ? 'honeypot_trigger' : 'tarpit_engage',
     severity: 'warning',

@@ -8,9 +8,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  */
 
 // Load signatures from DB (FirewallRule records tagged "malware_signature" / "suspicious_path")
-async function getSuspiciousPaths(base44Service) {
+async function getSuspiciousPaths(serviceClient) {
   try {
-    const rules = await base44Service.entities.FirewallRule.filter({ tags: 'suspicious_path', enabled: true });
+    const rules = await serviceClient.entities.FirewallRule.filter({ tags: 'suspicious_path', enabled: true });
     if (rules && rules.length > 0) return rules.map(r => r.source_ip).filter(Boolean);
   } catch {
     console.warn('[AUTO-SCAN] Could not load suspicious paths from DB');
@@ -18,9 +18,9 @@ async function getSuspiciousPaths(base44Service) {
   return ['/tmp'];
 }
 
-async function getMalwareSignatures(base44Service) {
+async function getMalwareSignatures(serviceClient) {
   try {
-    const rules = await base44Service.entities.FirewallRule.filter({ tags: 'malware_signature', enabled: true });
+    const rules = await serviceClient.entities.FirewallRule.filter({ tags: 'malware_signature', enabled: true });
     if (rules && rules.length > 0) return rules.map(r => r.description).filter(Boolean);
   } catch {
     console.warn('[AUTO-SCAN] Could not load malware signatures from DB');
@@ -101,9 +101,9 @@ async function verifyBaseChain() {
   return results;
 }
 
-async function sendThreatNotification(base44Service, userEmail, summary) {
+async function sendThreatNotification(serviceClient, userEmail, summary) {
   try {
-    await base44Service.integrations.Core.SendEmail({
+    await serviceClient.integrations.Core.SendEmail({
       to: userEmail,
       subject: '🚨 AEGIS Auto-Scan Alert — Threat Detected',
       body: `AEGIS Quantum Shield detected a security threat during automated background scan.\n\n📊 Scan Summary:\n• Threats: ${summary.threats}\n• Warnings: ${summary.warnings}\n• Scan ID: ${summary.scan_id}\n• Time: ${new Date().toISOString()}\n\nAEGIS has automatically logged this event. Log in to your dashboard to review.\n\n— AEGIS Quantum Shield`,
@@ -131,21 +131,21 @@ Deno.serve(async (req) => {
     }
 
     // Use service role for all operations
-    const base44Service = base44.asServiceRole;
+    const serviceClient = base44.asServiceRole;
     
     console.log('[AUTO-SCAN] Starting background auto-scan cycle...');
     const startTime = Date.now();
 
     // Get all active devices
-    const allDevices = await base44Service.entities.Device.list('-last_seen', 100);
+    const allDevices = await serviceClient.entities.Device.list('-last_seen', 100);
     const activeDevices = allDevices.filter(d => d.status === 'active');
     
     console.log(`[AUTO-SCAN] Found ${activeDevices.length} active devices`);
 
     // Load signatures from DB at runtime
     const [SUSPICIOUS_PATHS, MALWARE_SIGNATURES] = await Promise.all([
-      getSuspiciousPaths(base44Service),
-      getMalwareSignatures(base44Service),
+      getSuspiciousPaths(serviceClient),
+      getMalwareSignatures(serviceClient),
     ]);
 
     // Run system-level checks (these are environment-wide, not per-device)
@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
     const warnings = accessibleSensitive.filter(r => r.risk === 'medium').length + envFindings.length;
 
     // Log the scan as a SecurityEvent
-    await base44Service.entities.SecurityEvent.create({
+    await serviceClient.entities.SecurityEvent.create({
       event_type: 'base_chain_compute',
       severity: totalThreats > 0 ? 'critical' : warnings > 0 ? 'warning' : 'info',
       details: JSON.stringify({
@@ -180,7 +180,7 @@ Deno.serve(async (req) => {
     const scanId = `AUTO-SCAN-${Date.now().toString(36).toUpperCase()}`;
     if (totalThreats > 0 || malwareFindings.length > 0) {
       // Create Threat record for dashboard visibility
-      const threat = await base44Service.entities.Threat.create({
+      const threat = await serviceClient.entities.Threat.create({
         user_id: activeDevices[0]?.user_id || 'system',
         source_ip: '127.0.0.1',
         threat_level: totalThreats > 0 ? 'critical' : 'medium',
@@ -193,7 +193,7 @@ Deno.serve(async (req) => {
       });
 
       // Create ZeroDayAnomaly for detailed tracking
-      await base44Service.entities.ZeroDayAnomaly.create({
+      await serviceClient.entities.ZeroDayAnomaly.create({
         anomaly_signature: `AUTO-SCAN-${Date.now().toString(36)}`,
         anomaly_type: malwareFindings.length > 0 ? 'fileless' : 'behavioral',
         severity: totalThreats > 0 ? 'critical' : 'warning',
@@ -210,9 +210,9 @@ Deno.serve(async (req) => {
       const ownerIds = new Set(activeDevices.map(d => d.subscriber_id || d.user_id).filter(Boolean));
       for (const ownerId of ownerIds) {
         try {
-          const owner = await base44Service.entities.User.filter({ id: ownerId });
+          const owner = await serviceClient.entities.User.filter({ id: ownerId });
           if (owner && owner[0]) {
-            await sendThreatNotification(base44Service, owner[0].email, { 
+            await sendThreatNotification(serviceClient, owner[0].email, { 
               threats: totalThreats, 
               warnings, 
               scan_id: scanId 

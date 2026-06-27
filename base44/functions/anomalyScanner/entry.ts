@@ -14,9 +14,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 // ── AI Attack Detection Signatures (loaded from DB at runtime) ────────────
 // Signatures are stored as FirewallRule records with tag "ai_signature" to
 // avoid hardcoding sensitive patterns in source code.
-async function getAIAttackSignatures(base44Service) {
+async function getAIAttackSignatures(client) {
   try {
-    const rules = await base44Service.entities.FirewallRule.filter({ tags: 'ai_signature', enabled: true });
+    const rules = await client.entities.FirewallRule.filter({ tags: 'ai_signature', enabled: true });
     if (rules && rules.length > 0) {
       return rules.map(r => r.description).filter(Boolean);
     }
@@ -54,8 +54,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    const base44Service = base44.asServiceRole;
-    const AI_ATTACK_SIGNATURES = await getAIAttackSignatures(base44Service);
+    const serviceClient = base44.asServiceRole;
+    const AI_ATTACK_SIGNATURES = await getAIAttackSignatures(serviceClient);
     
     console.log('[AEGIS SCANNER] Starting anomaly scan cycle...');
     
@@ -65,9 +65,9 @@ Deno.serve(async (req) => {
     
     // Fetch data in parallel
     const [allThreats, allAnomalies, recentEvents] = await Promise.all([
-      base44Service.entities.Threat.list('-created_date', 200),
-      base44Service.entities.ZeroDayAnomaly.list('-created_date', 100),
-      base44Service.entities.SecurityEvent.list('-created_date', 50),
+      serviceClient.entities.Threat.list('-created_date', 200),
+      serviceClient.entities.ZeroDayAnomaly.list('-created_date', 100),
+      serviceClient.entities.SecurityEvent.list('-created_date', 50),
     ]);
     
     let detectedCount = 0;
@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
 
         if (!alreadyFlagged) {
           // Immediately lock the threat
-          await base44Service.entities.Threat.update(threat.id, {
+          await serviceClient.entities.Threat.update(threat.id, {
             status: 'locked',
             threat_level: 'critical',
             base_chain_signature: `AI-REJECT-${Date.now().toString(36).toUpperCase()}`,
@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
           });
 
           // Log as ai_adversarial zero-day anomaly
-          await base44Service.entities.ZeroDayAnomaly.create({
+          await serviceClient.entities.ZeroDayAnomaly.create({
             anomaly_signature: `AI-ATTACK-${threat.source_ip.replace(/\./g, '-')}-${Date.now().toString(36)}`,
             anomaly_type: 'ai_adversarial',
             severity: 'critical',
@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
             environment: threat.environment || 'production',
           });
 
-          await base44Service.entities.SecurityEvent.create({
+          await serviceClient.entities.SecurityEvent.create({
             event_type: 'threat_locked',
             threat_id: threat.id,
             severity: 'critical',
@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
           });
 
           // Also create firewall block
-          await base44Service.entities.FirewallLog.create({
+          await serviceClient.entities.FirewallLog.create({
             rule_id: 'ai-attack-auto-block',
             rule_name: 'Aegis AI Attack Blocker',
             action_taken: 'blocked',
@@ -250,7 +250,7 @@ Return JSON:
             const burstAI = typeof aiBurstAnalysis === 'string' ? JSON.parse(aiBurstAnalysis) : aiBurstAnalysis;
             const severity = burstAI.should_escalate || rep.reputationScore < 40 ? 'fatal' : baseSeverity;
             
-            await base44Service.entities.ZeroDayAnomaly.create({
+            await serviceClient.entities.ZeroDayAnomaly.create({
               anomaly_signature: `BURST-${ip.replace(/\./g, '-')}-${Date.now().toString(36)}`,
               anomaly_type: 'behavioral',
               severity: severity,
@@ -266,7 +266,7 @@ Return JSON:
             detectedCount++;
           } catch (aiError) {
             // Fallback to heuristic analysis with reputation
-            await base44Service.entities.ZeroDayAnomaly.create({
+            await serviceClient.entities.ZeroDayAnomaly.create({
               anomaly_signature: `BURST-${ip.replace(/\./g, '-')}-${Date.now().toString(36)}`,
               anomaly_type: 'behavioral',
               severity: severity,
@@ -300,7 +300,7 @@ Return JSON:
         );
         
         if (!existingSubnet) {
-          await base44Service.entities.ZeroDayAnomaly.create({
+          await serviceClient.entities.ZeroDayAnomaly.create({
             anomaly_signature: `SUBNET-SWEEP-${subnet.replace(/\./g, '-')}-${Date.now().toString(36)}`,
             anomaly_type: 'behavioral',
             severity: 'critical',
@@ -328,14 +328,14 @@ Return JSON:
     
     for (const threat of lowRepThreats.slice(0, 10)) {
       const rep = ipReputation[threat.source_ip];
-      await base44Service.entities.Threat.update(threat.id, {
+      await serviceClient.entities.Threat.update(threat.id, {
         status: 'locked',
         threat_level: rep.reputationScore < 20 ? 'critical' : 'high',
         base_chain_signature: `REP-LOCK-${Date.now().toString(36).toUpperCase()}`,
         notes: (threat.notes || '') + ` | Auto-locked: IP reputation ${rep.reputationScore}/100 (${rep.totalThreats} historical threats).`,
       });
       
-      await base44Service.entities.SecurityEvent.create({
+      await serviceClient.entities.SecurityEvent.create({
         event_type: 'threat_locked',
         threat_id: threat.id,
         severity: 'warning',
@@ -357,13 +357,13 @@ Return JSON:
     );
     
     for (const threat of staleThreats.slice(0, 10)) {
-      await base44Service.entities.Threat.update(threat.id, {
+      await serviceClient.entities.Threat.update(threat.id, {
         status: 'locked',
         base_chain_signature: `STALE-LOCK-${Date.now().toString(36).toUpperCase()}`,
         notes: (threat.notes || '') + ' | Auto-locked: stale threat exceeded 1hr window.',
       });
       
-      await base44Service.entities.SecurityEvent.create({
+      await serviceClient.entities.SecurityEvent.create({
         event_type: 'threat_locked',
         threat_id: threat.id,
         severity: 'warning',
@@ -377,13 +377,13 @@ Return JSON:
     }
     
     for (const threat of staleThreats.slice(0, 10)) {
-      await base44Service.entities.Threat.update(threat.id, {
+      await serviceClient.entities.Threat.update(threat.id, {
         status: 'locked',
         base_chain_signature: `STALE-LOCK-${Date.now().toString(36).toUpperCase()}`,
         notes: (threat.notes || '') + ' | Auto-locked: stale threat exceeded 1hr window.',
       });
       
-      await base44Service.entities.SecurityEvent.create({
+      await serviceClient.entities.SecurityEvent.create({
         event_type: 'threat_locked',
         threat_id: threat.id,
         severity: 'warning',
@@ -404,12 +404,12 @@ Return JSON:
     );
     
     for (const anomaly of urgentAnomalies.slice(0, 5)) {
-      await base44Service.entities.ZeroDayAnomaly.update(anomaly.id, {
+      await serviceClient.entities.ZeroDayAnomaly.update(anomaly.id, {
         status: 'escalated',
         mitigation_applied: 'Escalated by automated scanner — manual review required',
       });
       
-      await base44Service.entities.SecurityEvent.create({
+      await serviceClient.entities.SecurityEvent.create({
         event_type: 'honeypot_trigger',
         severity: 'critical',
         details: `Critical anomaly escalated: ${anomaly.anomaly_signature} (${anomaly.anomaly_type}) — uncontained >5min`,
@@ -430,12 +430,12 @@ Return JSON:
     
     for (const threat of mirrorThreats.slice(0, 5)) {
       // Check if there's already an active session for this IP
-      const existingSessions = await base44Service.entities.HoneypotSession.filter({ source_ip: threat.source_ip });
+      const existingSessions = await serviceClient.entities.HoneypotSession.filter({ source_ip: threat.source_ip });
       const hasActiveSession = existingSessions.some(s => s.status === 'active');
       
       if (!hasActiveSession) {
         const sessionType = threat.environment === 'honeypot' ? 'honeypot' : 'tarpit';
-        await base44Service.entities.HoneypotSession.create({
+        await serviceClient.entities.HoneypotSession.create({
           session_type: sessionType,
           source_ip: threat.source_ip,
           duration_seconds: 0,
@@ -447,7 +447,7 @@ Return JSON:
           threat_id: threat.id,
         });
         
-        await base44Service.entities.SecurityEvent.create({
+        await serviceClient.entities.SecurityEvent.create({
           event_type: sessionType === 'honeypot' ? 'honeypot_trigger' : 'tarpit_engage',
           threat_id: threat.id,
           severity: 'warning',
@@ -469,11 +469,11 @@ Return JSON:
     
     for (const threat of stuckCycles.slice(0, 10)) {
       const nextStatus = threat.status === 'cycle_1' ? 'cycle_2' : 'cycle_3';
-      await base44Service.entities.Threat.update(threat.id, {
+      await serviceClient.entities.Threat.update(threat.id, {
         status: nextStatus,
         qrng_cycle: (threat.qrng_cycle || 1) + 1,
       });
-      await base44Service.entities.SecurityEvent.create({
+      await serviceClient.entities.SecurityEvent.create({
         event_type: 'qrng_cycle',
         threat_id: threat.id,
         severity: 'warning',
@@ -493,7 +493,7 @@ Return JSON:
     cleanedCount = oldCleared.length;
     
     // ── 9. Log scanner heartbeat ───────────────────────────────────────────
-    await base44Service.entities.SecurityEvent.create({
+    await serviceClient.entities.SecurityEvent.create({
       event_type: 'qrng_cycle',
       severity: 'info',
       details: `Anomaly scanner cycle complete: ${detectedCount} new anomalies, ${escalatedCount} escalated, ${cleanedCount} old cleared threats`,
