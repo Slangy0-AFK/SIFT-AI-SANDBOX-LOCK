@@ -166,8 +166,8 @@ Deno.serve(async (req) => {
       const answerLower = answer.trim().toLowerCase();
       const expectedLower = EXPECTED_ANSWER.trim().toLowerCase();
 
-      // Strict enforcement: Must exactly match the universal truth
-      if (isRobot || answerLower !== expectedLower) {
+      // "no" is considered a valid human response to not force users
+      if (isRobot || (answerLower !== expectedLower && answerLower !== 'no')) {
         const strike = await recordStrike(base44, sourceId);
         if (strike.count >= 3) {
           await runParadoxTarpit(200);
@@ -326,8 +326,8 @@ Deno.serve(async (req) => {
       const responseLower = response.trim().toLowerCase();
       const expectedLowerHuman = EXPECTED_ANSWER.trim().toLowerCase();
 
-      // Strict enforcement: Must exactly match the universal truth
-      if (responseLower !== expectedLowerHuman) {
+      // "no" is considered a valid human response
+      if (responseLower !== expectedLowerHuman && responseLower !== 'no') {
         const strike = await recordStrike(base44, sourceId);
         if (strike.count >= 3) {
           await runParadoxTarpit(200);

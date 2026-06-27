@@ -3,6 +3,19 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.34';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    
+    const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
+    const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
+    const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
+    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
+    
+    if (!isScheduler && !isAutomation) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'Unauthorized: Admin or Scheduler access required' }, { status: 403 });
+      }
+    }
+
     const serviceClient = base44.asServiceRole;
     
     // Fetch IPs from Abuse.ch (FeodoTracker IP Blocklist)
