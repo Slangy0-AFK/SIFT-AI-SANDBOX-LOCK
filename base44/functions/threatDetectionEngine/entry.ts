@@ -35,7 +35,7 @@ const getAIAttackSignatures = async (base44Service) => {
 };
 
 function detectAIAttack(text, signatures) {
-  if (!text) return null;
+  if (!text || !Array.isArray(signatures)) return null;
   const lower = text.toLowerCase();
   for (const sig of signatures) {
     if (lower.includes(sig.toLowerCase())) return sig;
@@ -377,7 +377,7 @@ Return JSON:
   } catch (aiError) {
     console.warn('[AEGIS] AI analysis failed, using heuristic fallback:', aiError.message);
     // Fall back to signature-based detection
-    const aiSig = detectAIAttack(combined);
+    const aiSig = detectAIAttack(combined, AI_ATTACK_SIGNATURES || []);
     if (aiSig) {
       const sig = `AI-ATTACK-${threat.source_ip.replace(/\./g, '-')}-${Date.now().toString(36)}`;
       await Promise.all([
