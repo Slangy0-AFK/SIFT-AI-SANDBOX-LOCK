@@ -1,84 +1,31 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-/**
- * Gmail Threat Handler - Real-time Email Security Scanner
- * 
- * SECURITY NOTE: This function uses environment variables securely.
- * - Secrets are fetched at runtime via Deno.env.get() inside Deno.serve()
- * - No secrets are hardcoded, logged, or exposed in responses
- * - Base44 scanner warnings about env var names are false positives
- * - This is the recommended secure pattern for backend functions
- */
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const body = await req.json();
+
+    // The platform automatically parses the pubsub data and handles auth
+    // We just need to read data.new_message_ids
+    const messageIds = body.data?.new_message_ids ?? [];
     
-    // Validate request origin - check for Google Cloud Pub/Sub authorization header
-    const requestAuth = req.headers.get('authorization');
-    // Secure: fetch secret at runtime (not hardcoded)
-    const webhookSecret = Deno.env.get('GMAIL_WEBHOOK_SECRET');
-    
-    if (!requestAuth || !webhookSecret) {
-      console.warn('Gmail webhook: Missing authorization header or secret');
-      return Response.json({ error: 'Unauthorized webhook request' }, { status: 401 });
-    }
-    
-    // Verify Bearer token matches the secret
-    const tokenMatch = requestAuth.match(/^Bearer\s+(.+)$/);
-    if (!tokenMatch || tokenMatch[1] !== webhookSecret) {
-      console.warn('Gmail webhook: Invalid or mismatched authorization token');
-      return Response.json({ error: 'Invalid authorization token' }, { status: 401 });
-    }
-    
-    const payload = await req.json();
-    
-    // Validate Google Pub/Sub message structure
-    if (!payload.message?.data && !payload.data?.historyId) {
-      console.warn('Gmail webhook: Invalid payload structure');
-      return Response.json({ error: 'Invalid webhook payload' }, { status: 400 });
+    if (messageIds.length === 0) {
+      return Response.json({ status: 'ok', processed: 0, threats_found: 0 });
     }
 
-    const connectorId = Deno.env.get('GMAIL_CONNECTOR_ID');
-    if (!connectorId) {
-      console.error('Gmail webhook: Connector ID not configured');
-      return Response.json({ error: 'Gmail connector not configured' }, { status: 500 });
+    // For App-User connector automations, the request runs securely as the app user who owns the account
+    const user = await base44.auth.me().catch(() => null);
+    if (!user) {
+      console.warn('Gmail webhook: No authenticated user context provided by platform');
+      return Response.json({ error: 'No user context' }, { status: 401 });
     }
+
+    const connectorId = Deno.env.get('GMAIL_CONNECTOR_ID') || '6a0f21a2f39d9bf2ebd374e6';
     
-    // Extract target email from Pub/Sub payload to properly identify the user
-    let targetEmail = '';
-    if (payload.message?.data) {
-      try {
-        const decoded = JSON.parse(atob(payload.message.data));
-        targetEmail = decoded.emailAddress || '';
-      } catch (e) {
-        console.warn('Failed to parse pubsub message data');
-      }
-    }
-
-    let userId = 'webhook_user';
-    if (targetEmail) {
-      const users = await base44.asServiceRole.entities.User.filter({ email: targetEmail });
-      if (users.length > 0) {
-        userId = users[0].id;
-        console.log(`Gmail webhook matched user: ${userId} (${targetEmail})`);
-      } else {
-        console.warn(`Gmail webhook target email ${targetEmail} not found in User entity.`);
-      }
-    }
-
     let accessToken;
     try {
-      let connection;
-      if (userId !== 'webhook_user' && typeof base44.asServiceRole.connectors.getAppUserConnection === 'function') {
-        try {
-          connection = await base44.asServiceRole.connectors.getAppUserConnection(userId, connectorId);
-        } catch (e) {
-          connection = await base44.asServiceRole.connectors.getConnection(connectorId);
-        }
-      } else {
-        connection = await base44.asServiceRole.connectors.getConnection(connectorId);
-      }
+      // Connect to the specific user's app connection
+      const connection = await base44.asServiceRole.connectors.getCurrentAppUserConnection(connectorId);
       accessToken = connection.accessToken;
     } catch (err) {
       console.error('Gmail webhook connection failed:', err.message);
@@ -86,12 +33,6 @@ Deno.serve(async (req) => {
     }
     
     const authHeader = { Authorization: `Bearer ${accessToken}` };
-    const messageIds = payload.data?.new_message_ids || [];
-    
-    if (messageIds.length === 0) {
-      return Response.json({ status: 'ok', processed: 0 });
-    }
-
     let threatsFound = 0;
 
     // Analyze each new message
@@ -110,18 +51,20 @@ Deno.serve(async (req) => {
         const from = headers.find(h => h.name === 'From')?.value || '';
         const subject = headers.find(h => h.name === 'Subject')?.value || '';
         
-        let body = '';
+        let msgBody = '';
         if (message.payload.body?.data) {
-          body = atob(message.payload.body.data);
+          const b64 = message.payload.body.data.replace(/-/g, '+').replace(/_/g, '/');
+          msgBody = atob(b64);
         } else if (message.payload.parts?.[0]?.body?.data) {
-          body = atob(message.payload.parts[0].body.data);
+          const b64 = message.payload.parts[0].body.data.replace(/-/g, '+').replace(/_/g, '/');
+          msgBody = atob(b64);
         }
 
         const analysisPrompt = `Analyze this email for phishing, scams, or malicious content.
         
 From: ${from}
 Subject: ${subject}
-Body: ${body.substring(0, 2000)}
+Body: ${msgBody.substring(0, 2000)}
 
 Return JSON:
 {
@@ -149,7 +92,7 @@ Return JSON:
 
         if (analysis.is_threat) {
           await base44.asServiceRole.entities.EmailThreat.create({
-            user_id: userId,
+            user_id: user.id,
             message_id: messageId,
             from_address: from,
             subject,
