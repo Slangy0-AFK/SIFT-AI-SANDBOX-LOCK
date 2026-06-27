@@ -146,12 +146,13 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'get_challenge') {
-      return Response.json({ challenge: "Biometric Authentication Required\n\nPlease activate your device's biometric sensor (TouchID/FaceID) or insert your hardware security key to proceed." });
+      // Trade Secret Protection: Never leak the actual challenge over the API
+      return Response.json({ challenge: "[REDACTED PROPRIETARY INQUIRY]\n\nThis paradox question is protected as a trade secret. Please affirm the universal truth to proceed." });
     }
 
-    // ── Hardware Biometric Gate — AI Guardrail (background only, not shown in UI) ──
-    // Silently evaluates hardware security token validation against known AI/bot patterns.
-    // Simulates hardware/biometric validation. Bots cannot provide the correct hardware token signature.
+    // ── Hidden Paradox Gate — AI Guardrail (background only, not shown in UI) ──
+    // Silently evaluates the universal truth challenge against known AI/bot patterns.
+    // The correct answer is the only one a sincere human would give. AIs fail or abstain.
     // PRE-AUTH ACTION: Does not require logged-in user (used before authentication)
     if (action === 'gate_verify') {
       const { answer, isRobot } = body;
@@ -173,13 +174,13 @@ Deno.serve(async (req) => {
           await base44.asServiceRole.entities.SecurityEvent.create({
             event_type: 'threat_locked',
             severity: 'fatal',
-            details: `Strike 3 — Invalid biometric signature from ${sourceId}. Lockout engaged.`,
+            details: `Strike 3 — Wrong gate answer from ${sourceId}. Lockout engaged.`,
             environment: 'tarpit',
           }).catch(() => {});
           return Response.json({ locked: true, strike: 3, reason: 'Strike 3: Lockout engaged.' }, { status: 429 });
         }
         await new Promise((r) => setTimeout(r, strike.delay));
-        return Response.json({ success: false, strike: strike.count, message: `Invalid biometric signature. Strike ${strike.count}/3.` }, { status: 403 });
+        return Response.json({ success: false, strike: strike.count, message: `Incorrect answer. Strike ${strike.count}/3.` }, { status: 403 });
       }
       const gateToken = createQrngPad(getSecureEntropy()) + createQrngPad(getSecureEntropy());
       await base44.asServiceRole.entities.SecurityEvent.create({
@@ -333,13 +334,13 @@ Deno.serve(async (req) => {
           await base44.asServiceRole.entities.SecurityEvent.create({
             event_type: 'threat_locked',
             severity: 'fatal',
-            details: `Strike 3 — Invalid biometric signature from ${sourceId}. Possible AI malware. Lockout engaged.`,
+            details: `Strike 3 — Wrong challenge answer from ${sourceId}. Possible AI malware. Lockout engaged.`,
             environment: 'tarpit',
           }).catch(() => {});
           return Response.json({
             locked: true,
             strike: 3,
-            reason: 'Strike 3: Incorrect biometric signature. Lockout engaged.',
+            reason: 'Strike 3: Incorrect universal truth answer. Lockout engaged.',
             restoration: 'Physical manual override required.',
           }, { status: 429 });
         }
@@ -347,7 +348,7 @@ Deno.serve(async (req) => {
         return Response.json({
           success: false,
           strike: strike.count,
-          message: `Invalid biometric signature. Strike ${strike.count}/3.`,
+          message: `Incorrect answer. Strike ${strike.count}/3.`,
           delay_ms: strike.delay,
         }, { status: 403 });
       }

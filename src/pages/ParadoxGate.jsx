@@ -38,8 +38,8 @@ export default function ParadoxGate() {
   // Load the challenge
   useEffect(() => {
     base44.functions.invoke('theologicalMFA', { action: 'get_challenge' })
-      .then(res => setChallenge(res.data?.challenge || 'Biometric verification required.'))
-      .catch(() => setChallenge('Biometric verification required.'))
+      .then(res => setChallenge(res.data?.challenge || 'Is Jesus Christ your Lord and Savior?'))
+      .catch(() => setChallenge('Is Jesus Christ your Lord and Savior?'))
       .finally(() => setLoadingChallenge(false));
   }, []);
 
@@ -93,9 +93,9 @@ export default function ParadoxGate() {
           audio.play().catch(e => console.log('Audio play failed:', e));
         } catch (e) {}
 
-        toast.success("Authentication Successful: Biometrics Verified.");
+        toast.success("Paradox Breached: Universal Truth Accepted.");
       } else {
-        toast.error("Authentication Failed: Invalid Biometrics.");
+        toast.error("Paradox Failed: Incorrect Truth.");
       }
       } catch (err) {
       const data = err?.response?.data || { message: 'Verification failed. Try again.' };
@@ -109,7 +109,7 @@ export default function ParadoxGate() {
         audio.play().catch(e => console.log('Audio play failed:', e));
       } catch (e) {}
 
-      toast.error(data.message || "Authentication Failed");
+      toast.error(data.message || "Paradox Failed");
     }
   };
 
@@ -253,14 +253,14 @@ export default function ParadoxGate() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">Biometric Security Gate</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">Can you pass the Paradox Lock?</h1>
               <Badge variant="outline" className="text-[10px] bg-secondary text-muted-foreground border-border uppercase tracking-widest">
                 ZERO-DAY MITIGATION
               </Badge>
             </div>
-            <p className="text-lg text-primary font-medium mt-3">Only physical hardware or biometrics succeed.</p>
+            <p className="text-lg text-primary font-medium mt-3">Only humans with consistent behavioral patterns succeed.</p>
             <p className="text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed">
-              Sift-AI enforces strict hardware and biometric verification. Bots and autonomous agents cannot bypass this physical requirement, while authorized human users authenticate instantly.
+              Sift-AI challenges incoming requests with unresolvable cryptographic logic. Bots and autonomous agents enter an infinite evaluation loop trying to solve it, while real humans pass through instantly using intuition.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -296,16 +296,16 @@ export default function ParadoxGate() {
                 <div className="mx-auto w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                   <Lock className="w-6 h-6 text-primary" />
                 </div>
-                <CardTitle className="text-lg text-foreground">Hardware / Biometric Gate</CardTitle>
+                <CardTitle className="text-lg text-foreground">Human Verification Gate</CardTitle>
                 <CardDescription className="text-[10px] tracking-widest mt-2 uppercase font-medium">
-                  Physical Token Required
+                  AI Access Denied
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Challenge */}
                 <div className="bg-secondary/50 rounded-xl p-5 border border-border text-center relative overflow-hidden group">
                   <p className="text-[10px] text-muted-foreground font-semibold tracking-widest mb-3 flex items-center justify-center gap-2 uppercase">
-                    <Database className="w-3 h-3" /> BIOMETRIC AUTHORIZATION
+                    <Database className="w-3 h-3" /> UNIVERSAL TRUTH CHALLENGE
                   </p>
                   {loadingChallenge ? (
                     <div className="flex items-center justify-center gap-2 py-4">
@@ -314,7 +314,7 @@ export default function ParadoxGate() {
                   ) : (
                     <div className="relative z-10 space-y-3 text-center">
                       <div className="inline-block bg-primary/10 border border-primary/20 px-3 py-1 rounded text-primary text-[10px] font-bold tracking-widest mb-2 uppercase">
-                        SECURE ENCLAVE ACTIVE
+                        TRADE SECRET PROTECTION ACTIVE
                       </div>
                       <p className="text-sm text-foreground leading-relaxed font-medium">
                         {challenge.split('\n').map((line, i) => (
@@ -353,7 +353,7 @@ export default function ParadoxGate() {
                     <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden mb-4">
                       <div className="h-full bg-primary animate-pulse" style={{ width: '45%' }}></div>
                     </div>
-                    <p className="text-center text-xs font-mono text-muted-foreground mb-4">Awaiting Biometric Signature...</p>
+                    <p className="text-center text-xs font-mono text-muted-foreground mb-4">Awaiting Cognitive Input...</p>
                     <input 
                       type="text" 
                       name="bot_verification"
@@ -366,17 +366,17 @@ export default function ParadoxGate() {
                     <div className="flex gap-3">
                       <Button
                         variant="outline"
-                        className="flex-1 h-12 transition-colors font-semibold text-xs"
+                        className="flex-1 h-12 transition-colors font-semibold"
                         onClick={(e) => handleAnswer('Yes', e)}
                       >
-                        SIMULATE BIOMETRICS
+                        YES
                       </Button>
                       <Button
                         variant="outline"
-                        className="flex-1 h-12 transition-colors font-semibold text-xs"
+                        className="flex-1 h-12 transition-colors font-semibold"
                         onClick={(e) => handleAnswer('No', e)}
                       >
-                        CANCEL
+                        NO
                       </Button>
                     </div>
                   </div>
@@ -400,16 +400,16 @@ export default function ParadoxGate() {
                           isSuccess ? <CheckCircle2 className="w-8 h-8 text-green-500 mx-auto" /> :
                           <XCircle className="w-8 h-8 text-amber-500 mx-auto" />}
                         <p className={`text-sm font-bold tracking-wide ${isLocked ? 'text-destructive' : isSuccess ? 'text-green-500' : 'text-amber-500'}`}>
-                          {isLocked ? 'ANOMALY DETECTED — LOCKOUT INITIATED' :
+                          {isLocked ? 'ANOMALY DETECTED — PARADOX LOOP INITIATED' :
                            isSuccess ? 'GATE UNLOCKED' :
-                           `STRIKE ${result.strike || '?'} / 3 — AUTH ERROR`}
+                           `STRIKE ${result.strike || '?'} / 3 — LOGIC ERROR`}
                         </p>
                         {isSuccess ? (
                           <div className="space-y-2">
                             <p className="text-xs font-mono text-green-500 bg-green-500/10 inline-block px-2 py-1 rounded">
-                              Biometric Match: {Math.floor(Math.random() * 5) + 95}% Confidence
+                              Behavioral Score: {Math.floor(Math.random() * 15) + 85}/100 – Human-like
                             </p>
-                            <p className="text-xs text-muted-foreground">Hardware security token and biometric signature verified. Welcome.</p>
+                            <p className="text-xs text-muted-foreground">Your cognitive pattern matches a genuine human response. Welcome.</p>
                             <div className="flex gap-2 justify-center mt-3">
                               <Link to="/mirror-demo?guest=true&tutorial=true">
                                 <Button size="sm" className="font-medium bg-green-600 hover:bg-green-700 text-white border-0">Enter Artificial Console</Button>
@@ -420,9 +420,9 @@ export default function ParadoxGate() {
                         ) : isLocked ? (
                           <div className="space-y-2">
                             <p className="text-xs font-mono text-destructive bg-destructive/10 inline-block px-2 py-1 rounded">
-                              Authentication Failure Detected
+                              Algorithmic Failure Detected
                             </p>
-                            <p className="text-xs text-muted-foreground">Biometric signature missing or invalid. Automated agents cannot bypass physical security keys. You have been tarpitted.</p>
+                            <p className="text-xs text-muted-foreground">Nice try, bot. Real humans don't evaluate philosophical paradoxes with deterministic algorithms. You have been tarpitted.</p>
                             <Button size="sm" variant="outline" className="text-xs mt-2" onClick={reset}>Try Again (Reset Fingerprint)</Button>
                           </div>
                         ) : (
