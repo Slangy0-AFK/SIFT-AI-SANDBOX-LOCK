@@ -11,45 +11,30 @@ import { base44 } from '@/api/base44Client';
 import { formatLocalTime, getRealisticDate } from '@/lib/utils';
 
 const QRNGCycle = ({ onDestruct, disabled, isNeutralizing }) => {
-  const [active, setActive] = useState(true);
   const [timeLeft, setTimeLeft] = useState(3.0);
-  const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
-    if (active && timeLeft > 0) {
-      const t = setInterval(() => {
-        setTimeLeft(c => Math.max(0, c - 0.1));
-      }, 100);
-      return () => clearInterval(t);
-    } else if (active && timeLeft === 0 && !completed) {
-      if (!isNeutralizing) {
-        onDestruct();
-        setCompleted(true);
-      }
-    }
-  }, [active, timeLeft, isNeutralizing, onDestruct, completed]);
-
-  if (!active) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setActive(true)}
-        disabled={disabled}
-        className="h-8 text-[10px] uppercase font-bold tracking-wider w-full sm:w-auto border-destructive/50 text-destructive hover:bg-destructive/10"
-      >
-        Initiate QRNG
-      </Button>
-    );
-  }
+    // Infinite visual loop to prevent constant backend calls while remaining animated
+    const t = setInterval(() => {
+      setTimeLeft(c => {
+        if (c <= 0.1) return 3.0;
+        return c - 0.1;
+      });
+    }, 100);
+    return () => clearInterval(t);
+  }, []);
 
   return (
-    <div className="flex items-center gap-3 px-3 py-1.5 rounded border border-destructive/50 bg-destructive/10 w-full sm:w-auto">
+    <button 
+      onClick={onDestruct}
+      disabled={disabled || isNeutralizing}
+      className="flex items-center gap-3 px-3 py-1.5 rounded border border-destructive/50 bg-destructive/10 w-full sm:w-auto text-left hover:bg-destructive/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
+    >
       <div className="relative w-7 h-7 flex items-center justify-center flex-shrink-0">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-          className="absolute inset-0 rounded-full border-2 border-destructive/20 border-t-destructive"
+          className="absolute inset-0 rounded-full border-2 border-destructive/20 border-t-destructive group-hover:border-t-destructive/80"
         />
         <span className="text-[9px] font-bold text-destructive tabular-nums">{timeLeft.toFixed(1)}</span>
       </div>
@@ -58,10 +43,10 @@ const QRNGCycle = ({ onDestruct, disabled, isNeutralizing }) => {
           {isNeutralizing ? 'Destroying...' : 'Active QRNG'}
         </span>
         <span className="text-[8px] text-destructive/80 font-mono">
-          T-minus {timeLeft.toFixed(1)}s to Destruction
+          {isNeutralizing ? 'Neutralizing threat' : 'Click to Destroy Threat'}
         </span>
       </div>
-    </div>
+    </button>
   );
 };
 
