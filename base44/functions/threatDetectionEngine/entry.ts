@@ -115,6 +115,26 @@ Deno.serve(async (req) => {
     
     const base44Service = base44.asServiceRole;
     const AI_ATTACK_SIGNATURES = await getAIAttackSignatures(base44Service);
+    
+    // Check AlienVault OTX if IP is provided in direct call
+    const otxIp = body.source_ip || body.ip;
+    if (otxIp && !targetThreatId && !targetAnomalyId) {
+      try {
+        const otxRes = await base44Service.functions.invoke('checkAlienVault', { indicator: otxIp, type: 'ip' });
+        if (otxRes.data && otxRes.data.is_threat) {
+          // Auto-create a threat if OTX flags it
+          const newThreat = await base44Service.entities.Threat.create({
+            source_ip: otxIp,
+            threat_level: otxRes.data.threat_level || 'medium',
+            status: 'detected',
+            notes: `AlienVault OTX Detection: ${otxRes.data.pulses} pulses. Tags: ${otxRes.data.tags?.join(', ') || 'none'}`
+          });
+          return Response.json({ success: true, action: 'otx_threat_created', threat_id: newThreat.id, otx_data: otxRes.data });
+        }
+      } catch (otxErr) {
+        console.error('[AEGIS] AlienVault OTX check failed:', otxErr.message);
+      }
+    }
 
     // ── Handle ZeroDayAnomaly trigger ──────────────────────────────────────
     if (targetAnomalyId && !targetThreatId) {

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import AlienVaultWidget from '@/components/scanner/AlienVaultWidget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DeviceScanner from '@/components/security/DeviceScanner';
 import { Shield, ShieldAlert, ShieldCheck, Activity, ScanLine, Zap, AlertTriangle, CheckCircle, Loader2, ShieldBan } from 'lucide-react';
@@ -134,8 +135,13 @@ export default function ThreatScanner() {
         </div>
       </div>
 
-      {/* Live Device Scanner */}
-      <DeviceScanner />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Live Device Scanner */}
+        <DeviceScanner />
+        
+        {/* AlienVault OTX Scanner */}
+        <AlienVaultWidget onThreatDetected={() => refetchDeviceThreats()} />
+      </div>
 
       {/* Recent Scan Sessions */}
       <Card className="border-border/50">
