@@ -65,7 +65,7 @@ export default function DeviceManager({ devices = [], plan = 'free', userId }) {
         </div>
         <Button
           size="sm"
-          className="font-mono text-[10px]"
+          className="font-mono text-xs"
           disabled={atLimit}
           onClick={() => setAdding(true)}
         >
@@ -77,7 +77,7 @@ export default function DeviceManager({ devices = [], plan = 'free', userId }) {
       {atLimit && (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
           <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />
-          <p className="font-mono text-[10px] text-destructive">
+          <p className="font-mono text-xs text-destructive">
             Device limit reached ({maxDevices}/{maxDevices}). Remove a device to add a new one, or upgrade your plan.
           </p>
         </div>
@@ -123,7 +123,7 @@ export default function DeviceManager({ devices = [], plan = 'free', userId }) {
       {/* Device list */}
       <div className="space-y-2">
         {activeDevices.length === 0 ? (
-          <p className="font-mono text-[10px] text-muted-foreground text-center py-4">No devices registered</p>
+          <p className="font-mono text-xs text-muted-foreground text-center py-4">No devices registered</p>
         ) : (
           activeDevices.map((device) => {
             const Icon = deviceIcons[device.device_type] || Smartphone;
@@ -133,8 +133,8 @@ export default function DeviceManager({ devices = [], plan = 'free', userId }) {
                 <div className="flex-1 min-w-0">
                   <span className="font-mono text-[11px] font-semibold text-foreground">{device.device_name}</span>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <Badge variant="outline" className="font-mono text-[8px] text-muted-foreground">{device.device_type}</Badge>
-                    <span className="font-mono text-[9px] text-muted-foreground">
+                    <Badge variant="outline" className="font-mono text-xs text-muted-foreground">{device.device_type}</Badge>
+                    <span className="font-mono text-xs text-muted-foreground">
                       {device.last_seen ? `Last seen ${new Date(device.last_seen).toLocaleDateString()}` : 'Never'}
                     </span>
                   </div>

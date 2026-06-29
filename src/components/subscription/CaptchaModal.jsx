@@ -155,7 +155,7 @@ export default function CaptchaModal({ isOpen, onSuccess, onClose }) {
                           </Button>
                         </div>
 
-                        <p className="font-mono text-[9px] text-muted-foreground text-center">
+                        <p className="font-mono text-xs text-muted-foreground text-center">
                           Challenge expires in {Math.floor(captchaData.expires_in / 60)} minutes
                         </p>
                       </div>

@@ -82,11 +82,11 @@ export default function Logout() {
             <div className="grid grid-cols-2 gap-3 pt-4">
               <div className="bg-secondary/30 rounded-lg p-3">
                 <Lock className="w-5 h-5 text-primary mx-auto mb-1" />
-                <p className="font-mono text-[9px] text-muted-foreground">Encrypted Data</p>
+                <p className="font-mono text-xs text-muted-foreground">Encrypted Data</p>
               </div>
               <div className="bg-secondary/30 rounded-lg p-3">
                 <Wifi className="w-5 h-5 text-green-400 mx-auto mb-1" />
-                <p className="font-mono text-[9px] text-muted-foreground">Active Monitoring</p>
+                <p className="font-mono text-xs text-muted-foreground">Active Monitoring</p>
               </div>
             </div>
           </div>
@@ -104,7 +104,7 @@ export default function Logout() {
         {/* Status Indicator */}
         <div className="flex items-center justify-center gap-2 px-4 py-2 bg-secondary/20 rounded-lg">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="font-mono text-[10px] text-muted-foreground tracking-wider">
+          <span className="font-mono text-xs text-muted-foreground tracking-wider">
             SECURITY SYSTEMS ONLINE
           </span>
         </div>

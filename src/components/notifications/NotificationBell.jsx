@@ -78,7 +78,7 @@ export default function NotificationBell() {
           <Bell className={`w-5 h-5 ${unreadCount > 0 ? 'text-amber-400' : 'text-muted-foreground'}`} />
         </motion.div>
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center font-mono text-[8px] text-white font-bold">
+          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center font-mono text-xs text-white font-bold">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -100,12 +100,12 @@ export default function NotificationBell() {
                 <Bell className="w-3.5 h-3.5 text-primary" />
                 <span className="font-mono text-xs font-semibold text-foreground">ALERTS</span>
                 {notifications.length > 0 && (
-                  <Badge variant="outline" className="font-mono text-[8px]">{notifications.length}</Badge>
+                  <Badge variant="outline" className="font-mono text-xs">{notifications.length}</Badge>
                 )}
               </div>
               <div className="flex items-center gap-1">
                 {notifications.length > 0 && (
-                  <button onClick={clearAll} className="font-mono text-[9px] text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-secondary">
+                  <button onClick={clearAll} className="font-mono text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-secondary">
                     Clear all
                   </button>
                 )}
@@ -120,7 +120,7 @@ export default function NotificationBell() {
               {notifications.length === 0 ? (
                 <div className="py-8 text-center">
                   <Shield className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
-                  <p className="font-mono text-[10px] text-muted-foreground">No alerts — all systems secure</p>
+                  <p className="font-mono text-xs text-muted-foreground">No alerts — all systems secure</p>
                 </div>
               ) : (
                 notifications.map(n => (
@@ -131,9 +131,9 @@ export default function NotificationBell() {
                         {n.type === 'zero_day' ? <Zap className="w-2.5 h-2.5" /> : <AlertTriangle className="w-2.5 h-2.5" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-mono text-[10px] font-semibold text-foreground leading-tight">{n.title}</div>
-                        <div className="font-mono text-[9px] text-muted-foreground mt-0.5 leading-tight">{n.detail}</div>
-                        <div className="font-mono text-[8px] text-muted-foreground/60 mt-1">
+                        <div className="font-mono text-xs font-semibold text-foreground leading-tight">{n.title}</div>
+                        <div className="font-mono text-xs text-muted-foreground mt-0.5 leading-tight">{n.detail}</div>
+                        <div className="font-mono text-xs text-muted-foreground/60 mt-1">
                           {n.time.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                         </div>
                       </div>
@@ -146,7 +146,7 @@ export default function NotificationBell() {
             {/* Live indicator */}
             <div className="flex items-center gap-2 px-4 py-2 bg-secondary/30 border-t border-border">
               <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              <span className="font-mono text-[9px] text-muted-foreground">Live monitoring active</span>
+              <span className="font-mono text-xs text-muted-foreground">Live monitoring active</span>
             </div>
           </motion.div>
         )}

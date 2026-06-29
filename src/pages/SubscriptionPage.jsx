@@ -105,7 +105,7 @@ export default function SubscriptionPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">SUBSCRIPTION</h1>
-          <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+          <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
             PLANS · DEVICES · BILLING VIA GOOGLE PLAY
           </p>
         </div>
@@ -125,12 +125,12 @@ export default function SubscriptionPage() {
                   <span className="font-mono text-sm font-bold text-foreground">
                     Beta Plan
                   </span>
-                  <Badge className="font-mono text-[8px] bg-primary/10 text-primary border-primary/20 border">
+                  <Badge className="font-mono text-xs bg-primary/10 text-primary border-primary/20 border">
                     ACTIVE
                   </Badge>
                 </div>
                 <div className="flex items-center gap-3 mt-1">
-                  <span className="font-mono text-[10px] text-muted-foreground">
+                  <span className="font-mono text-xs text-muted-foreground">
                     <Smartphone className="w-3 h-3 inline mr-1" />
                     {activeDevices.length}/Unlimited devices used
                   </span>
@@ -141,7 +141,7 @@ export default function SubscriptionPage() {
               <div className="font-mono text-2xl font-bold text-foreground">
                 $0
               </div>
-              <div className="font-mono text-[9px] text-muted-foreground">per month</div>
+              <div className="font-mono text-xs text-muted-foreground">per month</div>
             </div>
           </div>
         </CardContent>
@@ -170,7 +170,7 @@ export default function SubscriptionPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
+          <p className="font-mono text-xs text-muted-foreground leading-relaxed">
             SIFT-AI is currently in strict beta testing. Your account has full, unrestricted access to all features — including Zero-Day, Threat Intel, and Threat Scanner — at no cost.
           </p>
         </CardContent>

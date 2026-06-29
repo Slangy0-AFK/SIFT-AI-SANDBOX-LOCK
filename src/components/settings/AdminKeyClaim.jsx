@@ -67,10 +67,10 @@ export default function AdminKeyClaim() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
-          <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
+          <p className="font-mono text-xs text-muted-foreground leading-relaxed">
             Admin configuration for <strong className="text-foreground">{user?.email}</strong>
           </p>
-          <p className="font-mono text-[9px] text-muted-foreground mt-2">
+          <p className="font-mono text-xs text-muted-foreground mt-2">
             Enter the admin key to activate full admin access and system controls.
           </p>
         </div>
@@ -90,7 +90,7 @@ export default function AdminKeyClaim() {
             className="space-y-3"
           >
             <div>
-              <Label className="font-mono text-[10px] text-muted-foreground">Admin Key</Label>
+              <Label className="font-mono text-xs text-muted-foreground">Admin Key</Label>
               <Input
                 type="password"
                 placeholder="Enter your admin key"
@@ -134,7 +134,7 @@ export default function AdminKeyClaim() {
             className="p-3 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center gap-3"
           >
             <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
-            <p className="font-mono text-[10px] text-green-400">Admin access activated! Reloading...</p>
+            <p className="font-mono text-xs text-green-400">Admin access activated! Reloading...</p>
           </motion.div>
         )}
 
@@ -142,10 +142,10 @@ export default function AdminKeyClaim() {
           <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 flex items-start gap-3">
             <ShieldAlert className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
             <div>
-              <p className="font-mono text-[10px] text-destructive">
+              <p className="font-mono text-xs text-destructive">
                 {claimMutation.error?.message || 'Failed to claim admin access'}
               </p>
-              <p className="font-mono text-[9px] text-muted-foreground mt-1">
+              <p className="font-mono text-xs text-muted-foreground mt-1">
                 Make sure you're using the correct admin key from your app secrets.
               </p>
             </div>
@@ -155,7 +155,7 @@ export default function AdminKeyClaim() {
         <div className="p-3 rounded-lg bg-amber-400/10 border border-amber-400/20">
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-3.5 h-3.5 text-amber-400 mt-0.5 flex-shrink-0" />
-            <p className="font-mono text-[9px] text-amber-400 leading-relaxed">
+            <p className="font-mono text-xs text-amber-400 leading-relaxed">
               <strong>Security Notice:</strong> This action is logged and can only be performed once per admin key. Keep your admin key secure.
             </p>
           </div>

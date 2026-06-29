@@ -83,7 +83,7 @@ export default function BaseChain() {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">BASE CHAIN PIPELINE</h1>
-        <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+        <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
           MULTI-BASE CRYPTOGRAPHIC VERIFICATION CHAIN
         </p>
       </div>
@@ -111,11 +111,11 @@ export default function BaseChain() {
                       </div>
                       <div>
                         <CardTitle className="font-mono text-sm tracking-wider">{step.title}</CardTitle>
-                        <p className="font-mono text-[10px] text-muted-foreground mt-0.5">{step.description}</p>
+                        <p className="font-mono text-xs text-muted-foreground mt-0.5">{step.description}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className={`font-mono text-[9px] ${step.color} border ${step.border}`}>
+                      <Badge variant="outline" className={`font-mono text-xs ${step.color} border ${step.border}`}>
                         STEP {i + 1}
                       </Badge>
                       <Zap className={`w-3 h-3 ${step.color}`} />
@@ -129,15 +129,15 @@ export default function BaseChain() {
                       animate={{ opacity: 1, height: 'auto' }}
                       className="space-y-3 pt-2"
                     >
-                      <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">{step.detail}</p>
+                      <p className="font-mono text-xs text-muted-foreground leading-relaxed">{step.detail}</p>
                       <div className="bg-secondary rounded-lg p-3">
-                        <div className="font-mono text-[9px] text-muted-foreground mb-1">EXAMPLE:</div>
-                        <code className="font-mono text-[10px] text-primary">{step.example}</code>
+                        <div className="font-mono text-xs text-muted-foreground mb-1">EXAMPLE:</div>
+                        <code className="font-mono text-xs text-primary">{step.example}</code>
                       </div>
                       {liveValues[step.id] && (
                         <div className="bg-background rounded-lg p-3 border border-border">
-                          <div className="font-mono text-[9px] text-muted-foreground mb-1">LIVE VALUE:</div>
-                          <code className={`font-mono text-[10px] ${step.color} break-all`}>{liveValues[step.id]}</code>
+                          <div className="font-mono text-xs text-muted-foreground mb-1">LIVE VALUE:</div>
+                          <code className={`font-mono text-xs ${step.color} break-all`}>{liveValues[step.id]}</code>
                         </div>
                       )}
                     </motion.div>

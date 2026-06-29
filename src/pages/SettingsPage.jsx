@@ -173,13 +173,13 @@ export default function SettingsPage() {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">SETTINGS</h1>
-        <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+        <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
           SYSTEM CONFIGURATION & DEFENSE PARAMETERS
         </p>
       </div>
 
       <Tabs defaultValue="general">
-        <TabsList className="font-mono text-[10px]">
+        <TabsList className="font-mono text-xs">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="paradox" className="flex items-center gap-1.5">
             <Lock className="w-3 h-3" /> Paradox Lock
@@ -200,7 +200,7 @@ export default function SettingsPage() {
               <CardTitle className="font-mono text-xs tracking-wider">DEFENSE MODULES</CardTitle>
               <div className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded bg-green-500/10">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="font-mono text-[8px] text-green-400 tracking-widest">ACTIVE</span>
+                <span className="font-mono text-xs text-green-400 tracking-widest">ACTIVE</span>
               </div>
             </div>
           </CardHeader>
@@ -214,7 +214,7 @@ export default function SettingsPage() {
             ].map(({ label, icon: Icon, color }) => (
               <div key={label} className="flex items-center gap-2 p-2 rounded bg-secondary/20 border border-border/30">
                 <Icon className={`w-3 h-3 ${color} flex-shrink-0`} />
-                <span className="font-mono text-[10px] text-foreground flex-1">{label}</span>
+                <span className="font-mono text-xs text-foreground flex-1">{label}</span>
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
               </div>
             ))}
@@ -236,23 +236,23 @@ export default function SettingsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="font-mono text-[10px] text-muted-foreground">
+            <p className="font-mono text-xs text-muted-foreground">
               Configure specific thresholds for alerts (Slack/SMS) to avoid alert fatigue.
             </p>
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-secondary/10">
                 <div>
-                  <p className="font-mono text-[10px] font-bold text-foreground">Zero-Day Anomalies</p>
-                  <p className="font-mono text-[9px] text-muted-foreground mt-0.5">Only alert on Critical/Fatal</p>
+                  <p className="font-mono text-xs font-bold text-foreground">Zero-Day Anomalies</p>
+                  <p className="font-mono text-xs text-muted-foreground mt-0.5">Only alert on Critical/Fatal</p>
                 </div>
-                <Button size="sm" variant="outline" className="font-mono text-[9px] h-6 px-2">Configure</Button>
+                <Button size="sm" variant="outline" className="font-mono text-xs h-6 px-2">Configure</Button>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-secondary/10">
                 <div>
-                  <p className="font-mono text-[10px] font-bold text-foreground">Firewall Breaches</p>
-                  <p className="font-mono text-[9px] text-muted-foreground mt-0.5">Alert on All Breaches</p>
+                  <p className="font-mono text-xs font-bold text-foreground">Firewall Breaches</p>
+                  <p className="font-mono text-xs text-muted-foreground mt-0.5">Alert on All Breaches</p>
                 </div>
-                <Button size="sm" variant="outline" className="font-mono text-[9px] h-6 px-2">Configure</Button>
+                <Button size="sm" variant="outline" className="font-mono text-xs h-6 px-2">Configure</Button>
               </div>
             </div>
           </CardContent>
@@ -277,7 +277,7 @@ export default function SettingsPage() {
               <LogOut className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
               <div className="flex-1">
                 <div className="font-mono text-[11px] font-semibold text-foreground">Log Out</div>
-                <div className="font-mono text-[10px] text-muted-foreground mt-0.5">Securely end your current session.</div>
+                <div className="font-mono text-xs text-muted-foreground mt-0.5">Securely end your current session.</div>
               </div>
             </div>
             <Button size="sm" variant="outline" className="font-mono text-xs" onClick={() => base44.auth.logout('/')}>
@@ -322,7 +322,7 @@ export default function SettingsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="font-mono text-[10px] text-muted-foreground leading-relaxed mb-4">
+          <p className="font-mono text-xs text-muted-foreground leading-relaxed mb-4">
             Google Play requires all apps to provide account deletion options. Use the action below to submit a request.
           </p>
           <div className="border border-destructive/20 rounded-xl p-4 space-y-3 bg-background">
@@ -330,7 +330,7 @@ export default function SettingsPage() {
               <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
               <div className="flex-1">
                 <div className="font-mono text-[11px] font-semibold text-foreground">Delete My Account</div>
-                <div className="font-mono text-[10px] text-muted-foreground mt-0.5">Permanently remove your SIFT-AI account and all associated data within 30 days.</div>
+                <div className="font-mono text-xs text-muted-foreground mt-0.5">Permanently remove your SIFT-AI account and all associated data within 30 days.</div>
               </div>
             </div>
             {!showDeleteAccount ? (
@@ -341,7 +341,7 @@ export default function SettingsPage() {
               <div className="space-y-2">
                 <div className="flex items-start gap-2 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20">
                   <AlertTriangle className="w-3.5 h-3.5 text-destructive mt-0.5 flex-shrink-0" />
-                  <p className="font-mono text-[10px] text-destructive">Your account and all data will be permanently deleted. Type <strong>DELETE</strong> to confirm.</p>
+                  <p className="font-mono text-xs text-destructive">Your account and all data will be permanently deleted. Type <strong>DELETE</strong> to confirm.</p>
                 </div>
                 <input
                   type="text"
@@ -372,7 +372,7 @@ export default function SettingsPage() {
           {/* Read-only lock banner */}
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-400/10 border border-amber-400/30">
             <Lock className="w-4 h-4 text-amber-400 flex-shrink-0" />
-            <p className="font-mono text-[10px] text-amber-400 leading-relaxed">
+            <p className="font-mono text-xs text-amber-400 leading-relaxed">
               PROTECTED — These parameters are enforced by the Theological MFA engine and cannot be modified by users.
             </p>
           </div>
@@ -397,8 +397,8 @@ export default function SettingsPage() {
                     <div key={label} className="flex items-start gap-2 p-2 rounded-lg bg-green-500/5 border border-green-500/10">
                       <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
                       <div>
-                        <span className="font-mono text-[10px] font-semibold text-green-400">{label}</span>
-                        <p className="font-mono text-[9px] text-muted-foreground">{detail}</p>
+                        <span className="font-mono text-xs font-semibold text-green-400">{label}</span>
+                        <p className="font-mono text-xs text-muted-foreground">{detail}</p>
                       </div>
                     </div>
                   ))}
@@ -422,8 +422,8 @@ export default function SettingsPage() {
                     <div key={label} className="flex items-start gap-2 p-2 rounded-lg bg-destructive/5 border border-destructive/10">
                       <div className="w-1.5 h-1.5 rounded-full bg-destructive mt-1.5 flex-shrink-0" />
                       <div>
-                        <span className="font-mono text-[10px] font-semibold text-destructive">{label}</span>
-                        <p className="font-mono text-[9px] text-muted-foreground">{detail}</p>
+                        <span className="font-mono text-xs font-semibold text-destructive">{label}</span>
+                        <p className="font-mono text-xs text-muted-foreground">{detail}</p>
                       </div>
                     </div>
                   ))}
@@ -437,7 +437,7 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
                 <ShieldAlert className="w-4 h-4 text-muted-foreground" /> FIXED PARAMETERS
-                <span className="ml-auto font-mono text-[9px] text-muted-foreground border border-border px-2 py-0.5 rounded">READ-ONLY</span>
+                <span className="ml-auto font-mono text-xs text-muted-foreground border border-border px-2 py-0.5 rounded">READ-ONLY</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pointer-events-none select-none">
@@ -449,8 +449,8 @@ export default function SettingsPage() {
                 { label: 'MIRROR ENVIRONMENT ON FAIL', value: 'ACTIVE', color: 'text-amber-400' },
               ].map(({ label, value, color }) => (
                 <div key={label} className="flex items-center justify-between p-3 rounded-lg bg-secondary/40 border border-border/50">
-                  <span className="font-mono text-[10px] text-muted-foreground">{label}</span>
-                  <span className={`font-mono text-[10px] font-bold ${color}`}>{value}</span>
+                  <span className="font-mono text-xs text-muted-foreground">{label}</span>
+                  <span className={`font-mono text-xs font-bold ${color}`}>{value}</span>
                 </div>
               ))}
             </CardContent>
@@ -487,13 +487,13 @@ export default function SettingsPage() {
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="font-mono text-[10px] font-semibold text-foreground">{threat.source_ip}</span>
-                          <Badge variant="outline" className={`font-mono text-[8px] ${
+                          <span className="font-mono text-xs font-semibold text-foreground">{threat.source_ip}</span>
+                          <Badge variant="outline" className={`font-mono text-xs ${
                             threat.agent_type === 'human' ? 'text-green-400 border-green-400/30' : 'text-destructive border-destructive/30'
                           }`}>
                             {threat.agent_type?.toUpperCase()}
                           </Badge>
-                          <Badge variant="outline" className={`font-mono text-[8px] ${
+                          <Badge variant="outline" className={`font-mono text-xs ${
                             threat.status === 'cleared' ? 'text-green-400 border-green-400/30' :
                             threat.status === 'destroyed' ? 'text-destructive border-destructive/30' :
                             'text-amber-400 border-amber-400/30'
@@ -501,9 +501,9 @@ export default function SettingsPage() {
                             {threat.status?.toUpperCase()}
                           </Badge>
                         </div>
-                        <p className="font-mono text-[9px] text-muted-foreground mt-0.5 line-clamp-2">{threat.notes}</p>
+                        <p className="font-mono text-xs text-muted-foreground mt-0.5 line-clamp-2">{threat.notes}</p>
                       </div>
-                      <span className="font-mono text-[9px] text-muted-foreground flex-shrink-0">
+                      <span className="font-mono text-xs text-muted-foreground flex-shrink-0">
                         {threat.created_date ? formatChicagoTime(threat.created_date) : ''}
                       </span>
                     </div>

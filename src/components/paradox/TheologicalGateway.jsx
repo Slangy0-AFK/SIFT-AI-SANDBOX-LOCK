@@ -83,7 +83,7 @@ export default function TheologicalGateway() {
         <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
           <Lock className="w-4 h-4 text-primary" /> PARADOX VERIFICATION GATEWAY
         </CardTitle>
-        <p className="font-mono text-[9px] text-muted-foreground tracking-wide mt-1">
+        <p className="font-mono text-xs text-muted-foreground tracking-wide mt-1">
           3-STRIKE QRNG NEUTRALIZATION · BACKEND BASE-2/12/60/QRNG · FRONTEND PARADOX UI
         </p>
       </CardHeader>
@@ -91,7 +91,7 @@ export default function TheologicalGateway() {
 
         {/* Challenge String */}
         <div className="bg-background rounded-xl p-4 border border-primary/20 text-center">
-          <p className="font-mono text-[10px] text-muted-foreground mb-1 tracking-widest">SECRET SHELL CHALLENGE</p>
+          <p className="font-mono text-xs text-muted-foreground mb-1 tracking-widest">SECRET SHELL CHALLENGE</p>
           <p className="font-mono text-sm text-foreground leading-relaxed">"{challenge}"</p>
         </div>
 
@@ -105,7 +105,7 @@ export default function TheologicalGateway() {
                 {s}
               </div>
             ))}
-            <span className="font-mono text-[10px] text-muted-foreground self-center ml-1">STRIKES</span>
+            <span className="font-mono text-xs text-muted-foreground self-center ml-1">STRIKES</span>
           </div>
         )}
 
@@ -122,9 +122,9 @@ export default function TheologicalGateway() {
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <Icon className={`w-3 h-3 ${cfg.color}`} />
-                    <span className={`font-mono text-[9px] font-bold ${cfg.color}`}>{cfg.label}</span>
+                    <span className={`font-mono text-xs font-bold ${cfg.color}`}>{cfg.label}</span>
                   </div>
-                  <p className="font-mono text-[9px] text-muted-foreground leading-relaxed">{cfg.desc}</p>
+                  <p className="font-mono text-xs text-muted-foreground leading-relaxed">{cfg.desc}</p>
                 </button>
               );
             })}
@@ -137,8 +137,8 @@ export default function TheologicalGateway() {
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
               <div className="flex items-center gap-2">
                 <User className="w-3 h-3 text-green-400" />
-                <span className="font-mono text-[10px] font-bold text-green-400">HUMAN CORRIDOR</span>
-                <Badge variant="outline" className="font-mono text-[8px] text-green-400 border-green-400/30">FREE WILL</Badge>
+                <span className="font-mono text-xs font-bold text-green-400">HUMAN CORRIDOR</span>
+                <Badge variant="outline" className="font-mono text-xs text-green-400 border-green-400/30">FREE WILL</Badge>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -157,7 +157,7 @@ export default function TheologicalGateway() {
               <div className="space-y-1">
                 <div className="flex items-center gap-1">
                   <Key className="w-3 h-3 text-primary" />
-                  <span className="font-mono text-[9px] text-muted-foreground">TOTP 6-DIGIT CODE (or hardware key)</span>
+                  <span className="font-mono text-xs text-muted-foreground">TOTP 6-DIGIT CODE (or hardware key)</span>
                 </div>
                 <Input
                   className="font-mono text-sm tracking-[0.3em] text-center"
@@ -185,11 +185,11 @@ export default function TheologicalGateway() {
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
               <div className="flex items-center gap-2">
                 <Bot className="w-3 h-3 text-destructive" />
-                <span className="font-mono text-[10px] font-bold text-destructive">AGENT CORRIDOR</span>
-                <Badge variant="outline" className="font-mono text-[8px] text-destructive border-destructive/30">ZKP REQUIRED</Badge>
+                <span className="font-mono text-xs font-bold text-destructive">AGENT CORRIDOR</span>
+                <Badge variant="outline" className="font-mono text-xs text-destructive border-destructive/30">ZKP REQUIRED</Badge>
               </div>
               <div className="bg-secondary/50 rounded-lg p-3 border border-border">
-                <p className="font-mono text-[9px] text-muted-foreground leading-relaxed">
+                <p className="font-mono text-xs text-muted-foreground leading-relaxed">
                   Simple "Yes"/"No" responses are <span className="text-destructive font-bold">REJECTED</span>. Agent must connect to a decentralized oracle and return a cryptographic Zero-Knowledge Proof verifying historical consensus data.
                 </p>
               </div>
@@ -229,13 +229,13 @@ export default function TheologicalGateway() {
               <p className={`font-mono text-sm font-bold ${result.locked ? 'text-destructive' : result.success ? 'text-green-400' : 'text-amber-400'}`}>
                 {result.locked ? 'STRIKE 3 — QUANTUM NEUTRALIZATION' : result.success ? 'ACCESS GRANTED' : `STRIKE ${result.strike || '?'} / 3`}
               </p>
-              <p className="font-mono text-[10px] text-muted-foreground">{result.message || result.reason}</p>
+              <p className="font-mono text-xs text-muted-foreground">{result.message || result.reason}</p>
               {result.locked && (
-                <p className="font-mono text-[9px] text-destructive/70 mt-1">{result.restoration}</p>
+                <p className="font-mono text-xs text-destructive/70 mt-1">{result.restoration}</p>
               )}
               {result.qrng_otp && (
                 <div className="bg-primary/10 border border-primary/20 rounded-lg p-2 mt-2">
-                  <p className="font-mono text-[9px] text-muted-foreground">QRNG ONE-TIME PAD</p>
+                  <p className="font-mono text-xs text-muted-foreground">QRNG ONE-TIME PAD</p>
                   <p className="font-mono text-sm text-primary tracking-[0.2em]">{result.qrng_otp}</p>
                 </div>
               )}
@@ -254,8 +254,8 @@ export default function TheologicalGateway() {
             { label: 'STRIKE 3', desc: 'Tarpit + lockout' },
           ].map(item => (
             <div key={item.label} className="text-center">
-              <p className="font-mono text-[9px] font-bold text-destructive">{item.label}</p>
-              <p className="font-mono text-[8px] text-muted-foreground">{item.desc}</p>
+              <p className="font-mono text-xs font-bold text-destructive">{item.label}</p>
+              <p className="font-mono text-xs text-muted-foreground">{item.desc}</p>
             </div>
           ))}
         </div>

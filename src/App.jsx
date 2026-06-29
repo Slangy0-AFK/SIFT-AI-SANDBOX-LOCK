@@ -4,8 +4,24 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClientInstance } from '@/lib/query-client';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
+
+function PageTransition({ children }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.2 }}
+      className="flex-1 flex flex-col w-full h-full"
+    >
+      {children}
+    </motion.div>
+  );
+}
 import Dashboard from '@/pages/Dashboard';
 import ZeroDayCenter from '@/pages/ZeroDayCenter';
 import ThreatIntelligence from '@/pages/ThreatIntelligence';
@@ -39,6 +55,7 @@ import EmailScanner from '@/pages/EmailScanner';
 
 function AppRoutes() {
   useRealTimeSync();
+  const location = useLocation();
   const { authError, isLoadingAuth, isLoadingPublicSettings } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -54,38 +71,40 @@ function AppRoutes() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/mirror-demo" element={<MirrorDemo />} />
-      <Route path="/paradox-gate" element={<ParadoxGate />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-        <Route element={<AppLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/zero-day" element={<ZeroDayCenter />} />
-          <Route path="/threat-intel" element={<ThreatIntelligence />} />
-          <Route path="/firewall" element={<FirewallDashboard />} />
-          <Route path="/firewall/rules" element={<FirewallRules />} />
-          <Route path="/firewall/logs" element={<FirewallLogs />} />
-          <Route path="/firewall/ip-allowlist" element={<IpAllowlist />} />
-          <Route path="/firewall/sessions" element={<SessionManagement />} />
-          <Route path="/firewall/retention" element={<DataRetention />} />
-          <Route path="/firewall/audit-logs" element={<AuditLogs />} />
-          <Route path="/threat-scanner" element={<ThreatScanner />} />
-          <Route path="/email-scanner" element={<EmailScanner />} />
-          <Route path="/mirror-env" element={<MirrorEnvironment />} />
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="/subscription" element={<SubscriptionPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><Landing /></PageTransition>} />
+        <Route path="/mirror-demo" element={<PageTransition><MirrorDemo /></PageTransition>} />
+        <Route path="/paradox-gate" element={<PageTransition><ParadoxGate /></PageTransition>} />
+        <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+        <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
+        <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
+        <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
+        <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+        <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
+            <Route path="/zero-day" element={<PageTransition><ZeroDayCenter /></PageTransition>} />
+            <Route path="/threat-intel" element={<PageTransition><ThreatIntelligence /></PageTransition>} />
+            <Route path="/firewall" element={<PageTransition><FirewallDashboard /></PageTransition>} />
+            <Route path="/firewall/rules" element={<PageTransition><FirewallRules /></PageTransition>} />
+            <Route path="/firewall/logs" element={<PageTransition><FirewallLogs /></PageTransition>} />
+            <Route path="/firewall/ip-allowlist" element={<PageTransition><IpAllowlist /></PageTransition>} />
+            <Route path="/firewall/sessions" element={<PageTransition><SessionManagement /></PageTransition>} />
+            <Route path="/firewall/retention" element={<PageTransition><DataRetention /></PageTransition>} />
+            <Route path="/firewall/audit-logs" element={<PageTransition><AuditLogs /></PageTransition>} />
+            <Route path="/threat-scanner" element={<PageTransition><ThreatScanner /></PageTransition>} />
+            <Route path="/email-scanner" element={<PageTransition><EmailScanner /></PageTransition>} />
+            <Route path="/mirror-env" element={<PageTransition><MirrorEnvironment /></PageTransition>} />
+            <Route path="/profile" element={<PageTransition><UserProfile /></PageTransition>} />
+            <Route path="/subscription" element={<PageTransition><SubscriptionPage /></PageTransition>} />
+            <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
+          </Route>
         </Route>
-      </Route>
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+        <Route path="*" element={<PageTransition><PageNotFound /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
   );
 }
 

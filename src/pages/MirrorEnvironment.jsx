@@ -36,7 +36,7 @@ const QRNGCycle = ({ onDestruct, disabled, isNeutralizing, buttonText = "Initiat
         size="sm"
         onClick={() => setActive(true)}
         disabled={disabled}
-        className="h-8 text-[10px] uppercase font-bold tracking-wider w-full sm:w-auto border-destructive/50 text-destructive hover:bg-destructive/10"
+        className="h-8 text-xs uppercase font-bold tracking-wider w-full sm:w-auto border-destructive/50 text-destructive hover:bg-destructive/10"
       >
         {buttonText}
       </Button>
@@ -51,13 +51,13 @@ const QRNGCycle = ({ onDestruct, disabled, isNeutralizing, buttonText = "Initiat
           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
           className="absolute inset-0 rounded-full border-2 border-destructive/20 border-t-destructive"
         />
-        <span className="text-[9px] font-bold text-destructive tabular-nums">{timeLeft.toFixed(1)}</span>
+        <span className="text-xs font-bold text-destructive tabular-nums">{timeLeft.toFixed(1)}</span>
       </div>
       <div className="flex flex-col text-left">
-        <span className="text-[9px] font-bold text-destructive uppercase tracking-widest">
+        <span className="text-xs font-bold text-destructive uppercase tracking-widest">
           {isNeutralizing ? 'Destroying...' : 'Active QRNG'}
         </span>
-        <span className="text-[8px] text-destructive/80 font-mono">
+        <span className="text-xs text-destructive/80 font-mono">
           T-minus {timeLeft.toFixed(1)}s to Destruction
         </span>
       </div>
@@ -128,7 +128,7 @@ export default function MirrorEnvironment() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">MIRROR ENVIRONMENT</h1>
-          <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+          <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
             HONEYPOTS · TARPITS · DECEPTION LAYER (AUTO-DEPLOYED)
           </p>
         </div>
@@ -141,7 +141,7 @@ export default function MirrorEnvironment() {
             <div className="flex items-center gap-2">
               <Bug className="w-5 h-5 text-amber-400" />
               <CardTitle className="font-mono text-xs tracking-wider text-foreground">HONEYPOTS</CardTitle>
-              <Badge className="ml-auto font-mono text-[9px] bg-amber-400/10 text-amber-400 border-amber-400/30">{honeypotCount}</Badge>
+              <Badge className="ml-auto font-mono text-xs bg-amber-400/10 text-amber-400 border-amber-400/30">{honeypotCount}</Badge>
             </div>
           </CardHeader>
           <CardContent>
@@ -156,7 +156,7 @@ export default function MirrorEnvironment() {
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-fuchsia-400" />
               <CardTitle className="font-mono text-xs tracking-wider text-fuchsia-400">TARPITS</CardTitle>
-              <Badge className="ml-auto font-mono text-[9px] bg-fuchsia-400/10 text-fuchsia-400 border-fuchsia-400/30">{tarpitCount}</Badge>
+              <Badge className="ml-auto font-mono text-xs bg-fuchsia-400/10 text-fuchsia-400 border-fuchsia-400/30">{tarpitCount}</Badge>
             </div>
           </CardHeader>
           <CardContent>
@@ -178,40 +178,40 @@ export default function MirrorEnvironment() {
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-2 mx-auto">
                 <Globe className="w-6 h-6 md:w-8 md:h-8 text-green-400" />
               </div>
-              <span className="font-mono text-[9px] text-green-400">PRODUCTION</span>
+              <span className="font-mono text-xs text-green-400">PRODUCTION</span>
             </div>
             <div className="flex flex-col items-center gap-1 px-1 md:px-0">
               <Wifi className="w-4 h-4 text-primary animate-pulse" />
               <div className="w-12 md:w-24 h-px bg-primary/30" />
-              <span className="font-mono text-[8px] text-muted-foreground">MIRROR SYNC</span>
+              <span className="font-mono text-xs text-muted-foreground">MIRROR SYNC</span>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-2 mx-auto">
                 <Shield className="w-6 h-6 md:w-8 md:h-8 text-primary" />
               </div>
-              <span className="font-mono text-[9px] text-primary">MIRROR ENV</span>
+              <span className="font-mono text-xs text-primary">MIRROR ENV</span>
             </div>
             <div className="flex flex-col items-center gap-1 px-1 md:px-0">
               <AlertTriangle className="w-4 h-4 text-amber-400" />
               <div className="w-12 md:w-24 h-px bg-amber-400/30" />
-              <span className="font-mono text-[8px] text-muted-foreground">REDIRECT</span>
+              <span className="font-mono text-xs text-muted-foreground">REDIRECT</span>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center mb-2 mx-auto">
                 <Bug className="w-6 h-6 md:w-8 md:h-8 text-amber-400" />
               </div>
-              <span className="font-mono text-[9px] text-amber-400">HONEYPOT</span>
+              <span className="font-mono text-xs text-amber-400">HONEYPOT</span>
             </div>
             <div className="flex flex-col items-center gap-1 px-1 md:px-0">
               <Clock className="w-4 h-4 text-fuchsia-400" />
               <div className="w-12 md:w-24 h-px bg-fuchsia-400/30" />
-              <span className="font-mono text-[8px] text-foreground">THROTTLE</span>
+              <span className="font-mono text-xs text-foreground">THROTTLE</span>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-fuchsia-400/10 border border-fuchsia-400/30 flex items-center justify-center mb-2 mx-auto">
                 <Clock className="w-6 h-6 md:w-8 md:h-8 text-fuchsia-400 opacity-100" />
               </div>
-              <span className="font-mono text-[10px] font-bold text-fuchsia-400">TARPIT</span>
+              <span className="font-mono text-xs font-bold text-fuchsia-400">TARPIT</span>
             </div>
           </div>
         </CardContent>
@@ -224,7 +224,7 @@ export default function MirrorEnvironment() {
             <CardTitle className="font-mono text-xs tracking-wider">ACTIVE DECEPTION SESSIONS</CardTitle>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="font-mono text-[9px] text-muted-foreground">{activeSessions.length} active</span>
+              <span className="font-mono text-xs text-muted-foreground">{activeSessions.length} active</span>
             </div>
           </div>
         </CardHeader>
@@ -252,24 +252,24 @@ export default function MirrorEnvironment() {
                     )}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] font-semibold text-foreground">{session.source_ip}</span>
-                        <Badge variant="outline" className={`font-mono text-[8px] ${
+                        <span className="font-mono text-xs font-semibold text-foreground">{session.source_ip}</span>
+                        <Badge variant="outline" className={`font-mono text-xs ${
                           session.session_type === 'honeypot' ? 'text-amber-400 border-amber-400/30' : 'text-fuchsia-400 border-fuchsia-400/30'
                         }`}>
                           {session.session_type?.toUpperCase()}
                         </Badge>
-                        <Badge variant="outline" className={`font-mono text-[8px] ${
+                        <Badge variant="outline" className={`font-mono text-xs ${
                           session.status === 'active' ? 'text-green-400 border-green-400/30' : 'text-muted-foreground border-border'
                         }`}>
                           {session.status?.toUpperCase()}
                         </Badge>
                       </div>
-                      <p className="font-mono text-[9px] text-muted-foreground mt-0.5">
+                      <p className="font-mono text-xs text-muted-foreground mt-0.5">
                         {session.data_captured || `${session.interactions} interactions`}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
-                      <span className="font-mono text-[9px] text-muted-foreground">
+                      <span className="font-mono text-xs text-muted-foreground">
                         {session.created_date ? formatChicagoTime(session.created_date) : ''}
                       </span>
                       {session.status === 'active' && (

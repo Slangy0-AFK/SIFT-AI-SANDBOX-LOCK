@@ -22,7 +22,7 @@ export default function OnboardingGuide() {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">GETTING STARTED</h1>
-        <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+        <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
           QUICK START GUIDE · EXPLORE FEATURES
         </p>
       </div>
@@ -36,7 +36,7 @@ export default function OnboardingGuide() {
             </div>
             <div className="flex-1">
               <h3 className="font-mono text-sm font-bold text-foreground">WELCOME TO SIFT-AI QUANTUM SHIELD</h3>
-              <p className="font-mono text-[10px] text-muted-foreground mt-1 leading-relaxed">
+              <p className="font-mono text-xs text-muted-foreground mt-1 leading-relaxed">
                 Your security dashboard is now fully configured. Start by exploring the Command Center to see real-time threat monitoring, 
                 then try the Attack Simulator to test your defenses.
               </p>
@@ -57,11 +57,11 @@ export default function OnboardingGuide() {
               <div className="text-center">
                 <m.icon className={`w-8 h-8 ${m.color} mx-auto mb-3 group-hover:scale-110 transition-transform`} />
                 <p className="font-mono text-[11px] font-bold text-foreground">{m.title}</p>
-                <p className="font-mono text-[9px] text-muted-foreground mt-1">{m.desc}</p>
+                <p className="font-mono text-xs text-muted-foreground mt-1">{m.desc}</p>
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="mt-3 font-mono text-[9px] text-primary"
+                  className="mt-3 font-mono text-xs text-primary"
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(m.path);
@@ -79,25 +79,25 @@ export default function OnboardingGuide() {
       <Card>
         <CardHeader>
           <CardTitle className="font-mono text-xs tracking-wider">QUICK TIPS</CardTitle>
-          <CardDescription className="font-mono text-[9px]">Get the most out of SIFT-AI</CardDescription>
+          <CardDescription className="font-mono text-xs">Get the most out of SIFT-AI</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-secondary/30 border border-border rounded-lg p-4">
-              <h4 className="font-mono text-[10px] font-bold text-foreground mb-2">1. Start with Dashboard</h4>
-              <p className="font-mono text-[9px] text-muted-foreground leading-relaxed">
+              <h4 className="font-mono text-xs font-bold text-foreground mb-2">1. Start with Dashboard</h4>
+              <p className="font-mono text-xs text-muted-foreground leading-relaxed">
                 The Command Center shows all active threats, security events, and system status at a glance.
               </p>
             </div>
             <div className="bg-secondary/30 border border-border rounded-lg p-4">
-              <h4 className="font-mono text-[10px] font-bold text-foreground mb-2">2. Test with Simulator</h4>
-              <p className="font-mono text-[9px] text-muted-foreground leading-relaxed">
+              <h4 className="font-mono text-xs font-bold text-foreground mb-2">2. Test with Simulator</h4>
+              <p className="font-mono text-xs text-muted-foreground leading-relaxed">
                 Use the Attack Simulator to generate test threats and see how the Base Chain pipeline processes them.
               </p>
             </div>
             <div className="bg-secondary/30 border border-border rounded-lg p-4">
-              <h4 className="font-mono text-[10px] font-bold text-foreground mb-2">3. Configure Firewall</h4>
-              <p className="font-mono text-[9px] text-muted-foreground leading-relaxed">
+              <h4 className="font-mono text-xs font-bold text-foreground mb-2">3. Configure Firewall</h4>
+              <p className="font-mono text-xs text-muted-foreground leading-relaxed">
                 Set up custom firewall rules to block, allow, or rate-limit specific IP addresses and ports.
               </p>
             </div>
@@ -109,7 +109,7 @@ export default function OnboardingGuide() {
       <Card>
         <CardHeader>
           <CardTitle className="font-mono text-xs tracking-wider">FEATURE CHECKLIST</CardTitle>
-          <CardDescription className="font-mono text-[9px]">Track your progress</CardDescription>
+          <CardDescription className="font-mono text-xs">Track your progress</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
@@ -124,7 +124,7 @@ export default function OnboardingGuide() {
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-3">
                 <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
-                <span className="font-mono text-[10px] text-foreground">{item}</span>
+                <span className="font-mono text-xs text-foreground">{item}</span>
               </div>
             ))}
           </div>

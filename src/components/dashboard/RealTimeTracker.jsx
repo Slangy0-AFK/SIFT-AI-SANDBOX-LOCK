@@ -125,9 +125,9 @@ export default function RealTimeTracker() {
     if (!active || !payload?.length) return null;
     return (
       <div className="bg-card border border-border rounded-lg px-3 py-2">
-        <p className="font-mono text-[9px] text-muted-foreground mb-1">{label}</p>
+        <p className="font-mono text-xs text-muted-foreground mb-1">{label}</p>
         {payload.map(p => (
-          <p key={p.dataKey} className="font-mono text-[10px]" style={{ color: p.color }}>
+          <p key={p.dataKey} className="font-mono text-xs" style={{ color: p.color }}>
             {p.dataKey === 'threats' ? '⚡ Threats' : '☢ Zero-Day'}: {p.value}
           </p>
         ))}
@@ -140,20 +140,20 @@ export default function RealTimeTracker() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-primary" />
-          <span className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase">Real-Time Attack Tracker</span>
+          <span className="font-mono text-xs text-muted-foreground tracking-widest uppercase">Real-Time Attack Tracker</span>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-0.5 rounded bg-primary" />
-            <span className="font-mono text-[8px] text-muted-foreground">Threats</span>
+            <span className="font-mono text-xs text-muted-foreground">Threats</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-0.5 rounded bg-purple-400" />
-            <span className="font-mono text-[8px] text-muted-foreground">Zero-Day</span>
+            <span className="font-mono text-xs text-muted-foreground">Zero-Day</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            <span className="font-mono text-[8px] text-green-400">LIVE</span>
+            <span className="font-mono text-xs text-green-400">LIVE</span>
           </div>
         </div>
       </div>
@@ -183,9 +183,9 @@ export default function RealTimeTracker() {
 
       {/* Recent events feed */}
       <div className="space-y-1.5">
-        <p className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase">Recent Activity</p>
+        <p className="font-mono text-xs text-muted-foreground tracking-widest uppercase">Recent Activity</p>
         {recentEvents.length === 0 ? (
-          <p className="font-mono text-[9px] text-muted-foreground italic">Waiting for live events...</p>
+          <p className="font-mono text-xs text-muted-foreground italic">Waiting for live events...</p>
         ) : (
           <AnimatePresence initial={false}>
             {recentEvents.map(ev => (
@@ -193,9 +193,9 @@ export default function RealTimeTracker() {
                 initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
                 className="flex items-center gap-2">
                 <div className={`w-1 h-1 rounded-full flex-shrink-0 ${ev.type === 'zeroday' ? 'bg-purple-400' : 'bg-primary'}`} />
-                <span className={`font-mono text-[9px] font-semibold ${ev.color}`}>{ev.label}</span>
-                <span className="font-mono text-[9px] text-muted-foreground truncate">{ev.detail}</span>
-                <span className="font-mono text-[8px] text-muted-foreground/50 ml-auto flex-shrink-0">{formatChicagoTime(ev.time)}</span>
+                <span className={`font-mono text-xs font-semibold ${ev.color}`}>{ev.label}</span>
+                <span className="font-mono text-xs text-muted-foreground truncate">{ev.detail}</span>
+                <span className="font-mono text-xs text-muted-foreground/50 ml-auto flex-shrink-0">{formatChicagoTime(ev.time)}</span>
               </motion.div>
             ))}
           </AnimatePresence>

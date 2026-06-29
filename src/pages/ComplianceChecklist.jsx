@@ -93,7 +93,7 @@ export default function ComplianceChecklist() {
           <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">GOOGLE PLAY COMPLIANCE</h1>
         </div>
       </div>
-      <p className="font-mono text-[10px] text-muted-foreground tracking-widest">
+      <p className="font-mono text-xs text-muted-foreground tracking-widest">
         SIFT-AI QUANTUM SHIELD · PLAY STORE READINESS CHECKLIST
       </p>
 
@@ -101,19 +101,19 @@ export default function ComplianceChecklist() {
       <div className="grid grid-cols-4 gap-4">
         <div className="bg-card border border-border rounded-xl p-4 text-center col-span-1">
           <div className={`font-mono text-3xl font-bold ${score >= 80 ? 'text-green-400' : score >= 60 ? 'text-amber-400' : 'text-red-400'}`}>{score}%</div>
-          <div className="font-mono text-[9px] text-muted-foreground mt-1 tracking-wide">COMPLIANCE SCORE</div>
+          <div className="font-mono text-xs text-muted-foreground mt-1 tracking-wide">COMPLIANCE SCORE</div>
         </div>
         <div className="bg-card border border-green-400/20 rounded-xl p-4 text-center">
           <div className="font-mono text-2xl font-bold text-green-400">{passes}</div>
-          <div className="font-mono text-[9px] text-muted-foreground mt-1 tracking-wide">PASSED</div>
+          <div className="font-mono text-xs text-muted-foreground mt-1 tracking-wide">PASSED</div>
         </div>
         <div className="bg-card border border-amber-400/20 rounded-xl p-4 text-center">
           <div className="font-mono text-2xl font-bold text-amber-400">{actions}</div>
-          <div className="font-mono text-[9px] text-muted-foreground mt-1 tracking-wide">ACTIONS NEEDED</div>
+          <div className="font-mono text-xs text-muted-foreground mt-1 tracking-wide">ACTIONS NEEDED</div>
         </div>
         <div className="bg-card border border-red-400/20 rounded-xl p-4 text-center">
           <div className="font-mono text-2xl font-bold text-red-400">{fails}</div>
-          <div className="font-mono text-[9px] text-muted-foreground mt-1 tracking-wide">FAILED</div>
+          <div className="font-mono text-xs text-muted-foreground mt-1 tracking-wide">FAILED</div>
         </div>
       </div>
 
@@ -121,7 +121,7 @@ export default function ComplianceChecklist() {
       {actions > 0 && (
         <div className="bg-amber-400/10 border border-amber-400/30 rounded-xl p-4">
           <p className="font-mono text-xs text-amber-400 font-bold mb-1">⚡ {actions} ACTIONS REQUIRED BEFORE PUBLISHING</p>
-          <p className="font-mono text-[10px] text-muted-foreground">
+          <p className="font-mono text-xs text-muted-foreground">
             Items marked "ACTION NEEDED" must be completed in Google Play Console or in-app before submission.
             Click any item to see details.
           </p>
@@ -148,12 +148,12 @@ export default function ComplianceChecklist() {
                       <div className="flex-1 min-w-0">
                         <p className="font-mono text-xs text-foreground">{item.label}</p>
                         {expanded[key] && (
-                          <p className={`font-mono text-[10px] mt-1.5 px-2 py-1.5 rounded border ${cfg.bg} ${cfg.color}`}>
+                          <p className={`font-mono text-xs mt-1.5 px-2 py-1.5 rounded border ${cfg.bg} ${cfg.color}`}>
                             {item.note}
                           </p>
                         )}
                       </div>
-                      <Badge className={`font-mono text-[9px] border flex-shrink-0 ${cfg.bg} ${cfg.color}`}>
+                      <Badge className={`font-mono text-xs border flex-shrink-0 ${cfg.bg} ${cfg.color}`}>
                         {cfg.label}
                       </Badge>
                     </div>
@@ -176,7 +176,7 @@ export default function ComplianceChecklist() {
             { label: 'Account Deletion Requirements', url: 'https://support.google.com/googleplay/android-developer/answer/13327111' },
           ].map(link => (
             <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2 font-mono text-[10px] text-primary hover:underline">
+              className="flex items-center gap-2 font-mono text-xs text-primary hover:underline">
               <ExternalLink className="w-3 h-3" /> {link.label}
             </a>
           ))}

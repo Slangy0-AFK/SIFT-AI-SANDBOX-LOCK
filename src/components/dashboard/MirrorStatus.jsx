@@ -10,12 +10,12 @@ export default function MirrorStatus({ honeypotSessions = [] }) {
   return (
     <div className="bg-card border border-border rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase">
+        <h3 className="font-mono text-xs text-muted-foreground tracking-widest uppercase">
           MIRROR ENVIRONMENT
         </h3>
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          <span className="font-mono text-[9px] text-primary">MIRRORED</span>
+          <span className="font-mono text-xs text-primary">MIRRORED</span>
         </div>
       </div>
 
@@ -23,19 +23,19 @@ export default function MirrorStatus({ honeypotSessions = [] }) {
         <div className="bg-secondary rounded-lg p-3 text-center">
           <Copy className="w-4 h-4 text-primary mx-auto mb-1" />
           <div className="font-mono text-lg font-bold text-foreground">{mirrorHealth.toFixed(1)}%</div>
-          <div className="font-mono text-[8px] text-muted-foreground">MIRROR SYNC</div>
+          <div className="font-mono text-xs text-muted-foreground">MIRROR SYNC</div>
         </div>
         <div className="bg-secondary rounded-lg p-3 text-center">
           <Bug className="w-4 h-4 text-amber-400 mx-auto mb-1" />
           <div className="font-mono text-lg font-bold text-foreground">{activeSessions.length}</div>
-          <div className="font-mono text-[8px] text-muted-foreground">HONEYPOTS</div>
+          <div className="font-mono text-xs text-muted-foreground">HONEYPOTS</div>
         </div>
         <div className="bg-secondary rounded-lg p-3 text-center">
           <Clock className="w-4 h-4 text-accent mx-auto mb-1" />
           <div className="font-mono text-lg font-bold text-foreground">
             {honeypotSessions.filter(s => s.session_type === 'tarpit').length}
           </div>
-          <div className="font-mono text-[8px] text-muted-foreground">TARPITS</div>
+          <div className="font-mono text-xs text-muted-foreground">TARPITS</div>
         </div>
       </div>
 
@@ -49,14 +49,14 @@ export default function MirrorStatus({ honeypotSessions = [] }) {
               className="flex items-center gap-2 px-3 py-2 rounded-md bg-secondary/50 border border-border/50"
             >
               <div className={`w-1.5 h-1.5 rounded-full ${session.session_type === 'tarpit' ? 'bg-accent' : 'bg-amber-400'} animate-pulse`} />
-              <span className="font-mono text-[9px] text-muted-foreground flex-1">{session.source_ip}</span>
-              <span className="font-mono text-[8px] text-muted-foreground">{session.interactions} interactions</span>
+              <span className="font-mono text-xs text-muted-foreground flex-1">{session.source_ip}</span>
+              <span className="font-mono text-xs text-muted-foreground">{session.interactions} interactions</span>
             </motion.div>
           ))}
         </div>
       ) : (
         <div className="text-center py-3">
-          <p className="font-mono text-[10px] text-muted-foreground">No active deception sessions</p>
+          <p className="font-mono text-xs text-muted-foreground">No active deception sessions</p>
         </div>
       )}
     </div>

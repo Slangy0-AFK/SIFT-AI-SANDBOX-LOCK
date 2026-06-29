@@ -60,7 +60,7 @@ export default function PlanCard({ planKey, billingCycle, currentPlan, onSelect,
     >
       {plan.badge && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge className="font-mono text-[9px] px-3 bg-primary text-primary-foreground">
+          <Badge className="font-mono text-xs px-3 bg-primary text-primary-foreground">
             {plan.badge}
           </Badge>
         </div>
@@ -78,12 +78,12 @@ export default function PlanCard({ planKey, billingCycle, currentPlan, onSelect,
               <span className="font-mono text-3xl font-bold text-foreground">${price}</span>
               <span className="font-mono text-xs text-muted-foreground mb-1">/mo</span>
               {billingCycle === 'annual' && (
-                <span className="font-mono text-[9px] text-green-400 mb-1 ml-1">billed annually</span>
+                <span className="font-mono text-xs text-green-400 mb-1 ml-1">billed annually</span>
               )}
             </>
           )}
         </div>
-        <p className="font-mono text-[10px] text-muted-foreground mt-1">
+        <p className="font-mono text-xs text-muted-foreground mt-1">
           Up to {plan.devices} device{plan.devices > 1 ? 's' : ''}{planKey === 'pro' ? ' per user' : ''}
         </p>
       </div>
@@ -94,7 +94,7 @@ export default function PlanCard({ planKey, billingCycle, currentPlan, onSelect,
             {f.included
               ? <Check className={`w-3.5 h-3.5 ${plan.color} flex-shrink-0`} />
               : <X className="w-3.5 h-3.5 text-muted-foreground/40 flex-shrink-0" />}
-            <span className={`font-mono text-[10px] ${f.included ? 'text-foreground' : 'text-muted-foreground/50'}`}>{f.label}</span>
+            <span className={`font-mono text-xs ${f.included ? 'text-foreground' : 'text-muted-foreground/50'}`}>{f.label}</span>
           </li>
         ))}
       </ul>

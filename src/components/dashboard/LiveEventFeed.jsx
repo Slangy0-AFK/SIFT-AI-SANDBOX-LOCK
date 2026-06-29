@@ -33,7 +33,7 @@ export default function LiveEventFeed({ events = [] }) {
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           <h3 className="font-mono text-xs font-semibold tracking-wider">EVENT TIMELINE</h3>
         </div>
-        <span className="font-mono text-[10px] text-muted-foreground">{events.length} events</span>
+        <span className="font-mono text-xs text-muted-foreground">{events.length} events</span>
       </div>
       <div className="max-h-80 overflow-y-auto">
         <AnimatePresence>
@@ -60,15 +60,15 @@ export default function LiveEventFeed({ events = [] }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-[10px] font-semibold text-foreground">
+                      <span className="font-mono text-xs font-semibold text-foreground">
                         {event.event_type?.replace(/_/g, ' ').toUpperCase()}
                       </span>
                     </div>
-                    <p className="font-mono text-[9px] text-muted-foreground mt-0.5 truncate">
+                    <p className="font-mono text-xs text-muted-foreground mt-0.5 truncate">
                       {event.details || 'No details'}
                     </p>
                   </div>
-                  <span className="font-mono text-[9px] text-muted-foreground whitespace-nowrap">
+                  <span className="font-mono text-xs text-muted-foreground whitespace-nowrap">
                     {formatTime(event.created_date)}
                   </span>
                 </motion.div>

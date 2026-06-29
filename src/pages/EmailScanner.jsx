@@ -14,7 +14,7 @@ export default function EmailScanner() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">EMAIL SCANNER</h1>
-          <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+          <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
             THREAT DETECTION & LABELS
           </p>
         </div>
@@ -58,18 +58,18 @@ export default function EmailScanner() {
                   <div className="flex items-start gap-3 p-3 rounded-lg border border-destructive/20 bg-destructive/5">
                     <ShieldAlert className="w-5 h-5 text-destructive flex-shrink-0" />
                     <div>
-                      <p className="font-mono text-[10px] font-bold text-destructive">Suspicious Login Attempt</p>
-                      <p className="font-mono text-[9px] text-muted-foreground mt-1">From: no-reply@security-alert-verify.com</p>
-                      <p className="font-mono text-[9px] text-destructive mt-1">Labeled as: PHISHING</p>
+                      <p className="font-mono text-xs font-bold text-destructive">Suspicious Login Attempt</p>
+                      <p className="font-mono text-xs text-muted-foreground mt-1">From: no-reply@security-alert-verify.com</p>
+                      <p className="font-mono text-xs text-destructive mt-1">Labeled as: PHISHING</p>
                     </div>
                   </div>
                   
                   <div className="flex items-start gap-3 p-3 rounded-lg border border-green-500/20 bg-green-500/5">
                     <ShieldCheck className="w-5 h-5 text-green-500 flex-shrink-0" />
                     <div>
-                      <p className="font-mono text-[10px] font-bold text-green-500">Weekly Report</p>
-                      <p className="font-mono text-[9px] text-muted-foreground mt-1">From: team@company.com</p>
-                      <p className="font-mono text-[9px] text-green-500 mt-1">Labeled as: SAFE</p>
+                      <p className="font-mono text-xs font-bold text-green-500">Weekly Report</p>
+                      <p className="font-mono text-xs text-muted-foreground mt-1">From: team@company.com</p>
+                      <p className="font-mono text-xs text-green-500 mt-1">Labeled as: SAFE</p>
                     </div>
                   </div>
                 </div>

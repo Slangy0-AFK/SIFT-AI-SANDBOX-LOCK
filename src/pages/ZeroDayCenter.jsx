@@ -41,7 +41,7 @@ const QRNGCycle = ({ onDestruct, disabled, isNeutralizing, buttonText = "Initiat
         size="sm"
         onClick={() => setActive(true)}
         disabled={disabled}
-        className="h-8 text-[10px] uppercase font-bold tracking-wider w-full sm:w-auto border-destructive/50 text-destructive hover:bg-destructive/10"
+        className="h-8 text-xs uppercase font-bold tracking-wider w-full sm:w-auto border-destructive/50 text-destructive hover:bg-destructive/10"
       >
         {buttonText}
       </Button>
@@ -56,13 +56,13 @@ const QRNGCycle = ({ onDestruct, disabled, isNeutralizing, buttonText = "Initiat
           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
           className="absolute inset-0 rounded-full border-2 border-destructive/20 border-t-destructive"
         />
-        <span className="text-[9px] font-bold text-destructive tabular-nums">{timeLeft.toFixed(1)}</span>
+        <span className="text-xs font-bold text-destructive tabular-nums">{timeLeft.toFixed(1)}</span>
       </div>
       <div className="flex flex-col text-left">
-        <span className="text-[9px] font-bold text-destructive uppercase tracking-widest">
+        <span className="text-xs font-bold text-destructive uppercase tracking-widest">
           {isNeutralizing ? 'Destroying...' : 'Active QRNG'}
         </span>
-        <span className="text-[8px] text-destructive/80 font-mono">
+        <span className="text-xs text-destructive/80 font-mono">
           T-minus {timeLeft.toFixed(1)}s to Destruction
         </span>
       </div>
@@ -123,7 +123,7 @@ export default function ZeroDayCenter() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">ZERO-DAY CENTER</h1>
-          <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+          <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
             ANOMALY DETECTION · GUARDIAN AGENTS · THREAT CONTAINMENT
           </p>
         </div>
@@ -148,7 +148,7 @@ export default function ZeroDayCenter() {
         ].map(s => (
           <motion.div key={s.label} className="bg-card border border-border rounded-xl p-4 text-center">
             <div className={`font-mono text-2xl font-bold ${s.color}`}>{s.value}</div>
-            <div className="font-mono text-[9px] text-muted-foreground mt-1 tracking-wide">{s.label.toUpperCase()}</div>
+            <div className="font-mono text-xs text-muted-foreground mt-1 tracking-wide">{s.label.toUpperCase()}</div>
           </motion.div>
         ))}
       </div>
@@ -174,7 +174,7 @@ export default function ZeroDayCenter() {
             </CardTitle>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              <span className="font-mono text-[9px] text-muted-foreground">LIVE</span>
+              <span className="font-mono text-xs text-muted-foreground">LIVE</span>
             </div>
           </div>
         </CardHeader>

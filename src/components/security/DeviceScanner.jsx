@@ -313,13 +313,13 @@ export default function DeviceScanner() {
           </CardTitle>
           <div className="flex items-center gap-2">
             {results && (
-              <Badge className={`font-mono text-[9px] border ${isClean ? 'bg-green-500/10 text-green-400 border-green-400/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>
+              <Badge className={`font-mono text-xs border ${isClean ? 'bg-green-500/10 text-green-400 border-green-400/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>
                 {isClean ? <ShieldCheck className="w-3 h-3 mr-1" /> : <ShieldX className="w-3 h-3 mr-1" />}
                 {isClean ? 'CLEAN' : `${threatCount} THREAT${threatCount !== 1 ? 'S' : ''}`}
               </Badge>
             )}
             <Badge
-              className={`font-mono text-[9px] cursor-pointer border ${prefs.autoScan ? 'bg-primary/10 text-primary border-primary/20' : 'bg-secondary text-muted-foreground border-border'}`}
+              className={`font-mono text-xs cursor-pointer border ${prefs.autoScan ? 'bg-primary/10 text-primary border-primary/20' : 'bg-secondary text-muted-foreground border-border'}`}
               onClick={() => { setPrefs(p => ({ ...p, autoScan: !p.autoScan })); toast.success(`Auto-scan ${!prefs.autoScan ? 'ON' : 'OFF'}`); }}
             >
               <RefreshCw className={`w-3 h-3 mr-1 ${prefs.autoScan ? 'animate-spin' : ''}`} />
@@ -327,7 +327,7 @@ export default function DeviceScanner() {
             </Badge>
           </div>
         </div>
-        <p className="font-mono text-[9px] text-muted-foreground tracking-wide mt-1">
+        <p className="font-mono text-xs text-muted-foreground tracking-wide mt-1">
           Sift-AI autonomous detector: scans for undercover modes, Claude leak attacks, injected scripts & hardware anomalies — no personal data stored
         </p>
       </CardHeader>
@@ -339,8 +339,8 @@ export default function DeviceScanner() {
           <div className="flex items-center gap-2">
             {prefs.notifications ? <Bell className="w-4 h-4 text-amber-400" /> : <BellOff className="w-4 h-4 text-muted-foreground" />}
             <div>
-              <Label className="font-mono text-[10px] font-semibold cursor-pointer" htmlFor="notify">Threat Alerts</Label>
-              <p className="font-mono text-[9px] text-muted-foreground">In-app + browser notification when a hidden threat is found</p>
+              <Label className="font-mono text-xs font-semibold cursor-pointer" htmlFor="notify">Threat Alerts</Label>
+              <p className="font-mono text-xs text-muted-foreground">In-app + browser notification when a hidden threat is found</p>
             </div>
           </div>
           <Switch id="notify" checked={prefs.notifications} onCheckedChange={v => setPrefs(p => ({ ...p, notifications: v }))} />
@@ -360,8 +360,8 @@ export default function DeviceScanner() {
               >
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${active ? 'bg-primary animate-pulse' : done ? 'bg-green-400' : 'bg-muted-foreground/30'}`} />
                 <div className="flex-1 min-w-0">
-                  <span className={`font-mono text-[10px] font-semibold ${active ? 'text-primary' : done ? 'text-green-400' : 'text-muted-foreground'}`}>{step.label}</span>
-                  {active && <p className="font-mono text-[9px] text-muted-foreground mt-0.5">{step.detail}</p>}
+                  <span className={`font-mono text-xs font-semibold ${active ? 'text-primary' : done ? 'text-green-400' : 'text-muted-foreground'}`}>{step.label}</span>
+                  {active && <p className="font-mono text-xs text-muted-foreground mt-0.5">{step.detail}</p>}
                 </div>
                 {active && <Loader2 className="w-3.5 h-3.5 text-primary animate-spin flex-shrink-0" />}
                 {done && <CheckCircle2 className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />}
@@ -386,13 +386,13 @@ export default function DeviceScanner() {
                     <p className={`font-mono text-sm font-bold ${isClean ? 'text-green-400' : threatCount > 0 ? 'text-destructive' : 'text-amber-400'}`}>
                       {isClean ? 'DEVICE IS CLEAN' : threatCount > 0 ? `${threatCount} HIDDEN THREAT(S) FOUND` : `${warningCount} WARNING(S)`}
                     </p>
-                    <p className="font-mono text-[9px] text-muted-foreground mt-0.5">
+                    <p className="font-mono text-xs text-muted-foreground mt-0.5">
                       {results.scan_id} · {formatChicagoTime(results.timestamp)}
                     </p>
                   </div>
                 </div>
                 {(findings.length > 0 || warnings.length > 0) && (
-                  <button onClick={() => setShowDetails(v => !v)} className="font-mono text-[9px] text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
+                  <button onClick={() => setShowDetails(v => !v)} className="font-mono text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
                     Logs {showDetails ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                   </button>
                 )}
@@ -408,26 +408,26 @@ export default function DeviceScanner() {
                     className="overflow-hidden"
                   >
                     <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
-                      <p className="font-mono text-[9px] font-bold text-muted-foreground tracking-widest">THREAT LOG</p>
+                      <p className="font-mono text-xs font-bold text-muted-foreground tracking-widest">THREAT LOG</p>
                       {findings.map((f, i) => (
                         <div key={i} className={`flex items-start gap-2 rounded-lg px-3 py-2 border ${SEVERITY_BG[f.severity] || SEVERITY_BG.info}`}>
-                          <span className={`font-mono text-[8px] font-bold uppercase mt-0.5 flex-shrink-0 ${SEVERITY_COLOR[f.severity] || ''}`}>{f.severity}</span>
-                          <span className="font-mono text-[9px] text-foreground">{f.label}</span>
+                          <span className={`font-mono text-xs font-bold uppercase mt-0.5 flex-shrink-0 ${SEVERITY_COLOR[f.severity] || ''}`}>{f.severity}</span>
+                          <span className="font-mono text-xs text-foreground">{f.label}</span>
                         </div>
                       ))}
                       {warnings.length > 0 && (
                         <>
-                          <p className="font-mono text-[9px] font-bold text-muted-foreground tracking-widest pt-1">PERMISSION WARNINGS</p>
+                          <p className="font-mono text-xs font-bold text-muted-foreground tracking-widest pt-1">PERMISSION WARNINGS</p>
                           {warnings.map((w, i) => (
                             <div key={i} className={`flex items-start gap-2 rounded-lg px-3 py-2 border ${SEVERITY_BG[w.severity] || SEVERITY_BG.info}`}>
-                              <span className={`font-mono text-[8px] font-bold uppercase mt-0.5 flex-shrink-0 ${SEVERITY_COLOR[w.severity] || ''}`}>{w.severity}</span>
-                              <span className="font-mono text-[9px] text-foreground">{w.label}</span>
+                              <span className={`font-mono text-xs font-bold uppercase mt-0.5 flex-shrink-0 ${SEVERITY_COLOR[w.severity] || ''}`}>{w.severity}</span>
+                              <span className="font-mono text-xs text-foreground">{w.label}</span>
                             </div>
                           ))}
                         </>
                       )}
                       {isClean && (
-                        <p className="font-mono text-[9px] text-green-400 text-center pt-1">✓ All checks passed — no hidden threats detected</p>
+                        <p className="font-mono text-xs text-green-400 text-center pt-1">✓ All checks passed — no hidden threats detected</p>
                       )}
                     </div>
                   </motion.div>
@@ -452,7 +452,7 @@ export default function DeviceScanner() {
         </div>
 
         {prefs.autoScan && (
-          <p className="font-mono text-[9px] text-primary text-center">
+          <p className="font-mono text-xs text-primary text-center">
             <RefreshCw className="w-3 h-3 inline mr-1 animate-spin" />
             Auto-scanning every 5 minutes — monitoring for hidden threats
           </p>

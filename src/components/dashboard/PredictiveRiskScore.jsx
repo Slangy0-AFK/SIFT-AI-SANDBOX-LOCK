@@ -85,7 +85,7 @@ export default function PredictiveRiskScore({ threats = [], events = [], anomali
         <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
           <Brain className="w-4 h-4 text-primary" /> PREDICTIVE RISK SCORE
         </CardTitle>
-        <p className="font-mono text-[9px] text-muted-foreground">AI-computed threat risk based on real-time signals</p>
+        <p className="font-mono text-xs text-muted-foreground">AI-computed threat risk based on real-time signals</p>
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-6">
@@ -107,7 +107,7 @@ export default function PredictiveRiskScore({ threats = [], events = [], anomali
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className={`font-mono text-2xl font-bold ${risk.color}`}>{score}</span>
-              <span className={`font-mono text-[8px] font-bold ${risk.color}`}>{risk.label}</span>
+              <span className={`font-mono text-xs font-bold ${risk.color}`}>{risk.label}</span>
             </div>
           </div>
 
@@ -115,20 +115,20 @@ export default function PredictiveRiskScore({ threats = [], events = [], anomali
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-1.5 mb-3">
               <TrendIcon className={`w-3.5 h-3.5 ${trendColor}`} />
-              <span className={`font-mono text-[9px] font-semibold ${trendColor}`}>
+              <span className={`font-mono text-xs font-semibold ${trendColor}`}>
                 {trend === 'up' ? 'RISK INCREASING' : trend === 'down' ? 'RISK DECREASING' : 'RISK STABLE'}
               </span>
             </div>
             {factors.length === 0 ? (
-              <p className="font-mono text-[9px] text-green-400">No active risk factors detected</p>
+              <p className="font-mono text-xs text-green-400">No active risk factors detected</p>
             ) : (
               factors.map((f, i) => {
                 const Icon = f.icon;
                 return (
                   <div key={i} className="flex items-center gap-2">
                     <Icon className={`w-3 h-3 flex-shrink-0 ${f.color}`} />
-                    <span className="font-mono text-[9px] text-muted-foreground flex-1 truncate">{f.label}</span>
-                    <span className={`font-mono text-[9px] font-bold ${f.color}`}>+{f.impact}</span>
+                    <span className="font-mono text-xs text-muted-foreground flex-1 truncate">{f.label}</span>
+                    <span className={`font-mono text-xs font-bold ${f.color}`}>+{f.impact}</span>
                   </div>
                 );
               })

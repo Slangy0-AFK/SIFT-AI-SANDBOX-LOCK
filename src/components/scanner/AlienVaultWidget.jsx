@@ -72,23 +72,23 @@ export default function AlienVaultWidget({ onThreatDetected }) {
                 {result.is_threat ? <ShieldAlert className="w-4 h-4 text-destructive" /> : <Shield className="w-4 h-4 text-green-500" />}
                 <span className="font-mono text-xs font-bold text-foreground">OTX Result</span>
               </div>
-              <Badge className={`font-mono text-[8px] rounded-full px-2 py-0.5 ${result.is_threat ? 'bg-destructive/20 text-destructive' : 'bg-green-500/20 text-green-500'}`}>
+              <Badge className={`font-mono text-xs rounded-full px-2 py-0.5 ${result.is_threat ? 'bg-destructive/20 text-destructive' : 'bg-green-500/20 text-green-500'}`}>
                 {result.is_threat ? `${result.pulses} PULSES` : 'CLEAN'}
               </Badge>
             </div>
             
-            <p className="font-mono text-[10px] text-muted-foreground mb-2 break-all">
+            <p className="font-mono text-xs text-muted-foreground mb-2 break-all">
               {result.details?.details || (result.is_threat ? 'Indicator present in active OTX pulses' : 'No significant threat intelligence found')}
             </p>
 
             {result.tags && result.tags.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {result.tags.slice(0, 5).map((tag, i) => (
-                  <span key={i} className="font-mono text-[8px] px-1.5 py-0.5 rounded-md bg-secondary text-secondary-foreground">
+                  <span key={i} className="font-mono text-xs px-1.5 py-0.5 rounded-md bg-secondary text-secondary-foreground">
                     {tag}
                   </span>
                 ))}
-                {result.tags.length > 5 && <span className="font-mono text-[8px] text-muted-foreground">+{result.tags.length - 5} more</span>}
+                {result.tags.length > 5 && <span className="font-mono text-xs text-muted-foreground">+{result.tags.length - 5} more</span>}
               </div>
             )}
           </div>

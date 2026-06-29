@@ -83,22 +83,22 @@ export default function InstallPrompt() {
                     <h3 className="font-mono text-sm font-bold text-foreground">
                       Install SIFT-AI Quantum Shield
                     </h3>
-                    <p className="font-mono text-[10px] text-muted-foreground mt-1 leading-relaxed">
+                    <p className="font-mono text-xs text-muted-foreground mt-1 leading-relaxed">
                       Get always-on protection with native app experience. Works offline, instant access, real-time alerts.
                     </p>
                     
                     <div className="flex gap-2 mt-3">
                       <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-secondary/50 border border-border">
                         <Smartphone className="w-3 h-3 text-primary" />
-                        <span className="font-mono text-[8px] text-muted-foreground">Mobile</span>
+                        <span className="font-mono text-xs text-muted-foreground">Mobile</span>
                       </div>
                       <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-secondary/50 border border-border">
                         <Monitor className="w-3 h-3 text-primary" />
-                        <span className="font-mono text-[8px] text-muted-foreground">Desktop</span>
+                        <span className="font-mono text-xs text-muted-foreground">Desktop</span>
                       </div>
                       <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-secondary/50 border border-border">
                         <Zap className="w-3 h-3 text-primary" />
-                        <span className="font-mono text-[8px] text-muted-foreground">Offline</span>
+                        <span className="font-mono text-xs text-muted-foreground">Offline</span>
                       </div>
                     </div>
                   </div>
@@ -115,7 +115,7 @@ export default function InstallPrompt() {
               
               <div className="flex items-center gap-2 pt-2 border-t border-border">
                 <CheckCircle className="w-3 h-3 text-green-400" />
-                <span className="font-mono text-[9px] text-muted-foreground">
+                <span className="font-mono text-xs text-muted-foreground">
                   Free · No App Store Required · Secure
                 </span>
               </div>
@@ -146,11 +146,11 @@ export default function InstallPrompt() {
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="font-mono text-[10px] font-bold text-primary">1</span>
+                      <span className="font-mono text-xs font-bold text-primary">1</span>
                     </div>
                     <div>
                       <p className="font-mono text-xs font-semibold text-foreground">Open Chrome Menu</p>
-                      <p className="font-mono text-[10px] text-muted-foreground mt-0.5">
+                      <p className="font-mono text-xs text-muted-foreground mt-0.5">
                         Tap the three dots (⋮) in the top-right corner of your browser
                       </p>
                     </div>
@@ -158,11 +158,11 @@ export default function InstallPrompt() {
                   
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="font-mono text-[10px] font-bold text-primary">2</span>
+                      <span className="font-mono text-xs font-bold text-primary">2</span>
                     </div>
                     <div>
                       <p className="font-mono text-xs font-semibold text-foreground">Tap "Install app"</p>
-                      <p className="font-mono text-[10px] text-muted-foreground mt-0.5">
+                      <p className="font-mono text-xs text-muted-foreground mt-0.5">
                         Look for "Install app" or "Add to Home screen" in the menu
                       </p>
                     </div>
@@ -170,11 +170,11 @@ export default function InstallPrompt() {
                   
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="font-mono text-[10px] font-bold text-primary">3</span>
+                      <span className="font-mono text-xs font-bold text-primary">3</span>
                     </div>
                     <div>
                       <p className="font-mono text-xs font-semibold text-foreground">Confirm Install</p>
-                      <p className="font-mono text-[10px] text-muted-foreground mt-0.5">
+                      <p className="font-mono text-xs text-muted-foreground mt-0.5">
                         Tap "Install" and the SIFT-AI app will be added to your home screen
                       </p>
                     </div>
@@ -184,7 +184,7 @@ export default function InstallPrompt() {
                 <div className="pt-3 border-t border-border">
                   <div className="flex items-center gap-2 mb-3">
                     <CheckCircle className="w-3 h-3 text-green-400" />
-                    <span className="font-mono text-[9px] text-muted-foreground">
+                    <span className="font-mono text-xs text-muted-foreground">
                       Free · No App Store Required · Instant Access
                     </span>
                   </div>

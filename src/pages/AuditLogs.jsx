@@ -11,7 +11,7 @@ export default function AuditLogs() {
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">AUDIT LOGS</h1>
-            <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+            <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
               TAMPER-EVIDENT COMPLIANCE TRAILS
             </p>
           </div>
@@ -31,10 +31,10 @@ export default function AuditLogs() {
               <div className="rounded-xl border border-border/50 bg-secondary/10 p-3 flex items-center gap-4">
                 <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="font-mono text-[10px] font-bold text-foreground">Admin accessed command center</p>
-                  <p className="font-mono text-[9px] text-muted-foreground mt-1">System Action</p>
+                  <p className="font-mono text-xs font-bold text-foreground">Admin accessed command center</p>
+                  <p className="font-mono text-xs text-muted-foreground mt-1">System Action</p>
                 </div>
-                <span className="font-mono text-[9px] text-muted-foreground">Just now</span>
+                <span className="font-mono text-xs text-muted-foreground">Just now</span>
               </div>
             </div>
           </CardContent>

@@ -95,7 +95,7 @@ export default function AuditLogExport() {
         <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
           <FileText className="w-4 h-4 text-primary" /> AUDIT LOG EXPORT
         </CardTitle>
-        <p className="font-mono text-[9px] text-muted-foreground mt-1">
+        <p className="font-mono text-xs text-muted-foreground mt-1">
           Export all security events and threat records for compliance and auditing
         </p>
       </CardHeader>
@@ -103,11 +103,11 @@ export default function AuditLogExport() {
         <div className="grid grid-cols-2 gap-3 p-3 bg-secondary/50 rounded-lg border border-border/50">
           <div className="text-center">
             <div className="font-mono text-xl font-bold text-primary">{events.length}</div>
-            <div className="font-mono text-[9px] text-muted-foreground">Security Events</div>
+            <div className="font-mono text-xs text-muted-foreground">Security Events</div>
           </div>
           <div className="text-center">
             <div className="font-mono text-xl font-bold text-accent">{threats.length}</div>
-            <div className="font-mono text-[9px] text-muted-foreground">Threat Records</div>
+            <div className="font-mono text-xs text-muted-foreground">Threat Records</div>
           </div>
         </div>
 
@@ -139,7 +139,7 @@ export default function AuditLogExport() {
           </Button>
         </div>
 
-        <p className="font-mono text-[9px] text-muted-foreground">
+        <p className="font-mono text-xs text-muted-foreground">
           Export includes all security events, threat records, and metadata up to the last 500 records per category.
         </p>
       </CardContent>

@@ -120,25 +120,25 @@ export default function GuardianRing({ anomalies = [] }) {
                 style={{ borderColor: `${activeAgent.color}40` }}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 rounded-lg flex items-center justify-center font-mono text-[10px] font-bold flex-shrink-0"
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center font-mono text-xs font-bold flex-shrink-0"
                     style={{ background: `${activeAgent.color}15`, color: activeAgent.color, border: `1px solid ${activeAgent.color}40` }}>
                     {activeAgent.id}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="font-mono text-xs font-bold truncate" style={{ color: activeAgent.color }}>{activeAgent.name}</div>
-                    <div className="font-mono text-[8px] text-muted-foreground truncate">{activeAgent.role}</div>
+                    <div className="font-mono text-xs text-muted-foreground truncate">{activeAgent.role}</div>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <div className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />
-                    <span className="font-mono text-[8px] text-green-400">ACTIVE</span>
+                    <span className="font-mono text-xs text-green-400">ACTIVE</span>
                   </div>
                 </div>
-                <p className="font-mono text-[9px] text-muted-foreground leading-relaxed">{activeAgent.desc}</p>
+                <p className="font-mono text-xs text-muted-foreground leading-relaxed">{activeAgent.desc}</p>
               </motion.div>
             ) : (
               <motion.div key="hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="p-3 rounded-xl border border-border bg-secondary/30">
-                <p className="font-mono text-[9px] text-muted-foreground text-center">
+                <p className="font-mono text-xs text-muted-foreground text-center">
                   Click any agent node to view details
                 </p>
               </motion.div>
@@ -156,7 +156,7 @@ export default function GuardianRing({ anomalies = [] }) {
                     style={{ background: `${agent.color}15`, color: agent.color }}>
                     {agent.id}
                   </div>
-                  <span className="font-mono text-[8px] font-semibold" style={{ color: agent.color }}>{agent.name}</span>
+                  <span className="font-mono text-xs font-semibold" style={{ color: agent.color }}>{agent.name}</span>
                 </div>
                 <div className="font-mono text-[7px] text-muted-foreground mt-0.5 ml-5">{agent.role}</div>
               </button>

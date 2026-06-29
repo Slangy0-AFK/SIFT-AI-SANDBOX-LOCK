@@ -18,7 +18,7 @@ export default function PrivacyPolicy() {
           <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">PRIVACY POLICY</h1>
         </div>
       </div>
-      <p className="font-mono text-[10px] text-muted-foreground tracking-widest">
+      <p className="font-mono text-xs text-muted-foreground tracking-widest">
         LAST UPDATED: {LAST_UPDATED} · {APP_NAME}
       </p>
 

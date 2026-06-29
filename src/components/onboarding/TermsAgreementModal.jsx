@@ -45,7 +45,7 @@ export default function TermsAgreementModal() {
               </div>
               <div>
                 <h2 className="font-mono text-sm font-bold text-foreground tracking-wider">SIFT-AI QUANTUM SHIELD</h2>
-                <p className="font-mono text-[9px] text-muted-foreground tracking-widest">TERMS OF SERVICE AGREEMENT</p>
+                <p className="font-mono text-xs text-muted-foreground tracking-widest">TERMS OF SERVICE AGREEMENT</p>
               </div>
             </div>
 
@@ -65,17 +65,17 @@ export default function TermsAgreementModal() {
                 ].map((point, i) => (
                   <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-secondary/40 border border-border/50">
                     <CheckCircle className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="font-mono text-[10px] text-foreground leading-relaxed">{point}</span>
+                    <span className="font-mono text-xs text-foreground leading-relaxed">{point}</span>
                   </div>
                 ))}
               </div>
 
               {/* Links */}
               <div className="flex gap-3">
-                <Link to="/terms" onClick={() => {}} className="flex items-center gap-1.5 font-mono text-[10px] text-primary hover:underline">
+                <Link to="/terms" onClick={() => {}} className="flex items-center gap-1.5 font-mono text-xs text-primary hover:underline">
                   <FileText className="w-3 h-3" /> Terms of Service <ExternalLink className="w-2.5 h-2.5" />
                 </Link>
-                <Link to="/privacy-policy" className="flex items-center gap-1.5 font-mono text-[10px] text-primary hover:underline">
+                <Link to="/privacy-policy" className="flex items-center gap-1.5 font-mono text-xs text-primary hover:underline">
                   <Shield className="w-3 h-3" /> Privacy Policy <ExternalLink className="w-2.5 h-2.5" />
                 </Link>
               </div>
@@ -90,7 +90,7 @@ export default function TermsAgreementModal() {
                 >
                   {agreed && <CheckCircle className="w-3 h-3 text-primary-foreground" />}
                 </div>
-                <span className="font-mono text-[10px] text-muted-foreground leading-relaxed">
+                <span className="font-mono text-xs text-muted-foreground leading-relaxed">
                   I have read and agree to the <span className="text-foreground">Terms of Service</span> and <span className="text-foreground">Privacy Policy</span>. I confirm I am authorized to use this platform.
                 </span>
               </label>
@@ -107,7 +107,7 @@ export default function TermsAgreementModal() {
                 ACCEPT & ENTER SIFT-AI
               </Button>
               {!agreed && (
-                <p className="font-mono text-[9px] text-muted-foreground text-center mt-2">
+                <p className="font-mono text-xs text-muted-foreground text-center mt-2">
                   You must agree to the terms to continue
                 </p>
               )}

@@ -187,7 +187,7 @@ export default function CustomerThreatFeed({ threats = [], events = [], anomalie
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           <div className="text-left">
             <h3 className="font-mono text-xs font-semibold tracking-wider">LIVE CUSTOMER THREAT FEED</h3>
-            <p className="font-mono text-[9px] text-muted-foreground mt-0.5">{titleCount} activities · Click to {isOpen ? 'collapse' : 'expand'}</p>
+            <p className="font-mono text-xs text-muted-foreground mt-0.5">{titleCount} activities · Click to {isOpen ? 'collapse' : 'expand'}</p>
           </div>
         </div>
         <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -201,7 +201,7 @@ export default function CustomerThreatFeed({ threats = [], events = [], anomalie
                   key={filter.id}
                   type="button"
                   onClick={() => setActiveFilter(filter.id)}
-                  className={`rounded-full px-3 py-1 text-[10px] font-semibold tracking-wide transition ${activeFilter === filter.id ? 'bg-primary text-primary-foreground border border-primary' : 'bg-secondary text-muted-foreground border border-border hover:bg-secondary/80'}`}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold tracking-wide transition ${activeFilter === filter.id ? 'bg-primary text-primary-foreground border border-primary' : 'bg-secondary text-muted-foreground border border-border hover:bg-secondary/80'}`}
                 >
                   {filter.label}
                 </button>
@@ -235,14 +235,14 @@ export default function CustomerThreatFeed({ threats = [], events = [], anomalie
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-[10px] font-semibold text-foreground">{eventText.title}</span>
-                      <span className={`rounded-full px-2 py-0.5 text-[9px] font-semibold tracking-wide uppercase ${severityClass}`}>{(eventText.severity || 'INFO').toString().toUpperCase()}</span>
-                      <span className="font-mono text-[8px] text-muted-foreground uppercase">{meta.label}</span>
+                      <span className="font-mono text-xs font-semibold text-foreground">{eventText.title}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold tracking-wide uppercase ${severityClass}`}>{(eventText.severity || 'INFO').toString().toUpperCase()}</span>
+                      <span className="font-mono text-xs text-muted-foreground uppercase">{meta.label}</span>
                     </div>
-                    <p className="font-mono text-[9px] text-muted-foreground mt-1 truncate">{eventText.detail}</p>
-                    {eventText.meta && <p className="font-mono text-[8px] text-muted-foreground mt-1 truncate">{eventText.meta}</p>}
+                    <p className="font-mono text-xs text-muted-foreground mt-1 truncate">{eventText.detail}</p>
+                    {eventText.meta && <p className="font-mono text-xs text-muted-foreground mt-1 truncate">{eventText.meta}</p>}
                   </div>
-                  <span className="font-mono text-[9px] text-muted-foreground whitespace-nowrap">
+                  <span className="font-mono text-xs text-muted-foreground whitespace-nowrap">
                     {formatLocalTime(getTimestamp(item))}
                   </span>
                 </motion.div>

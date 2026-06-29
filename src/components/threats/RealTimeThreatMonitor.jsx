@@ -72,7 +72,7 @@ export default function RealTimeThreatMonitor() {
             <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
               <Activity className="w-4 h-4 text-primary" /> REAL-TIME AI THREAT MONITOR
             </CardTitle>
-            <p className="font-mono text-[9px] text-muted-foreground mt-1">
+            <p className="font-mono text-xs text-muted-foreground mt-1">
               Live AI-powered threat detection and analysis
             </p>
           </div>
@@ -80,7 +80,7 @@ export default function RealTimeThreatMonitor() {
             size="sm"
             variant="outline"
             onClick={() => { refetchThreats(); refetchAnomalies(); toast.success('Monitor refreshed'); }}
-            className="font-mono text-[9px] h-7"
+            className="font-mono text-xs h-7"
           >
             <RefreshCw className="w-3 h-3 mr-1" /> Refresh
           </Button>
@@ -90,8 +90,8 @@ export default function RealTimeThreatMonitor() {
         {/* Live Threats */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-mono text-[10px] font-semibold text-muted-foreground">ACTIVE THREATS</h3>
-            <Badge variant="outline" className="font-mono text-[8px]">
+            <h3 className="font-mono text-xs font-semibold text-muted-foreground">ACTIVE THREATS</h3>
+            <Badge variant="outline" className="font-mono text-xs">
               {threats.filter(t => !['cleared', 'destroyed'].includes(t.status)).length} active
             </Badge>
           </div>
@@ -100,7 +100,7 @@ export default function RealTimeThreatMonitor() {
             {threats.length === 0 ? (
               <div className="text-center py-4">
                 <CheckCircle2 className="w-6 h-6 text-green-400 mx-auto mb-2" />
-                <p className="font-mono text-[9px] text-muted-foreground">No active threats detected</p>
+                <p className="font-mono text-xs text-muted-foreground">No active threats detected</p>
               </div>
             ) : (
               threats.slice(0, 5).map((threat) => (
@@ -113,18 +113,18 @@ export default function RealTimeThreatMonitor() {
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <Target className="w-3 h-3 text-primary" />
-                      <span className="font-mono text-[9px] text-foreground">{threat.source_ip}</span>
+                      <span className="font-mono text-xs text-foreground">{threat.source_ip}</span>
                     </div>
                     <Badge className={`font-mono text-[7px] ${threatLevelColors[threat.threat_level] || 'bg-secondary text-muted-foreground'}`}>
                       {threat.threat_level?.toUpperCase()}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className={`font-mono text-[8px] ${statusColors[threat.status] || 'text-muted-foreground'}`}>
+                    <span className={`font-mono text-xs ${statusColors[threat.status] || 'text-muted-foreground'}`}>
                       {threat.status?.toUpperCase().replace('_', ' ')}
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-[8px] text-muted-foreground">
+                      <span className="font-mono text-xs text-muted-foreground">
                         {formatLocalTime(threat.created_date)}
                       </span>
                       {threat.agent_type && (
@@ -143,8 +143,8 @@ export default function RealTimeThreatMonitor() {
         {/* Live Anomalies */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-mono text-[10px] font-semibold text-muted-foreground">ZERO-DAY ANOMALIES</h3>
-            <Badge variant="outline" className="font-mono text-[8px]">
+            <h3 className="font-mono text-xs font-semibold text-muted-foreground">ZERO-DAY ANOMALIES</h3>
+            <Badge variant="outline" className="font-mono text-xs">
               {anomalies.filter(a => !['neutralized'].includes(a.status)).length} open
             </Badge>
           </div>
@@ -153,7 +153,7 @@ export default function RealTimeThreatMonitor() {
             {anomalies.length === 0 ? (
               <div className="text-center py-3">
                 <Shield className="w-5 h-5 text-green-400 mx-auto mb-1" />
-                <p className="font-mono text-[9px] text-muted-foreground">No anomalies detected</p>
+                <p className="font-mono text-xs text-muted-foreground">No anomalies detected</p>
               </div>
             ) : (
               anomalies.slice(0, 4).map((anomaly) => (
@@ -166,7 +166,7 @@ export default function RealTimeThreatMonitor() {
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <Cpu className="w-3 h-3 text-fuchsia-400" />
-                      <span className="font-mono text-[9px] text-foreground truncate max-w-[180px]">
+                      <span className="font-mono text-xs text-foreground truncate max-w-[180px]">
                         {anomaly.anomaly_type.replace('_', ' ').toUpperCase()}
                       </span>
                     </div>
@@ -179,7 +179,7 @@ export default function RealTimeThreatMonitor() {
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[8px] text-muted-foreground">
+                    <span className="font-mono text-xs text-muted-foreground">
                       {formatLocalTime(anomaly.created_date)}
                     </span>
                     <Badge variant="outline" className="font-mono text-[7px]">
@@ -217,13 +217,13 @@ export default function RealTimeThreatMonitor() {
           >
             <div className="flex items-center gap-2 mb-2">
               <Cpu className="w-4 h-4 text-primary" />
-              <span className="font-mono text-[10px] font-bold text-primary">AI ANALYSIS COMPLETE</span>
+              <span className="font-mono text-xs font-bold text-primary">AI ANALYSIS COMPLETE</span>
             </div>
             <div className="space-y-1">
-              <p className="font-mono text-[9px] text-muted-foreground">
+              <p className="font-mono text-xs text-muted-foreground">
                 Processed: {aiAnalysis.processed || 0} threats
               </p>
-              <p className="font-mono text-[9px] text-muted-foreground">
+              <p className="font-mono text-xs text-muted-foreground">
                 Action: {aiAnalysis.action || 'N/A'}
               </p>
             </div>

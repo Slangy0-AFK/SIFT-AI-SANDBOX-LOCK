@@ -39,7 +39,7 @@ export default function ZeroDayFeed({ anomalies = [] }) {
       {anomalies.length === 0 ? (
         <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground">
           <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className="font-mono text-[10px]">No zero-day anomalies detected</span>
+          <span className="font-mono text-xs">No zero-day anomalies detected</span>
         </div>
       ) : (
         <AnimatePresence>
@@ -58,31 +58,31 @@ export default function ZeroDayFeed({ anomalies = [] }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`font-mono text-[10px] font-semibold ${meta.color}`}>
+                      <span className={`font-mono text-xs font-semibold ${meta.color}`}>
                         {a.anomaly_type?.replace('_', ' ').toUpperCase()}
                       </span>
-                      <Badge className={`font-mono text-[8px] border ${SEVERITY_COLORS[a.severity]}`}>
+                      <Badge className={`font-mono text-xs border ${SEVERITY_COLORS[a.severity]}`}>
                         {a.severity?.toUpperCase()}
                       </Badge>
-                      <span className={`font-mono text-[9px] ${STATUS_COLORS[a.status]}`}>
+                      <span className={`font-mono text-xs ${STATUS_COLORS[a.status]}`}>
                         {a.status === 'analyzing' && <Loader2 className="w-2.5 h-2.5 inline animate-spin mr-1" />}
                         {a.status?.toUpperCase()}
                       </span>
                     </div>
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="font-mono text-[9px] text-muted-foreground">{a.source_ip || 'unknown'}</span>
+                      <span className="font-mono text-xs text-muted-foreground">{a.source_ip || 'unknown'}</span>
                       {a.confidence_score != null && (
-                        <span className="font-mono text-[9px] text-muted-foreground">
+                        <span className="font-mono text-xs text-muted-foreground">
                           {a.confidence_score}% confidence
                         </span>
                       )}
                       {a.agent_id && (
-                        <span className="font-mono text-[9px] text-primary">Agent #{a.agent_id}</span>
+                        <span className="font-mono text-xs text-primary">Agent #{a.agent_id}</span>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="font-mono text-[8px] text-muted-foreground">
+                    <span className="font-mono text-xs text-muted-foreground">
                       {formatChicagoTime(a.created_date)}
                     </span>
                     {isExpanded ? (
@@ -101,31 +101,31 @@ export default function ZeroDayFeed({ anomalies = [] }) {
                     exit={{ opacity: 0, height: 0 }}
                     className="mt-3 pt-3 border-t border-current/20 space-y-2">
                     {a.payload_hash && (
-                      <div className="text-[9px]">
+                      <div className="text-xs">
                         <span className="text-muted-foreground">Payload Hash: </span>
                         <span className="font-mono text-foreground break-all">{a.payload_hash}</span>
                       </div>
                     )}
                     {a.encoding_detected && (
-                      <div className="text-[9px]">
+                      <div className="text-xs">
                         <span className="text-muted-foreground">Encoding: </span>
                         <span className="font-mono text-foreground">{a.encoding_detected.toUpperCase()}</span>
                       </div>
                     )}
                     {a.obfuscation_level != null && (
-                      <div className="text-[9px]">
+                      <div className="text-xs">
                         <span className="text-muted-foreground">Obfuscation Level: </span>
                         <span className="font-mono text-foreground">{a.obfuscation_level}/10</span>
                       </div>
                     )}
                     {a.mitigation_applied && (
-                      <div className="text-[9px]">
+                      <div className="text-xs">
                         <span className="text-green-400">↳ Mitigation: </span>
                         <span className="font-mono text-green-400">{a.mitigation_applied}</span>
                       </div>
                     )}
                     {a.notes && (
-                      <div className="text-[9px]">
+                      <div className="text-xs">
                         <span className="text-muted-foreground">Notes: </span>
                         <span className="font-mono text-foreground">{a.notes}</span>
                       </div>

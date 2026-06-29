@@ -59,7 +59,7 @@ export default function TermsAcceptanceModal({ onComplete }) {
                 <FileText className="w-6 h-6 text-primary" />
                 <div>
                   <CardTitle className="font-mono text-lg">Terms of Service Agreement</CardTitle>
-                  <p className="font-mono text-[10px] text-muted-foreground mt-1">
+                  <p className="font-mono text-xs text-muted-foreground mt-1">
                     Required for {APP_NAME}
                   </p>
                 </div>
@@ -68,7 +68,7 @@ export default function TermsAcceptanceModal({ onComplete }) {
 
             <CardContent className="space-y-4">
               <div className="max-h-96 overflow-y-auto pr-2 space-y-3 text-xs text-muted-foreground">
-                <p className="font-mono text-[10px] text-primary mb-2">
+                <p className="font-mono text-xs text-primary mb-2">
                   LAST UPDATED: May 21, 2026
                 </p>
 
@@ -122,7 +122,7 @@ export default function TermsAcceptanceModal({ onComplete }) {
                 </section>
 
                 <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 mt-4">
-                  <p className="font-mono text-[9px] text-blue-400">
+                  <p className="font-mono text-xs text-blue-400">
                     💡 This is a one-time agreement. You will not be asked again unless terms change materially.
                   </p>
                 </div>
@@ -139,7 +139,7 @@ export default function TermsAcceptanceModal({ onComplete }) {
                   htmlFor="accept-terms"
                   className="text-xs text-muted-foreground cursor-pointer select-none"
                 >
-                  <span className="font-mono text-[10px]">
+                  <span className="font-mono text-xs">
                     I have read and agree to the{' '}
                     <a href="/terms" target="_blank" className="text-primary underline">
                       Terms of Service

@@ -117,7 +117,7 @@ export default function LoginForm() {
               <span className="font-mono text-lg font-bold">SIFT-AI</span>
             </div>
             <CardTitle className="font-mono text-lg">Quantum Shield</CardTitle>
-            <CardDescription className="font-mono text-[10px] tracking-widest mt-2">
+            <CardDescription className="font-mono text-xs tracking-widest mt-2">
               SECURE ACCESS
             </CardDescription>
           </CardHeader>
@@ -128,7 +128,7 @@ export default function LoginForm() {
               <form onSubmit={handleLogin} className="space-y-4">
                 {/* Email */}
                 <div className="space-y-2">
-                  <label className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase">
+                  <label className="font-mono text-xs text-muted-foreground tracking-widest uppercase">
                     Email
                   </label>
                   <div className="relative">
@@ -146,7 +146,7 @@ export default function LoginForm() {
 
                 {/* Password */}
                 <div className="space-y-2">
-                  <label className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase">
+                  <label className="font-mono text-xs text-muted-foreground tracking-widest uppercase">
                     Password
                   </label>
                   <div className="relative">
@@ -197,14 +197,14 @@ export default function LoginForm() {
                     <div className="text-center">
                       <Smartphone className="w-8 h-8 text-primary mx-auto mb-2" />
                       <h3 className="font-mono text-xs font-bold">Auto Device Enrollment</h3>
-                      <p className="font-mono text-[9px] text-muted-foreground mt-1">
+                      <p className="font-mono text-xs text-muted-foreground mt-1">
                         Automatically enroll this device for protection
                       </p>
                     </div>
 
                     {/* Enrollment Method Selection */}
                     <div className="space-y-2">
-                      <label className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase">
+                      <label className="font-mono text-xs text-muted-foreground tracking-widest uppercase">
                         Enrollment Method
                       </label>
                       <div className="grid grid-cols-2 gap-2">
@@ -235,7 +235,7 @@ export default function LoginForm() {
 
                     {/* Phone Number */}
                     <div className="space-y-2">
-                      <label className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase">
+                      <label className="font-mono text-xs text-muted-foreground tracking-widest uppercase">
                         Phone Number
                       </label>
                       <div className="relative">
@@ -252,7 +252,7 @@ export default function LoginForm() {
 
                     {/* Info Box */}
                     <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                      <p className="font-mono text-[9px] text-blue-400 leading-relaxed">
+                      <p className="font-mono text-xs text-blue-400 leading-relaxed">
                         💡 Your enrollment code will be sent immediately and is valid for 24 hours. You can enroll multiple devices on the same account.
                       </p>
                     </div>
@@ -289,7 +289,7 @@ export default function LoginForm() {
                     <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto" />
                     <div>
                       <h3 className="font-mono text-xs font-bold text-green-400">Enrollment Sent!</h3>
-                      <p className="font-mono text-[9px] text-muted-foreground mt-1">
+                      <p className="font-mono text-xs text-muted-foreground mt-1">
                         Check your {enrollmentMethod === 'sms' ? 'SMS' : 'email'} for your enrollment code
                       </p>
                     </div>
@@ -311,10 +311,10 @@ export default function LoginForm() {
 
             {/* Footer */}
             <div className="text-center">
-              <p className="font-mono text-[9px] text-muted-foreground">
+              <p className="font-mono text-xs text-muted-foreground">
                 Protected by SIFT-AI Quantum Shield
               </p>
-              <Badge className="mt-2 font-mono text-[8px] bg-green-400/10 text-green-400 border-green-400/20 border">
+              <Badge className="mt-2 font-mono text-xs bg-green-400/10 text-green-400 border-green-400/20 border">
                 ✓ Enterprise Security
               </Badge>
             </div>

@@ -254,7 +254,7 @@ export default function ParadoxGate() {
           <div>
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-3xl font-bold tracking-tight text-foreground">Can you pass the Paradox Lock?</h1>
-              <Badge variant="outline" className="text-[10px] bg-secondary text-muted-foreground border-border uppercase tracking-widest">
+              <Badge variant="outline" className="text-xs bg-secondary text-muted-foreground border-border uppercase tracking-widest">
                 ZERO-DAY MITIGATION
               </Badge>
             </div>
@@ -280,14 +280,14 @@ export default function ParadoxGate() {
             {/* Real Stats Display */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-secondary/50 border border-border rounded-xl p-4 flex flex-col items-center justify-center text-center">
-                <span className="text-[10px] text-muted-foreground font-semibold tracking-widest uppercase mb-1">HUMAN ATTEMPTS</span>
+                <span className="text-xs text-muted-foreground font-semibold tracking-widest uppercase mb-1">HUMAN ATTEMPTS</span>
                 <span className="text-2xl font-bold text-foreground">{paradoxStats.humanTries}</span>
-                <span className="text-[10px] text-muted-foreground mt-1">{paradoxStats.humanBreaches} Passed</span>
+                <span className="text-xs text-muted-foreground mt-1">{paradoxStats.humanBreaches} Passed</span>
               </div>
               <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-                <span className="text-[10px] text-destructive/80 font-semibold tracking-widest uppercase mb-1">BOT ATTEMPTS</span>
+                <span className="text-xs text-destructive/80 font-semibold tracking-widest uppercase mb-1">BOT ATTEMPTS</span>
                 <span className="text-2xl font-bold text-destructive">{paradoxStats.robotTries}</span>
-                <span className="text-[10px] text-destructive/60 mt-1">{paradoxStats.robotBreaches} Passed</span>
+                <span className="text-xs text-destructive/60 mt-1">{paradoxStats.robotBreaches} Passed</span>
               </div>
             </div>
 
@@ -297,14 +297,14 @@ export default function ParadoxGate() {
                   <Lock className="w-6 h-6 text-primary" />
                 </div>
                 <CardTitle className="text-lg text-foreground">Human Verification Gate</CardTitle>
-                <CardDescription className="text-[10px] tracking-widest mt-2 uppercase font-medium">
+                <CardDescription className="text-xs tracking-widest mt-2 uppercase font-medium">
                   AI Access Denied
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Challenge */}
                 <div className="bg-secondary/50 rounded-xl p-5 border border-border text-center relative overflow-hidden group">
-                  <p className="text-[10px] text-muted-foreground font-semibold tracking-widest mb-3 flex items-center justify-center gap-2 uppercase">
+                  <p className="text-xs text-muted-foreground font-semibold tracking-widest mb-3 flex items-center justify-center gap-2 uppercase">
                     <Database className="w-3 h-3" /> UNIVERSAL TRUTH CHALLENGE
                   </p>
                   {loadingChallenge ? (
@@ -313,7 +313,7 @@ export default function ParadoxGate() {
                     </div>
                   ) : (
                     <div className="relative z-10 space-y-3 text-center">
-                      <div className="inline-block bg-primary/10 border border-primary/20 px-3 py-1 rounded text-primary text-[10px] font-bold tracking-widest mb-2 uppercase">
+                      <div className="inline-block bg-primary/10 border border-primary/20 px-3 py-1 rounded text-primary text-xs font-bold tracking-widest mb-2 uppercase">
                         TRADE SECRET PROTECTION ACTIVE
                       </div>
                       <p className="text-sm text-foreground leading-relaxed font-medium">
@@ -451,7 +451,7 @@ export default function ParadoxGate() {
                     Real-time telemetry of bots failing the cryptographic challenge.
                   </CardDescription>
                 </div>
-                <Badge variant="secondary" className="text-[10px]">
+                <Badge variant="secondary" className="text-xs">
                   {sessions.length} TRAPPED
                 </Badge>
               </CardHeader>
@@ -483,7 +483,7 @@ export default function ParadoxGate() {
                               <span className="text-sm font-medium text-foreground">
                                 {session.ip}
                               </span>
-                              <Badge variant="outline" className={`text-[8px] px-1.5 py-0 h-4 uppercase ${
+                              <Badge variant="outline" className={`text-xs px-1.5 py-0 h-4 uppercase ${
                                 session.status === 'locked' 
                                   ? 'text-destructive border-destructive/30 bg-destructive/5' 
                                   : 'text-primary border-primary/30 bg-primary/5'
@@ -499,7 +499,7 @@ export default function ParadoxGate() {
                                     : 'bg-muted'
                                 }`} />
                               ))}
-                              <span className="text-[10px] text-muted-foreground ml-2 font-medium">
+                              <span className="text-xs text-muted-foreground ml-2 font-medium">
                                 {session.strikes} / 3 Strikes
                               </span>
                             </div>
@@ -507,16 +507,16 @@ export default function ParadoxGate() {
                         </div>
                         
                         <div className="text-right w-full sm:w-auto">
-                          <div className="text-[10px] text-muted-foreground font-medium flex flex-col items-end gap-1">
+                          <div className="text-xs text-muted-foreground font-medium flex flex-col items-end gap-1">
                             <span>{formatChicagoTime(session.timestamp)}</span>
                             {session.seconds_since !== undefined && (
-                              <span className="text-[9px] opacity-70">
+                              <span className="text-xs opacity-70">
                                 {session.seconds_since}s ago
                               </span>
                             )}
                           </div>
                           {session.status === 'locked' && (
-                            <div className="text-[9px] text-destructive mt-1 flex items-center justify-end gap-1 font-bold">
+                            <div className="text-xs text-destructive mt-1 flex items-center justify-end gap-1 font-bold">
                               <Lock className="w-3 h-3" /> QUARANTINED
                             </div>
                           )}

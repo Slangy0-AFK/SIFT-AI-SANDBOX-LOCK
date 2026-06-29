@@ -118,7 +118,7 @@ export default function WorkflowEngine() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">WORKFLOW ENGINE</h1>
-          <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+          <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
             IF-THIS-THEN-THAT · SECURITY POLICY AUTOMATION
           </p>
         </div>
@@ -137,7 +137,7 @@ export default function WorkflowEngine() {
         ].map(s => (
           <div key={s.label} className="bg-card border border-border rounded-xl p-4 text-center">
             <div className={`font-mono text-2xl font-bold ${s.color}`}>{s.value}</div>
-            <div className="font-mono text-[9px] text-muted-foreground mt-1 tracking-wide">{s.label.toUpperCase()}</div>
+            <div className="font-mono text-xs text-muted-foreground mt-1 tracking-wide">{s.label.toUpperCase()}</div>
           </div>
         ))}
       </div>
@@ -146,7 +146,7 @@ export default function WorkflowEngine() {
       <div className="flex gap-1 bg-secondary rounded-lg p-1 w-fit">
         {[{ id: 'policies', label: 'Policies' }, { id: 'executions', label: 'Execution Log' }].map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className={`font-mono text-[10px] px-4 py-1.5 rounded-md transition-all ${tab === t.id ? 'bg-card text-foreground shadow' : 'text-muted-foreground'}`}>
+            className={`font-mono text-xs px-4 py-1.5 rounded-md transition-all ${tab === t.id ? 'bg-card text-foreground shadow' : 'text-muted-foreground'}`}>
             {t.label}
           </button>
         ))}
@@ -176,7 +176,7 @@ export default function WorkflowEngine() {
               <CardContent className="py-12 text-center">
                 <GitBranch className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
                 <p className="font-mono text-sm text-muted-foreground">No policies yet</p>
-                <p className="font-mono text-[10px] text-muted-foreground mt-1">Create your first IF-THEN security policy</p>
+                <p className="font-mono text-xs text-muted-foreground mt-1">Create your first IF-THEN security policy</p>
                 <div className="flex gap-2 justify-center mt-4">
                   <Button className="font-mono text-xs" onClick={() => setShowTemplates(true)}>
                     <Zap className="w-3 h-3 mr-1" /> Use Template
@@ -225,27 +225,27 @@ export default function WorkflowEngine() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-mono text-sm font-bold text-foreground">{policy.name}</span>
-                              <Badge variant="outline" className={`font-mono text-[8px] border ${prioClass}`}>{policy.priority?.toUpperCase()}</Badge>
-                              <Badge variant="outline" className="font-mono text-[8px] text-primary border-primary/20 bg-primary/5">
+                              <Badge variant="outline" className={`font-mono text-xs border ${prioClass}`}>{policy.priority?.toUpperCase()}</Badge>
+                              <Badge variant="outline" className="font-mono text-xs text-primary border-primary/20 bg-primary/5">
                                 {TRIGGER_LABELS[policy.trigger_event] || policy.trigger_event}
                               </Badge>
                             </div>
                             {policy.description && (
-                              <p className="font-mono text-[10px] text-muted-foreground mt-1">{policy.description}</p>
+                              <p className="font-mono text-xs text-muted-foreground mt-1">{policy.description}</p>
                             )}
 
                             {/* IF → THEN summary */}
                             <div className="flex items-center gap-3 mt-2 flex-wrap">
                               <div className="flex items-center gap-1">
-                                <span className="font-mono text-[9px] text-amber-400 font-bold">IF</span>
-                                <span className="font-mono text-[9px] text-muted-foreground">
+                                <span className="font-mono text-xs text-amber-400 font-bold">IF</span>
+                                <span className="font-mono text-xs text-muted-foreground">
                                   {conditions.length === 0 ? 'always' : conditions.map(c => `${c.field} ${c.operator} "${c.value}"`).join(' AND ')}
                                 </span>
                               </div>
-                              <span className="font-mono text-[9px] text-muted-foreground/40">→</span>
+                              <span className="font-mono text-xs text-muted-foreground/40">→</span>
                               <div className="flex items-center gap-1">
-                                <span className="font-mono text-[9px] text-green-400 font-bold">THEN</span>
-                                <span className="font-mono text-[9px] text-muted-foreground">
+                                <span className="font-mono text-xs text-green-400 font-bold">THEN</span>
+                                <span className="font-mono text-xs text-muted-foreground">
                                   {actions.map(a => a.type?.replace(/_/g, ' ')).join(', ')}
                                 </span>
                               </div>
@@ -253,11 +253,11 @@ export default function WorkflowEngine() {
 
                             {/* Stats */}
                             <div className="flex items-center gap-4 mt-2">
-                              <span className="font-mono text-[9px] text-muted-foreground flex items-center gap-1">
+                              <span className="font-mono text-xs text-muted-foreground flex items-center gap-1">
                                 <Zap className="w-2.5 h-2.5" /> {policy.executions_count || 0} executions
                               </span>
                               {policy.last_triggered && (
-                                <span className="font-mono text-[9px] text-muted-foreground flex items-center gap-1">
+                                <span className="font-mono text-xs text-muted-foreground flex items-center gap-1">
                                   <Clock className="w-2.5 h-2.5" /> {new Date(policy.last_triggered).toLocaleString()}
                                 </span>
                               )}
@@ -266,11 +266,11 @@ export default function WorkflowEngine() {
 
                           {/* Actions */}
                           <div className="flex items-center gap-1 flex-shrink-0">
-                            <Button size="sm" variant="outline" className="font-mono text-[9px] h-7 px-2 border-primary/20 text-primary hover:bg-primary/10"
+                            <Button size="sm" variant="outline" className="font-mono text-xs h-7 px-2 border-primary/20 text-primary hover:bg-primary/10"
                               onClick={() => testMutation.mutate(policy)} disabled={testMutation.isPending}>
                               <Play className="w-2.5 h-2.5 mr-1" /> Test
                             </Button>
-                            <Button size="sm" variant="outline" className="font-mono text-[9px] h-7 px-2"
+                            <Button size="sm" variant="outline" className="font-mono text-xs h-7 px-2"
                               onClick={() => openEdit(policy)}>Edit</Button>
                             <Button size="icon" variant="ghost" className="w-7 h-7 text-muted-foreground hover:text-destructive"
                               onClick={() => deleteMutation.mutate(policy.id)}>

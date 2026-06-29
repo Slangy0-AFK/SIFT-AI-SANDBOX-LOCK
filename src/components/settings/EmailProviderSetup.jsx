@@ -54,7 +54,7 @@ export default function EmailProviderSetup() {
           <Mail className="w-5 h-5 text-primary" />
           <div>
             <CardTitle className="font-mono text-xs">Email Providers</CardTitle>
-            <CardDescription className="font-mono text-[9px]">
+            <CardDescription className="font-mono text-xs">
               Connect email accounts for automated threat scanning
             </CardDescription>
           </div>
@@ -85,8 +85,8 @@ export default function EmailProviderSetup() {
                     <div className="flex items-center gap-2">
                       <Icon className={`w-4 h-4 ${provider.color}`} />
                       <div>
-                        <p className="font-mono text-[10px] font-semibold">{provider.name}</p>
-                        <p className="font-mono text-[8px] text-muted-foreground">
+                        <p className="font-mono text-xs font-semibold">{provider.name}</p>
+                        <p className="font-mono text-xs text-muted-foreground">
                           {isConnected ? 'Connected' : provider.connectorId ? 'Click to connect' : 'Coming soon'}
                         </p>
                       </div>
@@ -103,8 +103,8 @@ export default function EmailProviderSetup() {
             <div className="flex items-start gap-2">
               <CheckCircle2 className="w-3 h-3 text-green-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-mono text-[9px] font-semibold text-green-400">Gmail Connected (Shared)</p>
-                <p className="font-mono text-[8px] text-muted-foreground mt-0.5">
+                <p className="font-mono text-xs font-semibold text-green-400">Gmail Connected (Shared)</p>
+                <p className="font-mono text-xs text-muted-foreground mt-0.5">
                   Gmail is ready for automated scanning. Outlook requires individual connection.
                 </p>
               </div>

@@ -85,25 +85,25 @@ export default function PolicyBuilder({ initial, onSave, onCancel, saving }) {
     actions: JSON.stringify(form.actions),
   });
 
-  const sel = 'font-mono text-[10px]';
+  const sel = 'font-mono text-xs';
 
   return (
     <div className="space-y-5">
       {/* Basic info */}
       <div className="grid grid-cols-2 gap-3">
         <div className="col-span-2">
-          <label className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase mb-1 block">Policy Name *</label>
+          <label className="font-mono text-xs text-muted-foreground tracking-widest uppercase mb-1 block">Policy Name *</label>
           <Input className={sel} placeholder="e.g. Block Critical Zero-Day IP Range" value={form.name} onChange={e => setField('name', e.target.value)} />
         </div>
         <div>
-          <label className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase mb-1 block">Trigger Event</label>
+          <label className="font-mono text-xs text-muted-foreground tracking-widest uppercase mb-1 block">Trigger Event</label>
           <Select value={form.trigger_event} onValueChange={v => setField('trigger_event', v)}>
             <SelectTrigger className={sel}><SelectValue /></SelectTrigger>
             <SelectContent>{TRIGGER_OPTIONS.map(o => <SelectItem key={o.value} value={o.value} className={sel}>{o.label}</SelectItem>)}</SelectContent>
           </Select>
         </div>
         <div>
-          <label className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase mb-1 block">Priority</label>
+          <label className="font-mono text-xs text-muted-foreground tracking-widest uppercase mb-1 block">Priority</label>
           <Select value={form.priority} onValueChange={v => setField('priority', v)}>
             <SelectTrigger className={sel}><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -112,7 +112,7 @@ export default function PolicyBuilder({ initial, onSave, onCancel, saving }) {
           </Select>
         </div>
         <div className="col-span-2">
-          <label className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase mb-1 block">Description</label>
+          <label className="font-mono text-xs text-muted-foreground tracking-widest uppercase mb-1 block">Description</label>
           <Input className={sel} placeholder="What does this policy do?" value={form.description || ''} onChange={e => setField('description', e.target.value)} />
         </div>
       </div>
@@ -120,16 +120,16 @@ export default function PolicyBuilder({ initial, onSave, onCancel, saving }) {
       {/* Conditions */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase flex items-center gap-2">
+          <label className="font-mono text-xs text-muted-foreground tracking-widest uppercase flex items-center gap-2">
             IF Conditions
-            <Badge variant="outline" className="font-mono text-[8px]">{form.conditions.length === 0 ? 'always' : `${form.conditions.length} rule${form.conditions.length > 1 ? 's' : ''}`}</Badge>
+            <Badge variant="outline" className="font-mono text-xs">{form.conditions.length === 0 ? 'always' : `${form.conditions.length} rule${form.conditions.length > 1 ? 's' : ''}`}</Badge>
           </label>
-          <Button size="sm" variant="outline" className="font-mono text-[9px] h-6 px-2" onClick={addCondition}>
+          <Button size="sm" variant="outline" className="font-mono text-xs h-6 px-2" onClick={addCondition}>
             <Plus className="w-2.5 h-2.5 mr-1" /> Add Condition
           </Button>
         </div>
         {form.conditions.length === 0 && (
-          <p className="font-mono text-[9px] text-muted-foreground italic px-1">No conditions — policy runs on every trigger event.</p>
+          <p className="font-mono text-xs text-muted-foreground italic px-1">No conditions — policy runs on every trigger event.</p>
         )}
         <div className="space-y-2">
           {form.conditions.map((cond, i) => (
@@ -154,8 +154,8 @@ export default function PolicyBuilder({ initial, onSave, onCancel, saving }) {
       {/* Actions */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase">THEN Actions</label>
-          <Button size="sm" variant="outline" className="font-mono text-[9px] h-6 px-2" onClick={addAction}>
+          <label className="font-mono text-xs text-muted-foreground tracking-widest uppercase">THEN Actions</label>
+          <Button size="sm" variant="outline" className="font-mono text-xs h-6 px-2" onClick={addAction}>
             <Plus className="w-2.5 h-2.5 mr-1" /> Add Action
           </Button>
         </div>

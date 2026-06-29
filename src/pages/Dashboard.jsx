@@ -27,7 +27,7 @@ function CollapsiblePanel({ title, icon: Icon, children, defaultOpen = false }) 
       >
         <div className="flex items-center gap-2">
           <Icon className="w-4 h-4 text-primary" />
-          <span className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase">{title}</span>
+          <span className="font-mono text-xs text-muted-foreground tracking-widest uppercase">{title}</span>
         </div>
         {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
       </button>
@@ -75,8 +75,8 @@ function ThreatScannerSection({ threats, refetchThreats }) {
         {activeThreats.length === 0 ? (
           <div className="rounded-2xl border border-border/50 bg-green-500/10 p-4 text-center">
             <ShieldCheck className="w-8 h-8 text-green-400 mx-auto mb-2" />
-            <p className="font-mono text-[10px] text-green-400 font-semibold">NO ACTIVE THREATS</p>
-            <p className="font-mono text-[9px] text-muted-foreground mt-1">All devices clean</p>
+            <p className="font-mono text-xs text-green-400 font-semibold">NO ACTIVE THREATS</p>
+            <p className="font-mono text-xs text-muted-foreground mt-1">All devices clean</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -85,18 +85,18 @@ function ThreatScannerSection({ threats, refetchThreats }) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge className={`font-mono text-[8px] rounded-full border px-2 py-0.5 ${threat.threat_level === 'critical' ? 'bg-destructive/10 border-destructive/20 text-destructive' : threat.threat_level === 'high' ? 'bg-amber-400/10 border-amber-400/20 text-amber-400' : 'bg-blue-400/10 border-blue-400/20 text-blue-400'}`}>
+                      <Badge className={`font-mono text-xs rounded-full border px-2 py-0.5 ${threat.threat_level === 'critical' ? 'bg-destructive/10 border-destructive/20 text-destructive' : threat.threat_level === 'high' ? 'bg-amber-400/10 border-amber-400/20 text-amber-400' : 'bg-blue-400/10 border-blue-400/20 text-blue-400'}`}>
                         {threat.threat_level?.toUpperCase()}
                       </Badge>
-                      <span className="font-mono text-[9px] text-muted-foreground">{threat.agent_type === 'human' ? 'Human' : threat.agent_type}</span>
+                      <span className="font-mono text-xs text-muted-foreground">{threat.agent_type === 'human' ? 'Human' : threat.agent_type}</span>
                     </div>
-                    <p className="font-mono text-[10px] text-foreground mt-2 truncate">{threat.notes?.slice(0, 80) || 'Threat detected'}</p>
-                    <p className="font-mono text-[9px] text-muted-foreground mt-1 truncate">Device: {threat.created_by || 'Unknown'} • IP: {threat.source_ip}</p>
+                    <p className="font-mono text-xs text-foreground mt-2 truncate">{threat.notes?.slice(0, 80) || 'Threat detected'}</p>
+                    <p className="font-mono text-xs text-muted-foreground mt-1 truncate">Device: {threat.created_by || 'Unknown'} • IP: {threat.source_ip}</p>
                   </div>
                   <Button
                     size="sm"
                     variant="destructive"
-                    className="font-mono text-[9px] h-7 px-2"
+                    className="font-mono text-xs h-7 px-2"
                     disabled={neutralizingId === threat.id}
                     onClick={() => handleNeutralize(threat)}
                   >
@@ -198,21 +198,21 @@ export default function Dashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="font-mono text-lg md:text-xl font-bold tracking-wider text-foreground">COMMAND CENTER</h1>
-          <p className="font-mono text-[9px] md:text-[10px] text-muted-foreground tracking-widest mt-0.5">
+          <p className="font-mono text-xs md:text-xs text-muted-foreground tracking-widest mt-0.5">
             SIFT-AI QUANTUM SHIELD — ENTERPRISE SECURITY MATRIX
           </p>
-          <p className="mt-2 font-mono text-[9px] text-muted-foreground max-w-2xl">
+          <p className="mt-2 font-mono text-xs text-muted-foreground max-w-2xl">
             Total security mode: live zero-day detection, AI adversarial containment, and automated firewall block events are actively protecting customer environments.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/20">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="font-mono text-[9px] text-green-400 font-semibold tracking-wider">ALL SYSTEMS OPERATIONAL</span>
+            <span className="font-mono text-xs text-green-400 font-semibold tracking-wider">ALL SYSTEMS OPERATIONAL</span>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border">
             <Activity className="w-3 h-3 text-primary" />
-            <span className="font-mono text-[10px] text-foreground font-semibold">
+            <span className="font-mono text-xs text-foreground font-semibold">
               {currentTime.toLocaleTimeString('en-US', { timeZone: 'America/Chicago' })}
             </span>
           </div>
@@ -225,7 +225,7 @@ export default function Dashboard() {
           <button
             key={path}
             onClick={() => navigate(path)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border hover:border-primary/40 hover:bg-secondary transition-all font-mono text-[10px] tracking-wide text-muted-foreground hover:text-foreground"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border hover:border-primary/40 hover:bg-secondary transition-all font-mono text-xs tracking-wide text-muted-foreground hover:text-foreground"
           >
             <Icon className={`w-3.5 h-3.5 ${color}`} />
             {label}

@@ -207,14 +207,14 @@ export default function PublicScanner() {
                          <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 p-2 rounded bg-secondary/30 border border-border/50">
                            <div>
                              <span className="font-semibold text-foreground font-mono text-sm">{ext.name}</span>
-                             <span className="text-muted-foreground ml-2 text-[10px] uppercase font-sans">By {ext.brand}</span>
+                             <span className="text-muted-foreground ml-2 text-xs uppercase font-sans">By {ext.brand}</span>
                            </div>
                            <div className="flex items-center gap-1.5">
                              <div className={`w-1.5 h-1.5 rounded-full ${
                                ext.risk === 'Safe' ? 'bg-green-500' : 
                                ext.risk === 'Moderate' ? 'bg-amber-500' : 'bg-destructive'
                              }`} />
-                             <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                             <span className={`text-xs font-bold uppercase tracking-wider ${
                                ext.risk === 'Safe' ? 'text-green-500' : 
                                ext.risk === 'Moderate' ? 'text-amber-500' : 'text-destructive'
                              }`}>

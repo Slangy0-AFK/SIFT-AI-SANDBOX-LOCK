@@ -99,13 +99,13 @@ export default function Welcome() {
             </div>
             <div className="text-left">
               <h1 className="font-mono text-3xl font-bold text-foreground tracking-wider">SIFT-AI</h1>
-              <p className="font-mono text-[10px] text-muted-foreground tracking-widest">QUANTUM SHIELD</p>
+              <p className="font-mono text-xs text-muted-foreground tracking-widest">QUANTUM SHIELD</p>
             </div>
           </div>
           
           {/* Beta Badge */}
           <div className="flex items-center justify-center">
-            <Badge className="font-mono text-[9px] bg-primary/10 text-primary border-primary/20 border">
+            <Badge className="font-mono text-xs bg-primary/10 text-primary border-primary/20 border">
               BETA MODE - ALL FEATURES FREE
             </Badge>
           </div>
@@ -131,8 +131,8 @@ export default function Welcome() {
                 className="bg-card border border-border rounded-xl p-4"
               >
                 <f.icon className={`w-8 h-8 ${f.color} mx-auto mb-2`} />
-                <p className="font-mono text-[10px] font-bold text-foreground">{f.title}</p>
-                <p className="font-mono text-[9px] text-muted-foreground mt-0.5">{f.desc}</p>
+                <p className="font-mono text-xs font-bold text-foreground">{f.title}</p>
+                <p className="font-mono text-xs text-muted-foreground mt-0.5">{f.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -168,7 +168,7 @@ export default function Welcome() {
           <Card className="border-border bg-secondary/30">
             <CardHeader>
               <CardTitle className="font-mono text-xs tracking-wider">QUICK START GUIDE</CardTitle>
-              <CardDescription className="font-mono text-[9px]">Get started in 4 steps</CardDescription>
+              <CardDescription className="font-mono text-xs">Get started in 4 steps</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -186,8 +186,8 @@ export default function Welcome() {
                     }`}
                   >
                     <step.icon className={`w-5 h-5 ${i === currentStep ? 'text-primary' : 'text-muted-foreground'} mx-auto mb-2`} />
-                    <p className="font-mono text-[10px] font-semibold text-foreground">{step.title}</p>
-                    <p className="font-mono text-[8px] text-muted-foreground mt-0.5">{step.desc}</p>
+                    <p className="font-mono text-xs font-semibold text-foreground">{step.title}</p>
+                    <p className="font-mono text-xs text-muted-foreground mt-0.5">{step.desc}</p>
                   </motion.div>
                 ))}
               </div>
@@ -199,14 +199,14 @@ export default function Welcome() {
       {/* Footer */}
       <div className="border-t border-border p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <p className="font-mono text-[9px] text-muted-foreground">
+          <p className="font-mono text-xs text-muted-foreground">
             © 2026 SIFT-AI Quantum Shield. All rights reserved.
           </p>
           <div className="flex items-center gap-2">
-            <Badge className="font-mono text-[8px] bg-green-400/10 text-green-400 border-green-400/20 border">
+            <Badge className="font-mono text-xs bg-green-400/10 text-green-400 border-green-400/20 border">
               <CheckCircle className="w-3 h-3 mr-1" /> SYSTEM OPERATIONAL
             </Badge>
-            <Badge className="font-mono text-[8px] bg-primary/10 text-primary border-primary/20 border">
+            <Badge className="font-mono text-xs bg-primary/10 text-primary border-primary/20 border">
               BETA ACCESS
             </Badge>
           </div>

@@ -11,7 +11,7 @@ export default function SessionManagement() {
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">SESSION MANAGEMENT</h1>
-            <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+            <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
               ACTIVE DEVICES & TOKENS
             </p>
           </div>
@@ -30,9 +30,9 @@ export default function SessionManagement() {
             <div className="rounded-xl border border-border/50 bg-primary/5 p-4 flex items-center justify-between">
               <div>
                 <p className="font-mono text-[11px] font-bold text-primary">Current Device</p>
-                <p className="font-mono text-[10px] text-muted-foreground mt-1">Mac OS • Chrome</p>
+                <p className="font-mono text-xs text-muted-foreground mt-1">Mac OS • Chrome</p>
               </div>
-              <div className="px-2 py-1 rounded bg-primary/20 text-primary font-mono text-[9px] font-bold">
+              <div className="px-2 py-1 rounded bg-primary/20 text-primary font-mono text-xs font-bold">
                 ACTIVE NOW
               </div>
             </div>

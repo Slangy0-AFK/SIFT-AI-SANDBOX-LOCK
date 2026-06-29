@@ -5,7 +5,7 @@ export default function ThreatCounter({ label, value, color = 'text-primary', ic
   return (
     <div className="bg-card border border-border rounded-xl p-5">
       <div className="flex items-center justify-between mb-3">
-        <span className="font-mono text-[10px] text-muted-foreground tracking-widest uppercase">{label}</span>
+        <span className="font-mono text-xs text-muted-foreground tracking-widest uppercase">{label}</span>
         {Icon && <Icon className={`w-4 h-4 ${color}`} />}
       </div>
       <motion.div

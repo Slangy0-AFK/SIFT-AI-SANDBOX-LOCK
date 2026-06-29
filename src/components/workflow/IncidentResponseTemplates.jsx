@@ -114,7 +114,7 @@ export default function IncidentResponseTemplates({ onSelectTemplate }) {
     <div className="space-y-4">
       <div>
         <h3 className="font-mono text-sm font-bold text-foreground mb-1">Incident Response Templates</h3>
-        <p className="font-mono text-[10px] text-muted-foreground">Start with a pre-configured response workflow</p>
+        <p className="font-mono text-xs text-muted-foreground">Start with a pre-configured response workflow</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -136,7 +136,7 @@ export default function IncidentResponseTemplates({ onSelectTemplate }) {
                       <h4 className="font-mono text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                         {template.name}
                       </h4>
-                      <p className="font-mono text-[9px] text-muted-foreground mt-0.5">
+                      <p className="font-mono text-xs text-muted-foreground mt-0.5">
                         {template.description}
                       </p>
                     </div>

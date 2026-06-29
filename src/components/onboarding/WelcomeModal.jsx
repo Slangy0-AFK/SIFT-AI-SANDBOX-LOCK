@@ -32,7 +32,7 @@ export default function WelcomeModal({ onClose }) {
             </div>
           </div>
           <h2 className="font-mono text-lg font-bold text-foreground">WELCOME TO SIFT-AI</h2>
-          <p className="font-mono text-[10px] text-muted-foreground mt-1">
+          <p className="font-mono text-xs text-muted-foreground mt-1">
             Your quantum-powered security shield is now active
           </p>
         </div>
@@ -41,17 +41,17 @@ export default function WelcomeModal({ onClose }) {
           {features.map((f, i) => (
             <div key={i} className="bg-secondary/30 border border-border rounded-lg p-3">
               <f.icon className="w-5 h-5 text-primary mb-2" />
-              <p className="font-mono text-[10px] font-semibold text-foreground">{f.title}</p>
-              <p className="font-mono text-[8px] text-muted-foreground mt-0.5">{f.desc}</p>
+              <p className="font-mono text-xs font-semibold text-foreground">{f.title}</p>
+              <p className="font-mono text-xs text-muted-foreground mt-0.5">{f.desc}</p>
             </div>
           ))}
         </div>
 
         <div className="flex items-center gap-2 mb-4">
-          <Badge className="font-mono text-[8px] bg-green-400/10 text-green-400 border-green-400/20 border flex-1 justify-center">
+          <Badge className="font-mono text-xs bg-green-400/10 text-green-400 border-green-400/20 border flex-1 justify-center">
             SYSTEM OPERATIONAL
           </Badge>
-          <Badge className="font-mono text-[8px] bg-primary/10 text-primary border-primary/20 border flex-1 justify-center">
+          <Badge className="font-mono text-xs bg-primary/10 text-primary border-primary/20 border flex-1 justify-center">
             ALL MODULES ACTIVE
           </Badge>
         </div>

@@ -72,7 +72,7 @@ export default function IpAccessGate({ children }) {
                 <p className="mt-2">This system is restricted to authorized IP addresses only.</p>
               </div>
               <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-                <p className="font-mono text-[10px] text-red-400">
+                <p className="font-mono text-xs text-red-400">
                   Unauthorized access attempts are logged and monitored.
                 </p>
               </div>

@@ -26,7 +26,7 @@ export default function ParadoxLock() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">SECURITY COMMAND CENTER</h1>
-          <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+          <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
             DEVICE PROTECTION & AUTHENTICATION LAYER · ARTIFICIAL CONSOLE
           </p>
         </div>
@@ -60,13 +60,13 @@ export default function ParadoxLock() {
                         )}
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="font-mono text-[10px] font-semibold text-foreground">{threat.source_ip}</span>
-                            <Badge variant="outline" className={`font-mono text-[8px] ${
+                            <span className="font-mono text-xs font-semibold text-foreground">{threat.source_ip}</span>
+                            <Badge variant="outline" className={`font-mono text-xs ${
                               threat.agent_type === 'human' ? 'text-green-400 border-green-400/30' : 'text-destructive border-destructive/30'
                             }`}>
                               {threat.agent_type?.toUpperCase()}
                             </Badge>
-                            <Badge variant="outline" className={`font-mono text-[8px] ${
+                            <Badge variant="outline" className={`font-mono text-xs ${
                               threat.status === 'cleared' ? 'text-green-400 border-green-400/30' :
                               threat.status === 'destroyed' ? 'text-destructive border-destructive/30' :
                               'text-amber-400 border-amber-400/30'
@@ -74,9 +74,9 @@ export default function ParadoxLock() {
                               {threat.status?.toUpperCase()}
                             </Badge>
                           </div>
-                          <p className="font-mono text-[9px] text-muted-foreground mt-0.5 line-clamp-2">{threat.notes}</p>
+                          <p className="font-mono text-xs text-muted-foreground mt-0.5 line-clamp-2">{threat.notes}</p>
                         </div>
-                        <span className="font-mono text-[9px] text-muted-foreground flex-shrink-0">
+                        <span className="font-mono text-xs text-muted-foreground flex-shrink-0">
                           {threat.created_date ? formatChicagoTime(threat.created_date, 'MMM d, HH:mm:ss') : ''}
                         </span>
                       </div>

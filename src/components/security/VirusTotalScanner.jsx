@@ -118,12 +118,12 @@ export default function VirusTotalScanner() {
         <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
           <Shield className="w-4 h-4 text-primary" /> VIRUSTOTAL THREAT INTELLIGENCE
           {scanning && (
-            <span className="ml-auto flex items-center gap-1 text-primary font-mono text-[9px]">
+            <span className="ml-auto flex items-center gap-1 text-primary font-mono text-xs">
               <Zap className="w-3 h-3 animate-pulse" /> LIVE
             </span>
           )}
         </CardTitle>
-        <p className="font-mono text-[9px] text-muted-foreground tracking-wide mt-1">
+        <p className="font-mono text-xs text-muted-foreground tracking-wide mt-1">
           Check IPs, domains, URLs, and file hashes against 70+ antivirus engines
         </p>
       </CardHeader>
@@ -131,16 +131,16 @@ export default function VirusTotalScanner() {
         {/* Type Selection */}
         <Tabs value={scanType} onValueChange={(v) => { setScanType(v); setResult(null); }}>
           <TabsList className="grid grid-cols-4 gap-1 bg-secondary/50">
-            <TabsTrigger value="ip" className="font-mono text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="ip" className="font-mono text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Globe className="w-3 h-3 mr-1" /> IP
             </TabsTrigger>
-            <TabsTrigger value="domain" className="font-mono text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="domain" className="font-mono text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Globe className="w-3 h-3 mr-1" /> Domain
             </TabsTrigger>
-            <TabsTrigger value="url" className="font-mono text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="url" className="font-mono text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <LinkIcon className="w-3 h-3 mr-1" /> URL
             </TabsTrigger>
-            <TabsTrigger value="hash" className="font-mono text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="hash" className="font-mono text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Hash className="w-3 h-3 mr-1" /> Hash
             </TabsTrigger>
           </TabsList>
@@ -174,7 +174,7 @@ export default function VirusTotalScanner() {
         {scanning && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20">
             <Loader2 className="w-3 h-3 text-primary animate-spin" />
-            <span className="font-mono text-[10px] text-primary">Querying VirusTotal — results will update instantly...</span>
+            <span className="font-mono text-xs text-primary">Querying VirusTotal — results will update instantly...</span>
           </div>
         )}
 
@@ -198,11 +198,11 @@ export default function VirusTotalScanner() {
                         : <ShieldAlert className="w-5 h-5" />}
                       <span className="font-mono text-sm font-bold uppercase">{result.threatLevel}</span>
                     </div>
-                    <Badge variant="outline" className="font-mono text-[10px]">
+                    <Badge variant="outline" className="font-mono text-xs">
                       {result.maliciousCount}/{result.scannedBy} malicious
                     </Badge>
                   </div>
-                  <p className="font-mono text-[10px] mt-2 opacity-80">
+                  <p className="font-mono text-xs mt-2 opacity-80">
                     {scanType.toUpperCase()}: {result.value}
                   </p>
                 </div>
@@ -210,7 +210,7 @@ export default function VirusTotalScanner() {
                 <div className="grid grid-cols-4 gap-2">
                   {['malicious', 'suspicious', 'harmless', 'undetected'].map((key) => (
                     <div key={key} className="bg-secondary/30 rounded-lg p-3 text-center border border-border/50">
-                      <p className="font-mono text-[9px] text-muted-foreground uppercase">{key}</p>
+                      <p className="font-mono text-xs text-muted-foreground uppercase">{key}</p>
                       <p className={`font-mono text-lg font-bold ${
                         key === 'malicious' && (result.stats?.[key] || 0) > 0 ? 'text-destructive' :
                         key === 'suspicious' && (result.stats?.[key] || 0) > 0 ? 'text-amber-400' :

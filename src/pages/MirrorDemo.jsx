@@ -36,13 +36,13 @@ const QRNGCycle = ({ onDestruct, disabled, isNeutralizing }) => {
           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
           className="absolute inset-0 rounded-full border-2 border-destructive/20 border-t-destructive group-hover:border-t-destructive/80"
         />
-        <span className="text-[9px] font-bold text-destructive tabular-nums">{timeLeft.toFixed(1)}</span>
+        <span className="text-xs font-bold text-destructive tabular-nums">{timeLeft.toFixed(1)}</span>
       </div>
       <div className="flex flex-col text-left">
-        <span className="text-[9px] font-bold text-destructive uppercase tracking-widest">
+        <span className="text-xs font-bold text-destructive uppercase tracking-widest">
           {isNeutralizing ? 'Destroying...' : 'Active QRNG'}
         </span>
-        <span className="text-[8px] text-destructive/80 font-mono">
+        <span className="text-xs text-destructive/80 font-mono">
           {isNeutralizing ? 'Neutralizing threat' : 'Click to Destroy Threat'}
         </span>
       </div>
@@ -257,7 +257,7 @@ export default function MirrorDemo() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20">
+            <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
               LIVE TELEMETRY (ANONYMIZED)
             </Badge>
           </div>
@@ -269,7 +269,7 @@ export default function MirrorDemo() {
           <div>
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl font-bold text-foreground tracking-tight">Deception Architecture</h1>
-              <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20 tracking-wider">
+              <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20 tracking-wider">
                 EARLY ACCESS
               </Badge>
             </div>
@@ -301,46 +301,46 @@ export default function MirrorDemo() {
                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-secondary border border-border flex items-center justify-center mb-2 mx-auto">
                   <Globe className="w-6 h-6 md:w-8 md:h-8 text-foreground" />
                 </div>
-                <span className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase">PUBLIC TRAFFIC</span>
+                <span className="text-xs font-semibold text-muted-foreground tracking-widest uppercase">PUBLIC TRAFFIC</span>
               </div>
               
               <div className="flex flex-col items-center gap-1 px-1 md:px-0">
                 <Wifi className="w-4 h-4 text-muted-foreground" />
                 <div className="w-12 md:w-24 h-px bg-border" />
-                <span className="text-[9px] font-semibold text-muted-foreground uppercase">INSPECTION</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase">INSPECTION</span>
               </div>
               
               <div className="text-center relative">
                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-2 mx-auto z-10 relative">
                   <Shield className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                 </div>
-                <span className="text-[10px] font-bold text-primary tracking-widest uppercase">SIFT-AI ENGINE</span>
+                <span className="text-xs font-bold text-primary tracking-widest uppercase">SIFT-AI ENGINE</span>
               </div>
 
               <div className="flex flex-col items-center gap-1 px-1 md:px-0">
                 <AlertTriangle className="w-4 h-4 text-muted-foreground" />
                 <div className="w-12 md:w-24 h-px bg-border" />
-                <span className="text-[9px] font-semibold text-muted-foreground uppercase">REDIRECT</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase">REDIRECT</span>
               </div>
 
               <div className="text-center">
                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-2 mx-auto">
                   <Bug className="w-6 h-6 md:w-8 md:h-8 text-amber-500" />
                 </div>
-                <span className="text-[10px] font-semibold text-amber-500 tracking-widest uppercase">HONEYPOT</span>
+                <span className="text-xs font-semibold text-amber-500 tracking-widest uppercase">HONEYPOT</span>
               </div>
 
               <div className="flex flex-col items-center gap-1 px-1 md:px-0">
                 <Clock className="w-4 h-4 text-muted-foreground" />
                 <div className="w-12 md:w-24 h-px bg-border" />
-                <span className="text-[9px] font-semibold text-muted-foreground uppercase">THROTTLE</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase">THROTTLE</span>
               </div>
 
               <div className="text-center">
                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-secondary border border-border flex items-center justify-center mb-2 mx-auto">
                   <Clock className="w-6 h-6 md:w-8 md:h-8 text-foreground" />
                 </div>
-                <span className="text-[10px] font-semibold text-foreground tracking-widest uppercase">TARPIT</span>
+                <span className="text-xs font-semibold text-foreground tracking-widest uppercase">TARPIT</span>
               </div>
             </div>
           </CardContent>
@@ -386,7 +386,7 @@ export default function MirrorDemo() {
                 Real-time live telemetry of trapped anomalous sessions.
               </CardDescription>
             </div>
-            <Badge variant="secondary" className="text-[10px]">
+            <Badge variant="secondary" className="text-xs">
               {sessions.length} ACTIVE
             </Badge>
           </CardHeader>
@@ -422,7 +422,7 @@ export default function MirrorDemo() {
                           <span className="text-sm font-medium text-foreground">
                             {session.ip}
                           </span>
-                          <Badge variant="outline" className={`text-[8px] px-1.5 py-0 h-4 uppercase ${
+                          <Badge variant="outline" className={`text-xs px-1.5 py-0 h-4 uppercase ${
                             session.type === 'honeypot' 
                               ? 'text-amber-500 border-amber-500/30 bg-amber-500/5' 
                               : 'text-primary border-primary/30 bg-primary/5'
@@ -430,11 +430,11 @@ export default function MirrorDemo() {
                             {session.type}
                           </Badge>
                           {session.status === 'completed' ? (
-                            <Badge variant="outline" className="text-[8px] px-1.5 py-0 h-4 uppercase text-green-500 border-green-500/30 bg-green-500/5 ml-1">
+                            <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 uppercase text-green-500 border-green-500/30 bg-green-500/5 ml-1">
                               DESTROYED
                             </Badge>
                           ) : (
-                            <span className="text-[9px] font-bold text-destructive animate-pulse ml-2 flex items-center gap-1">
+                            <span className="text-xs font-bold text-destructive animate-pulse ml-2 flex items-center gap-1">
                               <Activity className="w-3 h-3" /> DESTROYING
                             </span>
                           )}
@@ -451,7 +451,7 @@ export default function MirrorDemo() {
                       <div className="flex flex-col items-end gap-1 w-full sm:w-auto">
                         <div className="flex items-center gap-3 w-full sm:w-auto">
                           <div className="flex flex-col gap-1 w-full sm:w-32">
-                            <span className="text-[8px] text-muted-foreground font-semibold uppercase tracking-wider">Threat Intensity</span>
+                            <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Threat Intensity</span>
                             <div className="h-1.5 bg-secondary rounded-full overflow-hidden w-full">
                               <div 
                                 className={`h-full rounded-full ${session.type === 'honeypot' ? 'bg-amber-500' : 'bg-primary'}`} 
@@ -459,7 +459,7 @@ export default function MirrorDemo() {
                               />
                             </div>
                           </div>
-                          <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap text-right mt-3">
+                          <span className="text-xs font-medium text-muted-foreground whitespace-nowrap text-right mt-3">
                             {session.timestamp ? formatLocalTime(session.timestamp) : ''}
                           </span>
                         </div>

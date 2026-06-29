@@ -77,33 +77,33 @@ export default function ThreatScanner() {
             <ScanLine className="w-5 h-5 text-primary" />
             <h1 className="font-mono text-lg font-bold tracking-wider text-foreground">DEVICE THREAT SCANNER</h1>
           </div>
-          <p className="font-mono text-[9px] text-muted-foreground tracking-wide mt-1">
+          <p className="font-mono text-xs text-muted-foreground tracking-wide mt-1">
             Real-time device scanning for hidden threats, injected scripts, hardware anomalies & network security
           </p>
         </div>
         <div className="flex flex-col gap-2 w-full lg:w-auto">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="rounded-2xl border border-border bg-card p-3">
-              <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">Active</p>
+              <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">Active</p>
               <p className="font-mono text-2xl font-bold text-destructive mt-2">{activeThreatCount}</p>
             </div>
             <div className="rounded-2xl border border-border bg-card p-3">
-              <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">Critical</p>
+              <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">Critical</p>
               <p className="font-mono text-2xl font-bold text-destructive mt-2">{criticalCount}</p>
             </div>
             <div className="rounded-2xl border border-border bg-card p-3">
-              <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">Total Scans</p>
+              <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">Total Scans</p>
               <p className="font-mono text-2xl font-bold text-primary mt-2">{totalScansCount}</p>
             </div>
             <div className="rounded-2xl border border-border bg-card p-3">
-              <p className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">Attempts</p>
+              <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest">Attempts</p>
               <p className="font-mono text-2xl font-bold text-amber-400 mt-2">{totalAttemptsCount}</p>
             </div>
           </div>
           {activeThreats.some(t => t.status === 'detected' || t.status.startsWith('cycle_')) && (
             <Button 
               variant="destructive" 
-              className="w-full font-mono text-[10px] h-8"
+              className="w-full font-mono text-xs h-8"
               disabled={neutralizingAll}
               onClick={async () => {
                 setNeutralizingAll(true);
@@ -202,7 +202,7 @@ export default function ThreatScanner() {
         </CardHeader>
         <CardContent>
           {scanSessions.length === 0 ? (
-            <div className="rounded-2xl border border-border/50 bg-secondary/10 p-4 text-center font-mono text-[10px] text-muted-foreground">
+            <div className="rounded-2xl border border-border/50 bg-secondary/10 p-4 text-center font-mono text-xs text-muted-foreground">
               No scan sessions yet. Start a device scan above.
             </div>
           ) : (
@@ -212,10 +212,10 @@ export default function ThreatScanner() {
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${session.status === 'complete' ? 'bg-green-400' : session.status === 'error' ? 'bg-destructive' : 'bg-primary animate-pulse'}`} />
                     <div className="min-w-0">
-                      <p className="font-mono text-[10px] font-semibold text-foreground truncate">
+                      <p className="font-mono text-xs font-semibold text-foreground truncate">
                         {session.scan_type?.toUpperCase()} • {session.input_value?.slice(0, 40) || 'Device scan'}
                       </p>
-                      <p className="font-mono text-[9px] text-muted-foreground mt-0.5">
+                      <p className="font-mono text-xs text-muted-foreground mt-0.5">
                         {formatChicagoTime(session.created_date)}
                       </p>
                     </div>
@@ -225,7 +225,7 @@ export default function ThreatScanner() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 text-[10px] text-destructive hover:text-destructive hover:bg-destructive/10 px-2"
+                        className="h-6 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 px-2"
                         onClick={async () => {
                           try {
                             await base44.entities.ScanSession.update(session.id, { status: 'error', error_message: 'Stopped by user' });
@@ -239,7 +239,7 @@ export default function ThreatScanner() {
                         Stop
                       </Button>
                     )}
-                    <Badge className={`font-mono text-[8px] rounded-full border px-2 py-1 ${session.status === 'complete' ? 'bg-green-500/10 border-green-500/20 text-green-500' : session.status === 'error' ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-primary/10 border-primary/20 text-primary'}`}>
+                    <Badge className={`font-mono text-xs rounded-full border px-2 py-1 ${session.status === 'complete' ? 'bg-green-500/10 border-green-500/20 text-green-500' : session.status === 'error' ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-primary/10 border-primary/20 text-primary'}`}>
                       {session.status?.toUpperCase()}
                     </Badge>
                   </div>
@@ -264,14 +264,14 @@ export default function ThreatScanner() {
         </CardHeader>
         <CardContent>
           {loadingDeviceThreats ? (
-            <div className="rounded-2xl border border-border/50 bg-secondary/10 p-4 text-center font-mono text-[10px] text-muted-foreground flex items-center justify-center gap-2">
+            <div className="rounded-2xl border border-border/50 bg-secondary/10 p-4 text-center font-mono text-xs text-muted-foreground flex items-center justify-center gap-2">
               <Loader2 className="w-3 h-3 animate-spin" /> Loading threats...
             </div>
           ) : activeThreats.length === 0 ? (
             <div className="rounded-2xl border border-border/50 bg-green-500/10 p-4 text-center">
               <ShieldCheck className="w-8 h-8 text-green-400 mx-auto mb-2" />
-              <p className="font-mono text-[10px] text-green-400 font-semibold">NO DEVICE THREATS DETECTED</p>
-              <p className="font-mono text-[9px] text-muted-foreground mt-1">Your device is clean — no hidden threats found</p>
+              <p className="font-mono text-xs text-green-400 font-semibold">NO DEVICE THREATS DETECTED</p>
+              <p className="font-mono text-xs text-muted-foreground mt-1">Your device is clean — no hidden threats found</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -283,20 +283,20 @@ export default function ThreatScanner() {
                       className="flex-1 text-left min-w-0"
                     >
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Badge className={`font-mono text-[8px] rounded-full border px-2 py-0.5 ${threat.threat_level === 'critical' ? 'bg-destructive/10 border-destructive/20 text-destructive' : threat.threat_level === 'high' ? 'bg-amber-400/10 border-amber-400/20 text-amber-400' : 'bg-blue-400/10 border-blue-400/20 text-blue-400'}`}>
+                        <Badge className={`font-mono text-xs rounded-full border px-2 py-0.5 ${threat.threat_level === 'critical' ? 'bg-destructive/10 border-destructive/20 text-destructive' : threat.threat_level === 'high' ? 'bg-amber-400/10 border-amber-400/20 text-amber-400' : 'bg-blue-400/10 border-blue-400/20 text-blue-400'}`}>
                           {threat.threat_level?.toUpperCase()}
                         </Badge>
-                        <span className="font-mono text-[9px] text-muted-foreground">{threat.agent_type === 'human' ? 'Human user' : threat.agent_type === 'bot' ? 'Bot detected' : 'Unknown agent'}</span>
+                        <span className="font-mono text-xs text-muted-foreground">{threat.agent_type === 'human' ? 'Human user' : threat.agent_type === 'bot' ? 'Bot detected' : 'Unknown agent'}</span>
                       </div>
-                      <p className="font-mono text-[10px] text-foreground mt-2 truncate">
+                      <p className="font-mono text-xs text-foreground mt-2 truncate">
                         {threat.notes?.slice(0, 80) || 'Threat detected during device scan'}
                       </p>
-                      <p className="font-mono text-[9px] text-muted-foreground mt-1">
+                      <p className="font-mono text-xs text-muted-foreground mt-1">
                         IP: {threat.source_ip} • {formatChicagoTime(threat.created_date)}
                       </p>
                     </button>
                     <div className="flex flex-col gap-2 flex-shrink-0">
-                      <Badge className={`font-mono text-[8px] rounded-full border px-2 py-1 ${threat.status === 'destroyed' || threat.status === 'cleared' ? 'bg-green-500/10 border-green-500/20 text-green-500' : threat.status === 'locked' ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-amber-400/10 border-amber-400/20 text-amber-400'}`}>
+                      <Badge className={`font-mono text-xs rounded-full border px-2 py-1 ${threat.status === 'destroyed' || threat.status === 'cleared' ? 'bg-green-500/10 border-green-500/20 text-green-500' : threat.status === 'locked' ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-amber-400/10 border-amber-400/20 text-amber-400'}`}>
                         {threat.status?.toUpperCase()}
                       </Badge>
                       {/* Individual neutralize buttons removed in favor of Bulk Neutralize */}
@@ -318,7 +318,7 @@ export default function ThreatScanner() {
         </CardHeader>
         <CardContent>
           {activeAnomalies.length === 0 ? (
-            <div className="rounded-2xl border border-border/50 bg-secondary/10 p-4 text-center font-mono text-[10px] text-muted-foreground">
+            <div className="rounded-2xl border border-border/50 bg-secondary/10 p-4 text-center font-mono text-xs text-muted-foreground">
               No zero-day anomalies detected
             </div>
           ) : (
@@ -327,17 +327,17 @@ export default function ThreatScanner() {
                 <div key={anomaly.id} className="rounded-xl border border-border/50 bg-secondary/10 p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="font-mono text-[10px] font-semibold text-foreground truncate">
+                      <p className="font-mono text-xs font-semibold text-foreground truncate">
                         {anomaly.anomaly_type?.toUpperCase().replace(/_/g, ' ')}
                       </p>
-                      <p className="font-mono text-[9px] text-muted-foreground mt-1 truncate">
+                      <p className="font-mono text-xs text-muted-foreground mt-1 truncate">
                         {anomaly.notes?.slice(0, 60) || anomaly.anomaly_signature}
                       </p>
-                      <p className="font-mono text-[9px] text-muted-foreground mt-1">
+                      <p className="font-mono text-xs text-muted-foreground mt-1">
                         Severity: {anomaly.severity?.toUpperCase()} • Confidence: {anomaly.confidence_score ?? 'N/A'}%
                       </p>
                     </div>
-                    <Badge className={`font-mono text-[8px] rounded-full border px-2 py-1 flex-shrink-0 ${anomaly.status === 'neutralized' ? 'bg-green-500/10 border-green-500/20 text-green-500' : anomaly.status === 'contained' ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-amber-400/10 border-amber-400/20 text-amber-400'}`}>
+                    <Badge className={`font-mono text-xs rounded-full border px-2 py-1 flex-shrink-0 ${anomaly.status === 'neutralized' ? 'bg-green-500/10 border-green-500/20 text-green-500' : anomaly.status === 'contained' ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-amber-400/10 border-amber-400/20 text-amber-400'}`}>
                       {anomaly.status?.toUpperCase()}
                     </Badge>
                   </div>
@@ -363,29 +363,29 @@ export default function ThreatScanner() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-border/50 bg-secondary/10 p-3">
-                  <p className="font-mono text-[9px] text-muted-foreground">Threat Level</p>
+                  <p className="font-mono text-xs text-muted-foreground">Threat Level</p>
                   <p className={`font-mono text-sm font-bold mt-1 ${selectedThreat.threat_level === 'critical' ? 'text-destructive' : selectedThreat.threat_level === 'high' ? 'text-amber-400' : 'text-blue-400'}`}>
                     {selectedThreat.threat_level?.toUpperCase() || 'UNKNOWN'}
                   </p>
                 </div>
                 <div className="rounded-xl border border-border/50 bg-secondary/10 p-3">
-                  <p className="font-mono text-[9px] text-muted-foreground">Status</p>
+                  <p className="font-mono text-xs text-muted-foreground">Status</p>
                   <p className="font-mono text-sm font-bold text-foreground mt-1">{selectedThreat.status?.toUpperCase() || 'UNKNOWN'}</p>
                 </div>
                 <div className="rounded-xl border border-border/50 bg-secondary/10 p-3">
-                  <p className="font-mono text-[9px] text-muted-foreground">Source IP</p>
+                  <p className="font-mono text-xs text-muted-foreground">Source IP</p>
                   <p className="font-mono text-sm text-foreground mt-1 break-all">{selectedThreat.source_ip || 'Unknown'}</p>
                 </div>
                 <div className="rounded-xl border border-border/50 bg-secondary/10 p-3">
-                  <p className="font-mono text-[9px] text-muted-foreground">Agent Type</p>
+                  <p className="font-mono text-xs text-muted-foreground">Agent Type</p>
                   <p className="font-mono text-sm text-foreground mt-1">{selectedThreat.agent_type?.toUpperCase() || 'UNKNOWN'}</p>
                 </div>
               </div>
 
               {selectedThreat.notes && (
                 <div className="rounded-xl border border-border/50 bg-secondary/10 p-4">
-                  <p className="font-mono text-[9px] text-muted-foreground mb-2">Threat Notes</p>
-                  <p className="font-mono text-[10px] text-foreground whitespace-pre-wrap">{selectedThreat.notes}</p>
+                  <p className="font-mono text-xs text-muted-foreground mb-2">Threat Notes</p>
+                  <p className="font-mono text-xs text-foreground whitespace-pre-wrap">{selectedThreat.notes}</p>
                 </div>
               )}
 

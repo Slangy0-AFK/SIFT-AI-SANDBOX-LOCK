@@ -12,7 +12,7 @@ export default function FirewallDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">FIREWALL COMMAND CENTER</h1>
-          <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+          <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
             NETWORK SECURITY & TRAFFIC CONTROL
           </p>
         </div>
@@ -29,7 +29,7 @@ export default function FirewallDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="font-mono text-[10px] text-muted-foreground">
+              <p className="font-mono text-xs text-muted-foreground">
                 Create, edit, and manage firewall rules for inbound/outbound traffic
               </p>
               <Button className="w-full mt-4 font-mono text-xs" size="sm">
@@ -48,7 +48,7 @@ export default function FirewallDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="font-mono text-[10px] text-muted-foreground">
+              <p className="font-mono text-xs text-muted-foreground">
                 Monitor real-time firewall activity and blocked threats
               </p>
               <Button className="w-full mt-4 font-mono text-xs" size="sm" variant="outline">
@@ -67,7 +67,7 @@ export default function FirewallDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="font-mono text-[10px] text-muted-foreground">
+              <p className="font-mono text-xs text-muted-foreground">
                 Traffic patterns, threat analysis, and security insights
               </p>
               <Button className="w-full mt-4 font-mono text-xs" size="sm" variant="outline">
@@ -111,7 +111,7 @@ export default function FirewallDashboard() {
               <Lock className="w-5 h-5 text-primary mt-0.5" />
               <div>
                 <div className="font-mono text-[11px] font-semibold text-foreground">DEFENSE LAYERS ACTIVE</div>
-                <div className="font-mono text-[10px] text-muted-foreground mt-1 space-y-1">
+                <div className="font-mono text-xs text-muted-foreground mt-1 space-y-1">
                   <div>• Firewall rules filtering inbound/outbound traffic</div>
                   <div>• Real-time threat detection and blocking</div>
                   <div>• Rate limiting to prevent DDoS attacks</div>
@@ -136,7 +136,7 @@ export default function FirewallDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <div className="font-mono text-[11px] font-semibold text-foreground">RECOMMENDED RULES</div>
-              <ul className="font-mono text-[10px] text-muted-foreground space-y-1">
+              <ul className="font-mono text-xs text-muted-foreground space-y-1">
                 <li>• Block known malicious IP ranges</li>
                 <li>• Allow only necessary ports (80, 443)</li>
                 <li>• Rate limit API endpoints</li>
@@ -145,7 +145,7 @@ export default function FirewallDashboard() {
             </div>
             <div className="space-y-2">
               <div className="font-mono text-[11px] font-semibold text-foreground">MONITORING TIPS</div>
-              <ul className="font-mono text-[10px] text-muted-foreground space-y-1">
+              <ul className="font-mono text-xs text-muted-foreground space-y-1">
                 <li>• Review logs daily for anomalies</li>
                 <li>• Set up alerts for critical blocks</li>
                 <li>• Update rules based on threat intel</li>

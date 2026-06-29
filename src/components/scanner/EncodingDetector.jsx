@@ -198,7 +198,7 @@ export default function EncodingDetector({ onDetectionComplete }) {
                       {results.indicators.map((indicator, idx) => (
                         <div key={idx} className="flex items-start gap-2">
                           <CheckCircle className="w-3 h-3 text-green-400 flex-shrink-0 mt-0.5" />
-                          <span className="font-mono text-[10px] text-muted-foreground">{indicator}</span>
+                          <span className="font-mono text-xs text-muted-foreground">{indicator}</span>
                         </div>
                       ))}
                     </div>
@@ -209,7 +209,7 @@ export default function EncodingDetector({ onDetectionComplete }) {
                 {results.threat_indicators.length > 0 && (
                   <Alert className="bg-red-500/10 border-red-500/30">
                     <AlertTriangle className="w-4 h-4 text-red-400" />
-                    <AlertDescription className="font-mono text-[10px]">
+                    <AlertDescription className="font-mono text-xs">
                       <div className="space-y-1">
                         {results.threat_indicators.map((indicator, idx) => (
                           <div key={idx} className="flex items-start gap-2">
@@ -231,7 +231,7 @@ export default function EncodingDetector({ onDetectionComplete }) {
                         variant="ghost"
                         size="sm"
                         onClick={() => setShowDecoded(!showDecoded)}
-                        className="h-6 text-[10px] gap-1"
+                        className="h-6 text-xs gap-1"
                       >
                         {showDecoded ? (
                           <>
@@ -247,7 +247,7 @@ export default function EncodingDetector({ onDetectionComplete }) {
                       </Button>
                     </div>
                     {showDecoded && (
-                      <pre className="p-3 bg-secondary/30 border border-border rounded-lg font-mono text-[9px] overflow-auto max-h-48 whitespace-pre-wrap">
+                      <pre className="p-3 bg-secondary/30 border border-border rounded-lg font-mono text-xs overflow-auto max-h-48 whitespace-pre-wrap">
                         {results.decoded_content}
                       </pre>
                     )}
@@ -257,7 +257,7 @@ export default function EncodingDetector({ onDetectionComplete }) {
                 {/* Confidence Score */}
                 <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
                   <span className="font-mono text-xs text-muted-foreground">Detection Confidence</span>
-                  <Badge variant="outline" className="font-mono text-[10px]">
+                  <Badge variant="outline" className="font-mono text-xs">
                     {results.confidence}%
                   </Badge>
                 </div>

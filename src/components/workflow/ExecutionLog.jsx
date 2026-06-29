@@ -15,7 +15,7 @@ export default function ExecutionLog({ executions = [] }) {
   if (executions.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="font-mono text-[10px] text-muted-foreground">No executions yet. Policies will fire automatically when matching events occur.</p>
+        <p className="font-mono text-xs text-muted-foreground">No executions yet. Policies will fire automatically when matching events occur.</p>
       </div>
     );
   }
@@ -34,10 +34,10 @@ export default function ExecutionLog({ executions = [] }) {
             <div className="flex items-center gap-2 mb-1.5">
               <Icon className={`w-3.5 h-3.5 ${meta.color} ${exec.status === 'running' ? 'animate-spin' : ''}`} />
               <span className="font-mono text-[11px] font-semibold text-foreground">{exec.policy_name}</span>
-              <Badge className={`font-mono text-[8px] ml-auto border ${meta.border} ${meta.color} bg-transparent`}>
+              <Badge className={`font-mono text-xs ml-auto border ${meta.border} ${meta.color} bg-transparent`}>
                 {exec.status.toUpperCase()}
               </Badge>
-              <span className="font-mono text-[8px] text-muted-foreground">
+              <span className="font-mono text-xs text-muted-foreground">
                 {formatChicagoTime(exec.created_date)}
               </span>
             </div>
@@ -45,8 +45,8 @@ export default function ExecutionLog({ executions = [] }) {
               <div className="space-y-1 ml-5">
                 {actionsLog.map((a, i) => (
                   <div key={i} className="flex items-start gap-1.5">
-                    <span className="font-mono text-[8px] text-primary mt-0.5">↳</span>
-                    <span className="font-mono text-[8px] text-muted-foreground">{a.message}</span>
+                    <span className="font-mono text-xs text-primary mt-0.5">↳</span>
+                    <span className="font-mono text-xs text-muted-foreground">{a.message}</span>
                   </div>
                 ))}
               </div>

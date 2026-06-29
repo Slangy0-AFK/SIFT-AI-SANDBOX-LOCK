@@ -11,7 +11,7 @@ export default function IpAllowlist() {
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">IP ALLOWLIST</h1>
-            <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+            <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
               STRICT ACCESS CONTROLS
             </p>
           </div>
@@ -27,7 +27,7 @@ export default function IpAllowlist() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="rounded-xl border border-border/50 bg-secondary/10 p-4 text-center font-mono text-[10px] text-muted-foreground">
+            <div className="rounded-xl border border-border/50 bg-secondary/10 p-4 text-center font-mono text-xs text-muted-foreground">
               No IP restrictions configured. All traffic is currently evaluated by standard rules.
             </div>
           </CardContent>

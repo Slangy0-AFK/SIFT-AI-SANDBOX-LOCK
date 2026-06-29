@@ -80,7 +80,7 @@ export default function SupportCenter() {
               <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
                 <MessageCircle className="w-4 h-4 text-primary" /> AI SUPPORT ASSISTANT
               </CardTitle>
-              <Button size="sm" variant="outline" className="font-mono text-[10px]" onClick={() => setChatOpen(o => !o)}>
+              <Button size="sm" variant="outline" className="font-mono text-xs" onClick={() => setChatOpen(o => !o)}>
                 {chatOpen ? 'Minimize' : 'Open Chat'}
               </Button>
             </div>
@@ -101,7 +101,7 @@ export default function SupportCenter() {
                       <div className="flex justify-start">
                         <div className="bg-card border border-border rounded-xl px-3 py-2 flex items-center gap-2">
                           <Loader2 className="w-3 h-3 text-primary animate-spin" />
-                          <span className="font-mono text-[10px] text-muted-foreground">Thinking...</span>
+                          <span className="font-mono text-xs text-muted-foreground">Thinking...</span>
                         </div>
                       </div>
                     )}
@@ -139,7 +139,7 @@ export default function SupportCenter() {
               <r.icon className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <div>
                 <div className="font-mono text-[11px] font-semibold">{r.title}</div>
-                <div className="font-mono text-[10px] opacity-80 mt-0.5 leading-relaxed">{r.desc}</div>
+                <div className="font-mono text-xs opacity-80 mt-0.5 leading-relaxed">{r.desc}</div>
               </div>
             </div>
           ))}
@@ -166,7 +166,7 @@ export default function SupportCenter() {
               <AnimatePresence>
                 {expandedFaq === i && (
                   <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
-                    <div className="px-4 pb-3 font-mono text-[10px] text-muted-foreground leading-relaxed border-t border-border pt-3">{faq.a}</div>
+                    <div className="px-4 pb-3 font-mono text-xs text-muted-foreground leading-relaxed border-t border-border pt-3">{faq.a}</div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -199,7 +199,7 @@ export default function SupportCenter() {
               />
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-[10px] text-muted-foreground">Rate your experience:</span>
+                  <span className="font-mono text-xs text-muted-foreground">Rate your experience:</span>
                   <button className="hover:text-primary transition-colors text-muted-foreground"><ThumbsUp className="w-4 h-4" /></button>
                   <button className="hover:text-destructive transition-colors text-muted-foreground"><ThumbsDown className="w-4 h-4" /></button>
                 </div>

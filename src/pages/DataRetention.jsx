@@ -13,7 +13,7 @@ export default function DataRetention() {
       <div className="p-6 space-y-6">
         <div>
           <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">DATA RETENTION</h1>
-          <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+          <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
             AUTOMATED REDACTION & PURGING
           </p>
         </div>
@@ -27,7 +27,7 @@ export default function DataRetention() {
           <CardContent className="space-y-4">
             <div className="p-4 rounded-xl border border-border/50 bg-secondary/10">
               <p className="font-mono text-sm font-semibold text-foreground">Log Retention Period (Days)</p>
-              <p className="font-mono text-[10px] text-muted-foreground mt-1 mb-4">
+              <p className="font-mono text-xs text-muted-foreground mt-1 mb-4">
                 Automatically purge firewall and threat logs older than this threshold.
               </p>
               <div className="flex items-center gap-4">
@@ -46,7 +46,7 @@ export default function DataRetention() {
             <div className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 flex items-center justify-between">
               <div>
                 <p className="font-mono text-[11px] font-bold text-destructive">Manual Purge</p>
-                <p className="font-mono text-[10px] text-muted-foreground mt-1">Immediately redact and purge all historical PII logs.</p>
+                <p className="font-mono text-xs text-muted-foreground mt-1">Immediately redact and purge all historical PII logs.</p>
               </div>
               <Button size="sm" variant="destructive" onClick={() => toast.success('Purge initiated')}>
                 <Trash2 className="w-4 h-4 mr-2" /> Purge Now

@@ -78,7 +78,7 @@ export default function InvitationManager({ subscription }) {
         <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
           <UserPlus className="w-4 h-4 text-primary" /> FAMILY ENROLLMENT
         </CardTitle>
-        <p className="font-mono text-[9px] text-muted-foreground">
+        <p className="font-mono text-xs text-muted-foreground">
           Invite family members to join your security plan
         </p>
       </CardHeader>
@@ -93,7 +93,7 @@ export default function InvitationManager({ subscription }) {
               className="bg-secondary/50 border border-border rounded-lg p-4 space-y-3"
             >
               <div className="space-y-2">
-                <label className="font-mono text-[9px] text-muted-foreground">Email Address</label>
+                <label className="font-mono text-xs text-muted-foreground">Email Address</label>
                 <Input
                   placeholder="family@example.com"
                   className="font-mono text-xs"
@@ -103,7 +103,7 @@ export default function InvitationManager({ subscription }) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="font-mono text-[9px] text-muted-foreground">Device Slots (1-10)</label>
+                <label className="font-mono text-xs text-muted-foreground">Device Slots (1-10)</label>
                 <Select 
                   value={inviteData.device_slots.toString()} 
                   onValueChange={(v) => setInviteData(p => ({ ...p, device_slots: parseInt(v) }))}
@@ -121,7 +121,7 @@ export default function InvitationManager({ subscription }) {
                 </Select>
               </div>
               <div className="space-y-2">
-                <label className="font-mono text-[9px] text-muted-foreground">Optional Message</label>
+                <label className="font-mono text-xs text-muted-foreground">Optional Message</label>
                 <Input
                   placeholder="Welcome to our family plan!"
                   className="font-mono text-xs"
@@ -165,13 +165,13 @@ export default function InvitationManager({ subscription }) {
           <div className="flex items-center gap-4 p-3 rounded-lg bg-secondary/30 border border-border/40">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-primary" />
-              <span className="font-mono text-[9px] text-muted-foreground">
+              <span className="font-mono text-xs text-muted-foreground">
                 {activeDevices} / {maxDevices} slots used
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-amber-400" />
-              <span className="font-mono text-[9px] text-muted-foreground">
+              <span className="font-mono text-xs text-muted-foreground">
                 {invitations.filter(i => i.status === 'pending').length} pending
               </span>
             </div>
@@ -180,10 +180,10 @@ export default function InvitationManager({ subscription }) {
 
         {/* Invitation List */}
         <div className="space-y-2">
-          <h3 className="font-mono text-[10px] font-semibold text-muted-foreground">INVITATIONS</h3>
+          <h3 className="font-mono text-xs font-semibold text-muted-foreground">INVITATIONS</h3>
           
           {invitations.length === 0 ? (
-            <p className="font-mono text-[9px] text-muted-foreground text-center py-4">
+            <p className="font-mono text-xs text-muted-foreground text-center py-4">
               No invitations sent yet
             </p>
           ) : (
@@ -196,7 +196,7 @@ export default function InvitationManager({ subscription }) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Mail className="w-3 h-3 text-primary" />
-                      <span className="font-mono text-[10px] font-semibold text-foreground">
+                      <span className="font-mono text-xs font-semibold text-foreground">
                         {invite.invitee_email}
                       </span>
                     </div>
@@ -207,11 +207,11 @@ export default function InvitationManager({ subscription }) {
                   
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="font-mono text-[8px] text-muted-foreground flex items-center gap-1">
+                      <span className="font-mono text-xs text-muted-foreground flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         Expires {new Date(invite.expires_at).toLocaleDateString()}
                       </span>
-                      <span className="font-mono text-[8px] text-muted-foreground">
+                      <span className="font-mono text-xs text-muted-foreground">
                         {invite.device_slots} slot{invite.device_slots > 1 ? 's' : ''}
                       </span>
                     </div>
@@ -230,13 +230,13 @@ export default function InvitationManager({ subscription }) {
                   </div>
 
                   {invite.notes && (
-                    <p className="font-mono text-[8px] text-muted-foreground italic pl-5">
+                    <p className="font-mono text-xs text-muted-foreground italic pl-5">
                       "{invite.notes}"
                     </p>
                   )}
 
                   {invite.accepted_at && (
-                    <p className="font-mono text-[8px] text-green-400 pl-5 flex items-center gap-1">
+                    <p className="font-mono text-xs text-green-400 pl-5 flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3" />
                       Accepted {new Date(invite.accepted_at).toLocaleDateString()}
                     </p>

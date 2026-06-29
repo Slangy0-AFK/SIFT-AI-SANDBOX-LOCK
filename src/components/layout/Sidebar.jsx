@@ -148,11 +148,11 @@ export default function Sidebar() {
         <div className="p-4 border-t border-border">
           <div className="flex items-center gap-2 px-3 py-2">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="font-mono text-[10px] text-muted-foreground tracking-wider">SYSTEM ONLINE</span>
+            <span className="font-mono text-xs text-muted-foreground tracking-wider">SYSTEM ONLINE</span>
           </div>
           <div className="flex items-center gap-2 px-3 py-1">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse-glow" />
-            <span className="font-mono text-[10px] text-muted-foreground tracking-wider">QRNG ACTIVE</span>
+            <span className="font-mono text-xs text-muted-foreground tracking-wider">QRNG ACTIVE</span>
           </div>
         </div>
       </aside>
@@ -275,7 +275,7 @@ export default function Sidebar() {
             <div className="p-4 border-t border-border">
               <div className="flex items-center gap-2 px-3 py-2">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="font-mono text-[10px] text-muted-foreground tracking-wider">SYSTEM ONLINE</span>
+                <span className="font-mono text-xs text-muted-foreground tracking-wider">SYSTEM ONLINE</span>
               </div>
             </div>
           </div>
@@ -299,7 +299,7 @@ export default function Sidebar() {
               }`}
             >
               <Icon className="w-4 h-4" />
-              <span className="font-mono text-[8px] tracking-wide">{label}</span>
+              <span className="font-mono text-xs tracking-wide">{label}</span>
             </Link>
           );
         })}

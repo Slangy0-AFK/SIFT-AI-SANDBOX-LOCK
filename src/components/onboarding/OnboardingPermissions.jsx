@@ -167,7 +167,7 @@ export default function OnboardingPermissions() {
                             <Icon className={`w-5 h-5 ${provider.color}`} />
                             <div>
                               <p className="font-mono text-xs font-semibold">{provider.name}</p>
-                              <p className="font-mono text-[9px] text-muted-foreground">
+                              <p className="font-mono text-xs text-muted-foreground">
                                 {isConnected ? 'Connected (Shared)' : provider.connectorId ? 'Click to connect' : 'Coming soon'}
                               </p>
                             </div>
@@ -184,8 +184,8 @@ export default function OnboardingPermissions() {
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-mono text-[10px] font-semibold text-green-400">Gmail Connected</p>
-                      <p className="font-mono text-[9px] text-muted-foreground mt-1">
+                      <p className="font-mono text-xs font-semibold text-green-400">Gmail Connected</p>
+                      <p className="font-mono text-xs text-muted-foreground mt-1">
                         Gmail is connected and ready for automated threat scanning. All users can scan emails immediately.
                         Outlook/Hotmail requires individual connection. Other providers (Yahoo, iCloud, AOL, ProtonMail) 
                         can be used with manual forwarding or the SMS/Phone scanner.
@@ -217,12 +217,12 @@ export default function OnboardingPermissions() {
                         <Icon className={`w-5 h-5 ${isGranted ? 'text-primary' : 'text-muted-foreground'}`} />
                         <div>
                           <p className="font-mono text-xs font-semibold">{permission.name}</p>
-                          <p className="font-mono text-[9px] text-muted-foreground">{permission.desc}</p>
+                          <p className="font-mono text-xs text-muted-foreground">{permission.desc}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         {permission.required && (
-                          <Badge variant="outline" className="font-mono text-[8px]">Required</Badge>
+                          <Badge variant="outline" className="font-mono text-xs">Required</Badge>
                         )}
                         <Switch
                           checked={isGranted}
@@ -238,8 +238,8 @@ export default function OnboardingPermissions() {
                   <div className="flex items-start gap-2">
                     <Eye className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-mono text-[10px] font-semibold text-blue-400">Privacy & Security</p>
-                      <p className="font-mono text-[9px] text-muted-foreground mt-1">
+                      <p className="font-mono text-xs font-semibold text-blue-400">Privacy & Security</p>
+                      <p className="font-mono text-xs text-muted-foreground mt-1">
                         All scans run locally on your device. No data leaves your device unless threats are detected and logged to your private dashboard.
                       </p>
                     </div>
@@ -258,7 +258,7 @@ export default function OnboardingPermissions() {
                         <Mail className="w-6 h-6 text-green-400" />
                         <div>
                           <p className="font-mono text-xs font-bold text-green-400">Email Protection</p>
-                          <p className="font-mono text-[9px] text-muted-foreground">
+                          <p className="font-mono text-xs text-muted-foreground">
                             {emailProviders.length > 0 
                               ? `${emailProviders.length} provider(s) connected`
                               : 'Manual scanning available'}
@@ -274,7 +274,7 @@ export default function OnboardingPermissions() {
                         <Shield className="w-6 h-6 text-primary" />
                         <div>
                           <p className="font-mono text-xs font-bold text-primary">Device Security</p>
-                          <p className="font-mono text-[9px] text-muted-foreground">
+                          <p className="font-mono text-xs text-muted-foreground">
                             {devicePermissions.length} permission(s) granted
                           </p>
                         </div>
@@ -288,19 +288,19 @@ export default function OnboardingPermissions() {
                   <ul className="space-y-2">
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-                      <span className="font-mono text-[9px] text-muted-foreground">
+                      <span className="font-mono text-xs text-muted-foreground">
                         Visit the <strong className="text-foreground">Threat Scanner</strong> page to scan emails and phone numbers
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-                      <span className="font-mono text-[9px] text-muted-foreground">
+                      <span className="font-mono text-xs text-muted-foreground">
                         Use <strong className="text-foreground">Device Scanner</strong> on the Welcome page for instant protection
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-                      <span className="font-mono text-[9px] text-muted-foreground">
+                      <span className="font-mono text-xs text-muted-foreground">
                         Configure advanced settings in <strong className="text-foreground">Settings</strong> page
                       </span>
                     </li>

@@ -33,7 +33,7 @@ function ThreatMatrix() {
         <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
           <Shield className="w-4 h-4 text-primary" /> THREAT COVERAGE MATRIX
         </CardTitle>
-        <p className="font-mono text-[9px] text-muted-foreground tracking-wide">
+        <p className="font-mono text-xs text-muted-foreground tracking-wide">
           Actual cyber threat vectors monitored by the Aegis detection engine
         </p>
       </CardHeader>
@@ -66,7 +66,7 @@ export default function ThreatIntelligence() {
     <div className="p-4 md:p-6 space-y-4 md:space-y-6 max-w-4xl mx-auto">
       <div>
         <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">THREAT INTELLIGENCE</h1>
-        <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+        <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
           ACTIVE CYBER THREAT DETECTION & ANALYSIS
         </p>
       </div>

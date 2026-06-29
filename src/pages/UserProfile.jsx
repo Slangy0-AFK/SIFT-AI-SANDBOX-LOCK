@@ -86,7 +86,7 @@ export default function UserProfile() {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">USER PROFILE</h1>
-        <p className="font-mono text-[10px] text-muted-foreground tracking-widest mt-1">
+        <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
           ACCOUNT SETTINGS · SECURITY · PREFERENCES
         </p>
       </div>
@@ -100,7 +100,7 @@ export default function UserProfile() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
-            <Label htmlFor="email" className="font-mono text-[10px]">EMAIL ADDRESS</Label>
+            <Label htmlFor="email" className="font-mono text-xs">EMAIL ADDRESS</Label>
             <div className="flex items-center gap-2">
               <Mail className="w-4 h-4 text-muted-foreground" />
               <Input id="email" value={user?.email} disabled className="font-mono text-xs" />
@@ -108,7 +108,7 @@ export default function UserProfile() {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="name" className="font-mono text-[10px]">FULL NAME</Label>
+            <Label htmlFor="name" className="font-mono text-xs">FULL NAME</Label>
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-muted-foreground" />
               <Input
@@ -122,10 +122,10 @@ export default function UserProfile() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Badge className={`font-mono text-[8px] ${currentPlan === 'enterprise' ? 'bg-amber-400/10 text-amber-400 border-amber-400/20' : currentPlan === 'pro' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-secondary text-muted-foreground border-border'} border`}>
+            <Badge className={`font-mono text-xs ${currentPlan === 'enterprise' ? 'bg-amber-400/10 text-amber-400 border-amber-400/20' : currentPlan === 'pro' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-secondary text-muted-foreground border-border'} border`}>
               {currentPlan.toUpperCase()} PLAN
             </Badge>
-            <Badge className="font-mono text-[8px] bg-green-400/10 text-green-400 border-green-400/20 border">
+            <Badge className="font-mono text-xs bg-green-400/10 text-green-400 border-green-400/20 border">
               <CheckCircle className="w-3 h-3 mr-1" /> ACTIVE
             </Badge>
           </div>
@@ -144,13 +144,13 @@ export default function UserProfile() {
             <>
               <Alert>
                 <AlertTriangle className="w-4 h-4 text-amber-400" />
-                <AlertDescription className="font-mono text-[10px]">
+                <AlertDescription className="font-mono text-xs">
                   For security reasons, password changes require verification. Use the password reset feature or change your password below.
                 </AlertDescription>
               </Alert>
 
               <div className="grid gap-2">
-                <Label htmlFor="current-password" className="font-mono text-[10px]">CURRENT PASSWORD</Label>
+                <Label htmlFor="current-password" className="font-mono text-xs">CURRENT PASSWORD</Label>
                 <div className="flex items-center gap-2">
                   <Key className="w-4 h-4 text-muted-foreground" />
                   <Input
@@ -165,7 +165,7 @@ export default function UserProfile() {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="new-password" className="font-mono text-[10px]">NEW PASSWORD</Label>
+                <Label htmlFor="new-password" className="font-mono text-xs">NEW PASSWORD</Label>
                 <div className="flex items-center gap-2">
                   <Key className="w-4 h-4 text-muted-foreground" />
                   <Input
@@ -180,7 +180,7 @@ export default function UserProfile() {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="confirm-password" className="font-mono text-[10px]">CONFIRM PASSWORD</Label>
+                <Label htmlFor="confirm-password" className="font-mono text-xs">CONFIRM PASSWORD</Label>
                 <div className="flex items-center gap-2">
                   <Key className="w-4 h-4 text-muted-foreground" />
                   <Input
