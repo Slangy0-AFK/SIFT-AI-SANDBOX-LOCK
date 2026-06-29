@@ -24,7 +24,7 @@ const PLANS = {
   },
   pro: {
     name: 'Pro',
-    price: { monthly: 0, annual: 0 },
+    price: { monthly: 5, annual: 50 },
     color: 'text-primary',
     border: 'border-primary/40',
     badge: 'Best Value',
