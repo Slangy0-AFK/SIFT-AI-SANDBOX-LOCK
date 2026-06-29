@@ -4,8 +4,11 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Shield, Cpu, Lock } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function About() {
+  const { isAuthenticated } = useAuth();
+
   useEffect(() => {
     base44.analytics.track({ eventName: 'view_about_page' });
   }, []);
@@ -25,9 +28,9 @@ export default function About() {
       
       <div className="relative z-10 flex flex-col items-center w-full max-w-5xl">
         <div className="max-w-3xl w-full mb-6">
-          <Link to="/">
+          <Link to={isAuthenticated ? "/dashboard" : "/"}>
           <Button variant="ghost" className="gap-2 -ml-4">
-            <ArrowLeft className="w-4 h-4" /> Back to Home
+            <ArrowLeft className="w-4 h-4" /> {isAuthenticated ? "Back to Dashboard" : "Back to Home"}
           </Button>
         </Link>
       </div>
@@ -86,9 +89,13 @@ export default function About() {
       </div>
 
       <div className="max-w-3xl w-full mt-12 text-center pb-12">
-        <h2 className="text-xl font-bold mb-4">Ready to secure your infrastructure?</h2>
-        <Link to="/register">
-          <Button size="lg" className="px-8 font-semibold">Start Free Trial</Button>
+        <h2 className="text-xl font-bold mb-4">
+          {isAuthenticated ? "Return to your secure console" : "Ready to secure your infrastructure?"}
+        </h2>
+        <Link to={isAuthenticated ? "/dashboard" : "/register"}>
+          <Button size="lg" className="px-8 font-semibold">
+            {isAuthenticated ? "Go to Dashboard" : "Start Free Trial"}
+          </Button>
         </Link>
       </div>
       </div>
