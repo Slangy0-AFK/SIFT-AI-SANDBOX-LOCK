@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Send, ThumbsUp, ThumbsDown, Lightbulb, ChevronDown, ChevronUp, Loader2, CheckCircle, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { MessageCircle, Send, ThumbsUp, ThumbsDown, Lightbulb, ChevronDown, ChevronUp, Loader2, CheckCircle, AlertTriangle, ShieldCheck, Download, FileText, Ticket, BookOpen, Scale } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 const FAQS = [
@@ -211,6 +212,155 @@ export default function SupportCenter() {
           )}
         </CardContent>
       </Card>
+
+      {/* Ticket Mitigation Center */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
+            <Ticket className="w-4 h-4 text-primary" /> AUTOMATED TICKET MITIGATION
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TicketManager user={user} />
+        </CardContent>
+      </Card>
+
+      {/* Help Center */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-primary" /> HELP CENTER & WALKTHROUGHS
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="font-mono text-xs text-muted-foreground mb-4">Download official guides and architectural documentation.</p>
+          {[
+            { title: 'Paradox Lock Setup Guide', size: '2.4 MB PDF' },
+            { title: 'QRNG Configuration Manual', size: '1.1 MB PDF' },
+            { title: 'Zero-Day Detection Principles', size: '3.8 MB PDF' },
+          ].map((doc, i) => (
+            <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-border bg-secondary/30">
+              <div className="flex items-center gap-3">
+                <FileText className="w-4 h-4 text-primary" />
+                <div>
+                  <div className="font-mono text-xs font-semibold">{doc.title}</div>
+                  <div className="font-mono text-[10px] text-muted-foreground mt-0.5">{doc.size}</div>
+                </div>
+              </div>
+              <Button size="sm" variant="outline" className="font-mono text-xs gap-2" onClick={() => toast.success(`Downloading ${doc.title}...`)}>
+                <Download className="w-3.5 h-3.5" /> Download
+              </Button>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Policy Center */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
+            <Scale className="w-4 h-4 text-primary" /> POLICY CENTER
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="font-mono text-xs text-muted-foreground mb-4">Review your compliance and regulatory agreements.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {[
+              { title: 'Terms of Service', href: '/terms' },
+              { title: 'Privacy Policy', href: '/privacy-policy' },
+              { title: 'Refund Policy', href: '/refund-policy' },
+              { title: 'Data Processing Agreement', href: '#' },
+            ].map((policy, i) => (
+              <a key={i} href={policy.href} className="flex items-center justify-between p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-secondary/50 transition-colors">
+                <span className="font-mono text-xs font-medium">{policy.title}</span>
+                <ChevronDown className="w-4 h-4 text-muted-foreground -rotate-90" />
+              </a>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function TicketManager({ user }) {
+  const [title, setTitle] = useState('');
+  const [desc, setDesc] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { data: tickets, refetch } = useQuery({
+    queryKey: ['support_tickets', user?.id],
+    queryFn: () => base44.entities.SupportTicket.filter({}, '-created_date', 50),
+    enabled: !!user,
+    refetchInterval: 5000,
+  });
+
+  const submitTicket = async () => {
+    if (!title.trim() || !desc.trim() || !user) return;
+    setLoading(true);
+    try {
+      await base44.entities.SupportTicket.create({ title, description: desc });
+      toast.success('Ticket submitted! An automated agent is reviewing it.');
+      setTitle('');
+      setDesc('');
+      refetch();
+    } catch (e) {
+      toast.error('Failed to submit ticket');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-3 bg-secondary/20 p-4 rounded-xl border border-border">
+        <h4 className="font-mono text-xs font-semibold text-foreground">Submit a New Ticket</h4>
+        <input
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="Issue Title"
+          className="w-full bg-secondary border border-border rounded-lg px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+        <textarea
+          value={desc}
+          onChange={e => setDesc(e.target.value)}
+          placeholder="Describe the issue..."
+          rows={3}
+          className="w-full bg-secondary border border-border rounded-lg px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+        />
+        <Button size="sm" onClick={submitTicket} disabled={!title.trim() || !desc.trim() || loading || !user} className="font-mono text-xs">
+          {loading ? <Loader2 className="w-3 h-3 animate-spin mr-2" /> : <Send className="w-3 h-3 mr-2" />}
+          Submit for Auto-Resolution
+        </Button>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="font-mono text-xs font-semibold text-foreground">Your Tickets</h4>
+        {!tickets?.length ? (
+          <p className="font-mono text-xs text-muted-foreground">No tickets submitted yet.</p>
+        ) : (
+          <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
+            {tickets.map(t => (
+              <div key={t.id} className="p-3 rounded-xl border border-border bg-card space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs font-bold">{t.title}</span>
+                  <span className={`font-mono text-[10px] px-2 py-0.5 rounded-full uppercase ${t.status === 'resolved' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'}`}>
+                    {t.status}
+                  </span>
+                </div>
+                <p className="font-mono text-xs text-muted-foreground line-clamp-2">{t.description}</p>
+                {t.agent_response && (
+                  <div className="mt-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                    <p className="font-mono text-[10px] text-primary font-semibold mb-1 uppercase tracking-wider flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3" /> Automated Resolution
+                    </p>
+                    <p className="font-mono text-xs text-foreground whitespace-pre-wrap">{t.agent_response}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

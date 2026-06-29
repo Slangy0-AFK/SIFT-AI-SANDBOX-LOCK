@@ -11,14 +11,41 @@ export default function TermsAgreementModal() {
   const [agreed, setAgreed] = useState(false);
 
   useEffect(() => {
-    const accepted = localStorage.getItem(STORAGE_KEY);
-    if (!accepted) setVisible(true);
+    const checkAcceptance = async () => {
+      const localAccepted = localStorage.getItem(STORAGE_KEY);
+      if (localAccepted) return;
+      try {
+        const { base44 } = await import('@/api/base44Client');
+        const user = await base44.auth.me();
+        if (user?.terms_accepted) {
+          localStorage.setItem(STORAGE_KEY, user.terms_accepted_date || new Date().toISOString());
+          return;
+        }
+        setVisible(true);
+      } catch (err) {
+        setVisible(true);
+      }
+    };
+    checkAcceptance();
   }, []);
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     if (!agreed) return;
     localStorage.setItem(STORAGE_KEY, new Date().toISOString());
     setVisible(false);
+    try {
+      const { base44 } = await import('@/api/base44Client');
+      const user = await base44.auth.me();
+      if (user) {
+        await base44.auth.updateMe({
+          ...user,
+          terms_accepted: true,
+          terms_accepted_date: new Date().toISOString()
+        });
+      }
+    } catch (e) {
+      // ignore
+    }
   };
 
   return (
