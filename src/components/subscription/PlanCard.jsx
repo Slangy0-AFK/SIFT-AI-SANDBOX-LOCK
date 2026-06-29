@@ -69,17 +69,12 @@ export default function PlanCard({ planKey, billingCycle, currentPlan, onSelect,
       <div className="mb-5">
         <h3 className={`font-mono text-lg font-bold ${plan.color} tracking-wider`}>{plan.name}</h3>
         <div className="mt-2 flex items-end gap-1">
-          {betaMode ? (
-            <span className="font-mono text-3xl font-bold text-primary">Beta Access</span>
-          ) : price === 0 ? (
-            <span className="font-mono text-3xl font-bold text-foreground">Free for now</span>
+          {price === 0 ? (
+            <span className="font-mono text-3xl font-bold text-foreground">Free</span>
           ) : (
             <>
               <span className="font-mono text-3xl font-bold text-foreground">${price}</span>
-              <span className="font-mono text-xs text-muted-foreground mb-1">/mo</span>
-              {billingCycle === 'annual' && (
-                <span className="font-mono text-xs text-green-400 mb-1 ml-1">billed annually</span>
-              )}
+              <span className="font-mono text-xs text-muted-foreground mb-1">/{billingCycle === 'annual' ? 'yr' : 'mo'}</span>
             </>
           )}
         </div>
@@ -109,7 +104,7 @@ export default function PlanCard({ planKey, billingCycle, currentPlan, onSelect,
           }
         }}
       >
-        {isCurrentPlan ? 'Current Plan' : betaMode ? `Select ${plan.name} (Beta)` : (isUpgrade ? `Upgrade to ${plan.name}` : `Switch to ${plan.name}`)}
+        {isCurrentPlan ? 'Current Plan' : (isUpgrade ? `Upgrade to ${plan.name}` : `Switch to ${plan.name}`)}
       </Button>
     </motion.div>
   );

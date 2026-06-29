@@ -39,34 +39,19 @@ export default function SubscriptionPage() {
   const rawPlan = currentSub?.plan || 'free';
   const currentPlan = PLANS[rawPlan] ? rawPlan : (rawPlan === 'enterprise' ? 'pro' : 'free');
 
-  // BETA MODE - No payment processing
-  const handleBetaPlanSelect = (planKey) => {
-    // In beta mode, just update the plan locally without payment
-    const renewalDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    
-    if (currentSub) {
-      base44.entities.Subscription.update(currentSub.id, { 
-        plan: planKey, 
-        billing_cycle: 'monthly', 
-        status: 'trial',
-        renewal_date: renewalDate
-      }).then(() => {
-        queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
-        toast.success(`Beta access granted to ${planKey === 'pro' ? 'Pro' : 'Free'} plan!`);
-      });
-    } else {
-      base44.entities.Subscription.create({ 
-        user_id: user?.id, 
-        plan: planKey, 
-        billing_cycle: 'monthly', 
-        status: 'trial',
-        renewal_date: renewalDate
-      }).then(() => {
-        queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
-        toast.success(`Beta access granted to ${planKey === 'pro' ? 'Pro' : 'Free'} plan!`);
-      });
+  const checkoutMutation = useMutation({
+    mutationFn: async ({ planKey, billingCycle }) => {
+      const res = await base44.functions.invoke('create-checkout', { planKey, billingCycle });
+      if (res.data?.redirectUrl) {
+        window.location.href = res.data.redirectUrl;
+      } else {
+        throw new Error(res.data?.error || 'Failed to initiate checkout');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message);
     }
-  };
+  });
 
   const autoPayMutation = useMutation({
     mutationFn: async (enabled) => {
@@ -93,7 +78,11 @@ export default function SubscriptionPage() {
   };
 
   const handleSelectPlan = (planKey) => {
-    handleBetaPlanSelect(planKey);
+    if (planKey === 'free') {
+      toast.error("You are already on the Free plan.");
+      return;
+    }
+    checkoutMutation.mutate({ planKey, billingCycle });
   };
 
   const planColor = currentPlan === 'pro' ? 'text-primary' : 'text-muted-foreground';
@@ -113,35 +102,35 @@ export default function SubscriptionPage() {
       </div>
 
       {/* Current plan status */}
-      <Card className="border-2 border-primary/30">
+      <Card className={`border-2 ${currentPlan === 'pro' ? 'border-primary/30' : 'border-border'}`}>
         <CardContent className="pt-5 pb-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-xl bg-primary/10 border border-border">
-                <Shield className="w-6 h-6 text-primary" />
+                <Shield className={`w-6 h-6 ${planColor}`} />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm font-bold text-foreground">
-                    Beta Plan
+                  <span className="font-mono text-sm font-bold text-foreground uppercase">
+                    {PLANS[currentPlan]?.name || 'Free'} Plan
                   </span>
-                  <Badge className="font-mono text-xs bg-primary/10 text-primary border-primary/20 border">
+                  <Badge className={`font-mono text-xs ${currentPlan === 'pro' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-secondary text-muted-foreground border-border'} border`}>
                     ACTIVE
                   </Badge>
                 </div>
                 <div className="flex items-center gap-3 mt-1">
                   <span className="font-mono text-xs text-muted-foreground">
                     <Smartphone className="w-3 h-3 inline mr-1" />
-                    {activeDevices.length}/Unlimited devices used
+                    {activeDevices.length}/{maxDevices} devices used
                   </span>
                 </div>
               </div>
             </div>
             <div className="text-right">
               <div className="font-mono text-2xl font-bold text-foreground">
-                $0
+                ${PLANS[currentPlan]?.price?.[billingCycle] || 0}
               </div>
-              <div className="font-mono text-xs text-muted-foreground">per month</div>
+              <div className="font-mono text-xs text-muted-foreground">per {billingCycle === 'annual' ? 'year' : 'month'}</div>
             </div>
           </div>
         </CardContent>
@@ -162,21 +151,34 @@ export default function SubscriptionPage() {
       {/* Invitation Manager */}
       <InvitationManager subscription={currentSub} />
 
-      {/* Beta Mode Notice */}
-      <Card className="border-primary/30 bg-primary/5">
-        <CardHeader>
-          <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2 text-primary">
-            <Shield className="w-4 h-4" /> STRICTLY BETA MODE
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="font-mono text-xs text-muted-foreground leading-relaxed">
-            SIFT-AI is currently in strict beta testing. Your account has full, unrestricted access to all features — including Zero-Day, Threat Intel, and Threat Scanner — at no cost.
-          </p>
-        </CardContent>
-      </Card>
+      {/* Plans Selection */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-mono text-lg font-bold tracking-wide">Available Plans</h2>
+        <div className="flex items-center gap-3 bg-secondary/50 p-1.5 rounded-lg border border-border">
+          <span className={`font-mono text-xs ${billingCycle === 'monthly' ? 'text-foreground font-bold' : 'text-muted-foreground'}`}>Monthly</span>
+          <button 
+            onClick={() => setBillingCycle(b => b === 'monthly' ? 'annual' : 'monthly')}
+            className="text-primary hover:text-primary/80 transition-colors"
+          >
+            {billingCycle === 'monthly' ? <ToggleLeft className="w-6 h-6" /> : <ToggleRight className="w-6 h-6" />}
+          </button>
+          <span className={`font-mono text-xs ${billingCycle === 'annual' ? 'text-foreground font-bold' : 'text-muted-foreground'}`}>Annual</span>
+        </div>
+      </div>
 
-      {/* Plans hidden for beta */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {Object.keys(PLANS).map(key => (
+          <PlanCard
+            key={key}
+            planKey={key}
+            billingCycle={billingCycle}
+            currentPlan={currentPlan}
+            onSelect={handleSelectPlan}
+            loading={checkoutMutation.isPending}
+            betaMode={false}
+          />
+        ))}
+      </div>
 
       {/* Support Center */}
       <SupportCenter />

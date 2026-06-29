@@ -20,7 +20,8 @@
         "active",
         "cancelled",
         "expired",
-        "trial"
+        "trial",
+        "pending"
       ],
       "default": "active"
     },
@@ -45,6 +46,12 @@
       "type": "string"
     },
     "play_store_order_id": {
+      "type": "string"
+    },
+    "checkout_session_id": {
+      "type": "string"
+    },
+    "wix_subscription_id": {
       "type": "string"
     },
     "description": {
