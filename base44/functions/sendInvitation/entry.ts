@@ -12,14 +12,13 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     
     // Authenticate user
-    // Allow: scheduler secret header, entity automation, or authenticated user
+    // Allow: scheduler secret header or authenticated user
     const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
-    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
 
     let user = null;
-    if (!isScheduler && !isAutomation) {
+    if (!isScheduler) {
       user = await base44.auth.me().catch(() => null);
       if (!user) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -130,7 +129,7 @@ Deno.serve(async (req) => {
           day: 'numeric' 
         })}
       </p>
-      ${notes ? `<p style="margin: 15px 0 5px 0; color: #4a5568; font-size: 14px;"><strong>Message:</strong></p><p style="color: #718096; font-style: italic; margin: 0;">"${notes}"</p>` : ''}
+      ${notes ? `<p style="margin: 15px 0 5px 0; color: #4a5568; font-size: 14px;"><strong>Message:</strong></p><p style="color: #718096; font-style: italic; margin: 0;">"${notes.replace(/</g, '&lt;').replace(/>/g, '&gt;')}"</p>` : ''}
     </div>
 
     <p style="color: #4a5568; line-height: 1.6; margin: 20px 0;">

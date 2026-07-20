@@ -3,14 +3,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    // Allow: scheduler secret header, entity automation, or authenticated user
+    // Allow: scheduler secret header or authenticated user
     const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
-    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
 
     let user = null;
-    if (!isScheduler && !isAutomation) {
+    if (!isScheduler) {
       user = await base44.auth.me().catch(() => null);
       if (!user) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -43,7 +42,7 @@ Deno.serve(async (req) => {
       <p><strong>Agent Type:</strong> ${threat.agent_type?.toUpperCase()}</p>
       <p><strong>Detected:</strong> ${new Date(threat.created_date).toLocaleString()}</p>
       <hr/>
-      <p><strong>Notes:</strong> ${threat.notes || 'No additional notes'}</p>
+      <p><strong>Notes:</strong> ${(threat.notes || 'No additional notes').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
       <br/>
       <p style="color: #666; font-size: 12px;">This is an automated alert from Aegis Quantum Shield.</p>
     `;
