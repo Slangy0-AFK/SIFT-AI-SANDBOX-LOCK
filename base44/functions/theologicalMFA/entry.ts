@@ -94,7 +94,7 @@ async function getStrike(base44Client, sourceId) {
   const windowStart = new Date(Date.now() - 30 * 60 * 1000).toISOString();
   const records = await base44Client.asServiceRole.entities.SecurityEvent.filter({
     event_type: 'qrng_cycle',
-    details: { $regex: `strike_${sourceId}` },
+    details: `strike_${sourceId}`,
   }).catch(() => []);
   const recent = records.filter((r) => r.created_date > windowStart);
   const count = recent.length;
