@@ -134,7 +134,7 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Server misconfiguration: AUTH_CHALLENGE_ANSWER not set' }, { status: 500 });
   }
 
-  const sourceId = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown';
+  const sourceId = req.headers.get('x-real-ip') || 'unknown';
 
   try {
     const rawBody = await req.text();
@@ -231,10 +231,9 @@ Deno.serve(async (req) => {
     const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
-    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
 
     let user = null;
-    if (!isScheduler && !isAutomation) {
+    if (!isScheduler) {
       user = await base44.auth.me().catch(() => null);
       if (!user) {
         return Response.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });

@@ -2,12 +2,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
-    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
     const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
 
-    if (!isAutomation && !isScheduler) {
+    if (!isScheduler) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
