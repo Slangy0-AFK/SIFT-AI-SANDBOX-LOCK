@@ -9,17 +9,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Method not allowed' }, { status: 405 });
     }
 
-    // Security validation: Require authentication or scheduler/automation bypass
+    // Security validation: Require authentication or scheduler bypass
     const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
-    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
 
     let user = null;
-    if (!isScheduler && !isAutomation) {
+    if (!isScheduler) {
       user = await base44.auth.me().catch(() => null);
-      if (!user) {
-        return Response.json({ error: 'Unauthorized: Authentication required to interact with decoys' }, { status: 401 });
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'Unauthorized: Admin authentication required to interact with decoys' }, { status: 403 });
       }
     }
     

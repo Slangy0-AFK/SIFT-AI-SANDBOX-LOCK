@@ -14,8 +14,13 @@ Deno.serve(async (req) => {
     }
     
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me().catch(() => null);
+
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'Unauthorized: Admin access required for global telemetry' }, { status: 403 });
+    }
     
-    // Fetch telemetry securely for public demo pages using parallel promises
+    // Fetch telemetry securely for demo pages using parallel promises
     const [honeypotSessions, securityEvents, stats] = await Promise.all([
       base44.asServiceRole.entities.HoneypotSession.filter({ status: { $in: ['active', 'completed'] } }, '-created_date', 100).catch(() => []),
       base44.asServiceRole.entities.SecurityEvent.filter({
