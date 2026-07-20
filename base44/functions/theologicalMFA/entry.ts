@@ -399,7 +399,7 @@ Deno.serve(async (req) => {
             notes: `Automated client responded "${response}" without valid ZKP. Strike 3 neutralization executed.`,
           }).catch(() => null);
 
-          await base44.functions.invoke('autoBlockIp', {
+          await base44.asServiceRole.functions.invoke('autoBlockIp', {
             source_ip: sourceId,
             threat_id: anomaly?.id || `theological-zkp-fail-${sourceId}-${Date.now()}`,
             reason: 'Auto-blocked after 3 QRNG cycles failed agent authentication',
