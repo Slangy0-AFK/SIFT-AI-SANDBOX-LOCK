@@ -41,13 +41,12 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Allow: scheduler secret header, entity automation, or authenticated admin
+    // Allow: scheduler secret header or authenticated admin
     const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
     const providedSecret = req.headers.get('x-scheduler-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
-    const isAutomation = req.headers.get('x-automation-id') != null || req.headers.get('x-entity-automation') != null;
 
-    if (!isScheduler && !isAutomation) {
+    if (!isScheduler) {
       const user = await base44.auth.me().catch(() => null);
       if (!user || user.role !== 'admin') {
         return Response.json({ error: 'Forbidden: Admin access or scheduler secret required' }, { status: 403 });
