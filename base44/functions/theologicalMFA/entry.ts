@@ -134,7 +134,8 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Server misconfiguration: AUTH_CHALLENGE_ANSWER not set' }, { status: 500 });
   }
 
-  const sourceId = req.headers.get('x-real-ip') || 'unknown';
+  const sourceIdRaw = req.headers.get('x-real-ip') || 'unknown';
+  const sourceId = sourceIdRaw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
   try {
     const rawBody = await req.text();
