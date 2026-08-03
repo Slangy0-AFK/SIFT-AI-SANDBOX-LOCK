@@ -117,9 +117,10 @@ function ThreatScannerSection({ threats, refetchThreats }) {
 }
 
 const quickLinks = [
-  { path: '/paradox-gate', icon: ShieldCheck, label: 'Run Gate Test', color: 'text-primary' },
-  { path: '/zero-day', icon: Radiation, label: 'Evaluation Logs', color: 'text-fuchsia-400' },
-  { path: '/mirror-env', icon: Bug, label: 'Decoy Config', color: 'text-green-400' },
+  { path: '/zero-day', icon: Radiation, label: 'Zero-Day', color: 'text-fuchsia-400' },
+  { path: '/threat-intel', icon: ShieldAlert, label: 'Threat Intel', color: 'text-fuchsia-400' },
+  { path: '/firewall', icon: Shield, label: 'Firewall', color: 'text-primary' },
+  { path: '/mirror-env', icon: Bug, label: 'Mirror Env', color: 'text-green-400' },
 ];
 
 export default function Dashboard() {
@@ -196,12 +197,12 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="font-mono text-lg md:text-xl font-bold tracking-wider text-foreground">MODEL TESTING COMMAND CENTER</h1>
+          <h1 className="font-mono text-lg md:text-xl font-bold tracking-wider text-foreground">COMMAND CENTER</h1>
           <p className="font-mono text-xs md:text-xs text-muted-foreground tracking-widest mt-0.5">
-            SIFT-AI QUANTUM SHIELD — AI EVALUATION SANDBOX
+            SIFT-AI QUANTUM SHIELD — ENTERPRISE SECURITY MATRIX
           </p>
           <p className="mt-2 font-mono text-xs text-muted-foreground max-w-2xl">
-            Testing environment active: track LLM logical evaluation runs, decoy interactions, and adversarial agent containment performance in real-time.
+            Total security mode: live zero-day detection, AI adversarial containment, and automated firewall block events are actively protecting customer environments.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -234,16 +235,25 @@ export default function Dashboard() {
 
       {/* Stats — 2x2 on mobile, 4-col on desktop */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <ThreatCounter label="Active Tests" value={activeThreats.length} color="text-fuchsia-400" icon={AlertTriangle} />
-        <ThreatCounter label="Trapped Agents" value={lockedThreats.length} color="text-amber-400" icon={Lock} />
-        <ThreatCounter label="Failed Evaluations" value={destroyedThreats.length} color="text-destructive" icon={Skull} />
-        <ThreatCounter label="Sandbox Isolations" value={blockedEvents.length} color="text-teal-400" icon={ShieldAlert} />
+        <ThreatCounter label="Active Threats" value={activeThreats.length} color="text-fuchsia-400" icon={AlertTriangle} />
+        <ThreatCounter label="Locked Out" value={lockedThreats.length} color="text-amber-400" icon={Lock} />
+        <ThreatCounter label="Destroyed" value={destroyedThreats.length} color="text-destructive" icon={Skull} />
+        <ThreatCounter label="Firewall Blocks" value={blockedEvents.length} color="text-teal-400" icon={ShieldAlert} />
       </div>
+
+      {/* Predictive Risk Score */}
+      <PredictiveRiskScore threats={threats} events={events} anomalies={anomalies} />
 
       {/* Real-Time Tracker */}
       <RealTimeTracker />
 
-      {/* Live Model Testing Feed — integrated signals from all tools */}
+      {/* VirusTotal Scanner */}
+      <VirusTotalScanner />
+
+      {/* Threat Scanner Section */}
+      <ThreatScannerSection threats={threats} refetchThreats={refetchThreats} />
+
+      {/* Live Customer Threat Feed — integrated signals from all tools */}
       <CustomerThreatFeed
         threats={threats}
         events={events}

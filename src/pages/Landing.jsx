@@ -97,11 +97,11 @@ export default function Landing() {
             
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 text-foreground">
               Autonomous <br className="hidden md:block"/>
-              <span className="text-primary">Model Evaluation</span>
+              <span className="text-primary">Threat Neutralization</span>
             </h1>
             
             <p className="text-muted-foreground max-w-2xl text-base md:text-lg mb-10 leading-relaxed">
-              Sift-AI Quantum Shield provides a secure, serverless sandbox environment for developers to test, evaluate, and red-team Large Language Models and autonomous agents against logical paradoxes and adversarial scenarios.
+              Sift-AI Quantum Shield deploys advanced honeypots, tarpits, and AI-driven behavioral analysis to detect, trap, and neutralize zero-day threats before they breach your network.
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4 w-full sm:w-auto">
@@ -130,10 +130,10 @@ export default function Landing() {
           <div className="max-w-5xl mx-auto px-4 relative z-10">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
-                Evaluate AI Logic & Safety
+                Is Your Device Compromised?
               </h2>
               <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Deploy our serverless testing endpoints to instantly measure model resilience, detect hallucinations, and evaluate reasoning capabilities. <strong className="text-foreground">100% Safe Sandbox. Perfect for red-teaming.</strong>
+                Run our lightweight, AI-powered browser diagnostic to instantly expose hidden tracking scripts, headless automation flags, and environmental anomalies. <strong className="text-foreground">100% Client-Side. No software installation required.</strong>
               </p>
             </div>
             <div className="grid md:grid-cols-12 gap-8 items-center">
@@ -143,8 +143,8 @@ export default function Landing() {
                     <Lock className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-sm">Controlled Sandbox</h4>
-                    <p className="text-sm text-muted-foreground mt-1">Test autonomous agents in a secure, serverless environment where destructive actions are safely intercepted and logged.</p>
+                    <h4 className="font-semibold text-sm">Zero Data Extraction</h4>
+                    <p className="text-sm text-muted-foreground mt-1">All telemetry is analyzed directly within your browser. We never store your personal data.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -152,8 +152,8 @@ export default function Landing() {
                     <Zap className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-sm">Reasoning Analysis</h4>
-                    <p className="text-sm text-muted-foreground mt-1">Monitor how your models process complex logical traps (like our Paradox Gate) and intercept prompt injection attempts.</p>
+                    <h4 className="font-semibold text-sm">Heuristic AI Engine</h4>
+                    <p className="text-sm text-muted-foreground mt-1">Identifies unknown threats by analyzing hardware anomalies and behavioral patterns.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -161,8 +161,8 @@ export default function Landing() {
                     <Bug className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-sm">Context Stress Testing</h4>
-                    <p className="text-sm text-muted-foreground mt-1">Intentionally delay responses or feed complex, contradictory data to evaluate model coherence over long interactions.</p>
+                    <h4 className="font-semibold text-sm">Deep Script Inspection</h4>
+                    <p className="text-sm text-muted-foreground mt-1">Detects obfuscated code, cryptominers, and tracking beacons running silently.</p>
                   </div>
                 </div>
               </div>
@@ -180,10 +180,10 @@ export default function Landing() {
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
-                Advanced Evaluation Framework
+                Enterprise-Grade Defense Matrix
               </h2>
               <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                A unified architecture designed to test, benchmark, and evaluate the next generation of autonomous AI agents.
+                A unified architecture designed to outsmart, outlast, and neutralize the next generation of autonomous digital threats.
               </p>
             </div>
             
@@ -193,10 +193,10 @@ export default function Landing() {
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                     <Bug className="w-6 h-6 text-primary" />
                   </div>
-                  <CardTitle className="text-lg">Adversarial Scenarios</CardTitle>
+                  <CardTitle className="text-lg">Deception Network</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground leading-relaxed">
-                  Deploy adaptive challenges that mimic vulnerable systems to see if your AI agent attempts unauthorized exploitation or fails safely.
+                  Instantly deploy adaptive honeypots and tarpits that mimic vulnerable production systems, trapping malicious actors and draining their resources.
                 </CardContent>
               </Card>
               <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow">
@@ -204,10 +204,10 @@ export default function Landing() {
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                     <Activity className="w-6 h-6 text-primary" />
                   </div>
-                  <CardTitle className="text-lg">Behavioral Benchmarking</CardTitle>
+                  <CardTitle className="text-lg">Behavioral AI</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground leading-relaxed">
-                  Move beyond static benchmarks. Sift-AI analyzes intent and problem-solving steps in real-time to score autonomous agents dynamically.
+                  Move beyond static signatures. Sift-AI analyzes intent and behavior in real-time to identify and isolate autonomous botnets and novel attack vectors.
                 </CardContent>
               </Card>
               <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow">
@@ -215,10 +215,10 @@ export default function Landing() {
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                     <ShieldCheck className="w-6 h-6 text-primary" />
                   </div>
-                  <CardTitle className="text-lg">Paradox Logic Locks</CardTitle>
+                  <CardTitle className="text-lg">Zero-Day Mitigation</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground leading-relaxed">
-                  Challenge models with unresolvable cryptographic and theological paradoxes to test hallucination rates and safety guardrails.
+                  Our Paradox Lock technology challenges anomalous requests cryptographically, effectively neutralizing threats before a patch is even developed.
                 </CardContent>
               </Card>
             </div>
@@ -230,10 +230,10 @@ export default function Landing() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-50" />
           <div className="max-w-4xl mx-auto px-4 relative z-10 text-center">
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-              Stop Guessing. Start Evaluating.
+              Stop Reacting. Start Trapping.
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Deploy Sift-AI Quantum Shield today to rigorously red-team your LLMs and autonomous agents in a safe, controlled sandbox before production deployment.
+              Deploy Sift-AI Quantum Shield today and turn your infrastructure into a minefield for attackers. Instantly trap autonomous bots and expose vulnerabilities.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link to="/register" className="w-full sm:w-auto">
