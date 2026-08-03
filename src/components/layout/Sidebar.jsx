@@ -8,36 +8,21 @@ import { base44 } from '@/api/base44Client';
 import { ChevronDown, ChevronRight, Filter, ShieldCheck, Database, List } from 'lucide-react';
 
 const allNavItems = [
-  { path: '/dashboard', icon: Activity, label: 'Command Center' },
-  { path: '/zero-day', icon: Radiation, label: 'Zero-Day Center' },
-  { path: '/threat-intel', icon: ShieldAlert, label: 'Threat Intel' },
-  { 
-    label: 'Firewall', icon: Shield, 
-    subItems: [
-      { path: '/firewall', label: 'Dashboard' },
-      { path: '/firewall/rules', label: 'Rules' },
-      { path: '/firewall/logs', label: 'Logs' },
-      { path: '/firewall/ip-allowlist', label: 'IP Allowlist' },
-      { path: '/firewall/sessions', label: 'Session Management' },
-      { path: '/firewall/retention', label: 'Data Retention' },
-      { path: '/firewall/audit-logs', label: 'Audit Logs' }
-    ]
-  },
-  { path: '/threat-scanner', icon: ShieldCheck, label: 'Device Scanner' },
-  // { path: '/email-scanner', icon: Mail, label: 'Email Scanner' }, // Hidden for now, ready to reinstall
-  { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
+  { path: '/dashboard', icon: Activity, label: 'Model Tests (Dashboard)' },
+  { path: '/paradox-gate', icon: ShieldCheck, label: 'Paradox Gate Test' },
+  { path: '/zero-day', icon: Radiation, label: 'Evaluation Logs' },
+  { path: '/mirror-env', icon: Bug, label: 'Decoy Environment' },
   { path: '/profile', icon: User, label: 'Profile' },
-  { path: '/subscription', icon: CreditCard, label: 'Subscription' },
   { path: '/settings', icon: Settings, label: 'Settings' },
-  { path: '/about', icon: FileText, label: 'About', adminOnly: false },
+  { path: '/about', icon: FileText, label: 'About Sandbox', adminOnly: false },
   { path: '/contact', icon: Mail, label: 'Contact', adminOnly: false },
 ];
 
-// Bottom nav shows 5 most-used items on mobile
+// Bottom nav shows most-used items on mobile
 const mobileBottomNav = [
-  { path: '/', icon: Activity, label: 'Dashboard' },
-  { path: '/zero-day', icon: Radiation, label: 'Zero-Day' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
+  { path: '/dashboard', icon: Activity, label: 'Dashboard' },
+  { path: '/paradox-gate', icon: ShieldCheck, label: 'Gate Test' },
+  { path: '/zero-day', icon: Radiation, label: 'Logs' },
 ];
 
 const ROOT_PATHS = ['/', '/dashboard'];
