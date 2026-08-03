@@ -130,10 +130,10 @@ export default function Landing() {
           <div className="max-w-5xl mx-auto px-4 relative z-10">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
-                Is Your Device Compromised?
+                Are Your Web APIs Under Attack?
               </h2>
               <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Run our lightweight, AI-powered browser diagnostic to instantly expose hidden tracking scripts, headless automation flags, and environmental anomalies. <strong className="text-foreground">100% Client-Side. No software installation required.</strong>
+                Deploy our serverless decoy endpoints to instantly trap credential stuffing, headless automation flags, and malicious payloads. <strong className="text-foreground">100% Serverless. Immune to OS-level backdoors.</strong>
               </p>
             </div>
             <div className="grid md:grid-cols-12 gap-8 items-center">
@@ -143,8 +143,8 @@ export default function Landing() {
                     <Lock className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-sm">Zero Data Extraction</h4>
-                    <p className="text-sm text-muted-foreground mt-1">All telemetry is analyzed directly within your browser. We never store your personal data.</p>
+                    <h4 className="font-semibold text-sm">OS-Level Immunity</h4>
+                    <p className="text-sm text-muted-foreground mt-1">Our serverless architecture means uploaded malware and backdoors cannot execute. It's a dead end for attackers.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -152,8 +152,8 @@ export default function Landing() {
                     <Zap className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-sm">Heuristic AI Engine</h4>
-                    <p className="text-sm text-muted-foreground mt-1">Identifies unknown threats by analyzing hardware anomalies and behavioral patterns.</p>
+                    <h4 className="font-semibold text-sm">Payload Capture & AI</h4>
+                    <p className="text-sm text-muted-foreground mt-1">Silently intercepts malicious HTTP requests and feeds them to our LLM for instant threat classification.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -161,8 +161,8 @@ export default function Landing() {
                     <Bug className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-sm">Deep Script Inspection</h4>
-                    <p className="text-sm text-muted-foreground mt-1">Detects obfuscated code, cryptominers, and tracking beacons running silently.</p>
+                    <h4 className="font-semibold text-sm">API Tarpitting</h4>
+                    <p className="text-sm text-muted-foreground mt-1">Intentionally delays connections to exhaust automated scanners and credential-stuffing botnets.</p>
                   </div>
                 </div>
               </div>
