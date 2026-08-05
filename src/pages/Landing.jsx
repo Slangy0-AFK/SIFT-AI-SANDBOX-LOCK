@@ -66,14 +66,9 @@ export default function Landing() {
             <Link to="/mirror-demo" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
               Mirror Demo
             </Link>
-            <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">About</Link>
-            <Link to="/contact" className="text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
           </nav>
           
           <div className="flex items-center gap-3">
-            <Link to="/login" className="hidden sm:block">
-              <Button variant="ghost" size="sm" className="font-medium text-sm">Login</Button>
-            </Link>
             <Link to="/register">
               <Button size="sm" className="font-medium text-sm">Get Protected</Button>
             </Link>
@@ -260,9 +255,7 @@ export default function Landing() {
             <span className="text-sm text-muted-foreground font-medium">Sift-AI Quantum Shield &copy; 2026</span>
           </div>
           <div className="flex gap-6 text-sm font-medium text-muted-foreground">
-            <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
-            <Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link>
-            <Link to="/login" className="hover:text-foreground transition-colors">Login</Link>
+            {/* Links moved to app sidebar */}
           </div>
         </div>
       </footer>
