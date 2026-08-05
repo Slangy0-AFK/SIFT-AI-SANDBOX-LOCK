@@ -4,10 +4,10 @@ import jwt from "npm:jsonwebtoken";
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const WEBHOOK_PUBLIC_KEY = Deno.env.get("WIX_PAYMENTS_WEBHOOK_PUBLIC_KEY");
+    const WEBHOOK_PUBLIC_KEY = Deno.env.get("WIX_CHECKOUT_WEBHOOK_PUBLIC_KEY") || Deno.env.get("WIX_PAYMENTS_WEBHOOK_PUBLIC_KEY");
     
     if (!WEBHOOK_PUBLIC_KEY) {
-      console.error("Missing WIX_PAYMENTS_WEBHOOK_PUBLIC_KEY");
+      console.error("Missing WIX_CHECKOUT_WEBHOOK_PUBLIC_KEY");
       return Response.json({ error: "Configuration Error" }, { status: 500 });
     }
 

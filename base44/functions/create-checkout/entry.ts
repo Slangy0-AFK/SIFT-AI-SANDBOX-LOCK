@@ -32,7 +32,11 @@ Deno.serve(async (req) => {
       frequency = "YEAR";
     }
 
-    const origin = req.headers.get("Origin") || "https://myapp.com";
+    const appUrl = req.headers.get("X-Base44-App-Url") || Deno.env.get("WIX_CHECKOUT_APP_URL");
+    
+    if (!appUrl) {
+      return Response.json({ error: "App URL not configured" }, { status: 500 });
+    }
 
     const response = await fetch(
       "https://www.wixapis.com/payments/platform/v1/checkout-sessions/construct",
@@ -66,8 +70,8 @@ Deno.serve(async (req) => {
             }
           },
           callbackUrls: {
-            postFlowUrl: `${origin}/subscription`,
-            thankYouPageUrl: `${origin}/dashboard`
+            postFlowUrl: `${appUrl}/subscription`,
+            thankYouPageUrl: `${appUrl}/dashboard`
           }
         }),
       }

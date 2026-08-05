@@ -95,7 +95,7 @@ export default function SubscriptionPage() {
         <div>
           <h1 className="font-mono text-xl font-bold tracking-wider text-foreground">SUBSCRIPTION</h1>
           <p className="font-mono text-xs text-muted-foreground tracking-widest mt-1">
-            PLANS · DEVICES · BILLING VIA GOOGLE PLAY
+            PLANS · DEVICES · BILLING
           </p>
         </div>
 
