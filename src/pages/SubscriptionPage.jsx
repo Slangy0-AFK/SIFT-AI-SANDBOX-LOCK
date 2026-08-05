@@ -41,7 +41,7 @@ export default function SubscriptionPage() {
 
   const checkoutMutation = useMutation({
     mutationFn: async ({ planKey, billingCycle }) => {
-      const res = await base44.functions.invoke('create-checkout', { planKey, billingCycle });
+      const res = await base44.functions.invoke('stripeCheckout', { planKey, billingCycle });
       if (res.data?.redirectUrl) {
         window.location.href = res.data.redirectUrl;
       } else {
