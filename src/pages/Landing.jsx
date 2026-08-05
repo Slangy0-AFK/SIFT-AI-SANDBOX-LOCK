@@ -69,9 +69,7 @@ export default function Landing() {
           </nav>
           
           <div className="flex items-center gap-3">
-            <Link to="/register">
-              <Button size="sm" className="font-medium text-sm">Get Protected</Button>
-            </Link>
+            {/* Registration removed for now */}
           </div>
         </div>
       </header>
@@ -108,11 +106,6 @@ export default function Landing() {
               <Link to="/paradox-gate?guest=true" className="w-full sm:w-auto">
                 <Button size="lg" variant="outline" className="w-full font-medium gap-2 h-12 px-8 transition-all">
                   Enter Paradox Gate <Lock className="w-4 h-4" />
-                </Button>
-              </Link>
-              <Link to="/register" className="w-full sm:w-auto">
-                <Button size="lg" variant="secondary" className="w-full font-medium gap-2 h-12 px-8">
-                  Start Free Trial <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -231,14 +224,9 @@ export default function Landing() {
               Deploy Sift-AI Quantum Shield today and turn your infrastructure into a minefield for attackers. Instantly trap autonomous bots and expose vulnerabilities.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link to="/register" className="w-full sm:w-auto">
+              <Link to="/mirror-demo?guest=true" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full h-14 px-8 text-base font-semibold">
-                  Get Protected Now <ShieldCheck className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
-              <Link to="/contact" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full h-14 px-8 text-base bg-transparent">
-                  Contact Enterprise Sales
+                  Launch Mirror Demo <Activity className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
             </div>
