@@ -35,7 +35,7 @@ const allNavItems = [
 
 // Bottom nav shows 5 most-used items on mobile
 const mobileBottomNav = [
-  { path: '/', icon: Activity, label: 'Dashboard' },
+  { path: '/dashboard', icon: Activity, label: 'Dashboard' },
   { path: '/zero-day', icon: Radiation, label: 'Zero-Day' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];

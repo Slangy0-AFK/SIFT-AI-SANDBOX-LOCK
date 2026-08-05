@@ -267,34 +267,7 @@ export default function Landing() {
         </div>
       </footer>
 
-      {/* Visitor Counter */}
-      <AnimatePresence>
-        {stats.visits !== null && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="fixed bottom-6 left-6 z-50 bg-card border border-border rounded-full px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 shadow-sm"
-          >
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-semibold text-foreground">{stats.visits.toLocaleString()}</span>
-              <span className="text-xs text-muted-foreground font-medium hidden sm:inline">Visitors</span>
-            </div>
-            <div className="hidden sm:block w-px h-4 bg-border" />
-            <div className="flex items-center gap-2">
-              <ScanLine className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-semibold text-foreground">{stats.scans?.toLocaleString() || 0}</span>
-              <span className="text-xs text-muted-foreground font-medium hidden sm:inline">Scans Run</span>
-            </div>
-            <div className="hidden sm:block w-px h-4 bg-border" />
-            <div className="flex items-center gap-2">
-              <Lock className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-semibold text-foreground">{stats.paradoxTries?.toLocaleString() || 0}</span>
-              <span className="text-xs text-muted-foreground font-medium hidden sm:inline">Gate Tries</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
       </div>
     </div>
   );
