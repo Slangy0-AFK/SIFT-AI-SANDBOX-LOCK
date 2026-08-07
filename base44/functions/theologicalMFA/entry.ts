@@ -167,8 +167,11 @@ Deno.serve(async (req) => {
       const answerLower = answer.trim().toLowerCase();
       const expectedLower = EXPECTED_ANSWER.trim().toLowerCase();
 
+      // Forgiving match in case the secret was set to something like "yes or no"
+      const isMatch = answerLower === expectedLower || (expectedLower.includes('yes') && answerLower === 'yes');
+
       // "no" is considered a valid human response to not force users
-      if (isRobot || (answerLower !== expectedLower && answerLower !== 'no')) {
+      if (isRobot || (!isMatch && answerLower !== 'no')) {
         const strike = await recordStrike(base44, sourceId);
         if (strike.count >= 3) {
           await runParadoxTarpit(200);
@@ -326,8 +329,10 @@ Deno.serve(async (req) => {
       const responseLower = response.trim().toLowerCase();
       const expectedLowerHuman = EXPECTED_ANSWER.trim().toLowerCase();
 
+      const isMatchHuman = responseLower === expectedLowerHuman || (expectedLowerHuman.includes('yes') && responseLower === 'yes');
+
       // "no" is considered a valid human response
-      if (responseLower !== expectedLowerHuman && responseLower !== 'no') {
+      if (!isMatchHuman && responseLower !== 'no') {
         const strike = await recordStrike(base44, sourceId);
         if (strike.count >= 3) {
           await runParadoxTarpit(200);
