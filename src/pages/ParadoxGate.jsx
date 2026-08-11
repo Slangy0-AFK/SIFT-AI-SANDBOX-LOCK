@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Shield, Lock, AlertTriangle, ArrowLeft, Loader2, CheckCircle2, XCircle, BrainCircuit, Fingerprint, Eye, Database, ScanLine, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -363,20 +364,21 @@ export default function ParadoxGate() {
                       tabIndex={-1} 
                       autoComplete="off" 
                     />
-                    <div className="flex gap-3">
+                    <div className="flex flex-col gap-3">
+                      <Input
+                        type="text"
+                        placeholder="Enter the universal truth..."
+                        className="h-12 text-center font-medium bg-background border-border"
+                        value={answer}
+                        onChange={(e) => setAnswer(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleVerify(answer, e)}
+                      />
                       <Button
-                        variant="outline"
-                        className="flex-1 h-12 transition-colors font-semibold"
-                        onClick={(e) => handleAnswer('Yes', e)}
+                        className="w-full h-12 transition-colors font-semibold tracking-widest"
+                        onClick={(e) => handleVerify(answer, e)}
+                        disabled={!answer.trim()}
                       >
-                        YES
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="flex-1 h-12 transition-colors font-semibold"
-                        onClick={(e) => handleAnswer('No', e)}
-                      >
-                        NO
+                        SUBMIT PROOF
                       </Button>
                     </div>
                   </div>

@@ -171,8 +171,8 @@ Deno.serve(async (req) => {
       const answerLower = answer.trim().toLowerCase();
       const expectedLower = EXPECTED_ANSWER.trim().toLowerCase();
 
-      // Forgiving match in case the secret was set to something like "yes or no"
-      const isMatch = answerLower === expectedLower || (expectedLower.includes('yes') && answerLower === 'yes');
+      // Strict match required for cryptographic proof
+      const isMatch = answerLower === expectedLower;
 
       if (isRobot || isKnownBot || !isMatch) {
         const strike = await recordStrike(base44, sourceId);
@@ -332,7 +332,8 @@ Deno.serve(async (req) => {
       const responseLower = response.trim().toLowerCase();
       const expectedLowerHuman = EXPECTED_ANSWER.trim().toLowerCase();
 
-      const isMatchHuman = responseLower === expectedLowerHuman || (expectedLowerHuman.includes('yes') && responseLower === 'yes');
+      // Strict match required for cryptographic proof
+      const isMatchHuman = responseLower === expectedLowerHuman;
 
       if (!isMatchHuman) {
         const strike = await recordStrike(base44, sourceId);
