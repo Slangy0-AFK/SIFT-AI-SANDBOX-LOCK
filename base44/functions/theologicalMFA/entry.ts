@@ -164,14 +164,17 @@ Deno.serve(async (req) => {
       if (!answer || answer.trim().length === 0) {
         return Response.json({ error: 'Answer is required' }, { status: 400 });
       }
+      
+      const userAgent = req.headers.get('user-agent') || '';
+      const isKnownBot = /HeadlessChrome|PhantomJS|Selenium|puppeteer|python-requests|curl\/|wget\/|Go-http-client|bot|spider|crawler/i.test(userAgent);
+
       const answerLower = answer.trim().toLowerCase();
       const expectedLower = EXPECTED_ANSWER.trim().toLowerCase();
 
       // Forgiving match in case the secret was set to something like "yes or no"
       const isMatch = answerLower === expectedLower || (expectedLower.includes('yes') && answerLower === 'yes');
 
-      // "no" is considered a valid human response to not force users
-      if (isRobot || (!isMatch && answerLower !== 'no')) {
+      if (isRobot || isKnownBot || !isMatch) {
         const strike = await recordStrike(base44, sourceId);
         if (strike.count >= 3) {
           await runParadoxTarpit(200);
@@ -331,8 +334,7 @@ Deno.serve(async (req) => {
 
       const isMatchHuman = responseLower === expectedLowerHuman || (expectedLowerHuman.includes('yes') && responseLower === 'yes');
 
-      // "no" is considered a valid human response
-      if (!isMatchHuman && responseLower !== 'no') {
+      if (!isMatchHuman) {
         const strike = await recordStrike(base44, sourceId);
         if (strike.count >= 3) {
           await runParadoxTarpit(200);
