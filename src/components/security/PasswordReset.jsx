@@ -14,12 +14,8 @@ export default function PasswordReset({ onClose }) {
 
   const requestResetMutation = useMutation({
     mutationFn: async (email) => {
-      const response = await base44.functions.invoke('passwordReset', {
-        action: 'request_reset',
-        email,
-      });
-      if (response.data?.error) throw new Error(response.data.error);
-      return response.data;
+      await base44.auth.resetPasswordRequest(email);
+      return true;
     },
     onSuccess: () => {
       toast.success('Password reset email sent. Check your inbox for the reset link.');
