@@ -7,7 +7,9 @@ Deno.serve(async (req) => {
     
     let users = [];
     const authHeader = req.headers.get('Authorization') || '';
-    const isScheduler = req.headers.get('x-base44-scheduler-secret') === Deno.env.get('SCHEDULER_SECRET') || req.headers.get('x-base44-scheduler') === 'true' || req.url.includes('automation');
+    const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
+    const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
+    const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
 
     const currentUser = await base44.auth.me().catch(() => null);
 
