@@ -11,6 +11,9 @@ Deno.serve(async (req) => {
     let user = null;
     if (!isScheduler) {
       user = await base44.auth.me().catch(() => null);
+      if (!user) {
+        return Response.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });
+      }
     }
     
     // Removed strict origin check to allow previews and valid cross-origin requests
