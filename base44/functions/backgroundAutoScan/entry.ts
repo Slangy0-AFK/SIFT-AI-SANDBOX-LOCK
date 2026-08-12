@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
     if (!isScheduler) {
       const user = await base44.auth.me().catch(() => null);
       if (!user || user.role !== 'admin') {
-        return Response.json({ error: 'Forbidden: Admin access or scheduler secret required' }, { status: 403 });
+        return Response.json({ error: 'Forbidden: Admin access or scheduler secret required' }, { status: 401 });
       }
     }
 

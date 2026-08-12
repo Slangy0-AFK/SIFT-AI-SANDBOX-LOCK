@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     if (!isScheduler) {
       user = await base44.auth.me().catch(() => null);
       if (!user || user.role !== 'admin') {
-        return Response.json({ error: 'Unauthorized: Admin authentication required to interact with decoys' }, { status: 403 });
+        return Response.json({ error: 'Unauthorized: Admin authentication required to interact with decoys' }, { status: 401 });
       }
     }
     

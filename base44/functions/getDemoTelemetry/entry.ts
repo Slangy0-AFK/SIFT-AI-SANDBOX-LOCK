@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me().catch(() => null);
 
     if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Unauthorized: Admin access required for global telemetry' }, { status: 403 });
+      return Response.json({ error: 'Unauthorized: Admin access required for global telemetry' }, { status: 401 });
     }
     
     // Fetch telemetry securely for demo pages using parallel promises
