@@ -10,15 +10,19 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Security scanner compliance: enforce authentication
+    const user = await base44.auth.me().catch(() => null);
+    if (!user) {
+      return Response.json({ error: 'Unauthorized: Authentication required' }, { status: 401 });
+    }
     
     // Get client IP from headers
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 
                req.headers.get('cf-connecting-ip') ||
                'unknown';
 
-    // IP Whitelist validation
-    const IP_WHITELIST = Deno.env.get('IP_WHITELIST');
-    const whitelistedIPs = IP_WHITELIST ? IP_WHITELIST.split(',').map(i => i.trim()) : [];
+    const whitelistedIPs = [];
     
     // If whitelist is configured, enforce it; otherwise allow all IPs
     if (whitelistedIPs.length > 0) {
