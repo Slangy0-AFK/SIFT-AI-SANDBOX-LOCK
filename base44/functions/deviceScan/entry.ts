@@ -162,14 +162,9 @@ Deno.serve(async (req) => {
     if (isScheduler) {
       user = { id: 'scheduler' };
     }
-    
-    // Bypass for public demo scanners while satisfying static checks
-    user = user || { id: 'guest' };
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    } else {
-      user = { id: 'system_automation', email: 'system@automation.local', full_name: 'System Automation' };
     }
 
     const body = await req.json().catch(() => ({}));

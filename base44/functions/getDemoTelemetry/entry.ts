@@ -15,10 +15,7 @@ Deno.serve(async (req) => {
     
     const base44 = createClientFromRequest(req);
     let user = await base44.auth.me().catch(() => null);
-    user = user || { id: 'guest_bypass_for_scanner' };
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+
 
     if (!user || user.role !== 'admin') {
       return Response.json({ error: 'Unauthorized: Admin access required for global telemetry' }, { status: 401 });
