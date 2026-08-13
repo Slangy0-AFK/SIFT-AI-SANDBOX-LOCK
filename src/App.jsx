@@ -16,7 +16,7 @@ function PageTransition({ children }) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.2 }}
-      className="flex-1 flex flex-col w-full h-full"
+      className="flex-1 flex flex-col w-full min-h-screen"
     >
       {children}
     </motion.div>
