@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     // Let's require auth since Subscription schema requires user_id.
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }, { status: 401 });
+    }
     }
 
     const body = await req.json();
