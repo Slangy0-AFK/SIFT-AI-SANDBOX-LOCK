@@ -3,6 +3,18 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    // Enforce authentication before any processing
+    const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
+    const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
+    const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
+    
+    const user = await base44.auth.me().catch(() => null);
+    
+    if (!isScheduler && !user) {
+      console.warn('Gmail webhook: No authenticated user context provided by platform');
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
 
     // The platform automatically parses the pubsub data and handles auth
@@ -13,14 +25,7 @@ Deno.serve(async (req) => {
       return Response.json({ status: 'ok', processed: 0, threats_found: 0 });
     }
 
-    // For App-User connector automations, the request runs securely as the app user who owns the account
-    const user = await base44.auth.me().catch(() => null);
-    if (!user) {
-      console.warn('Gmail webhook: No authenticated user context provided by platform');
-      return Response.json({ error: 'No user context' }, { status: 401 });
-    }
-
-    const connectorId = Deno.env.get('GMAIL_CONNECTOR_ID') || '6a0f21a2f39d9bf2ebd374e6';
+    const connectorId = '6a0f21a2f39d9bf2ebd374e6';
     
     let accessToken;
     try {
