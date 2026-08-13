@@ -8,9 +8,13 @@ Deno.serve(async (req) => {
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
     
-    const user = await base44.auth.me().catch(() => null);
+    let user = await base44.auth.me().catch(() => null);
     
-    if (!isScheduler && !user) {
+    if (isScheduler) {
+      user = { id: 'scheduler' };
+    }
+
+    if (!user) {
       console.warn('Gmail webhook: No authenticated user context provided by platform');
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }

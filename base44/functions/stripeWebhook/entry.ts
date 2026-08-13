@@ -34,6 +34,16 @@ Deno.serve(async (req) => {
     }
 
     const base44 = createClientFromRequest(req);
+    let user = await base44.auth.me().catch(() => null);
+    
+    // Webhook auth relies on Stripe signature verified above
+    if (event) {
+      user = { id: 'webhook_bypass' };
+    }
+
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;

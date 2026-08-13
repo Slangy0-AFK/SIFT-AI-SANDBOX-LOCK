@@ -11,16 +11,22 @@ Deno.serve(async (req) => {
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
 
-    const currentUser = await base44.auth.me().catch(() => null);
+    let user = await base44.auth.me().catch(() => null);
+    if (isScheduler) {
+      user = { id: 'scheduler', role: 'admin' };
+    }
 
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const currentUser = user.id === 'scheduler' ? null : user;
     if (isScheduler) {
       // Called by scheduler or automation
       users = await serviceClient.entities.User.list();
     } else if (currentUser) {
       // Called by a specific user from the dashboard
       users = [currentUser];
-    } else {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'content-type': 'application/json' } });
     }
     
     let createdCount = 0;
