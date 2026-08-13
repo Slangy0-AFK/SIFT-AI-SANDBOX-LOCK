@@ -99,6 +99,7 @@ Deno.serve(async (req) => {
 
     if (!isScheduler) {
       let user = await base44.auth.me().catch(() => null);
+    if (!user) { return Response.json({ error: 'Unauthorized' }, { status: 401 }); }
 
       if (!user || user.role !== 'admin') {
         return Response.json({ error: 'Forbidden: Admin access or scheduler secret required' }, { status: 401 });
