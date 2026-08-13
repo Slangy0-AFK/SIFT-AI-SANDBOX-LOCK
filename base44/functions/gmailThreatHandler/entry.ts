@@ -17,7 +17,6 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    }
 
     const body = await req.json();
 

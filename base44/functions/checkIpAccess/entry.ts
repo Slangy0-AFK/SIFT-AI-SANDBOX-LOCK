@@ -16,7 +16,6 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    }
     
     // Get client IP from headers
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 
