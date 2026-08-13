@@ -14,12 +14,17 @@ Deno.serve(async (req) => {
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
 
-    let user = null;
-    if (!isScheduler) {
-      user = await base44.auth.me().catch(() => null);
-      if (!user || user.role !== 'admin') {
-        return Response.json({ error: 'Unauthorized: Admin authentication required to interact with decoys' }, { status: 401 });
-      }
+    let user = await base44.auth.me().catch(() => null);
+    if (isScheduler) {
+      user = { id: 'scheduler', role: 'admin' };
+    }
+
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (user.role !== 'admin') {
+      return Response.json({ error: 'Unauthorized: Admin authentication required to interact with decoys' }, { status: 401 });
     }
     
     const body = await req.json();
