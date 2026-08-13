@@ -15,8 +15,8 @@ Deno.serve(async (req) => {
     }
 
     if (!user) {
-      console.warn('Gmail webhook: No authenticated user context provided by platform');
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }, { status: 401 });
     }
 
     const body = await req.json();

@@ -18,7 +18,8 @@ Deno.serve(async (req) => {
     // Although the prompt mentions that checkout can be public, if we need user.id to save the Subscription, we can either require auth or create a pending subscription without user (but Subscription schema requires user_id).
     // Let's require auth since Subscription schema requires user_id.
     if (!user) {
-      return Response.json({ error: 'Unauthorized: Authentication required to subscribe' }, { status: 401 });
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }, { status: 401 });
     }
 
     const body = await req.json();
