@@ -53,6 +53,18 @@ function getSecureEntropy() {
   return (buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3]) >>> 0;
 }
 
+// Base44 backend function
+async function getQuantumNonce() {
+  try {
+    const res = await fetch('https://qrng.anu.edu.au/API/jsonI.php?length=1&type=uint16');
+    const data = await res.json();
+    return data.data[0];
+  } catch (e) {
+    // fallback: crypto-secure, not quantum, but still unpredictable
+    return crypto.getRandomValues(new Uint16Array(1))[0];
+  }
+}
+
 function getQRNGDelayMs(baseMs = 500) {
   const entropy = getSecureEntropy();
   return baseMs + (entropy % 4500);
@@ -168,34 +180,58 @@ Deno.serve(async (req) => {
       const userAgent = req.headers.get('user-agent') || '';
       const isKnownBot = /HeadlessChrome|PhantomJS|Selenium|puppeteer|python-requests|curl\/|wget\/|Go-http-client|bot|spider|crawler/i.test(userAgent);
 
-      const answerLower = answer.trim().toLowerCase();
-      const expectedLower = EXPECTED_ANSWER.trim().toLowerCase();
-
-      // Strict match required for cryptographic proof
-      const isMatch = answerLower === expectedLower;
-
-      if (isRobot || isKnownBot || !isMatch) {
+      // Stages 1-5: Threat Intel, Rate Limit, Honeypot, Tarpit Checks
+      // We block on security signals (honeypot, bot UA), NOT on the theology answer.
+      if (isRobot || isKnownBot) {
         const strike = await recordStrike(base44, sourceId);
-        if (strike.count >= 3) {
+        
+        // Stage 5: Threat Intel (Fire and forget)
+        base44.asServiceRole.functions.invoke('checkVirusTotal', { ip: sourceId }).catch(() => {});
+        base44.asServiceRole.functions.invoke('checkAlienVault', { ip: sourceId }).catch(() => {});
+        
+        if (strike.count >= 5) {
           await runParadoxTarpit(200);
           await base44.asServiceRole.entities.SecurityEvent.create({
             event_type: 'threat_locked',
             severity: 'fatal',
-            details: `Strike 3 — Wrong gate answer from ${sourceId}. Lockout engaged.`,
+            details: `Strike 5 — Bot behavior from ${sourceId}. Lockout engaged.`,
             environment: 'tarpit',
           }).catch(() => {});
-          return Response.json({ locked: true, strike: 3, reason: 'Strike 3: Lockout engaged.' }, { status: 429 });
+          return Response.json({ locked: true, strike: 5, reason: 'Strike 5: Lockout engaged.' }, { status: 429 });
         }
         await new Promise((r) => setTimeout(r, strike.delay));
-        return Response.json({ success: false, strike: strike.count, message: `Incorrect answer. Strike ${strike.count}/3.` }, { status: 403 });
+        return Response.json({ success: false, strike: strike.count, message: `Security Check Failed. Strike ${strike.count}/5.` }, { status: 403 });
       }
-      const gateToken = createQrngPad(getSecureEntropy()) + createQrngPad(getSecureEntropy());
+
+      // Stage 6: Issue Token (using Quantum Nonce)
+      const nonce = await getQuantumNonce();
+      const gateToken = createQrngPad(nonce) + createQrngPad(getSecureEntropy());
+
+      // Stage 7: Theology Gate (Values-based UX)
+      const answerLower = answer.trim().toLowerCase();
+      const expectedLower = EXPECTED_ANSWER.trim().toLowerCase();
+      const isMatch = answerLower === expectedLower;
+
+      // Answer is logged but excluded from blocklist/security logic
+      await base44.asServiceRole.entities.SecurityEvent.create({
+        event_type: 'paradox_challenge',
+        severity: 'info',
+        details: `Theology gate answer provided by ${sourceId}. Answer: "${answer}". Match: ${isMatch}`,
+        environment: 'production',
+      }).catch(() => {});
+
+      if (!isMatch) {
+        // UX decline, but NO strikes applied
+        return Response.json({ success: false, message: `Incorrect answer.` }, { status: 403 });
+      }
+
       await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',
         details: `gate_token:${gateToken}:${Date.now() + 300000}`,
         environment: 'production',
       }).catch(() => {});
+      
       return Response.json({ success: true, gate_token: gateToken });
     }
 
@@ -331,38 +367,26 @@ Deno.serve(async (req) => {
 
       const responseLower = response.trim().toLowerCase();
       const expectedLowerHuman = EXPECTED_ANSWER.trim().toLowerCase();
-
-      // Strict match required for cryptographic proof
       const isMatchHuman = responseLower === expectedLowerHuman;
 
+      // Stage 7: Theology gate - Answer is logged but is not a security signal
+      await base44.asServiceRole.entities.SecurityEvent.create({
+        event_type: 'paradox_challenge',
+        severity: 'info',
+        details: `Theology gate answer (human auth): "${response}". Match: ${isMatchHuman}`,
+        environment: 'production',
+      }).catch(() => {});
+
       if (!isMatchHuman) {
-        const strike = await recordStrike(base44, sourceId);
-        if (strike.count >= 3) {
-          await runParadoxTarpit(200);
-          await base44.asServiceRole.entities.SecurityEvent.create({
-            event_type: 'threat_locked',
-            severity: 'fatal',
-            details: `Strike 3 — Wrong challenge answer from ${sourceId}. Possible AI malware. Lockout engaged.`,
-            environment: 'tarpit',
-          }).catch(() => {});
-          return Response.json({
-            locked: true,
-            strike: 3,
-            reason: 'Strike 3: Incorrect universal truth answer. Lockout engaged.',
-            restoration: 'Physical manual override required.',
-          }, { status: 429 });
-        }
-        await new Promise((r) => setTimeout(r, strike.delay));
+        // UX decline, but DO NOT apply strikes or tarpit
         return Response.json({
           success: false,
-          strike: strike.count,
-          message: `Incorrect answer. Strike ${strike.count}/3.`,
-          delay_ms: strike.delay,
+          message: `Incorrect answer.`,
         }, { status: 403 });
       }
 
       await clearStrikes();
-      const qrngPad = createQrngPad(getSecureEntropy());
+      const qrngPad = createQrngPad(await getQuantumNonce());
       await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',

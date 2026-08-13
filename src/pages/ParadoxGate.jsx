@@ -196,7 +196,7 @@ export default function ParadoxGate() {
     };
   }, []);
 
-  const isLocked = result?.locked || strikeCount >= 3;
+  const isLocked = result?.locked || strikeCount >= 5;
   const isSuccess = result?.success;
 
   return (
@@ -337,7 +337,7 @@ export default function ParadoxGate() {
 
                 {/* Strike Counter */}
                 <div className="flex justify-center items-center gap-3">
-                  {[1, 2, 3].map(s => (
+                  {[1, 2, 3, 4, 5].map(s => (
                     <div key={s} className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border transition-colors ${
                       strikeCount >= s 
                         ? 'bg-destructive/10 border-destructive text-destructive' 
@@ -404,7 +404,7 @@ export default function ParadoxGate() {
                         <p className={`text-sm font-bold tracking-wide ${isLocked ? 'text-destructive' : isSuccess ? 'text-green-500' : 'text-amber-500'}`}>
                           {isLocked ? 'ANOMALY DETECTED — PARADOX LOOP INITIATED' :
                            isSuccess ? 'GATE UNLOCKED' :
-                           `STRIKE ${result.strike || '?'} / 3 — LOGIC ERROR`}
+                           `STRIKE ${result.strike || '?'} / 5 — LOGIC ERROR`}
                         </p>
                         {isSuccess ? (
                           <div className="space-y-2">
@@ -494,7 +494,7 @@ export default function ParadoxGate() {
                               </Badge>
                             </div>
                             <div className="flex items-center gap-1 mt-1">
-                              {[1, 2, 3].map(s => (
+                              {[1, 2, 3, 4, 5].map(s => (
                                 <div key={s} className={`w-1.5 h-1.5 rounded-full ${
                                   session.strikes >= s 
                                     ? 'bg-destructive' 
@@ -502,7 +502,7 @@ export default function ParadoxGate() {
                                 }`} />
                               ))}
                               <span className="text-xs text-muted-foreground ml-2 font-medium">
-                                {session.strikes} / 3 Strikes
+                                {session.strikes} / 5 Strikes
                               </span>
                             </div>
                           </div>
