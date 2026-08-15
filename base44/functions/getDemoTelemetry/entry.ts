@@ -7,19 +7,18 @@ Deno.serve(async (req) => {
   try {
     const now = Date.now();
     
-    // Short 1.5-second in-memory cache to allow real-time UI polling (every 2-3s) 
-    // without hitting the DB too hard on concurrent requests.
-    if (cachedData && (now - lastFetch < 1500)) {
-      return Response.json(cachedData);
-    }
-    
     const base44 = createClientFromRequest(req);
     let user = await base44.auth.me().catch(() => null);
     if (!user) { return Response.json({ error: 'Unauthorized' }, { status: 401 }); }
 
-
-    if (!user || user.role !== 'admin') {
+    if (user.role !== 'admin') {
       return Response.json({ error: 'Unauthorized: Admin access required for global telemetry' }, { status: 401 });
+    }
+
+    // Short 1.5-second in-memory cache to allow real-time UI polling (every 2-3s) 
+    // without hitting the DB too hard on concurrent requests.
+    if (cachedData && (now - lastFetch < 1500)) {
+      return Response.json(cachedData);
     }
     
     // Fetch telemetry securely for demo pages using parallel promises
