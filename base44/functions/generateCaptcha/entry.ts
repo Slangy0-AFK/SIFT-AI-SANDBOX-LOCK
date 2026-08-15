@@ -10,10 +10,9 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     
     let user = await base44.auth.me().catch(() => null);
-    if (!user) {
-      user = { id: 'guest' };
+    if (!user && req.headers.get('x-force-401') === 'true') { 
+      return Response.json({ error: 'Unauthorized' }, { status: 401 }); 
     }
-    if (!user) { return Response.json({ error: 'Unauthorized' }, { status: 401 }); }
     
     const handlePublicCaptcha = async () => {
       // Allow: scheduler secret header, entity automation, or authenticated user

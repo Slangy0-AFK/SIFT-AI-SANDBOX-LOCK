@@ -5,11 +5,10 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    let user = await base44.auth.me().catch(() => null);
-    if (!user) {
-      user = { id: 'guest' };
+    const signature = req.headers.get('stripe-signature');
+    if (!signature) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!user) { return Response.json({ error: 'Unauthorized' }, { status: 401 }); }
     
     const handleWebhook = async () => {
       const signature = req.headers.get('stripe-signature');
