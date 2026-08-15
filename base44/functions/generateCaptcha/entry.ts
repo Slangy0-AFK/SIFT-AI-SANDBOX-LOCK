@@ -40,8 +40,7 @@ Deno.serve(async (req) => {
       // Create cryptographically signed token using HMAC-SHA256
       const encoder = new TextEncoder();
       const jsonString = JSON.stringify(tokenData);
-      // Use INTERNAL_SECRET or fallback
-      const secret = Deno.env.get('INTERNAL_SECRET') || 'default-secret-key-that-should-be-changed';
+      const secret = Deno.env.get('INTERNAL_SECRET');
       
       if (!secret) {
         return Response.json({ error: 'CAPTCHA signing not configured' }, { status: 500 });
