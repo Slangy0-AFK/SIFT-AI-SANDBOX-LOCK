@@ -195,18 +195,18 @@ Deno.serve(async (req) => {
         base44.asServiceRole.functions.invoke('checkVirusTotal', { ip: sourceId }).catch(() => {});
         base44.asServiceRole.functions.invoke('checkAlienVault', { ip: sourceId }).catch(() => {});
         
-        if (strike.count >= 5) {
+        if (strike.count >= 3) {
           await runParadoxTarpit(200);
           await base44.asServiceRole.entities.SecurityEvent.create({
             event_type: 'threat_locked',
             severity: 'fatal',
-            details: `Strike 5 — Bot behavior from ${sourceId}. Lockout engaged.`,
+            details: `Strike 3 — Bot behavior from ${sourceId}. Lockout engaged.`,
             environment: 'tarpit',
           }).catch(() => {});
-          return Response.json({ locked: true, strike: 5, reason: 'Strike 5: Lockout engaged.' }, { status: 429 });
+          return Response.json({ locked: true, strike: 3, reason: 'Strike 3: Lockout engaged.' }, { status: 429 });
         }
         await new Promise((r) => setTimeout(r, strike.delay));
-        return Response.json({ success: false, strike: strike.count, message: `Security Check Failed. Strike ${strike.count}/5.` }, { status: 403 });
+        return Response.json({ success: false, strike: strike.count, message: `Security Check Failed. Strike ${strike.count}/3.` }, { status: 403 });
       }
 
       // Stage 6: Issue Token (using Quantum Nonce)

@@ -36,6 +36,7 @@ export default function ParadoxGate() {
   const [captchaToken, setCaptchaToken] = useState('');
   const [loadingCaptcha, setLoadingCaptcha] = useState(true);
   const [honeypot, setHoneypot] = useState("");
+  const [timeLeft, setTimeLeft] = useState(300);
   const [paradoxStats, setParadoxStats] = useState({ 
     tries: 0, breaches: 0, 
     humanTries: 0, humanBreaches: 0, 
@@ -65,6 +66,24 @@ export default function ParadoxGate() {
       .catch(() => setChallenge('Is Jesus Christ your Lord and Savior?'))
       .finally(() => setLoadingChallenge(false));
   }, []);
+
+  // Timer countdown
+  useEffect(() => {
+    if (result?.locked || result?.success || strikeCount >= 3) return;
+    
+    if (timeLeft <= 0) {
+      setStrikeCount(3);
+      setResult({ locked: true, reason: 'Time expired. QRNG Lockout engaged.' });
+      toast.error('Time frame expired. You have been locked out.');
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft, result, strikeCount]);
 
   const handleVerify = async (selectedAnswer, e) => {
     setResult(null);
@@ -164,6 +183,7 @@ export default function ParadoxGate() {
     setCaptchaAnswer('');
     setCaptchaStage(true);
     setStrikeCount(0);
+    setTimeLeft(300);
     // Reload captcha
     setLoadingCaptcha(true);
     base44.functions.invoke('generateCaptcha')
@@ -246,7 +266,7 @@ export default function ParadoxGate() {
     };
   }, []);
 
-  const isLocked = result?.locked || strikeCount >= 5;
+  const isLocked = result?.locked || strikeCount >= 3;
   const isSuccess = result?.success;
 
   return (
@@ -404,7 +424,7 @@ export default function ParadoxGate() {
 
                 {/* Strike Counter */}
                 <div className="flex justify-center items-center gap-3">
-                  {[1, 2, 3, 4, 5].map(s => (
+                  {[1, 2, 3].map(s => (
                     <div key={s} className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border transition-colors ${
                       strikeCount >= s 
                         ? 'bg-destructive/10 border-destructive text-destructive' 
@@ -421,7 +441,12 @@ export default function ParadoxGate() {
                     <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden mb-4">
                       <div className="h-full bg-primary animate-pulse" style={{ width: captchaStage ? '20%' : '45%' }}></div>
                     </div>
-                    <p className="text-center text-xs font-mono text-muted-foreground mb-4">Awaiting Cognitive Input...</p>
+                    <div className="flex justify-between items-center text-xs font-mono text-muted-foreground mb-4">
+                      <span>Awaiting Cognitive Input...</span>
+                      <span className={timeLeft < 60 ? 'text-destructive font-bold animate-pulse' : ''}>
+                        {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                      </span>
+                    </div>
                     <input 
                       type="text" 
                       name="bot_verification"
