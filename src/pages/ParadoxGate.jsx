@@ -314,19 +314,10 @@ export default function ParadoxGate() {
                     </div>
                   ) : (
                     <div className="relative z-10 space-y-3 text-center">
-                      <div className="inline-block bg-primary/10 border border-primary/20 px-3 py-1 rounded text-primary text-xs font-bold tracking-widest mb-2 uppercase">
-                        TRADE SECRET PROTECTION ACTIVE
-                      </div>
                       <p className="text-sm text-foreground leading-relaxed font-medium">
                         {challenge.split('\n').map((line, i) => (
                           <React.Fragment key={i}>
-                            {line.includes('[REDACTED') ? (
-                              <span className="bg-foreground text-background px-2 py-0.5 rounded-sm font-bold mx-1 tracking-widest inline-block text-xs">
-                                {line}
-                              </span>
-                            ) : (
-                              line
-                            )}
+                            {line}
                             <br />
                           </React.Fragment>
                         ))}
