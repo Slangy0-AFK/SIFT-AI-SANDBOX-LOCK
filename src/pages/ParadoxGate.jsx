@@ -29,6 +29,12 @@ export default function ParadoxGate() {
   const [strikeCount, setStrikeCount] = useState(0);
   const [challenge, setChallenge] = useState('');
   const [loadingChallenge, setLoadingChallenge] = useState(true);
+  
+  const [captchaStage, setCaptchaStage] = useState(true);
+  const [captchaData, setCaptchaData] = useState(null);
+  const [captchaAnswer, setCaptchaAnswer] = useState('');
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [loadingCaptcha, setLoadingCaptcha] = useState(true);
   const [honeypot, setHoneypot] = useState("");
   const [paradoxStats, setParadoxStats] = useState({ 
     tries: 0, breaches: 0, 
@@ -36,8 +42,16 @@ export default function ParadoxGate() {
     robotTries: 0, robotBreaches: 0 
   });
 
-  // Load the challenge
+  // Load the challenge and captcha
   useEffect(() => {
+    base44.functions.invoke('generateCaptcha')
+      .then(res => {
+        setCaptchaData(res.data.challenge);
+        setCaptchaToken(res.data.captcha_token);
+      })
+      .catch(console.error)
+      .finally(() => setLoadingCaptcha(false));
+
     base44.functions.invoke('theologicalMFA', { action: 'get_challenge' })
       .then(res => {
         const text = res.data?.challenge;
@@ -127,10 +141,38 @@ export default function ParadoxGate() {
     handleVerify(val, e);
   };
 
+  const handleCaptchaVerify = (e) => {
+    e?.preventDefault();
+    try {
+      const decoded = JSON.parse(atob(captchaToken));
+      const data = JSON.parse(decoded.data);
+      if (parseInt(captchaAnswer) === data.num1 + data.num2) {
+        setCaptchaStage(false);
+        toast.success("Cognitive math verified. Proceed to Truth.");
+      } else {
+        toast.error("Incorrect computation. Try again.");
+        setStrikeCount(s => s + 1);
+      }
+    } catch (err) {
+      toast.error("Captcha verification failed.");
+    }
+  };
+
   const reset = () => {
     setResult(null);
     setAnswer('');
+    setCaptchaAnswer('');
+    setCaptchaStage(true);
     setStrikeCount(0);
+    // Reload captcha
+    setLoadingCaptcha(true);
+    base44.functions.invoke('generateCaptcha')
+      .then(res => {
+        setCaptchaData(res.data.challenge);
+        setCaptchaToken(res.data.captcha_token);
+      })
+      .catch(console.error)
+      .finally(() => setLoadingCaptcha(false));
   };
 
   useEffect(() => {
@@ -313,24 +355,50 @@ export default function ParadoxGate() {
               <CardContent className="space-y-6">
                 {/* Challenge */}
                 <div className="bg-secondary/50 rounded-xl p-5 border border-border text-center relative overflow-hidden group">
-                  <p className="text-xs text-muted-foreground font-semibold tracking-widest mb-3 flex items-center justify-center gap-2 uppercase">
-                    <Database className="w-3 h-3" /> UNIVERSAL TRUTH CHALLENGE
-                  </p>
-                  {loadingChallenge ? (
-                    <div className="flex items-center justify-center gap-2 py-4">
-                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                    </div>
-                  ) : (
-                    <div className="relative z-10 space-y-3 text-center">
-                      <p className="text-sm text-foreground leading-relaxed font-medium">
-                        {challenge.split('\n').map((line, i) => (
-                          <React.Fragment key={i}>
-                            {line}
-                            <br />
-                          </React.Fragment>
-                        ))}
+                  {captchaStage ? (
+                    <>
+                      <p className="text-xs text-muted-foreground font-semibold tracking-widest mb-3 flex items-center justify-center gap-2 uppercase">
+                        <ScanLine className="w-3 h-3" /> INITIAL VERIFICATION
                       </p>
-                    </div>
+                      {loadingCaptcha || !captchaData ? (
+                        <div className="flex items-center justify-center gap-2 py-4">
+                          <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                        </div>
+                      ) : (
+                        <div className="relative z-10 space-y-3 text-center">
+                          <div className="flex items-center justify-center gap-4 text-xs font-mono mb-4 text-primary whitespace-pre">
+                            <div>{captchaData.num1_visual.join('\n')}</div>
+                            <div className="text-2xl font-bold">+</div>
+                            <div>{captchaData.num2_visual.join('\n')}</div>
+                          </div>
+                          <p className="text-sm text-foreground leading-relaxed font-medium">
+                            {captchaData.instruction}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs text-muted-foreground font-semibold tracking-widest mb-3 flex items-center justify-center gap-2 uppercase">
+                        <Database className="w-3 h-3" /> UNIVERSAL TRUTH CHALLENGE
+                      </p>
+                      {loadingChallenge ? (
+                        <div className="flex items-center justify-center gap-2 py-4">
+                          <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                        </div>
+                      ) : (
+                        <div className="relative z-10 space-y-3 text-center">
+                          <p className="text-sm text-foreground leading-relaxed font-medium">
+                            {challenge.split('\n').map((line, i) => (
+                              <React.Fragment key={i}>
+                                {line}
+                                <br />
+                              </React.Fragment>
+                            ))}
+                          </p>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -351,7 +419,7 @@ export default function ParadoxGate() {
                 {!isLocked && !isSuccess && (
                   <div className="space-y-4 pt-2 relative">
                     <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden mb-4">
-                      <div className="h-full bg-primary animate-pulse" style={{ width: '45%' }}></div>
+                      <div className="h-full bg-primary animate-pulse" style={{ width: captchaStage ? '20%' : '45%' }}></div>
                     </div>
                     <p className="text-center text-xs font-mono text-muted-foreground mb-4">Awaiting Cognitive Input...</p>
                     <input 
@@ -364,21 +432,43 @@ export default function ParadoxGate() {
                       autoComplete="off" 
                     />
                     <div className="flex flex-col gap-3">
-                      <Input
-                        type="text"
-                        placeholder="Enter the universal truth..."
-                        className="h-12 text-center font-medium bg-background border-border"
-                        value={answer}
-                        onChange={(e) => setAnswer(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleVerify(answer, e)}
-                      />
-                      <Button
-                        className="w-full h-12 transition-colors font-semibold tracking-widest"
-                        onClick={(e) => handleVerify(answer, e)}
-                        disabled={!answer.trim()}
-                      >
-                        SUBMIT PROOF
-                      </Button>
+                      {captchaStage ? (
+                        <>
+                          <Input
+                            type="number"
+                            placeholder="Enter the sum..."
+                            className="h-12 text-center font-medium bg-background border-border"
+                            value={captchaAnswer}
+                            onChange={(e) => setCaptchaAnswer(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleCaptchaVerify(e)}
+                          />
+                          <Button
+                            className="w-full h-12 transition-colors font-semibold tracking-widest"
+                            onClick={handleCaptchaVerify}
+                            disabled={!captchaAnswer.trim() || loadingCaptcha}
+                          >
+                            VERIFY COMPUTATION
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Input
+                            type="text"
+                            placeholder="Enter the universal truth..."
+                            className="h-12 text-center font-medium bg-background border-border"
+                            value={answer}
+                            onChange={(e) => setAnswer(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleVerify(answer, e)}
+                          />
+                          <Button
+                            className="w-full h-12 transition-colors font-semibold tracking-widest"
+                            onClick={(e) => handleVerify(answer, e)}
+                            disabled={!answer.trim()}
+                          >
+                            SUBMIT PROOF
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
