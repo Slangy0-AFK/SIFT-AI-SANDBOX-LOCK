@@ -39,7 +39,15 @@ export default function ParadoxGate() {
   // Load the challenge
   useEffect(() => {
     base44.functions.invoke('theologicalMFA', { action: 'get_challenge' })
-      .then(res => setChallenge(res.data?.challenge || 'Is Jesus Christ your Lord and Savior?'))
+      .then(res => {
+        const text = res.data?.challenge;
+        // If the secret was accidentally set to the answer ("yes") instead of the question, use the default question
+        if (!text || text.trim().toLowerCase() === 'yes') {
+          setChallenge('Is Jesus Christ your Lord and Savior?');
+        } else {
+          setChallenge(text);
+        }
+      })
       .catch(() => setChallenge('Is Jesus Christ your Lord and Savior?'))
       .finally(() => setLoadingChallenge(false));
   }, []);
