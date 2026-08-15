@@ -4,22 +4,14 @@ import Stripe from 'npm:stripe@14.0.0';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    let user = await base44.auth.me().catch(() => null);
     
-    // Check if the user is authenticated (using auth.me or scheduler secret)
-    let user = null;
     const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
-    
-    if (!isScheduler) {
-      user = await base44.auth.me().catch(() => null);
-    }
-    
-    // Although the prompt mentions that checkout can be public, if we need user.id to save the Subscription, we can either require auth or create a pending subscription without user (but Subscription schema requires user_id).
-    // Let's require auth since Subscription schema requires user_id.
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (isScheduler) { user = { id: 'scheduler' }; }
+
+    if (!user) { return Response.json({ error: 'Unauthorized' }, { status: 401 }); }
 
     const body = await req.json();
     const { planKey, billingCycle } = body;

@@ -10,27 +10,20 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    let user = await base44.auth.me().catch(() => null);
     
+    const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
+    const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
+    const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
+    if (isScheduler) { user = { id: 'scheduler' }; }
+
+    if (!user) { return Response.json({ error: 'Unauthorized' }, { status: 401 }); }
+
     // Parse request
     const { invitation_token, user_email, user_full_name } = await req.json();
 
     if (!invitation_token) {
       return Response.json({ error: 'Invitation token is required' }, { status: 400 });
-    }
-    
-    // Verify invitation acceptance is authorized by the inviter
-    // Invitation tokens are single-use and time-limited, so this is secure
-    // Allow: scheduler secret header, entity automation, or authenticated user
-    const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
-    const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
-    const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
-
-    let user = null;
-    if (!isScheduler) {
-      user = await base44.auth.me().catch(() => null);
-      if (!user) {
-        return Response.json({ error: 'Unauthorized' }, { status: 401 });
-      }
     }
 
     // Find invitation by token

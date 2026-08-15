@@ -3,20 +3,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    // Enforce authentication before any processing
+    let user = await base44.auth.me().catch(() => null);
+    
     const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
-    
-    let user = await base44.auth.me().catch(() => null);
-    
-    if (isScheduler) {
-      user = { id: 'scheduler' };
-    }
+    if (isScheduler) { user = { id: 'scheduler' }; }
 
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (!user) { return Response.json({ error: 'Unauthorized' }, { status: 401 }); }
 
     const body = await req.json();
 
