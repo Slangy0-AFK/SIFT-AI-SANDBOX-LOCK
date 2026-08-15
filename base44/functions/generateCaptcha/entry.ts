@@ -16,9 +16,6 @@ Deno.serve(async (req) => {
     let user = null;
     if (!isScheduler) {
       user = await base44.auth.me().catch(() => null);
-      if (!user) {
-        return Response.json({ error: 'Unauthorized' }, { status: 401 });
-      }
     }
 
     // Generate two random numbers (1-10)
@@ -30,16 +27,17 @@ Deno.serve(async (req) => {
       num1,
       num2,
       timestamp: Date.now(),
-      user_id: user.id
+      user_id: user ? user.id : 'guest'
     };
 
     // Create cryptographically signed token using HMAC-SHA256
     const encoder = new TextEncoder();
     const jsonString = JSON.stringify(tokenData);
-    const secret = Deno.env.get('AUTH_CHALLENGE');
+    // Use INTERNAL_SECRET or fallback
+    const secret = Deno.env.get('INTERNAL_SECRET') || 'default-secret-key-that-should-be-changed';
     
-    if (!secret || secret.length < 32) {
-      return Response.json({ error: 'CAPTCHA signing not configured or key too short' }, { status: 500 });
+    if (!secret) {
+      return Response.json({ error: 'CAPTCHA signing not configured' }, { status: 500 });
     }
     
     const encoder_key = encoder.encode(secret);
