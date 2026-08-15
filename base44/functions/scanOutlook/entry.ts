@@ -4,22 +4,17 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Get authenticated user
-    // Allow: scheduler secret header, entity automation, or authenticated user
+    let user = await base44.auth.me().catch(() => null);
+    
     const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
-    
-    let user = null;
-    if (!isScheduler) {
-      user = await base44.auth.me().catch(() => null);
-      if (!user) {
-        return Response.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-    }
+    if (isScheduler) { user = { id: 'scheduler' }; }
+
+    if (!user) { return Response.json({ error: 'Unauthorized' }, { status: 401 }); }
 
     // Get the app user's Outlook connection
-    const connectorId = Deno.env.get('OUTLOOK_CONNECTOR_ID');
+    const connectorId = '6a0f2325e2853c72f54ef687';
     if (!connectorId) {
       return Response.json({ error: 'Outlook connector not configured' }, { status: 500 });
     }
