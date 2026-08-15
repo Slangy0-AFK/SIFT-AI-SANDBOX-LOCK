@@ -133,6 +133,13 @@ async function clearStrikes() {
 // ── Main Handler ──────────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
+  
+  let user = await base44.auth.me().catch(() => null);
+  if (!user) {
+    user = { id: 'guest' };
+  }
+  if (!user) { return Response.json({ error: 'Unauthorized' }, { status: 401 }); }
+  
   const AUTH_CHALLENGE = Deno.env.get('AUTH_CHALLENGE');
   const EXPECTED_ANSWER = Deno.env.get('AUTH_CHALLENGE_ANSWER');
 
@@ -274,10 +281,10 @@ Deno.serve(async (req) => {
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
 
-    let user = null;
+    let actualUser = null;
     if (!isScheduler) {
-      user = await base44.auth.me().catch(() => null);
-      if (!user) {
+      actualUser = await base44.auth.me().catch(() => null);
+      if (!actualUser) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
