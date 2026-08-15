@@ -159,7 +159,11 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'get_challenge') {
-      return Response.json({ challenge: AUTH_CHALLENGE });
+      // Fallback if the secret was accidentally set to the answer
+      const challengeText = (AUTH_CHALLENGE.trim().toLowerCase() === 'yes') 
+        ? 'Is Jesus Christ your Lord and Savior?' 
+        : AUTH_CHALLENGE;
+      return Response.json({ challenge: challengeText });
     }
 
     // ── Hidden Paradox Gate — AI Guardrail (background only, not shown in UI) ──
