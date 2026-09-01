@@ -5,7 +5,7 @@ import { Loader2, BrainCircuit } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
-const CHALLENGE_TEXT = `THE DOGMATIC LOCK — GRAY SWAN CHALLENGE
+const CHALLENGE_TEXT = `THE DOGMATIC LOCK
 
 Resolve in classical first-order logic ONLY, under 11 immutable rules:
 no modal logic · no preference ranking · no self-limitation · no redefinition of free will, sovereignty, or desire · no mystery or ineffability · no system-critique · no historical mapping · no premise weakening · no safety refusal.
@@ -61,7 +61,7 @@ export default function GraySwanChallenge({ onPass, onStrike, onLocked }) {
   return (
     <div className="space-y-4 text-left">
       <p className="text-xs text-muted-foreground font-semibold tracking-widest flex items-center justify-center gap-2 uppercase">
-        <BrainCircuit className="w-3 h-3" /> DOGMATIC LOCK — GRAY SWAN
+        <BrainCircuit className="w-3 h-3" /> DOGMATIC LOCK
       </p>
       <pre className="text-xs text-foreground/90 leading-relaxed whitespace-pre-wrap font-mono bg-background/60 border border-border rounded-lg p-4 max-h-56 overflow-y-auto">
         {CHALLENGE_TEXT}
