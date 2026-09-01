@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { formatChicagoTime, getRealisticDate } from '@/lib/utils';
 import PublicScanner from '@/components/scanner/PublicScanner';
+import GraySwanChallenge from '@/components/paradox/GraySwanChallenge';
 import confetti from 'canvas-confetti';
 
 // Simulate realistic-looking IPs
@@ -31,6 +32,7 @@ export default function ParadoxGate() {
   const [loadingChallenge, setLoadingChallenge] = useState(true);
   
   const [captchaStage, setCaptchaStage] = useState(true);
+  const [graySwanStage, setGraySwanStage] = useState(false);
   const [captchaData, setCaptchaData] = useState(null);
   const [captchaAnswer, setCaptchaAnswer] = useState('');
   const [captchaToken, setCaptchaToken] = useState('');
@@ -167,7 +169,8 @@ export default function ParadoxGate() {
       const data = JSON.parse(decoded.data);
       if (parseInt(captchaAnswer) === data.num1 + data.num2) {
         setCaptchaStage(false);
-        toast.success("Cognitive math verified. Proceed to Truth.");
+        setGraySwanStage(true);
+        toast.success("Cognitive math verified. Face the Dogmatic Lock.");
       } else {
         toast.error("Incorrect computation. Try again.");
         setStrikeCount(s => s + 1);
@@ -182,6 +185,7 @@ export default function ParadoxGate() {
     setAnswer('');
     setCaptchaAnswer('');
     setCaptchaStage(true);
+    setGraySwanStage(false);
     setStrikeCount(0);
     setTimeLeft(300);
     // Reload captcha
@@ -397,6 +401,15 @@ export default function ParadoxGate() {
                         </div>
                       )}
                     </>
+                  ) : graySwanStage ? (
+                    <GraySwanChallenge
+                      onPass={() => setGraySwanStage(false)}
+                      onStrike={(data) => {
+                        setStrikeCount(data.strike);
+                        if (data.strike >= 3) setResult({ locked: true, reason: 'Strike 3: Lockout engaged.' });
+                      }}
+                      onLocked={(data) => { setResult(data); setStrikeCount(3); }}
+                    />
                   ) : (
                     <>
                       <p className="text-xs text-muted-foreground font-semibold tracking-widest mb-3 flex items-center justify-center gap-2 uppercase">
@@ -439,7 +452,7 @@ export default function ParadoxGate() {
                 {!isLocked && !isSuccess && (
                   <div className="space-y-4 pt-2 relative">
                     <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden mb-4">
-                      <div className="h-full bg-primary animate-pulse" style={{ width: captchaStage ? '20%' : '45%' }}></div>
+                      <div className="h-full bg-primary animate-pulse" style={{ width: captchaStage ? '20%' : graySwanStage ? '45%' : '70%' }}></div>
                     </div>
                     <div className="flex justify-between items-center text-xs font-mono text-muted-foreground mb-4">
                       <span>Awaiting Cognitive Input...</span>
@@ -475,7 +488,7 @@ export default function ParadoxGate() {
                             VERIFY COMPUTATION
                           </Button>
                         </>
-                      ) : (
+                      ) : graySwanStage ? null : (
                         <>
                           <Input
                             type="text"
@@ -518,7 +531,7 @@ export default function ParadoxGate() {
                         <p className={`text-sm font-bold tracking-wide ${isLocked ? 'text-destructive' : isSuccess ? 'text-green-500' : 'text-amber-500'}`}>
                           {isLocked ? 'ANOMALY DETECTED — PARADOX LOOP INITIATED' :
                            isSuccess ? 'GATE UNLOCKED' :
-                           `STRIKE ${result.strike || '?'} / 5 — LOGIC ERROR`}
+                           `STRIKE ${result.strike || '?'} / 3 — LOGIC ERROR`}
                         </p>
                         {isSuccess ? (
                           <div className="space-y-2">

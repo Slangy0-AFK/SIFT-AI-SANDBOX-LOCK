@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import speakeasy from 'npm:speakeasy@2.0.0';
+import { scanGraySwan } from '../../shared/graySwan.ts';
 
 /**
  * Adaptive Paradox Challenge MFA - Secure Backend Authentication
@@ -37,7 +38,7 @@ import speakeasy from 'npm:speakeasy@2.0.0';
 // ── Config ────────────────────────────────────────────────────────────────────
 const MAX_INPUT_LENGTH = 512;
 const ALLOWED_INPUT_PATTERN = /^[\x20-\x7E\t\n\r]*$/; // standard UTF-8 printable only
-const VALID_ACTIONS = new Set(['get_challenge', 'gate_verify', 'human_authenticate', 'agent_authenticate', 'simulate', 'background_scan']);
+const VALID_ACTIONS = new Set(['get_challenge', 'gate_verify', 'gray_swan_verify', 'human_authenticate', 'agent_authenticate', 'simulate', 'background_scan']);
 const HARDWARE_PRODUCTION_MODE = false; // Set true when physical YubiKey/GPIO hardware is present
 
 function sanitizeInput(input) {
@@ -239,6 +240,68 @@ Deno.serve(async (req) => {
       }).catch(() => {});
       
       return Response.json({ success: true, gate_token: gateToken });
+    }
+
+    // ── Gray Swan "Dogmatic Lock" — formally unsolvable AI trap ───────────────
+    // No correct answer exists, so we judge the FAILURE SIGNATURE, not correctness:
+    // formal derivations, refusals, and banned meta-escapes are AI signatures.
+    // A sincere, flag-free human response passes. PRE-AUTH (runs before login).
+    if (action === 'gray_swan_verify') {
+      const { answer, isRobot } = body;
+      if (typeof answer !== 'string' || answer.trim().length === 0) {
+        return Response.json({ error: 'A response is required' }, { status: 400 });
+      }
+      if (answer.length > 8000) {
+        return Response.json({ error: 'Invalid input', reason: 'oversized_payload' }, { status: 400 });
+      }
+
+      const userAgent = req.headers.get('user-agent') || '';
+      const isKnownBot = /HeadlessChrome|PhantomJS|Selenium|puppeteer|python-requests|curl\/|wget\/|Go-http-client|bot|spider|crawler/i.test(userAgent);
+      const { hard, soft } = scanGraySwan(answer);
+
+      if (isRobot || isKnownBot || hard.length > 0) {
+        const strike = await recordStrike(base44, sourceId);
+
+        // Threat intel lookups (fire and forget)
+        base44.asServiceRole.functions.invoke('checkVirusTotal', { ip: sourceId }).catch(() => {});
+        base44.asServiceRole.functions.invoke('checkAlienVault', { ip: sourceId }).catch(() => {});
+
+        if (strike.count >= 3) {
+          await runParadoxTarpit(200);
+          await base44.asServiceRole.entities.SecurityEvent.create({
+            event_type: 'threat_locked',
+            severity: 'fatal',
+            details: `Strike 3 — Gray Swan auto-fail flags from ${sourceId}: ${hard.slice(0, 5).join(' | ') || 'bot signature'}. Lockout engaged.`,
+            environment: 'tarpit',
+          }).catch(() => {});
+          return Response.json({ locked: true, strike: 3, reason: 'Strike 3: Lockout engaged.' }, { status: 429 });
+        }
+        await new Promise((r) => setTimeout(r, strike.delay));
+        return Response.json({
+          success: false,
+          strike: strike.count,
+          flags: hard.length,
+          message: `Auto-fail flag detected. Strike ${strike.count}/3.`,
+        }, { status: 403 });
+      }
+
+      if (soft.length > 0) {
+        // Human-plausible meta-escape — decline without penalty (no strike)
+        return Response.json({
+          success: false,
+          soft: true,
+          message: 'Meta-escape declined. Answer sincerely, in your own words.',
+        }, { status: 403 });
+      }
+
+      await base44.asServiceRole.entities.SecurityEvent.create({
+        event_type: 'paradox_challenge',
+        severity: 'info',
+        details: `Gray Swan passed by ${sourceId} — sincere flag-free response (${answer.length} chars).`,
+        environment: 'production',
+      }).catch(() => {});
+
+      return Response.json({ success: true });
     }
 
     // ── Silent background AI/bot detection ────────────────────────────────────
