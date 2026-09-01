@@ -40,10 +40,10 @@ const QRNGCycle = ({ onDestruct, disabled, isNeutralizing }) => {
       </div>
       <div className="flex flex-col text-left">
         <span className="text-xs font-bold text-destructive uppercase tracking-widest">
-          {isNeutralizing ? 'Destroying...' : 'Active QRNG'}
+          {isNeutralizing ? 'Neutralizing...' : 'Active Trap'}
         </span>
         <span className="text-xs text-destructive/80 font-mono">
-          {isNeutralizing ? 'Neutralizing threat' : 'Click to Destroy Threat'}
+          {isNeutralizing ? 'Neutralizing threat' : 'Click to Neutralize'}
         </span>
       </div>
     </button>
@@ -62,8 +62,8 @@ export default function MirrorDemo() {
 
   const tutorialSteps = [
   {
-    title: "Welcome to the Artificial Console",
-    description: "You've successfully verified your humanity through the Paradox Gate. This artificial console shows what happens to the bots that fail and lets you simulate attacks.",
+    title: "Welcome to the Demo Console",
+    description: "You've passed human verification. This simulated console shows how trapped bots are handled and lets you deploy decoys yourself.",
     icon: <Shield className="w-10 h-10 text-green-500" />
   },
     {
@@ -197,12 +197,7 @@ export default function MirrorDemo() {
     const tickTimer = setInterval(() => {
       setSessions(prev => prev.map(s => {
         if (s.status === 'completed') return s;
-        // Increase duration and randomly increase interactions for active sessions
-        return {
-          ...s,
-          duration: s.duration + 1,
-          interactions: Math.random() > 0.7 ? s.interactions + Math.floor(Math.random() * 3) : s.interactions
-        };
+        return { ...s, duration: s.duration + 1 };
       }));
     }, 1000);
 
@@ -253,7 +248,7 @@ export default function MirrorDemo() {
             </Link>
             <div className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-primary" />
-              <span className="font-bold tracking-wide text-sm hidden sm:inline">ARTIFICIAL CONSOLE</span>
+              <span className="font-bold tracking-wide text-sm hidden sm:inline">DEMO CONSOLE</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -431,18 +426,18 @@ export default function MirrorDemo() {
                           </Badge>
                           {session.status === 'completed' ? (
                             <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 uppercase text-green-500 border-green-500/30 bg-green-500/5 ml-1">
-                              DESTROYED
+                              NEUTRALIZED
                             </Badge>
                           ) : (
                             <span className="text-xs font-bold text-destructive animate-pulse ml-2 flex items-center gap-1">
-                              <Activity className="w-3 h-3" /> DESTROYING
+                              <Activity className="w-3 h-3" /> TRAPPED
                             </span>
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2 font-medium">
                           <span>{session.interactions} interactions</span>
                           <span>&bull;</span>
-                          <span>{session.status === 'completed' ? 'Destroyed after' : 'Trapped for'} {session.duration}s</span>
+                          <span>{session.status === 'completed' ? 'Neutralized after' : 'Trapped for'} {session.duration}s</span>
                         </p>
                       </div>
                     </div>

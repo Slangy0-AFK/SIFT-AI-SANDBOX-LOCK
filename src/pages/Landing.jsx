@@ -85,16 +85,16 @@ export default function Landing() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
               </span>
-              Engine V2.0 Online
+              Early Access — Free to Try
             </div>
             
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 text-foreground">
-              Autonomous <br className="hidden md:block"/>
-              <span className="text-primary">Threat Neutralization</span>
+              Threat Detection <br className="hidden md:block"/>
+              <span className="text-primary">& Deception</span>
             </h1>
             
             <p className="text-muted-foreground max-w-2xl text-base md:text-lg mb-10 leading-relaxed">
-              Sift-AI Quantum Shield deploys advanced honeypots, tarpits, and AI-driven behavioral analysis to detect, trap, and neutralize zero-day threats before they breach your network.
+              Sift-AI combines device diagnostics, email and SMS threat scanning, live threat-intelligence feeds, and deception tools — honeypots and tarpits — to detect and slow down automated attacks.
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4 w-full sm:w-auto">
@@ -105,7 +105,7 @@ export default function Landing() {
               </Link>
               <Link to="/paradox-gate?guest=true" className="w-full sm:w-auto">
                 <Button size="lg" variant="outline" className="w-full font-medium gap-2 h-12 px-8 transition-all">
-                  Enter Paradox Gate <Lock className="w-4 h-4" />
+                  Try Human Verification <Lock className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -203,10 +203,10 @@ export default function Landing() {
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                     <ShieldCheck className="w-6 h-6 text-primary" />
                   </div>
-                  <CardTitle className="text-lg">Zero-Day Mitigation</CardTitle>
+                  <CardTitle className="text-lg">Human Verification</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground leading-relaxed">
-                  Our Paradox Lock technology challenges anomalous requests cryptographically, effectively neutralizing threats before a patch is even developed.
+                  A proprietary, multi-layer verification system with strike-based lockouts helps separate real users from bots and automated agents.
                 </CardContent>
               </Card>
             </div>
@@ -221,7 +221,7 @@ export default function Landing() {
               Stop Reacting. Start Trapping.
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Deploy Sift-AI Quantum Shield today and turn your infrastructure into a minefield for attackers. Instantly trap autonomous bots and expose vulnerabilities.
+              Try Sift-AI free during early access. Scan your device, monitor threats, and see deception tooling in action.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link to="/mirror-demo?guest=true" className="w-full sm:w-auto">
@@ -240,7 +240,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground font-medium">Sift-AI Quantum Shield &copy; 2026</span>
+            <span className="text-sm text-muted-foreground font-medium">Sift-AI &copy; 2026</span>
           </div>
           <div className="flex gap-6 text-sm font-medium text-muted-foreground">
             {/* Links moved to app sidebar */}
