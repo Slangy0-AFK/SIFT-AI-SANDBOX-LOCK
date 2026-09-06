@@ -5,7 +5,7 @@ import NotificationBell from '../notifications/NotificationBell';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-import { ChevronDown, ChevronRight, Filter, ShieldCheck, Database, List, Code2 } from 'lucide-react';
+import { ShieldCheck, Database, Code2 } from 'lucide-react';
 
 const allNavItems = [
   { path: '/dashboard', icon: Activity, label: 'Dashboard' },
@@ -13,13 +13,8 @@ const allNavItems = [
   { path: '/email-scanner', icon: Mail, label: 'Email Scanner' },
   { path: '/verify-demo', icon: ShieldAlert, label: 'Human Verification' },
   { path: '/developer', icon: Code2, label: 'Developer API' },
-  {
-    label: 'Security', icon: Shield,
-    subItems: [
-      { path: '/security/ip-allowlist', label: 'IP Allowlist' },
-      { path: '/security/retention', label: 'Data Retention' },
-    ]
-  },
+  { path: '/security/ip-allowlist', icon: Shield, label: 'IP Allowlist' },
+  { path: '/security/retention', icon: Database, label: 'Data Retention' },
   { path: '/profile', icon: User, label: 'Profile' },
   { path: '/subscription', icon: CreditCard, label: 'Subscription' },
   { path: '/settings', icon: Settings, label: 'Settings' },
@@ -40,11 +35,6 @@ export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedMenus, setExpandedMenus] = useState({ Security: true });
-
-  const toggleMenu = (label) => {
-    setExpandedMenus(prev => ({ ...prev, [label]: !prev[label] }));
-  };
 
   const isRootTab = ROOT_PATHS.includes(location.pathname);
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
@@ -74,49 +64,6 @@ export default function Sidebar() {
         {/* Nav */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
-            if (item.subItems) {
-              const isSubActive = item.subItems.some(sub => location.pathname === sub.path);
-              const SubMenuIcon = item.icon;
-              const isExpanded = expandedMenus[item.label];
-              
-              return (
-                <div key={item.label} className="space-y-1">
-                  <button 
-                    onClick={() => toggleMenu(item.label)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-mono text-xs tracking-wide transition-colors ${
-                      isSubActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <SubMenuIcon className="w-4 h-4" />
-                      {item.label}
-                    </div>
-                    {isExpanded ? <ChevronDown className="w-4 h-4 opacity-50" /> : <ChevronRight className="w-4 h-4 opacity-50" />}
-                  </button>
-                  {isExpanded && (
-                  <div className="pl-9 space-y-1">
-                    {item.subItems.map(sub => {
-                      const isActive = location.pathname === sub.path;
-                      return (
-                        <Link
-                          key={sub.path}
-                          to={sub.path}
-                          className={`flex items-center px-3 py-2 rounded-lg font-mono text-[11px] tracking-wide transition-all duration-200 ${
-                            isActive
-                              ? 'bg-primary/10 text-primary border border-primary/20'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                          }`}
-                        >
-                          {sub.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                  )}
-                </div>
-              );
-            }
-
             const { path, icon: Icon, label, highlight } = item;
             const isActive = location.pathname === path;
             return (
@@ -197,50 +144,6 @@ export default function Sidebar() {
             </div>
             <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
               {navItems.map((item) => {
-                if (item.subItems) {
-                  const SubMenuIconMobile = item.icon;
-                  const isExpanded = expandedMenus[item.label];
-                  const isSubActive = item.subItems.some(sub => location.pathname === sub.path);
-                  
-                  return (
-                    <div key={item.label} className="space-y-1">
-                      <button 
-                        onClick={() => toggleMenu(item.label)}
-                        className={`w-full flex items-center justify-between px-3 py-3 rounded-lg font-mono text-xs tracking-wide transition-colors ${
-                          isSubActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <SubMenuIconMobile className="w-4 h-4" />
-                          {item.label}
-                        </div>
-                        {isExpanded ? <ChevronDown className="w-4 h-4 opacity-50" /> : <ChevronRight className="w-4 h-4 opacity-50" />}
-                      </button>
-                      {isExpanded && (
-                      <div className="pl-9 space-y-1">
-                        {item.subItems.map(sub => {
-                          const isActive = location.pathname === sub.path;
-                          return (
-                            <Link
-                              key={sub.path}
-                              to={sub.path}
-                              onClick={() => setMobileMenuOpen(false)}
-                              className={`flex items-center px-3 py-2 rounded-lg font-mono text-[11px] tracking-wide transition-all duration-200 ${
-                                isActive
-                                  ? 'bg-primary/10 text-primary border border-primary/20'
-                                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                              }`}
-                            >
-                              {sub.label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                      )}
-                    </div>
-                  );
-                }
-
                 const { path, icon: Icon, label, highlight } = item;
                 const isActive = location.pathname === path;
                 return (
