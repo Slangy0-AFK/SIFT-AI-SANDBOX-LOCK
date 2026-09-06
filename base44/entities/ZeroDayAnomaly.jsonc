@@ -1,0 +1,135 @@
+{
+  "name": "ZeroDayAnomaly",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "anomaly_signature": {
+      "type": "string"
+    },
+    "anomaly_type": {
+      "type": "string",
+      "enum": [
+        "behavioral",
+        "polymorphic",
+        "memory_injection",
+        "side_channel",
+        "supply_chain",
+        "ai_adversarial",
+        "fileless",
+        "firmware",
+        "encoded_payload",
+        "base64_obfuscation",
+        "base60_anomaly",
+        "unknown"
+      ],
+      "default": "unknown"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical",
+        "fatal"
+      ],
+      "default": "warning"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "detected",
+        "analyzing",
+        "contained",
+        "neutralized",
+        "escalated"
+      ],
+      "default": "detected"
+    },
+    "agent_id": {
+      "type": "string"
+    },
+    "source_ip": {
+      "type": "string"
+    },
+    "payload_hash": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "mirror",
+        "honeypot",
+        "tarpit"
+      ],
+      "default": "production"
+    },
+    "confidence_score": {
+      "type": "number"
+    },
+    "encoding_detected": {
+      "type": "string",
+      "enum": [
+        "base64",
+        "base60",
+        "base32",
+        "hex",
+        "unicode",
+        "mixed",
+        "unknown"
+      ]
+    },
+    "obfuscation_level": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "mitigation_applied": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "anomaly_signature"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
