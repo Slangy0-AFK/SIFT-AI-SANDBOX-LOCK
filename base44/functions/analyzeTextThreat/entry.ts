@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { analyzeScamText } from '../../shared/scamText.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -28,35 +29,7 @@ Deno.serve(async (req) => {
 
     // Analyze SMS text for scams
     if (text) {
-      const analysisPrompt = `Analyze this text message for scam, phishing, or fraudulent content.
-      
-Message: ${text}
-
-Return a JSON response with:
-{
-  "is_scam": boolean,
-  "scam_type": "phishing" | "lottery" | "banking" | "delivery" | "romance" | "tech_support" | "safe" | null,
-  "confidence": number (0-100),
-  "red_flags": string[] (list of suspicious elements),
-  "recommendation": string (what the user should do)
-}`;
-
-      const llmRes = await base44.integrations.Core.InvokeLLM({
-        prompt: analysisPrompt,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            is_scam: { type: "boolean" },
-            scam_type: { type: ["string", "null"] },
-            confidence: { type: "number" },
-            red_flags: { type: "array", items: { type: "string" } },
-            recommendation: { type: "string" }
-          },
-          required: ["is_scam", "scam_type", "confidence", "red_flags", "recommendation"]
-        }
-      });
-
-      analysis = JSON.parse(llmRes);
+      analysis = await analyzeScamText(base44.integrations, text);
 
       // Log the analyzed text
       if (analysis.is_scam) {

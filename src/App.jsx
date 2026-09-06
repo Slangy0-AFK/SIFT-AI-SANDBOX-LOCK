@@ -50,6 +50,7 @@ import SessionManagement from '@/pages/SessionManagement';
 import DataRetention from '@/pages/DataRetention';
 import AuditLogs from '@/pages/AuditLogs';
 import EmailScanner from '@/pages/EmailScanner';
+import Developer from '@/pages/Developer';
 
 // Add page imports here
 
@@ -100,6 +101,7 @@ function AppRoutes() {
             <Route path="/profile" element={<PageTransition><UserProfile /></PageTransition>} />
             <Route path="/subscription" element={<PageTransition><SubscriptionPage /></PageTransition>} />
             <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
+            <Route path="/developer" element={<PageTransition><Developer /></PageTransition>} />
           </Route>
         </Route>
         <Route path="*" element={<PageTransition><PageNotFound /></PageTransition>} />

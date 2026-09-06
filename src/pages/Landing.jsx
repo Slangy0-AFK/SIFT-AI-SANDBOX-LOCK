@@ -66,6 +66,9 @@ export default function Landing() {
             <Link to="/mirror-demo" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
               Mirror Demo
             </Link>
+            <Link to="/developer" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+              Developer API
+            </Link>
           </nav>
           
           <div className="flex items-center gap-3">

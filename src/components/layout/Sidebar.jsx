@@ -5,7 +5,7 @@ import NotificationBell from '../notifications/NotificationBell';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-import { ChevronDown, ChevronRight, Filter, ShieldCheck, Database, List } from 'lucide-react';
+import { ChevronDown, ChevronRight, Filter, ShieldCheck, Database, List, Code2 } from 'lucide-react';
 
 const allNavItems = [
   { path: '/dashboard', icon: Activity, label: 'Command Center' },
@@ -26,6 +26,7 @@ const allNavItems = [
   { path: '/threat-scanner', icon: ShieldCheck, label: 'Device Scanner' },
   // { path: '/email-scanner', icon: Mail, label: 'Email Scanner' }, // Hidden for now, ready to reinstall
   { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
+  { path: '/developer', icon: Code2, label: 'Developer API' },
   { path: '/profile', icon: User, label: 'Profile' },
   { path: '/subscription', icon: CreditCard, label: 'Subscription' },
   { path: '/settings', icon: Settings, label: 'Settings' },
@@ -149,10 +150,6 @@ export default function Sidebar() {
           <div className="flex items-center gap-2 px-3 py-2">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             <span className="font-mono text-xs text-muted-foreground tracking-wider">SYSTEM ONLINE</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse-glow" />
-            <span className="font-mono text-xs text-muted-foreground tracking-wider">QRNG ACTIVE</span>
           </div>
         </div>
       </aside>
