@@ -369,8 +369,8 @@ export default function ParadoxGate() {
                                 verification layers run server-side before access is granted.
                               </p>
                               <div className="flex gap-2 justify-center mt-3">
-                                <Link to="/mirror-demo?guest=true&tutorial=true">
-                                  <Button size="sm" className="font-medium bg-green-600 hover:bg-green-700 text-white border-0">View Deception Demo</Button>
+                                <Link to="/developer">
+                                  <Button size="sm" className="font-medium">Add This To My Site</Button>
                                 </Link>
                                 <Button size="sm" variant="outline" onClick={reset}>Reset Demo</Button>
                               </div>

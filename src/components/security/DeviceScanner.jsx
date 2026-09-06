@@ -188,15 +188,6 @@ async function collectDeviceSignals() {
   if (navigator.webdriver) signals.suspicious_strings.push('navigator.webdriver=true (automation/bot detected)');
   if (!navigator.languages || navigator.languages.length === 0) signals.suspicious_strings.push('no navigator.languages (headless indicator)');
 
-  // Detect AI extensions (simulated via browser fingerprint)
-  if (navigator.userAgent.includes('Chrome')) {
-    if (Math.random() > 0.5) signals.suspicious_strings.push('AI Extension Detected: Grammarly / Writing AI');
-    if (Math.random() > 0.7) signals.suspicious_strings.push('AI Extension Detected: ChatGPT / Monica Assistant');
-  }
-  if (navigator.userAgent.includes('Edg')) {
-    signals.suspicious_strings.push('AI Extension Detected: Copilot Integrated AI');
-  }
-
   return signals;
 }
 
@@ -328,7 +319,7 @@ export default function DeviceScanner() {
           </div>
         </div>
         <p className="font-mono text-xs text-muted-foreground tracking-wide mt-1">
-          Sift-AI autonomous detector: scans for undercover modes, Claude leak attacks, injected scripts & hardware anomalies — no personal data stored
+          Checks your browser for automation flags, injected scripts, permission risks & hardware anomalies — no personal data stored
         </p>
       </CardHeader>
 

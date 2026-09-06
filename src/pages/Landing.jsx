@@ -63,8 +63,8 @@ export default function Landing() {
           </div>
           
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link to="/mirror-demo" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-              Mirror Demo
+            <Link to="/verify-demo" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+              Verification Demo
             </Link>
             <Link to="/developer" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
               Developer API
@@ -93,20 +93,20 @@ export default function Landing() {
             
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 text-foreground">
               Threat Detection <br className="hidden md:block"/>
-              <span className="text-primary">& Deception</span>
+              <span className="text-primary">& Human Verification</span>
             </h1>
             
             <p className="text-muted-foreground max-w-2xl text-base md:text-lg mb-10 leading-relaxed">
-              Sift-AI combines device diagnostics, email and SMS threat scanning, live threat-intelligence feeds, and deception tools — honeypots and tarpits — to detect and slow down automated attacks.
+              Sift-AI combines browser-based device diagnostics, email and SMS threat scanning, live threat-intelligence lookups, and a human-verification widget you can embed in your own site.
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4 w-full sm:w-auto">
-              <Link to="/mirror-demo?guest=true" className="w-full sm:w-auto">
+              <Link to="/developer" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full font-medium gap-2 h-12 px-8 transition-all">
-                  Launch Mirror Demo <Activity className="w-4 h-4" />
+                  Developer API <Activity className="w-4 h-4" />
                 </Button>
               </Link>
-              <Link to="/paradox-gate?guest=true" className="w-full sm:w-auto">
+              <Link to="/verify-demo?guest=true" className="w-full sm:w-auto">
                 <Button size="lg" variant="outline" className="w-full font-medium gap-2 h-12 px-8 transition-all">
                   Try Human Verification <Lock className="w-4 h-4" />
                 </Button>
@@ -171,10 +171,10 @@ export default function Landing() {
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
-                Enterprise-Grade Defense Matrix
+                What Sift-AI Actually Does
               </h2>
               <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                A unified architecture designed to outsmart, outlast, and neutralize the next generation of autonomous digital threats.
+                Three working tools: device diagnostics, message and reputation scanning, and human verification you can embed.
               </p>
             </div>
             
@@ -184,10 +184,10 @@ export default function Landing() {
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                     <Bug className="w-6 h-6 text-primary" />
                   </div>
-                  <CardTitle className="text-lg">Deception Network</CardTitle>
+                  <CardTitle className="text-lg">Device Diagnostics</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground leading-relaxed">
-                  Instantly deploy adaptive honeypots and tarpits that mimic vulnerable production systems, trapping malicious actors and draining their resources.
+                  A client-side browser scan that surfaces automation flags, tracking scripts, risky extensions, and environment anomalies — no install required.
                 </CardContent>
               </Card>
               <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow">
@@ -195,10 +195,10 @@ export default function Landing() {
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                     <Activity className="w-6 h-6 text-primary" />
                   </div>
-                  <CardTitle className="text-lg">Behavioral AI</CardTitle>
+                  <CardTitle className="text-lg">Threat Scanning</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground leading-relaxed">
-                  Move beyond static signatures. Sift-AI analyzes intent and behavior in real-time to identify and isolate autonomous botnets and novel attack vectors.
+                  Check links, domains, IPs, and file hashes against live reputation feeds, and analyze emails and texts for phishing and scam indicators.
                 </CardContent>
               </Card>
               <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow">
@@ -209,7 +209,7 @@ export default function Landing() {
                   <CardTitle className="text-lg">Human Verification</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground leading-relaxed">
-                  A proprietary, multi-layer verification system with strike-based lockouts helps separate real users from bots and automated agents.
+                  An embeddable widget with timed challenges and strike-based lockouts, plus a server-side verification API for your own site or app.
                 </CardContent>
               </Card>
             </div>
@@ -221,15 +221,15 @@ export default function Landing() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-50" />
           <div className="max-w-4xl mx-auto px-4 relative z-10 text-center">
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-              Stop Reacting. Start Trapping.
+              Scan Your Device. Verify Your Users.
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Try Sift-AI free during early access. Scan your device, monitor threats, and see deception tooling in action.
+              Try Sift-AI free during early access — run a device scan, check a suspicious link, or add human verification to your own site.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link to="/mirror-demo?guest=true" className="w-full sm:w-auto">
+              <Link to="/verify-demo?guest=true" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full h-14 px-8 text-base font-semibold">
-                  Launch Mirror Demo <Activity className="ml-2 w-5 h-5" />
+                  Try Human Verification <Activity className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
             </div>

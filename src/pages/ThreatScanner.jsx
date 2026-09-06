@@ -37,13 +37,6 @@ export default function ThreatScanner() {
     refetchInterval: 5000,
   });
 
-  const { data: anomalies = [], refetch: refetchAnomalies } = useQuery({
-    queryKey: ['device-anomalies'],
-    queryFn: () => base44.entities.ZeroDayAnomaly.list('-created_date', 30),
-    initialData: [],
-    refetchInterval: 3000,
-  });
-
   useEffect(() => {
     if (!unsubscribeThreatRef.current) {
       unsubscribeThreatRef.current = base44.entities.Threat.subscribe(() => {
@@ -66,8 +59,6 @@ export default function ThreatScanner() {
   const criticalCount = activeThreats.filter((t) => t.threat_level === 'critical').length;
   const totalScansCount = scanSessions.length;
   const totalAttemptsCount = deviceThreats.length;
-  
-  const activeAnomalies = anomalies.filter(a => a.status !== 'neutralized');
 
   return (
     <div className="min-h-screen bg-background p-4 pb-24 md:p-6 space-y-6">
@@ -100,38 +91,6 @@ export default function ThreatScanner() {
               <p className="font-mono text-2xl font-bold text-amber-400 mt-2">{totalAttemptsCount}</p>
             </div>
           </div>
-          {activeThreats.some(t => t.status === 'detected' || t.status.startsWith('cycle_')) && (
-            <Button 
-              variant="destructive" 
-              className="w-full font-mono text-xs h-8"
-              disabled={neutralizingAll}
-              onClick={async () => {
-                setNeutralizingAll(true);
-                try {
-                  const threatsToNeutralize = activeThreats.filter(t => t.status === 'detected' || t.status.startsWith('cycle_'));
-                  let count = 0;
-                  for (const t of threatsToNeutralize) {
-                    await base44.functions.invoke('autoBlockIp', {
-                      source_ip: t.source_ip,
-                      threat_id: t.id,
-                      reason: 'Bulk neutralized from Threat Scanner',
-                    });
-                    count++;
-                  }
-                  toast.success(`✓ ${count} active threats neutralized`);
-                  confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#00d4ff', '#10b981', '#f43f5e'] });
-                  await refetchDeviceThreats();
-                } catch (err) {
-                  toast.error('Failed to neutralize all: ' + err.message);
-                } finally {
-                  setNeutralizingAll(false);
-                }
-              }}
-            >
-              {neutralizingAll ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : <ShieldBan className="w-3 h-3 mr-2" />}
-              NEUTRALIZE ALL ACTIVE THREATS
-            </Button>
-          )}
         </div>
       </div>
 
@@ -309,45 +268,6 @@ export default function ThreatScanner() {
         </CardContent>
       </Card>
 
-      {/* Zero-Day Anomalies */}
-      <Card className="border-border/50">
-        <CardHeader className="pb-3">
-          <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
-            <Shield className="w-4 h-4 text-primary" /> ZERO-DAY ANOMALIES
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {activeAnomalies.length === 0 ? (
-            <div className="rounded-2xl border border-border/50 bg-secondary/10 p-4 text-center font-mono text-xs text-muted-foreground">
-              No zero-day anomalies detected
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {activeAnomalies.slice(0, 5).map((anomaly) => (
-                <div key={anomaly.id} className="rounded-xl border border-border/50 bg-secondary/10 p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-mono text-xs font-semibold text-foreground truncate">
-                        {anomaly.anomaly_type?.toUpperCase().replace(/_/g, ' ')}
-                      </p>
-                      <p className="font-mono text-xs text-muted-foreground mt-1 truncate">
-                        {anomaly.notes?.slice(0, 60) || anomaly.anomaly_signature}
-                      </p>
-                      <p className="font-mono text-xs text-muted-foreground mt-1">
-                        Severity: {anomaly.severity?.toUpperCase()} • Confidence: {anomaly.confidence_score ?? 'N/A'}%
-                      </p>
-                    </div>
-                    <Badge className={`font-mono text-xs rounded-full border px-2 py-1 flex-shrink-0 ${anomaly.status === 'neutralized' ? 'bg-green-500/10 border-green-500/20 text-green-500' : anomaly.status === 'contained' ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-amber-400/10 border-amber-400/20 text-amber-400'}`}>
-                      {anomaly.status?.toUpperCase()}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Threat Detail Modal */}
       {selectedThreat && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -391,29 +311,8 @@ export default function ThreatScanner() {
 
               <div className="flex gap-2">
                 <Button 
-                  variant="destructive" 
-                  className="flex-1"
-                  onClick={async () => {
-                    try {
-                      await base44.functions.invoke('autoBlockIp', {
-                        source_ip: selectedThreat.source_ip,
-                        threat_id: selectedThreat.id,
-                        reason: 'Manually blocked from threat scanner',
-                      });
-                      toast.success(`✓ IP blocked — threat destroyed`);
-                      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#00d4ff', '#10b981', '#f43f5e'] });
-                      await sendSlackNotification({ text: `*Threat Blocked* • IP: ${selectedThreat.source_ip} • Level: ${selectedThreat.threat_level}` });
-                      await refetchDeviceThreats();
-                      setSelectedThreat(null);
-                    } catch (err) {
-                      toast.error('Failed to block IP: ' + err.message);
-                    }
-                  }}
-                >
-                  <Shield className="w-4 h-4 mr-2" /> Block IP
-                </Button>
-                <Button 
                   variant="outline"
+                  className="flex-1"
                   onClick={async () => {
                     try {
                       await base44.entities.Threat.update(selectedThreat.id, { status: 'cleared' });

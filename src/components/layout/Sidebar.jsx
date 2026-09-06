@@ -8,36 +8,29 @@ import { base44 } from '@/api/base44Client';
 import { ChevronDown, ChevronRight, Filter, ShieldCheck, Database, List, Code2 } from 'lucide-react';
 
 const allNavItems = [
-  { path: '/dashboard', icon: Activity, label: 'Command Center' },
-  { path: '/zero-day', icon: Radiation, label: 'Zero-Day Center' },
-  { path: '/threat-intel', icon: ShieldAlert, label: 'Threat Intel' },
-  { 
-    label: 'Firewall', icon: Shield, 
+  { path: '/dashboard', icon: Activity, label: 'Dashboard' },
+  { path: '/threat-scanner', icon: ShieldCheck, label: 'Device Scanner' },
+  { path: '/email-scanner', icon: Mail, label: 'Email Scanner' },
+  { path: '/verify-demo', icon: ShieldAlert, label: 'Human Verification' },
+  { path: '/developer', icon: Code2, label: 'Developer API' },
+  {
+    label: 'Security', icon: Shield,
     subItems: [
-      { path: '/firewall', label: 'Dashboard' },
-      { path: '/firewall/rules', label: 'Rules' },
-      { path: '/firewall/logs', label: 'Logs' },
-      { path: '/firewall/ip-allowlist', label: 'IP Allowlist' },
-      { path: '/firewall/sessions', label: 'Session Management' },
-      { path: '/firewall/retention', label: 'Data Retention' },
-      { path: '/firewall/audit-logs', label: 'Audit Logs' }
+      { path: '/security/ip-allowlist', label: 'IP Allowlist' },
+      { path: '/security/retention', label: 'Data Retention' },
     ]
   },
-  { path: '/threat-scanner', icon: ShieldCheck, label: 'Device Scanner' },
-  // { path: '/email-scanner', icon: Mail, label: 'Email Scanner' }, // Hidden for now, ready to reinstall
-  { path: '/mirror-env', icon: Bug, label: 'Mirror Environment' },
-  { path: '/developer', icon: Code2, label: 'Developer API' },
   { path: '/profile', icon: User, label: 'Profile' },
   { path: '/subscription', icon: CreditCard, label: 'Subscription' },
   { path: '/settings', icon: Settings, label: 'Settings' },
-  { path: '/about', icon: FileText, label: 'About', adminOnly: false },
-  { path: '/contact', icon: Mail, label: 'Contact', adminOnly: false },
+  { path: '/about', icon: FileText, label: 'About' },
+  { path: '/contact', icon: Mail, label: 'Contact' },
 ];
 
 // Bottom nav shows 5 most-used items on mobile
 const mobileBottomNav = [
   { path: '/dashboard', icon: Activity, label: 'Dashboard' },
-  { path: '/zero-day', icon: Radiation, label: 'Zero-Day' },
+  { path: '/threat-scanner', icon: ShieldCheck, label: 'Scanner' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
@@ -47,7 +40,7 @@ export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedMenus, setExpandedMenus] = useState({ Firewall: true });
+  const [expandedMenus, setExpandedMenus] = useState({ Security: true });
 
   const toggleMenu = (label) => {
     setExpandedMenus(prev => ({ ...prev, [label]: !prev[label] }));

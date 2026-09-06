@@ -42,16 +42,16 @@ export default function About() {
         </CardHeader>
         <CardContent className="space-y-4 text-foreground/80 text-sm leading-relaxed">
           <p>
-            Sift-AI is a threat detection and deception platform. It combines browser-based device diagnostics, email and SMS threat analysis, live threat-intelligence lookups (VirusTotal, AlienVault OTX), firewall monitoring, and deception tools — honeypots and tarpits — that trap and slow down automated attackers instead of just blocking them.
+            Sift-AI is a practical threat detection toolkit. It combines browser-based device diagnostics, email and SMS threat analysis, live reputation lookups (VirusTotal, AlienVault OTX), and a human-verification widget and scanning API that developers can use in their own applications.
           </p>
           <p>
-            What exactly do we do? Our device scanner checks your browser environment for injected scripts, automation flags, and environmental anomalies — entirely client-side, without touching your personal files. Our email scanners analyze messages for phishing and scam indicators. And our proprietary human verification system, backed by strike-based lockouts and rate limiting, helps keep bots and automated agents out of protected areas. The specific verification methods are trade secrets and are not published.
+            What exactly do we do? Our device scanner inspects your browser environment for automation flags, tracking scripts, risky extensions, and other anomalies — entirely client-side, without touching your files. Our email and SMS scanners analyze messages for phishing and scam indicators. Our verification widget uses timed challenges, rate limiting, and strike-based lockouts to help keep automated traffic out of your forms.
           </p>
           <p>
-            Who is this for? Sift-AI is built for security-conscious individuals, IT administrators, and enterprises who need verifiable visibility into what is happening on their devices and networks. If you are concerned about hidden trackers, unauthorized environmental access, or automated botnets scraping your infrastructure, our platform gives you the command center to neutralize them instantly.
+            Who is this for? Individuals who want to check a suspicious link, email, or device, and developers who want to add human verification or threat scanning to their own site without building it from scratch.
           </p>
           <p>
-            Who builds it? Sift-AI is developed by a dedicated team of cybersecurity researchers, AI engineers, and systems architects. We focus exclusively on proactive defense mechanisms—building real-time threat intelligence and deceptive networking tools to keep you one step ahead in an evolving digital arms race.
+            We only ship what we can actually do. Sift-AI does not run a network firewall, does not intercept traffic on your behalf, and does not claim protections it cannot deliver.
           </p>
         </CardContent>
       </Card>
@@ -62,7 +62,7 @@ export default function About() {
         </h2>
         <Link to={isAuthenticated ? "/dashboard" : "/register"}>
           <Button size="lg" className="px-8 font-semibold">
-            {isAuthenticated ? "Go to Dashboard" : "Start Free Trial"}
+            {isAuthenticated ? "Go to Dashboard" : "Get Started"}
           </Button>
         </Link>
       </div>

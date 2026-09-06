@@ -11,7 +11,7 @@ export const SCAN_STEPS = [
   { id: 'network', label: 'Network Telemetry', detail: 'Analyzing routing anomalies and DNS leaks...' },
   { id: 'storage', label: 'Local Storage Audit', detail: 'Checking for persistent tracking payloads...' },
   { id: 'heuristics', label: 'Behavioral Heuristics', detail: 'Testing for automation and headless flags...' },
-  { id: 'verify', label: 'Signature Verification', detail: 'Cross-referencing Sift-AI threat database...' },
+  { id: 'verify', label: 'Extension Inspection', detail: 'Looking for installed AI, developer & password extensions...' },
 ];
 
 export default function PublicScanner() {
@@ -129,7 +129,7 @@ export default function PublicScanner() {
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          Run a quick, client-side simulation of the Sift-AI detection engine.
+          A quick, fully client-side check of your browser environment. Nothing is uploaded.
         </p>
       </CardHeader>
       <CardContent className="pt-6 space-y-4">
@@ -228,8 +228,8 @@ export default function PublicScanner() {
                  )}
               </div>
               <div className="mt-4 flex justify-end">
-                <Link to="/register">
-                  <Button size="sm" className="font-medium">Get Full Protection</Button>
+                <Link to="/developer">
+                  <Button size="sm" className="font-medium">Use Sift-AI In Your App</Button>
                 </Link>
               </div>
             </motion.div>
