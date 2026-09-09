@@ -1,0 +1,37 @@
+{
+  "name": "Worker Agent 1 scan",
+  "description": "Create a native, continuous background automation rule for this application that runs automatically on a scheduled interval (every 1 hour). \n\nThe automation must perform the following self-running security loop:\n1. Automatically pull the latest endpoint data containing system ports, network connections, and software logs.\n2. Feed this raw data into our internal Base 12 and Base 60 mathematical processing logic to compress the concept states and instantly map out unauthorized deviations or concept anomalies.\n3. In the background, run an anonymous HTTP POST request to the Google OSV API (api.osv.dev) to check for software package vulnerabilities based on the logs.\n4. Save the results directly into our internal application database and flag any critical vulnerabilities without requiring any manual user interaction.\n",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "in_app_agent",
+      "events": [
+        "conversation_started"
+      ],
+      "agent_name": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "worker_agent_1_scan",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "deviceScan",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "deviceScan"
+  }
+}
