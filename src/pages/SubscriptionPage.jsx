@@ -56,9 +56,7 @@ export default function SubscriptionPage() {
   const autoPayMutation = useMutation({
     mutationFn: async (enabled) => {
       if (!currentSub) return;
-      return base44.entities.Subscription.update(currentSub.id, { 
-        auto_pay: enabled 
-      });
+      return base44.functions.invoke('manageDevice', { action: 'set_auto_pay', auto_pay: enabled });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscriptions'] });

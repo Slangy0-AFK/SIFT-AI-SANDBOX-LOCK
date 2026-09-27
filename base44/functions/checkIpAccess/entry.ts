@@ -18,9 +18,10 @@ Deno.serve(async (req) => {
     
     const handlePublicIpCheck = async () => {
       // Get client IP from headers
-      const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 
-                 req.headers.get('cf-connecting-ip') ||
-                 'unknown';
+      // Use the edge-provided IP only; the left-most X-Forwarded-For entry is client-controlled.
+      // NOTE: this is an advisory UI check, not an access-control boundary.
+      const xff = req.headers.get('x-forwarded-for')?.split(',').map((s) => s.trim()).filter(Boolean) || [];
+      const ip = req.headers.get('cf-connecting-ip') || xff[xff.length - 1] || 'unknown';
 
       const whitelistedIPs = [];
       

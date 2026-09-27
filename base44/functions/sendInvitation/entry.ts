@@ -17,34 +17,32 @@ Deno.serve(async (req) => {
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
 
-    let user = null;
-    if (!isScheduler) {
-      user = await base44.auth.me().catch(() => null);
-      if (!user) {
-        return Response.json({ error: 'Unauthorized' }, { status: 401 });
-      }
+    const user = await base44.auth.me().catch(() => null);
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Parse request
-    const { invitee_email, invitee_phone, device_slots = 1, notes = '' } = await req.json();
+    const body = await req.json();
+    const invitee_email = String(body.invitee_email || '').trim().toLowerCase();
+    const invitee_phone = body.invitee_phone ? String(body.invitee_phone).slice(0, 30) : null;
+    const device_slots = Number(body.device_slots ?? 1);
+    const notes = String(body.notes || '').slice(0, 300);
 
     // Validate input
-    if (!invitee_email || !invitee_email.includes('@')) {
+    if (!/^[^\s@<>"']{1,64}@[a-z0-9.-]{1,190}\.[a-z]{2,}$/.test(invitee_email)) {
       return Response.json({ error: 'Valid invitee email is required' }, { status: 400 });
     }
 
-    if (device_slots < 1 || device_slots > 10) {
+    if (!Number.isInteger(device_slots) || device_slots < 1 || device_slots > 10) {
       return Response.json({ error: 'Device slots must be between 1 and 10' }, { status: 400 });
     }
 
-    // Get subscriber's subscription - check both user_id and subscriber_id
-    let subscriptions = await base44.entities.Subscription.filter({ user_id: user.id });
-    if (!subscriptions || subscriptions.length === 0) {
-      subscriptions = await base44.entities.Subscription.filter({ subscriber_id: user.id });
-    }
+    // Subscription records are only writable by the verified Stripe webhook (admin-only RLS)
+    const subscriptions = await base44.asServiceRole.entities.Subscription.filter({ user_id: user.id, status: 'active' });
     const subscription = subscriptions[0];
 
-    if (!subscription || subscription.status !== 'active') {
+    if (!subscription || subscription.plan !== 'pro') {
       console.error(`[INVITE] No active subscription found for user ${user.id}`);
       return Response.json({ 
         error: 'You need an active subscription to send invitations' 
@@ -65,8 +63,22 @@ Deno.serve(async (req) => {
       status: 'pending' 
     });
     
+    // Anti-abuse quota: max 5 invitations per subscriber per 24h
+    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const recentInvites = await base44.asServiceRole.entities.Invitation.filter({
+      subscriber_id: user.id,
+      created_date: { $gte: dayAgo },
+    });
+    if (recentInvites.length >= 5) {
+      console.warn(`[INVITE] Daily quota reached for ${user.id}`);
+      return Response.json({ error: 'Daily invitation limit reached. Try again tomorrow.' }, { status: 429 });
+    }
+    if (existingInvites.some((i) => i.invitee_email?.toLowerCase() === invitee_email)) {
+      return Response.json({ error: 'This person already has a pending invitation.' }, { status: 400 });
+    }
+
     const totalCommitted = subscriberDevices.length + existingInvites.reduce((sum, inv) => sum + (inv.device_slots || 1), 0);
-    const maxDevices = subscription.plan === 'pro' ? 5 : 1;
+    const maxDevices = 5;
 
     console.log(`[INVITE] Device check: ${subscriberDevices.length} devices, ${existingInvites.length} pending invites, total: ${totalCommitted}/${maxDevices}`);
 
@@ -129,7 +141,7 @@ Deno.serve(async (req) => {
           day: 'numeric' 
         })}
       </p>
-      ${notes ? `<p style="margin: 15px 0 5px 0; color: #4a5568; font-size: 14px;"><strong>Message:</strong></p><p style="color: #718096; font-style: italic; margin: 0;">"${notes.replace(/</g, '&lt;').replace(/>/g, '&gt;')}"</p>` : ''}
+      ${notes ? `<p style="margin: 15px 0 5px 0; color: #4a5568; font-size: 14px;"><strong>Message:</strong></p><p style="color: #718096; font-style: italic; margin: 0;">"${notes.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')}"</p>` : ''}
     </div>
 
     <p style="color: #4a5568; line-height: 1.6; margin: 20px 0;">

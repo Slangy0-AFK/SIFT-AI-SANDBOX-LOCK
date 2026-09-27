@@ -21,7 +21,12 @@ export default function DeviceManager({ devices = [], plan = 'free', userId }) {
   const atLimit = activeDevices.length >= maxDevices;
 
   const addMutation = useMutation({
-    mutationFn: (data) => base44.entities.Device.create(data),
+    mutationFn: async (data) => {
+      const res = await base44.functions.invoke('manageDevice', { action: 'add', ...data });
+      if (res.data?.error) throw new Error(res.data.error);
+      return res.data;
+    },
+    onError: (e) => toast.error(e.response?.data?.error || e.message),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['devices'] });
       setAdding(false);
@@ -31,7 +36,7 @@ export default function DeviceManager({ devices = [], plan = 'free', userId }) {
   });
 
   const removeMutation = useMutation({
-    mutationFn: (id) => base44.entities.Device.update(id, { status: 'removed' }),
+    mutationFn: (id) => base44.functions.invoke('manageDevice', { action: 'remove', device_id: id }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['devices'] });
       toast.success('Device removed');
@@ -40,13 +45,7 @@ export default function DeviceManager({ devices = [], plan = 'free', userId }) {
 
   const handleAdd = () => {
     if (!newDevice.device_name.trim()) return;
-    addMutation.mutate({
-      ...newDevice,
-      user_id: userId,
-      device_fingerprint: `fp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      last_seen: new Date().toISOString(),
-      status: 'active',
-    });
+    addMutation.mutate({ ...newDevice });
   };
 
   return (

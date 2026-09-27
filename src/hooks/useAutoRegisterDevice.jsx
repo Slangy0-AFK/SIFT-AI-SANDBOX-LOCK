@@ -51,13 +51,11 @@ export function useAutoRegisterDevice() {
           // Auto register if it's their first device
           // Or we can just blindly add it if they have room (but let's do first device to be safe and match "device I sign up on")
           if (activeDevices.length === 0) {
-            await base44.entities.Device.create({
-              user_id: user.id,
+            await base44.functions.invoke('manageDevice', {
+              action: 'add',
               device_name: getDeviceName(),
               device_type: getDeviceType(),
               device_fingerprint: fp,
-              last_seen: new Date().toISOString(),
-              status: 'active'
             });
           }
         }

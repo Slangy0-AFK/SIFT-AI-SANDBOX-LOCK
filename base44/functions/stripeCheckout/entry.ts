@@ -37,7 +37,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Amount too small' }, { status: 400 });
     }
     
-    const appUrl = req.headers.get("X-Base44-App-Url") || req.headers.get("Origin") || "https://myapp.com";
+    // Fixed, trusted app origin — never derived from request headers
+    const appUrl = "https://siftai.base44.app";
     
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({

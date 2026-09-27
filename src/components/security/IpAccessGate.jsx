@@ -18,19 +18,13 @@ export default function IpAccessGate({ children }) {
     try {
       const response = await base44.functions.invoke('checkIpAccess', {});
       const data = response?.data;
-      if (!data) {
-        // No data returned — fail-open
-        setAllowed(true);
-        setChecking(false);
-        return;
-      }
-      setUserIp(data.ip);
-      setWarning(data.warning);
-      // Only block if explicitly allowed===false AND ip is known
-      setAllowed(data.allowed !== false || data.ip === 'unknown');
+      setUserIp(data?.ip);
+      setWarning(data?.warning);
+      // Fail closed: only allow on an explicit allowed === true
+      setAllowed(data?.allowed === true);
     } catch (error) {
-      console.warn('[IP Gate] checkIpAccess failed, allowing access:', error.message);
-      setAllowed(true);
+      console.warn('[IP Gate] checkIpAccess failed, denying access:', error.message);
+      setAllowed(false);
     } finally {
       setChecking(false);
     }
