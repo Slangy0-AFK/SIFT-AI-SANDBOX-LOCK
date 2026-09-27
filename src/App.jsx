@@ -43,6 +43,7 @@ import DataRetention from '@/pages/DataRetention';
 import EmailScanner from '@/pages/EmailScanner';
 import Developer from '@/pages/Developer';
 
+import PromptGuard from '@/pages/PromptGuard';
 // Add page imports here
 
 function AppRoutes() {
@@ -76,6 +77,7 @@ function AppRoutes() {
             <Route path="/about" element={<PageTransition><About /></PageTransition>} />
             <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
             <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
+            <Route path="/prompt-guard" element={<PageTransition><PromptGuard /></PageTransition>} />
             <Route path="/threat-scanner" element={<PageTransition><ThreatScanner /></PageTransition>} />
             <Route path="/email-scanner" element={<PageTransition><EmailScanner /></PageTransition>} />
             <Route path="/security/ip-allowlist" element={<PageTransition><IpAllowlist /></PageTransition>} />

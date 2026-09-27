@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import PublicScanner from '@/components/scanner/PublicScanner';
+import GuardPlayground from '@/components/guard/GuardPlayground';
 
 export default function Landing() {
   const [stats, setStats] = useState({ visits: null, scans: null, paradoxTries: null });
@@ -63,6 +64,9 @@ export default function Landing() {
           </div>
           
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <a href="#guard-demo" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+              Live Demo
+            </a>
             <Link to="/verify-demo" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
               Verification Demo
             </Link>
@@ -92,12 +96,12 @@ export default function Landing() {
             </div>
             
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 text-foreground">
-              Threat Detection <br className="hidden md:block"/>
-              <span className="text-primary">& Human Verification</span>
+              Stop Prompt Injection <br className="hidden md:block"/>
+              <span className="text-primary">Before It Reaches Your AI</span>
             </h1>
             
             <p className="text-muted-foreground max-w-2xl text-base md:text-lg mb-10 leading-relaxed">
-              Sift-AI combines browser-based device diagnostics, email and SMS threat scanning, live threat-intelligence lookups, and a human-verification widget you can embed in your own site.
+              One API call screens every prompt, retrieved document, and model reply for jailbreaks, instruction overrides, hidden payloads, data exfiltration, and tool abuse — so your chatbot or agent does what you built it to do.
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4 w-full sm:w-auto">
@@ -106,12 +110,23 @@ export default function Landing() {
                   Developer API <Activity className="w-4 h-4" />
                 </Button>
               </Link>
-              <Link to="/verify-demo?guest=true" className="w-full sm:w-auto">
+              <a href="#guard-demo" className="w-full sm:w-auto">
                 <Button size="lg" variant="outline" className="w-full font-medium gap-2 h-12 px-8 transition-all">
-                  Try Human Verification <Lock className="w-4 h-4" />
+                  Try It Live <ScanLine className="w-4 h-4" />
                 </Button>
-              </Link>
+              </a>
             </div>
+          </div>
+        </section>
+
+        {/* Prompt Guard Live Demo */}
+        <section id="guard-demo" className="py-20 border-t border-border/50">
+          <div className="max-w-3xl mx-auto px-4">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">Try to Break It</h2>
+              <p className="text-base text-muted-foreground">Paste any prompt or pick an example attack. This demo runs the fast detection engine; signed-in users also get deep AI analysis.</p>
+            </div>
+            <Card className="border-border bg-card"><CardContent className="pt-6"><GuardPlayground /></CardContent></Card>
           </div>
         </section>
 
@@ -121,7 +136,7 @@ export default function Landing() {
           <div className="max-w-5xl mx-auto px-4 relative z-10">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
-                Is Your Device Compromised?
+                Also Included: Device Diagnostics
               </h2>
               <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                 Run our lightweight, AI-powered browser diagnostic to instantly expose hidden tracking scripts, headless automation flags, and environmental anomalies. <strong className="text-foreground">100% Client-Side. No software installation required.</strong>
@@ -174,11 +189,22 @@ export default function Landing() {
                 What Sift-AI Actually Does
               </h2>
               <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Three working tools: device diagnostics, message and reputation scanning, and human verification you can embed.
+                A prompt-injection firewall for AI products, backed by threat scanning and human verification.
               </p>
             </div>
             
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
+              <Card className="border-primary/40 bg-card shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                    <ShieldAlert className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg">Prompt Guard</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground leading-relaxed">
+                  Detects instruction overrides, jailbreaks, system-prompt extraction, hidden base64 and invisible-character payloads, exfiltration links, and leaked secrets in model output.
+                </CardContent>
+              </Card>
               <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
@@ -221,15 +247,15 @@ export default function Landing() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-50" />
           <div className="max-w-4xl mx-auto px-4 relative z-10 text-center">
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-              Scan Your Device. Verify Your Users.
+              Ship AI Features Without the Attack Surface.
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Try Sift-AI free during early access — run a device scan, check a suspicious link, or add human verification to your own site.
+              Free during early access — grab an API key and put Prompt Guard in front of your model in minutes.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link to="/verify-demo?guest=true" className="w-full sm:w-auto">
+              <Link to="/developer" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full h-14 px-8 text-base font-semibold">
-                  Try Human Verification <Activity className="ml-2 w-5 h-5" />
+                  Get an API Key <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
             </div>

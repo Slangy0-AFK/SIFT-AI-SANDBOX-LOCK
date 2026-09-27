@@ -9,10 +9,11 @@ import { ShieldCheck, Database, Code2 } from 'lucide-react';
 
 const allNavItems = [
   { path: '/dashboard', icon: Activity, label: 'Dashboard' },
+  { path: '/prompt-guard', icon: ShieldAlert, label: 'Prompt Guard' },
+  { path: '/developer', icon: Code2, label: 'Developer API' },
   { path: '/threat-scanner', icon: ShieldCheck, label: 'Device Scanner' },
   { path: '/email-scanner', icon: Mail, label: 'Email Scanner' },
-  { path: '/verify-demo', icon: ShieldAlert, label: 'Human Verification' },
-  { path: '/developer', icon: Code2, label: 'Developer API' },
+  { path: '/verify-demo', icon: ShieldCheck, label: 'Human Verification' },
   { path: '/security/ip-allowlist', icon: Shield, label: 'IP Allowlist' },
   { path: '/security/retention', icon: Database, label: 'Data Retention' },
   { path: '/profile', icon: User, label: 'Profile' },
@@ -25,7 +26,8 @@ const allNavItems = [
 // Bottom nav shows 5 most-used items on mobile
 const mobileBottomNav = [
   { path: '/dashboard', icon: Activity, label: 'Dashboard' },
-  { path: '/threat-scanner', icon: ShieldCheck, label: 'Scanner' },
+  { path: '/prompt-guard', icon: ShieldAlert, label: 'Guard' },
+  { path: '/developer', icon: Code2, label: 'API' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 

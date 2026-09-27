@@ -5,6 +5,7 @@ import { Code2 } from 'lucide-react';
 import ApiKeyManager from '@/components/developer/ApiKeyManager';
 import WidgetDocs from '@/components/developer/WidgetDocs';
 import ScanApiDocs from '@/components/developer/ScanApiDocs';
+import GuardApiDocs from '@/components/developer/GuardApiDocs';
 
 export default function Developer() {
   const { data: keys = [] } = useQuery({
@@ -20,14 +21,15 @@ export default function Developer() {
           <Code2 className="w-6 h-6 text-primary" /> Developer API
         </h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-          Add SiftAI to your own website or app. Embed the human verification widget on forms, or call the scan API
-          to check links, IPs, and messages from your backend.
+          Protect your LLM features from prompt injection and agent abuse. Screen every prompt and model reply with the
+          Prompt Guard API, plus optional human verification and threat-scan endpoints.
         </p>
       </div>
 
       <ApiKeyManager />
 
       <div className="grid lg:grid-cols-2 gap-6">
+        <GuardApiDocs />
         <WidgetDocs siteKey={firstActive?.site_key} />
         <ScanApiDocs />
       </div>
