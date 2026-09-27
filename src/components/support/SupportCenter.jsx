@@ -8,24 +8,11 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 const FAQS = [
-  { q: 'How does the Paradox Lock protect my device?', a: 'The Paradox Lock presents unsolvable logical challenges to AI bots and autonomous agents. Bots fail due to deterministic logic limitations, while humans pass naturally — effectively locking out automated attackers.' },
-  { q: 'What is QRNG?', a: 'QRNG (Quantum Random Number Generation) introduces true randomness into security cycles, making it impossible for attackers to predict challenge patterns or replay attacks.' },
-  { q: 'How do I add more devices?', a: 'Upgrade to the Pro or Enterprise plan to register additional devices. Pro allows up to 5 devices, Enterprise supports multiple users each with 5 devices.' },
-  { q: 'What happens when a threat is destroyed?', a: 'A destroyed threat has been fully neutralized through the multi-cycle QRNG process. Its signatures are logged in the Base Chain for audit purposes.' },
+  { q: 'What does SiftAI do?', a: 'It checks messages before they reach your AI chatbot or assistant, and stops ones that try to trick it into breaking rules or leaking private info.' },
+  { q: 'How do I add it to my app?', a: 'Go to "Add to My App", make a key, and paste the short code example into your app. It takes about five minutes.' },
+  { q: 'What do "Safe", "Check" and "Blocked" mean?', a: 'Safe means the message looks normal. Check means something seems a little off. Blocked means it is clearly trying to trick your AI.' },
+  { q: 'What do I get with Pro?', a: 'More keys for your apps, extra-careful checks that catch cleverly reworded tricks, your full check history, and priority help.' },
 ];
-
-const REMEDIATIONS = [
-  { icon: ShieldCheck, title: 'Enable Paradox Lock', desc: 'Activate the Paradox Gate to block all autonomous agent intrusions in real time.', severity: 'critical' },
-  { icon: AlertTriangle, title: 'Increase QRNG Cycles', desc: 'Raise your QRNG cycle count to 3+ in Settings for stronger entropy-based threat neutralization.', severity: 'warning' },
-  { icon: Lightbulb, title: 'Configure Mirror Environment', desc: 'Route suspicious traffic to a honeypot to capture attacker methods without exposing real assets.', severity: 'info' },
-  { icon: ShieldCheck, title: 'Review Threat Log', desc: 'Regularly audit your threat log to identify patterns and adjust defense policies accordingly.', severity: 'info' },
-];
-
-const severityStyle = {
-  critical: 'text-red-400 bg-red-400/10 border-red-400/20',
-  warning: 'text-amber-400 bg-amber-400/10 border-amber-400/20',
-  info: 'text-primary bg-primary/10 border-primary/20',
-};
 
 export default function SupportCenter() {
   const [user, setUser] = useState(null);
@@ -122,26 +109,6 @@ export default function SupportCenter() {
         </Card>
       </div>
 
-      {/* Remediations */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-primary" /> RECOMMENDED REMEDIATIONS
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {REMEDIATIONS.map((r, i) => (
-            <div key={i} className={`flex items-start gap-3 p-3 rounded-xl border ${severityStyle[r.severity]}`}>
-              <r.icon className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <div>
-                <div className="font-mono text-[11px] font-semibold">{r.title}</div>
-                <div className="font-mono text-xs opacity-80 mt-0.5 leading-relaxed">{r.desc}</div>
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
       {/* FAQ */}
       <Card>
         <CardHeader className="pb-3">
@@ -217,36 +184,6 @@ export default function SupportCenter() {
         </CardHeader>
         <CardContent>
           <TicketManager user={user} />
-        </CardContent>
-      </Card>
-
-      {/* Help Center */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-primary" /> HELP CENTER & WALKTHROUGHS
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="font-mono text-xs text-muted-foreground mb-4">Download official guides and architectural documentation.</p>
-          {[
-            { title: 'Paradox Lock Setup Guide', size: '2.4 MB PDF' },
-            { title: 'QRNG Configuration Manual', size: '1.1 MB PDF' },
-            { title: 'Zero-Day Detection Principles', size: '3.8 MB PDF' },
-          ].map((doc, i) => (
-            <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-border bg-secondary/30">
-              <div className="flex items-center gap-3">
-                <FileText className="w-4 h-4 text-primary" />
-                <div>
-                  <div className="font-mono text-xs font-semibold">{doc.title}</div>
-                  <div className="font-mono text-[10px] text-muted-foreground mt-0.5">{doc.size}</div>
-                </div>
-              </div>
-              <Button size="sm" variant="outline" className="font-mono text-xs gap-2" onClick={() => toast.success(`Downloading ${doc.title}...`)}>
-                <Download className="w-3.5 h-3.5" /> Download
-              </Button>
-            </div>
-          ))}
         </CardContent>
       </Card>
 
