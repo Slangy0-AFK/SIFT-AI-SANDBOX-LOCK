@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
 
     const recipient = email || user.email;
 
-    await base44.integrations.Core.SendEmail({
+    await base44.asServiceRole.integrations.Core.SendEmail({
       to: recipient,
       subject: subject,
       body: body,

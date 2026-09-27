@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
 
     // Analyze SMS text for scams
     if (text) {
-      analysis = await analyzeScamText(base44.integrations, text);
+      analysis = await analyzeScamText(base44.asServiceRole.integrations, text);
 
       // Log the analyzed text
       if (analysis.is_scam) {
@@ -67,7 +67,7 @@ Return a JSON response with:
   "recommendation": string
 }`;
 
-      const phoneRes = await base44.integrations.Core.InvokeLLM({
+      const phoneRes = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: phoneCheckPrompt,
         add_context_from_internet: true,
         response_json_schema: {

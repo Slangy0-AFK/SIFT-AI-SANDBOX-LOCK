@@ -89,7 +89,7 @@ Return a JSON response with:
   "reason": string (brief explanation)
 }`;
 
-      const llmRes = await base44.integrations.Core.InvokeLLM({
+      const llmRes = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: analysisPrompt,
         response_json_schema: {
           type: "object",

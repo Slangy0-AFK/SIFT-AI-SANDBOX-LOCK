@@ -51,20 +51,15 @@ export default function SupportCenter() {
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setLoading(true);
-    const reply = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are the SIFT-AI Quantum Shield AI support assistant. Answer the user's question helpfully and concisely. Context: SIFT-AI is a cybersecurity platform featuring Base Chain pipeline, Paradox Lock (AI bot blocker), QRNG cycles, Mirror Environment (honeypots/tarpits), Zero-Day detection, and workflow automation.\n\nUser question: ${userMsg}`,
-    });
+    const { data } = await base44.functions.invoke('appSupport', { action: 'support_chat', message: userMsg });
+    const reply = data.reply;
     setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
     setLoading(false);
   };
 
   const submitFeedback = async () => {
     if (!feedback.trim() || !user) return;
-    await base44.integrations.Core.SendEmail({
-      to: 'support@sift-ai-shield.app',
-      subject: 'SIFT-AI User Feedback',
-      body: feedback,
-    });
+    await base44.functions.invoke('appSupport', { action: 'feedback', message: feedback });
     setFeedbackSent(true);
     toast.success('Feedback submitted — thank you!');
   };

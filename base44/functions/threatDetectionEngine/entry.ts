@@ -255,7 +255,7 @@ Return JSON:
   "recommendation": "monitor" | "challenge" | "block" | "destroy"
 }`;
 
-    const aiAnalysis = await base44.integrations.Core.InvokeLLM({
+    const aiAnalysis = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: aiAnalysisPrompt,
       response_json_schema: {
         type: "object",

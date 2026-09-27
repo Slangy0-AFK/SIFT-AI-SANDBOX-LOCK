@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
 
     // Send email
     try {
-      await base44.integrations.Core.SendEmail({
+      await base44.asServiceRole.integrations.Core.SendEmail({
         to: invitee_email,
         subject: `You're invited to join ${user.email}'s AEGIS Security Plan`,
         body: `

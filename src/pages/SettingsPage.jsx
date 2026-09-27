@@ -26,12 +26,7 @@ export default function SettingsPage() {
       toast.error('Please type DELETE to confirm');
       return;
     }
-    const privacyEmail = import.meta.env.VITE_PRIVACY_EMAIL || 'privacy@sift-ai-security.app';
-    await base44.integrations.Core.SendEmail({
-      to: privacyEmail,
-      subject: 'Account Deletion Request',
-      body: `User ${user?.email || 'unknown'} (ID: ${user?.id || 'unknown'}) has requested full account deletion from SIFT-AI Quantum Shield.`,
-    });
+    await base44.functions.invoke('appSupport', { action: 'account_deletion' });
     toast.success('Account deletion request submitted. Your account will be removed within 30 days.');
     setShowDeleteAccount(false);
     setDeleteConfirm('');
