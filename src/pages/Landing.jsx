@@ -26,6 +26,7 @@ export default function Landing() {
           <nav className="flex items-center gap-5 text-sm font-medium">
             <a href="#try-it" className="text-muted-foreground hover:text-foreground transition-colors">Try it</a>
             <Link to="/developer" className="text-muted-foreground hover:text-foreground transition-colors">For your app</Link>
+            <Link to="/login"><Button size="sm" variant="outline">Log in</Button></Link>
           </nav>
         </div>
       </header>
