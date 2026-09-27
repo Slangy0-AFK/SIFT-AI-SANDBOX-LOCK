@@ -33,8 +33,8 @@ export default function ApiKeyManager() {
     <Card className="border-border">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="text-base flex items-center gap-2"><Key className="w-4 h-4 text-primary" /> API Keys</CardTitle>
-          <CardDescription className="text-xs mt-1">Each key has a public site key for the widget and a secret key for server calls.</CardDescription>
+          <CardTitle className="text-base flex items-center gap-2"><Key className="w-4 h-4 text-primary" /> Your keys</CardTitle>
+          <CardDescription className="text-xs mt-1">A key is like a password that lets your app use SiftAI. Keep the secret part private.</CardDescription>
         </div>
         <Button size="sm" className="gap-2" onClick={() => { setCreated(null); setOpen(true); }}>
           <Plus className="w-4 h-4" /> New key
@@ -43,7 +43,7 @@ export default function ApiKeyManager() {
       <CardContent className="p-0 divide-y divide-border border-t border-border">
         {isLoading && <div className="p-8 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>}
         {!isLoading && keys.length === 0 && (
-          <div className="p-8 text-center text-sm text-muted-foreground">No keys yet. Create one to start integrating.</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">You don't have a key yet. Tap "New key" to make one — it takes a second.</div>
         )}
         {keys.map((k) => <ApiKeyRow key={k.id} apiKey={k} onRevoke={(id) => revokeKey.mutate(id)} />)}
       </CardContent>

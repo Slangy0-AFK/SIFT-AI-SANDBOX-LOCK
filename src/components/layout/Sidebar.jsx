@@ -8,30 +8,20 @@ import { base44 } from '@/api/base44Client';
 import { ShieldCheck, Database, Code2 } from 'lucide-react';
 
 const allNavItems = [
-  { path: '/dashboard', icon: Activity, label: 'Dashboard' },
-  { path: '/prompt-guard', icon: ShieldAlert, label: 'Prompt Guard' },
-  { path: '/developer', icon: Code2, label: 'Developer API' },
-  { path: '/threat-scanner', icon: ShieldCheck, label: 'Device Scanner' },
-  { path: '/email-scanner', icon: Mail, label: 'Email Scanner' },
-  { path: '/verify-demo', icon: ShieldCheck, label: 'Human Verification' },
-  { path: '/security/ip-allowlist', icon: Shield, label: 'IP Allowlist' },
-  { path: '/security/retention', icon: Database, label: 'Data Retention' },
+  { path: '/prompt-guard', icon: ShieldCheck, label: 'Check a Message' },
+  { path: '/developer', icon: Code2, label: 'Add to My App' },
   { path: '/profile', icon: User, label: 'Profile' },
   { path: '/subscription', icon: CreditCard, label: 'Subscription' },
   { path: '/settings', icon: Settings, label: 'Settings' },
-  { path: '/about', icon: FileText, label: 'About' },
-  { path: '/contact', icon: Mail, label: 'Contact' },
 ];
 
-// Bottom nav shows 5 most-used items on mobile
 const mobileBottomNav = [
-  { path: '/dashboard', icon: Activity, label: 'Dashboard' },
-  { path: '/prompt-guard', icon: ShieldAlert, label: 'Guard' },
-  { path: '/developer', icon: Code2, label: 'API' },
+  { path: '/prompt-guard', icon: ShieldCheck, label: 'Check' },
+  { path: '/developer', icon: Code2, label: 'My App' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
-const ROOT_PATHS = ['/', '/dashboard'];
+const ROOT_PATHS = ['/', '/prompt-guard'];
 
 export default function Sidebar() {
   const location = useLocation();

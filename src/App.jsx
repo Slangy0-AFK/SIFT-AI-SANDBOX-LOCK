@@ -22,8 +22,6 @@ function PageTransition({ children }) {
     </motion.div>
   );
 }
-import Dashboard from '@/pages/Dashboard';
-import ThreatScanner from '@/pages/ThreatScanner';
 import UserProfile from '@/pages/UserProfile';
 import SubscriptionPage from '@/pages/SubscriptionPage';
 import SettingsPage from '@/pages/SettingsPage';
@@ -34,13 +32,7 @@ import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
-import About from '@/pages/About';
-import Contact from '@/pages/Contact';
 import Landing from '@/pages/Landing';
-import ParadoxGate from '@/pages/ParadoxGate';
-import IpAllowlist from '@/pages/IpAllowlist';
-import DataRetention from '@/pages/DataRetention';
-import EmailScanner from '@/pages/EmailScanner';
 import Developer from '@/pages/Developer';
 
 import PromptGuard from '@/pages/PromptGuard';
@@ -67,21 +59,15 @@ function AppRoutes() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<PageTransition><Landing /></PageTransition>} />
-        <Route path="/verify-demo" element={<PageTransition><ParadoxGate /></PageTransition>} />
+        <Route path="/verify-demo" element={<Navigate to="/#try-it" replace />} />
         <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
         <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
         <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
         <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
           <Route element={<AppLayout />}>
-            <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-            <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
-            <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
+            <Route path="/dashboard" element={<Navigate to="/prompt-guard" replace />} />
             <Route path="/prompt-guard" element={<PageTransition><PromptGuard /></PageTransition>} />
-            <Route path="/threat-scanner" element={<PageTransition><ThreatScanner /></PageTransition>} />
-            <Route path="/email-scanner" element={<PageTransition><EmailScanner /></PageTransition>} />
-            <Route path="/security/ip-allowlist" element={<PageTransition><IpAllowlist /></PageTransition>} />
-            <Route path="/security/retention" element={<PageTransition><DataRetention /></PageTransition>} />
             <Route path="/profile" element={<PageTransition><UserProfile /></PageTransition>} />
             <Route path="/subscription" element={<PageTransition><SubscriptionPage /></PageTransition>} />
             <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />

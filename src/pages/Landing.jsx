@@ -1,284 +1,92 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Activity, Bug, ArrowRight, ShieldCheck, Loader2, ShieldAlert, Terminal, Zap, Lock, ScanLine, CheckCircle2, Users } from 'lucide-react';
+import { Shield, ArrowRight, ShieldCheck, EyeOff, Lock, MessageSquareWarning } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { motion, AnimatePresence } from 'framer-motion';
-
-import PublicScanner from '@/components/scanner/PublicScanner';
+import { Card, CardContent } from '@/components/ui/card';
 import GuardPlayground from '@/components/guard/GuardPlayground';
 
-export default function Landing() {
-  const [stats, setStats] = useState({ visits: null, scans: null, paradoxTries: null });
+const FEATURES = [
+  { icon: MessageSquareWarning, title: 'Stops "ignore your rules" tricks', text: 'People try to talk AI assistants into breaking their own rules. We catch it.' },
+  { icon: EyeOff, title: 'Finds hidden messages', text: 'Some tricks are hidden in invisible or scrambled text. We uncover them.' },
+  { icon: Lock, title: 'Keeps secrets secret', text: "We warn you if your AI is about to reveal private info it shouldn't." },
+];
 
+export default function Landing() {
   useEffect(() => {
-    const recordVisit = async () => {
-      base44.analytics.track({ eventName: 'landing_page_view' });
-      try {
-        const res = await base44.functions.invoke('trackVisit', {});
-        if (res.data) {
-          setStats({
-            visits: res.data.visits,
-            scans: res.data.scans,
-            paradoxTries: res.data.paradoxTries
-          });
-        }
-      } catch (e) {
-        console.error('Failed to track visit');
-      }
-    };
-    recordVisit();
+    base44.analytics.track({ eventName: 'landing_page_view' });
+    base44.functions.invoke('trackVisit', {}).catch(() => {});
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans relative">
-      <div 
-        className="fixed inset-0 z-0 opacity-20 pointer-events-none"
-        style={{
-          backgroundImage: 'url("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
-        }}
-      />
-      <div className="fixed inset-0 z-0 bg-background/80 pointer-events-none" />
-      
-      <div className="relative z-10 flex flex-col flex-1">
-      {/* Development Banner */}
-      <div className="bg-primary/10 border-b border-primary/20 text-primary px-4 py-2 text-center text-xs font-medium z-50 relative flex items-center justify-center gap-2">
-        <Activity className="w-3 h-3" />
-        Note: The platform is currently under active development, but is completely free to try.
-      </div>
-
-      {/* Header */}
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img 
-              src="https://media.base44.com/images/public/6a0db3181169f42924052c0d/650b247a7_amazon.PNG" 
-              alt="Sift.ai Logo" 
-              className="h-8 w-auto rounded-sm object-contain"
-            />
-            {/* <span className="font-bold text-sm tracking-wide">sift.ai</span> */}
-          </div>
-          
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <a href="#guard-demo" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-              Live Demo
-            </a>
-            <Link to="/verify-demo" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-              Verification Demo
-            </Link>
-            <Link to="/developer" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-              Developer API
-            </Link>
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+          <img src="https://media.base44.com/images/public/6a0db3181169f42924052c0d/650b247a7_amazon.PNG" alt="SiftAI" className="h-8 w-auto rounded-sm object-contain" />
+          <nav className="flex items-center gap-5 text-sm font-medium">
+            <a href="#try-it" className="text-muted-foreground hover:text-foreground transition-colors">Try it</a>
+            <Link to="/developer" className="text-muted-foreground hover:text-foreground transition-colors">For your app</Link>
           </nav>
-          
-          <div className="flex items-center gap-3">
-            {/* Registration removed for now */}
-          </div>
         </div>
       </header>
 
-      {/* Hero Section */}
       <main className="flex-1">
-        <section className="relative overflow-hidden py-20 lg:py-32">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" />
-          
-          <div className="max-w-7xl mx-auto px-4 relative z-10 flex flex-col items-center text-center">
+        <section className="relative py-20 lg:py-28 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background">
+          <div className="max-w-4xl mx-auto px-4 text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-medium text-xs mb-8">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-              </span>
-              Early Access — Free to Try
+              Free while in early access
             </div>
-            
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 text-foreground">
-              Stop Prompt Injection <br className="hidden md:block"/>
-              <span className="text-primary">Before It Reaches Your AI</span>
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
+              Keep your AI from <span className="text-primary">being tricked</span>
             </h1>
-            
-            <p className="text-muted-foreground max-w-2xl text-base md:text-lg mb-10 leading-relaxed">
-              One API call screens every prompt, retrieved document, and model reply for jailbreaks, instruction overrides, hidden payloads, data exfiltration, and tool abuse — so your chatbot or agent does what you built it to do.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row justify-center gap-4 w-full sm:w-auto">
-              <Link to="/developer" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full font-medium gap-2 h-12 px-8 transition-all">
-                  Developer API <Activity className="w-4 h-4" />
-                </Button>
-              </Link>
-              <a href="#guard-demo" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full font-medium gap-2 h-12 px-8 transition-all">
-                  Try It Live <ScanLine className="w-4 h-4" />
-                </Button>
-              </a>
-            </div>
-          </div>
-        </section>
-
-        {/* Prompt Guard Live Demo */}
-        <section id="guard-demo" className="py-20 border-t border-border/50">
-          <div className="max-w-3xl mx-auto px-4">
-            <div className="text-center mb-10">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">Try to Break It</h2>
-              <p className="text-base text-muted-foreground">Paste any prompt or pick an example attack. This demo runs the fast detection engine; signed-in users also get deep AI analysis.</p>
-            </div>
-            <Card className="border-border bg-card"><CardContent className="pt-6"><GuardPlayground /></CardContent></Card>
-          </div>
-        </section>
-
-        {/* Public Scanner Section */}
-        <section className="py-20 bg-background relative overflow-hidden border-y border-border/50 shadow-[inset_0_0_100px_rgba(var(--primary),0.05)]">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-          <div className="max-w-5xl mx-auto px-4 relative z-10">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
-                Also Included: Device Diagnostics
-              </h2>
-              <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Run our lightweight, AI-powered browser diagnostic to instantly expose hidden tracking scripts, headless automation flags, and environmental anomalies. <strong className="text-foreground">100% Client-Side. No software installation required.</strong>
-              </p>
-            </div>
-            <div className="grid md:grid-cols-12 gap-8 items-center">
-              <div className="md:col-span-5 order-2 md:order-1 space-y-6 bg-secondary/30 p-6 rounded-2xl border border-border">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Lock className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-sm">Zero Data Extraction</h4>
-                    <p className="text-sm text-muted-foreground mt-1">All telemetry is analyzed directly within your browser. We never store your personal data.</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Zap className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-sm">Heuristic AI Engine</h4>
-                    <p className="text-sm text-muted-foreground mt-1">Identifies unknown threats by analyzing hardware anomalies and behavioral patterns.</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Bug className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-sm">Deep Script Inspection</h4>
-                    <p className="text-sm text-muted-foreground mt-1">Detects obfuscated code, cryptominers, and tracking beacons running silently.</p>
-                  </div>
-                </div>
-              </div>
-              <div className="md:col-span-7 order-1 md:order-2">
-                <Card className="border-border bg-card shadow-sm relative overflow-hidden">
-                  <PublicScanner />
-                </Card>
-              </div>
-            </div>
-          </div>
-        </section>
-        
-        {/* Architecture / Features */}
-        <section className="py-20 lg:py-32 border-t border-border/50 bg-secondary/5">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
-                What Sift-AI Actually Does
-              </h2>
-              <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                A prompt-injection firewall for AI products, backed by threat scanning and human verification.
-              </p>
-            </div>
-            
-            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
-              <Card className="border-primary/40 bg-card shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                    <ShieldAlert className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg">Prompt Guard</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground leading-relaxed">
-                  Detects instruction overrides, jailbreaks, system-prompt extraction, hidden base64 and invisible-character payloads, exfiltration links, and leaked secrets in model output.
-                </CardContent>
-              </Card>
-              <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                    <Bug className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg">Device Diagnostics</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground leading-relaxed">
-                  A client-side browser scan that surfaces automation flags, tracking scripts, risky extensions, and environment anomalies — no install required.
-                </CardContent>
-              </Card>
-              <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                    <Activity className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg">Threat Scanning</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground leading-relaxed">
-                  Check links, domains, IPs, and file hashes against live reputation feeds, and analyze emails and texts for phishing and scam indicators.
-                </CardContent>
-              </Card>
-              <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                    <ShieldCheck className="w-6 h-6 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg">Human Verification</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground leading-relaxed">
-                  An embeddable widget with timed challenges and strike-based lockouts, plus a server-side verification API for your own site or app.
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* Call to Action */}
-        <section className="py-24 relative overflow-hidden bg-primary/5 border-t border-border/50">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-50" />
-          <div className="max-w-4xl mx-auto px-4 relative z-10 text-center">
-            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-              Ship AI Features Without the Attack Surface.
-            </h2>
-            <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Free during early access — grab an API key and put Prompt Guard in front of your model in minutes.
+            <p className="text-muted-foreground max-w-2xl mx-auto text-base md:text-lg mb-10 leading-relaxed">
+              If your business uses an AI chatbot or assistant, people can try to trick it into breaking rules or leaking private info. SiftAI checks every message first and stops the sneaky ones.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link to="/developer" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full h-14 px-8 text-base font-semibold">
-                  Get an API Key <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
+              <a href="#try-it"><Button size="lg" className="w-full h-12 px-8 gap-2">Try it now <ArrowRight className="w-4 h-4" /></Button></a>
+              <Link to="/developer"><Button size="lg" variant="outline" className="w-full h-12 px-8">Add it to my app</Button></Link>
             </div>
           </div>
         </section>
 
+        <section id="try-it" className="py-20 border-t border-border/50">
+          <div className="max-w-3xl mx-auto px-4">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Go ahead — try to trick it</h2>
+              <p className="text-muted-foreground">Pick an example or type your own message, then tap "Check it". No sign-up needed.</p>
+            </div>
+            <Card><CardContent className="pt-6"><GuardPlayground /></CardContent></Card>
+          </div>
+        </section>
+
+        <section className="py-20 border-t border-border/50 bg-secondary/5">
+          <div className="max-w-6xl mx-auto px-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 tracking-tight">What SiftAI does for you</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {FEATURES.map((f) => (
+                <div key={f.title} className="p-6 rounded-2xl border border-border bg-card">
+                  <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center mb-4"><f.icon className="w-5 h-5 text-primary" /></div>
+                  <h3 className="font-semibold mb-2">{f.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{f.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="py-24 border-t border-border/50 bg-primary/5 text-center px-4">
+          <ShieldCheck className="w-10 h-10 text-primary mx-auto mb-6" />
+          <h2 className="text-3xl md:text-5xl font-bold mb-6">Protect your AI in minutes</h2>
+          <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto">Grab a free key, paste one small piece of code, and you're covered.</p>
+          <Link to="/developer"><Button size="lg" className="h-14 px-8 text-base font-semibold gap-2">Get started free <ArrowRight className="w-5 h-5" /></Button></Link>
+        </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border bg-card py-10">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground font-medium">Sift-AI &copy; 2026</span>
-          </div>
-          <div className="flex gap-6 text-sm font-medium text-muted-foreground">
-            {/* Links moved to app sidebar */}
-          </div>
+      <footer className="border-t border-border bg-card py-8">
+        <div className="max-w-6xl mx-auto px-4 flex items-center gap-2 text-sm text-muted-foreground">
+          <Shield className="w-4 h-4" /> SiftAI &copy; 2026
         </div>
       </footer>
-
-
-      </div>
     </div>
   );
 }
