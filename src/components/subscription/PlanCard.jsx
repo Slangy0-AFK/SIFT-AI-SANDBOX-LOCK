@@ -13,13 +13,11 @@ const PLANS = {
     badge: null,
     devices: 1,
     features: [
-      { label: 'Base Chain Pipeline', included: true },
-      { label: 'Paradox Lock Gate', included: true },
-      { label: 'QRNG Cycles (1 cycle)', included: true },
-      { label: 'Mirror Environment', included: false },
-      { label: 'Honeypots & Tarpits', included: false },
-      { label: 'Threat Log (last 10)', included: true },
-      { label: 'Up to 1 device', included: true },
+      { label: 'Check messages on this site', included: true },
+      { label: '1 key for your app', included: true },
+      { label: 'Basic trick detection', included: true },
+      { label: 'Extra-careful checks', included: false },
+      { label: 'Full check history', included: false },
     ],
   },
   pro: {
@@ -31,15 +29,10 @@ const PLANS = {
     devices: 5,
     features: [
       { label: 'Everything in Free', included: true },
-      { label: 'QRNG Cycles (unlimited)', included: true },
-      { label: 'Mirror Environment', included: true },
-      { label: 'Honeypots & Tarpits', included: true },
-      { label: 'Full Threat Log', included: true },
-      { label: 'Multiple users', included: true },
-      { label: '5 devices per user', included: true },
-      { label: 'Priority threat response', included: true },
-      { label: 'Custom QRNG parameters', included: true },
-      { label: 'Dedicated support', included: true },
+      { label: 'Multiple keys for your apps', included: true },
+      { label: 'Extra-careful checks', included: true },
+      { label: 'Full check history', included: true },
+      { label: 'Priority help from our team', included: true },
     ],
   },
 };
@@ -78,9 +71,6 @@ export default function PlanCard({ planKey, billingCycle, currentPlan, onSelect,
             </>
           )}
         </div>
-        <p className="font-mono text-xs text-muted-foreground mt-1">
-          Up to {plan.devices} device{plan.devices > 1 ? 's' : ''}{planKey === 'pro' ? ' per user' : ''}
-        </p>
       </div>
 
       <ul className="space-y-2 flex-1 mb-6">
