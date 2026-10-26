@@ -45,6 +45,8 @@ import MyRuns from '@/pages/MyRuns';
 import AdminDashboard from '@/pages/AdminDashboard';
 import SiteLayout from '@/components/kit/SiteLayout';
 import PromptGuard from '@/pages/PromptGuard';
+import ScannerPlans from '@/pages/ScannerPlans';
+import Receipt from '@/pages/Receipt';
 // Add page imports here
 
 function AppRoutes() {
@@ -77,6 +79,8 @@ function AppRoutes() {
           <Route path="/about" element={<PageTransition><About /></PageTransition>} />
           <Route path="/thank-you" element={<PageTransition><ThankYou /></PageTransition>} />
         </Route>
+        <Route path="/plans" element={<PageTransition><ScannerPlans /></PageTransition>} />
+        <Route path="/receipt" element={<PageTransition><Receipt /></PageTransition>} />
         <Route path="/verify-demo" element={<Navigate to="/governor-demo" replace />} />
         <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
         <Route path="/register" element={<PageTransition><Register /></PageTransition>} />

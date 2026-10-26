@@ -51,6 +51,14 @@
     "checkout_session_id": {
       "type": "string"
     },
+    "stripe_subscription_id": {
+      "type": "string",
+      "description": "Stripe subscription id, stored once payment is confirmed"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe customer id for the plan holder"
+    },
     "wix_subscription_id": {
       "type": "string"
     },

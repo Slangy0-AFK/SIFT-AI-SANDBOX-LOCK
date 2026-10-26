@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from '@/components/ui/card';
@@ -38,7 +39,10 @@ export default function SubscriptionPage() {
     <div className="p-4 md:p-8 max-w-5xl mx-auto w-full space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Your plan</h1>
-        <p className="text-sm text-muted-foreground mt-1">See what you have now, and upgrade whenever you're ready.</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          See what you have now, and upgrade whenever you're ready.{' '}
+          <Link to="/plans" className="text-primary hover:underline">See all plans</Link>
+        </p>
       </div>
 
       <Card className={`border-2 ${currentPlan === 'pro' ? 'border-primary/30' : 'border-border'}`}>

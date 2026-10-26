@@ -1,0 +1,85 @@
+{
+  "name": "ScannerPurchase",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Buyer account. Empty until a guest purchase is claimed by the matching verified email"
+    },
+    "email": {
+      "type": "string",
+      "description": "Buyer email as recorded by Stripe at checkout"
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "pro",
+        "device_check",
+        "full_audit"
+      ]
+    },
+    "stripe_session_id": {
+      "type": "string",
+      "description": "Stripe Checkout Session id \u2014 the only link from a payment back to the buyer"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "refunded"
+      ],
+      "default": "pending"
+    },
+    "price_cents": {
+      "type": "number",
+      "description": "Server-side price the session was created with"
+    },
+    "amount_total": {
+      "type": "number",
+      "description": "Amount Stripe reports as charged"
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd"
+    },
+    "paid_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "tier",
+    "stripe_session_id",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

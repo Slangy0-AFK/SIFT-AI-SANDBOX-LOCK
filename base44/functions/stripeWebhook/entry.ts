@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import Stripe from 'npm:stripe@14.0.0';
+import { confirmAndGrant, downgradeSubscription, firstRecord } from '../../shared/scannerFulfillment.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -98,6 +99,38 @@ Deno.serve(async (req) => {
             console.warn(
               `[Stripe Webhook] Kit purchase ${kitPurchase.id} not confirmed (payment_status=${session.payment_status}, amount=${session.amount_total})`
             );
+          }
+        }
+      }
+
+      // Scanner tiers: only unlocks once Stripe confirms payment at the price we stored.
+      if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
+        const result = await confirmAndGrant(base44, stripe, event.data.object);
+        if (result.granted) console.log(`[Stripe Webhook] scanner tier granted for session ${event.data.object.id}`);
+        else console.warn(`[Stripe Webhook] scanner tier not granted (${result.reason}) for session ${event.data.object.id}`);
+      }
+
+      // Cancelled or failed subscriptions go back to Free.
+      if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.deleted') {
+        const changed = await downgradeSubscription(
+          base44,
+          event.data.object,
+          event.type === 'customer.subscription.deleted' ? 'cancelled' : null
+        );
+        console.log(`[Stripe Webhook] subscription ${event.data.object.id} synced: ${changed}`);
+      }
+
+      if (event.type === 'invoice.payment_failed') {
+        const invoice = event.data.object;
+        const subscriptionId =
+          typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription && invoice.subscription.id;
+        if (subscriptionId) {
+          const row = firstRecord(
+            await base44.asServiceRole.entities.Subscription.filter({ stripe_subscription_id: subscriptionId })
+          );
+          if (row && row.status === 'active') {
+            await base44.asServiceRole.entities.Subscription.update(row.id, { plan: 'free', status: 'expired' });
+            console.log(`[Stripe Webhook] payment failed, subscription ${row.id} moved back to Free`);
           }
         }
       }
