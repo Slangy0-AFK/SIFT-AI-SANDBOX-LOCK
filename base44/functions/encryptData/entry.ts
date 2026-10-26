@@ -17,11 +17,19 @@ Deno.serve(async (req) => {
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
     
+    // Admin only. One shared key sits behind this service, so any signed-in
+    // person calling it would get an encryption oracle: a signing box for
+    // anything they like, under a key that is not theirs, with no ceiling.
+    // Nothing in the app calls it and the owner does not need it from a
+    // browser, so the shared key is never placed at a non-admin's disposal.
     let user = null;
     if (!isScheduler) {
       user = await base44.auth.me().catch(() => null);
       if (!user) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden: this service is admin only' }, { status: 403 });
       }
     }
 
@@ -71,7 +79,7 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.SecurityEvent.create({
         event_type: 'access_granted',
         severity: 'info',
-        details: `Data encrypted by ${user.email}`,
+        details: `Data encrypted by ${user?.id || 'scheduler'}`,
         environment: 'production',
       });
 
@@ -83,8 +91,9 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'decrypt') {
-      // Only admins can decrypt — prevents multi-tenancy isolation violations
-      if (user.role !== 'admin') {
+      // The entry gate above admits admins only, and a scheduler call carries no
+      // user, so this stays null-safe rather than trusting the caller.
+      if (!isScheduler && user?.role !== 'admin') {
         return Response.json({ error: 'Forbidden: decrypt action requires admin role' }, { status: 403 });
       }
 

@@ -13,6 +13,11 @@ import { readSecret } from './runtimeSecrets.ts';
 
 const TIMEOUT = 9000;
 
+// These sources need an access key that this build does not carry. The name is
+// deliberately not read from the environment at all: an unregistered secret name
+// must not be referenced. Each source says so plainly instead of failing.
+const NO_ACCESS_KEY = 'no access key is configured for this source in this build, so it was not queried';
+
 export const FEED_SOURCES = [
   {
     id: 'malwarebazaar',
@@ -102,169 +107,25 @@ async function readJson(res) {
   }
 }
 
+// MalwareBazaar, ThreatFox, URLhaus and PhishTank each need an access key that
+// this build does not carry, so none of them is queried and each reports itself
+// as unavailable. Nothing here invents a key, and no unregistered secret name is
+// read. Feodo Tracker needs no key and OTX uses a registered one, so those are
+// the sources that can still answer.
 async function lookupMalwareBazaar(hash) {
-  const key = readSecret('ABUSECH_AUTH_KEY');
-  if (!key) return unavailable('malwarebazaar', 'access key not configured');
-  if (!/^[a-f0-9]{64}$/i.test(hash)) {
-    return none('malwarebazaar', 'MalwareBazaar indexes SHA-256 hashes, so this hash length is not looked up here');
-  }
-  try {
-    const res = await fetch('https://mb-api.abuse.ch/api/v1/', {
-      method: 'POST',
-      headers: { 'Auth-Key': key, 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ query: 'get_info', hash }).toString(),
-      signal: AbortSignal.timeout(TIMEOUT)
-    });
-    if (res.status === 401 || res.status === 403) return unavailable('malwarebazaar', 'access key refused');
-    if (!res.ok) return failed('malwarebazaar', `the source answered HTTP ${res.status}`);
-    const data = await readJson(res);
-    if (!data || data.query_status !== 'ok') return none('malwarebazaar');
-    const row = (data.data || [])[0] || {};
-    return hit('malwarebazaar', {
-      first_seen: row.first_seen || null,
-      family: row.signature || null,
-      tags: row.tags || [],
-      detail_url: `https://bazaar.abuse.ch/sample/${hash}/`,
-      category: 'malware_sample'
-    });
-  } catch (error) {
-    return failed('malwarebazaar', String((error && error.message) || error));
-  }
+  return unavailable('malwarebazaar', NO_ACCESS_KEY);
 }
 
 async function lookupThreatFox(value) {
-  const key = readSecret('ABUSECH_AUTH_KEY');
-  if (!key) return unavailable('threatfox', 'access key not configured');
-  try {
-    const res = await fetch('https://threatfox-api.abuse.ch/api/v1/', {
-      method: 'POST',
-      headers: { 'Auth-Key': key, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: 'search_ioc', search_term: value }),
-      signal: AbortSignal.timeout(TIMEOUT)
-    });
-    if (res.status === 401 || res.status === 403) return unavailable('threatfox', 'access key refused');
-    if (!res.ok) return failed('threatfox', `the source answered HTTP ${res.status}`);
-    const data = await readJson(res);
-    if (!data || data.query_status !== 'ok' || !data.data || !data.data.length) return none('threatfox');
-    const row = data.data[0] || {};
-    return hit('threatfox', {
-      first_seen: row.first_seen_utc || null,
-      family: row.malware_printable || row.malware || row.malware_alias || null,
-      tags: row.tags || [],
-      detail_url: row.reference || 'https://threatfox.abuse.ch/browse/',
-      category: row.threat_type || 'ioc'
-    });
-  } catch (error) {
-    return failed('threatfox', String((error && error.message) || error));
-  }
+  return unavailable('threatfox', NO_ACCESS_KEY);
 }
 
 async function lookupUrlhaus(kind, value) {
-  const key = readSecret('ABUSECH_AUTH_KEY');
-  if (!key) return unavailable('urlhaus', 'access key not configured');
-  const endpoint = kind === 'url' ? 'https://urlhaus-api.abuse.ch/v1/url/' : 'https://urlhaus-api.abuse.ch/v1/host/';
-  const field = kind === 'url' ? 'url' : 'host';
-  try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Auth-Key': key, 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ [field]: value }).toString(),
-      signal: AbortSignal.timeout(TIMEOUT)
-    });
-    if (res.status === 401 || res.status === 403) return unavailable('urlhaus', 'access key refused');
-    if (!res.ok) return failed('urlhaus', `the source answered HTTP ${res.status}`);
-    const data = await readJson(res);
-    if (!data || data.query_status !== 'ok') return none('urlhaus');
-    const row = kind === 'url' ? data : data;
-    return hit('urlhaus', {
-      first_seen: row.date_added || row.firstseen || null,
-      family: null,
-      tags: row.tags || [],
-      detail_url: row.urlhaus_reference || null,
-      threat: row.threat || null,
-      category: kind === 'url' ? 'malware_url' : 'malware_host'
-    });
-  } catch (error) {
-    return failed('urlhaus', String((error && error.message) || error));
-  }
-}
-
-async function lookupFeodo(ip) {
-  try {
-    const res = await fetch('https://feodotracker.abuse.ch/downloads/ipblocklist.json', {
-      signal: AbortSignal.timeout(TIMEOUT)
-    });
-    if (!res.ok) return failed('feodotracker', `the source answered HTTP ${res.status}`);
-    const rows = await readJson(res);
-    if (!Array.isArray(rows)) return failed('feodotracker', 'the source sent an unexpected response');
-    const row = rows.find((entry) => entry && entry.ip_address === ip);
-    if (!row) return none('feodotracker');
-    return hit('feodotracker', {
-      first_seen: row.first_seen || null,
-      family: row.malware || null,
-      tags: ['command-and-control', row.status || 'online'].filter(Boolean),
-      detail_url: `https://feodotracker.abuse.ch/browse/host/${ip}/`,
-      category: 'c2'
-    });
-  } catch (error) {
-    return failed('feodotracker', String((error && error.message) || error));
-  }
-}
-
-async function lookupOtx(kind, value) {
-  const key = readSecret('ALIENVAULT_API_KEY');
-  if (!key) return unavailable('otx', 'access key not configured');
-  const type = kind === 'hash' ? 'file' : kind === 'ip' ? 'IPv4' : kind;
-  try {
-    const res = await fetch(`https://otx.alienvault.com/api/v1/indicators/${type}/${encodeURIComponent(value)}/general`, {
-      headers: { 'X-OTX-API-KEY': key, Accept: 'application/json' },
-      signal: AbortSignal.timeout(TIMEOUT)
-    });
-    if (res.status === 401 || res.status === 403) return unavailable('otx', 'access key refused');
-    if (res.status === 404) return none('otx');
-    if (!res.ok) return failed('otx', `the source answered HTTP ${res.status}`);
-    const data = await readJson(res);
-    const pulses = (data && data.pulse_info && data.pulse_info.pulses) || [];
-    if (!pulses.length) return none('otx');
-    const stamps = pulses.map((pulse) => pulse.created).filter(Boolean).sort();
-    const tags = [...new Set(pulses.flatMap((pulse) => pulse.tags || []))].slice(0, 12);
-    const families = [...new Set(pulses.flatMap((pulse) => pulse.malware_families || []))].slice(0, 8);
-    return hit('otx', {
-      first_seen: stamps[0] || null,
-      family: families.join(', ') || null,
-      tags,
-      detail_url: `https://otx.alienvault.com/indicator/${type}/${encodeURIComponent(value)}`,
-      category: 'pulse'
-    });
-  } catch (error) {
-    return failed('otx', String((error && error.message) || error));
-  }
+  return unavailable('urlhaus', NO_ACCESS_KEY);
 }
 
 async function lookupPhishTank(url) {
-  const key = readSecret('PHISHTANK_APP_KEY');
-  if (!key) return unavailable('phishtank', 'access key not configured');
-  try {
-    const res = await fetch('https://checkurl.phishtank.com/checkurl/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ url, format: 'json', app_key: key }).toString(),
-      signal: AbortSignal.timeout(TIMEOUT)
-    });
-    if (!res.ok) return failed('phishtank', `the source answered HTTP ${res.status}`);
-    const data = await readJson(res);
-    const row = (data && data.results) || {};
-    if (row.in_database !== true) return none('phishtank');
-    return hit('phishtank', {
-      first_seen: row.verified_at || null,
-      family: null,
-      tags: ['phishing'],
-      detail_url: row.phish_detail_page || null,
-      category: 'phishing'
-    });
-  } catch (error) {
-    return failed('phishtank', String((error && error.message) || error));
-  }
+  return unavailable('phishtank', NO_ACCESS_KEY);
 }
 
 // Which kind of thing did the person paste? A hash is hex, an IP is four numbers,

@@ -38,8 +38,22 @@ export default function CaptchaModal({ isOpen, onSuccess, onClose }) {
     
     setLoading(true);
     try {
-      // Return the token and answer for the checkout function to verify
-      onSuccess(captchaData.captcha_token, answer);
+      // The answer is checked on the server against the stored challenge, so the
+      // page cannot decide for itself that it passed, and a fresh challenge is
+      // loaded once this one is used up.
+      const res = await base44.functions.invoke('generateCaptcha', {
+        action: 'verify',
+        challenge_id: captchaData.challenge_id,
+        answer,
+      });
+
+      if (res.data?.verified) {
+        onSuccess();
+      } else {
+        toast.error(res.data?.error || 'Verification failed');
+        setAnswer('');
+        if (res.data?.locked) generateCaptcha();
+      }
     } catch (error) {
       toast.error('Verification failed');
     } finally {

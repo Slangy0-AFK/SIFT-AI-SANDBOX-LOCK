@@ -24,7 +24,8 @@ export default function ParadoxGate() {
 
   const [captchaData, setCaptchaData] = useState(null);
   const [captchaAnswer, setCaptchaAnswer] = useState('');
-  const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaChallengeId, setCaptchaChallengeId] = useState('');
+  const [checkingCaptcha, setCheckingCaptcha] = useState(false);
   const [loadingCaptcha, setLoadingCaptcha] = useState(true);
   const [honeypot, setHoneypot] = useState('');
   const [timeLeft, setTimeLeft] = useState(300);
@@ -38,7 +39,7 @@ export default function ParadoxGate() {
     base44.functions.invoke('generateCaptcha')
       .then(res => {
         setCaptchaData(res.data.challenge);
-        setCaptchaToken(res.data.captcha_token);
+        setCaptchaChallengeId(res.data.challenge_id || '');
       })
       .catch(console.error)
       .finally(() => setLoadingCaptcha(false));
@@ -62,7 +63,7 @@ export default function ParadoxGate() {
     return () => clearInterval(timer);
   }, [timeLeft, locked, verified, strikeCount]);
 
-  const handleCaptchaVerify = (e) => {
+  const handleCaptchaVerify = async (e) => {
     e?.preventDefault();
     const isRobot = honeypot !== '' || (e && e.nativeEvent && !e.nativeEvent.isTrusted);
     base44.functions.invoke('trackParadoxDemo', { action: 'try', isRobot }).catch(() => {});
@@ -72,10 +73,19 @@ export default function ParadoxGate() {
       robotTries: isRobot ? prev.robotTries + 1 : prev.robotTries
     }));
 
+    setCheckingCaptcha(true);
     try {
-      const decoded = JSON.parse(atob(captchaToken));
-      const data = JSON.parse(decoded.data);
-      if (parseInt(captchaAnswer) === data.num1 + data.num2 && !isRobot) {
+      // The answer is checked on the server against the stored challenge. The
+      // page is told only whether it was right, never what the answer is, so
+      // nothing handed to the browser can be decoded back into it.
+      const res = await base44.functions.invoke('generateCaptcha', {
+        action: 'verify',
+        challenge_id: captchaChallengeId,
+        answer: captchaAnswer,
+      });
+      const passed = res.data?.verified === true && !isRobot;
+
+      if (passed) {
         base44.functions.invoke('trackParadoxDemo', { action: 'breach', isRobot }).catch(() => {});
         setStats(prev => ({
           ...prev,
@@ -94,9 +104,13 @@ export default function ParadoxGate() {
         } else {
           toast.error(`Incorrect answer. Strike ${next}/3.`);
         }
+        setCaptchaAnswer('');
+        if (res.data?.locked) loadCaptcha();
       }
     } catch (err) {
       toast.error('Verification failed. Try again.');
+    } finally {
+      setCheckingCaptcha(false);
     }
   };
 
@@ -332,7 +346,7 @@ export default function ParadoxGate() {
                         <Button
                           className="w-full h-12 transition-colors font-semibold tracking-widest"
                           onClick={handleCaptchaVerify}
-                          disabled={!captchaAnswer.trim() || loadingCaptcha}
+                          disabled={!captchaAnswer.trim() || loadingCaptcha || checkingCaptcha}
                         >
                           VERIFY
                         </Button>

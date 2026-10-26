@@ -6,7 +6,7 @@ export const SOURCE_CATALOG = [
     covers: 'Malware file hashes (SHA-256).',
     site: 'https://bazaar.abuse.ch/',
     commercial: 'restricted',
-    commercial_note: 'abuse.ch allows free use for non-commercial purposes; commercial use needs a paid abuse.ch plan. SIFT AI has not confirmed a commercial licence, so this feed is used with that restriction flagged.'
+    commercial_note: 'abuse.ch allows free use for non-commercial purposes; commercial use needs a paid abuse.ch plan. SIFT AI has not confirmed a commercial licence, so this feed is used with that restriction flagged. It also needs an abuse.ch access key, which this build does not carry: it is listed here but is not queried when you run a check.'
   },
   {
     id: 'threatfox',
@@ -15,7 +15,7 @@ export const SOURCE_CATALOG = [
     covers: 'Indicators of compromise: hashes, links, domains and IP addresses.',
     site: 'https://threatfox.abuse.ch/',
     commercial: 'restricted',
-    commercial_note: 'abuse.ch terms: free for non-commercial use, paid plan for commercial use. Not confirmed for SIFT AI.'
+    commercial_note: 'abuse.ch terms: free for non-commercial use, paid plan for commercial use. Not confirmed for SIFT AI. It also needs an abuse.ch access key, which this build does not carry: it is listed here but is not queried when you run a check.'
   },
   {
     id: 'urlhaus',
@@ -24,7 +24,7 @@ export const SOURCE_CATALOG = [
     covers: 'Links and hosts used to spread malware.',
     site: 'https://urlhaus.abuse.ch/',
     commercial: 'restricted',
-    commercial_note: 'abuse.ch terms: free for non-commercial use, paid plan for commercial use. Not confirmed for SIFT AI.'
+    commercial_note: 'abuse.ch terms: free for non-commercial use, paid plan for commercial use. Not confirmed for SIFT AI. It also needs an abuse.ch access key, which this build does not carry: it is listed here but is not queried when you run a check.'
   },
   {
     id: 'feodotracker',
@@ -51,7 +51,7 @@ export const SOURCE_CATALOG = [
     covers: 'Verified phishing links.',
     site: 'https://phishtank.org/',
     commercial: 'not_confirmed',
-    commercial_note: 'PhishTank’s data terms need checking before commercial use, and its API needs an application key. Not confirmed.'
+    commercial_note: 'PhishTank’s data terms need checking before commercial use, and its API needs an application key. Not confirmed. That application key is not in this build, so it is listed here but is not queried when you run a check.'
   }
 ];
 
