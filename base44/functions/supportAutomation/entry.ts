@@ -327,11 +327,19 @@ export default async function (req) {
       const state = await automationState(base44);
       const page = await base44.asServiceRole.entities.SupportTicket.filter({}, { sort: '-created_date', limit: 50 });
       const tickets = rows(page);
+      const waiting = tickets.filter((t) => t.status === 'waiting_on_team');
       return Response.json({
         paused: state.paused,
         reason: state.reason,
         open_tickets: tickets.filter((t) => OPEN_STATUSES.includes(t.status)).length,
-        waiting_on_team: tickets.filter((t) => t.status === 'waiting_on_team').length,
+        waiting_on_team: waiting.length,
+        waiting_tickets: waiting.slice(0, 10).map((t) => ({
+          id: t.id,
+          ticket_number: t.ticket_number || ticketNumber(t.id),
+          title: t.title,
+          priority: t.priority || 'other',
+          exchanges: Number(t.exchanges || 0)
+        })),
         message_cap_per_ticket: MESSAGE_CAP,
         tickets_per_sweep: SWEEP_TICKET_CAP
       });
@@ -395,6 +403,15 @@ export default async function (req) {
 
     for (const ticket of ordered) {
       try {
+        // A ticket filed before the owner id was stored on it gets it filled in
+        // here, once, so the person can follow the thread and their own daily
+        // ceiling still counts it. A ticket sent with no account says "(guest)"
+        // in its title and is left exactly as it is.
+        if (!ticket.user_id && ticket.created_by_id && !/\(guest\)$/.test(String(ticket.title || '').trim())) {
+          ticket.user_id = ticket.created_by_id;
+          await base44.asServiceRole.entities.SupportTicket.update(ticket.id, { user_id: ticket.created_by_id });
+        }
+
         const messages = await countMessages(base44, ticket.id);
         const decision = decideNext(ticket, messages);
         if (!decision) {
