@@ -1,4 +1,5 @@
 // Shared helpers for the public Developer API (widget + scan endpoints)
+import { constantTimeEqual } from './constantTime.ts';
 
 export const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -45,7 +46,9 @@ export async function verifyPayload(secret, token) {
   try {
     const { data, sig } = JSON.parse(atob(token));
     const expected = await hmacHex(secret, data);
-    if (expected !== sig) return null;
+    // Constant-time: a plain comparison returns early and leaks, byte by byte,
+    // how much of the signature a caller has guessed correctly.
+    if (!constantTimeEqual(expected, sig)) return null;
     return JSON.parse(data);
   } catch (_e) {
     return null;

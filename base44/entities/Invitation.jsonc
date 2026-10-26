@@ -40,6 +40,17 @@
       "minimum": 1,
       "maximum": 10
     },
+    "slots_used": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "description": "Device slots this invitation has already enrolled. Enrollment is refused once it reaches device_slots, so one invitation can never enroll unlimited devices"
+    },
+    "consumed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the last allocated slot was enrolled, so this invitation is spent and cannot be enrolled from again"
+    },
     "expires_at": {
       "type": "string",
       "format": "date-time",

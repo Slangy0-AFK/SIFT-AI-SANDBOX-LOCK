@@ -20,8 +20,11 @@ Deno.serve(async (req) => {
 
     // Removed strict origin check to allow previews and valid cross-origin requests
 
-    const forwardedIps = req.headers.get('x-forwarded-for');
-    const ip = req.headers.get('cf-connecting-ip') || (forwardedIps ? forwardedIps.split(',')[0].trim() : 'unknown');
+    // Dedupe on an address the caller cannot choose. A caller can put anything at
+    // the front of X-Forwarded-For, so only the entry the edge itself appended (the
+    // last one) is usable, and the edge-provided header wins when it is present.
+    const xff = req.headers.get('x-forwarded-for')?.split(',').map((s) => s.trim()).filter(Boolean) || [];
+    const ip = req.headers.get('cf-connecting-ip') || xff[xff.length - 1] || 'unknown';
     // Format current date in user timezone (America/Chicago) or UTC based on environment needs, using ISO string part.
     // Deno runtime doesn't have formatChicagoTime utility directly easily available, so we just use UTC date as a proxy for 'day' tracking.
     const today = new Date().toISOString().split('T')[0];
@@ -46,8 +49,10 @@ Deno.serve(async (req) => {
         });
       }
     } else {
-      // Fallback if IP cannot be detected for some reason
-      shouldIncrement = true;
+      // No edge-provided address, so this visitor cannot be identified. Counting
+      // nothing is the safe failure: at worst an honest visitor goes uncounted,
+      // while a caller who cannot be identified cannot inflate the counter.
+      console.warn('[TRACK] No edge-provided client IP - visit not counted');
     }
     
     if (!stat) {

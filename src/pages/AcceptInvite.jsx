@@ -116,7 +116,7 @@ export default function AcceptInvitePage() {
         }, 1500);
       }
     } catch (err) {
-      toast.error(err.message || 'Failed to enroll device');
+      toast.error(err.response?.data?.error || err.message || 'Failed to enroll device');
     } finally {
       setEnrolling(false);
     }

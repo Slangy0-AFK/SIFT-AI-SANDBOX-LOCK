@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { secrets } from 'base44:runtime';
+import { constantTimeEqual } from '../../shared/constantTime.ts';
 
 // Deterministic gates. No model is called here: every decision is plain code.
 const GENESIS = '0'.repeat(64);
@@ -196,7 +197,8 @@ const verifySeal = async (secret, sealRaw, actionHash) => {
     return { ok: false, note: 'The seal on this request has expired. Seal the action again.', signature: sig };
   }
   const expected = await hmacHex(secret, `${nonce}|${expires}|${actionHash}`);
-  if (expected !== sig) {
+  // Constant-time, so a wrong seal cannot be narrowed down by how long the check takes.
+  if (!constantTimeEqual(expected, sig)) {
     return { ok: false, note: 'The seal does not match this action, so something changed after it was sealed.', signature: sig };
   }
   return { ok: true, note: 'Sealed when it was sent, and unchanged since.', signature: sig };

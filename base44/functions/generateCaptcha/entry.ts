@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { constantTimeEqual } from '../../shared/constantTime.ts';
 
 /**
  * Human verification challenge.
@@ -70,7 +71,8 @@ Deno.serve(async (req) => {
       }
 
       const computed = await sha256Hex(`${challenge.challenge_id}:${parseInt(submitted, 10)}`);
-      if (computed !== challenge.answer_hash) {
+      // Constant-time: the answer must not be guessable by measuring the check.
+      if (!constantTimeEqual(computed, challenge.answer_hash)) {
         const next = attempts + 1;
         await base44.asServiceRole.entities.WidgetChallenge.update(challenge.id, {
           attempts: next,
