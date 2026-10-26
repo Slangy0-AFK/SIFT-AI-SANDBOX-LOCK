@@ -13,6 +13,16 @@ export default async function (req) {
     const tier = getTier(body.tier);
     if (!tier) return Response.json({ error: 'Unknown plan.' }, { status: 400 });
 
+    // A retired tier cannot be bought, even though its id is still known here.
+    // The Full Device Audit is kept only so an already-made $99 payment can
+    // still be confirmed; its features are in Device Check now.
+    if (tier.purchasable === false) {
+      return Response.json(
+        { error: 'That plan is no longer sold. Device Check at $49 includes everything it had.' },
+        { status: 400 }
+      );
+    }
+
     const secretKey = stripeSecretKey();
     if (!secretKey) {
       console.error('[scannerCheckout] STRIPE_SECRET_KEY is not set');

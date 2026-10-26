@@ -20,14 +20,19 @@ export const SCANNER_TIERS = {
     amount: 4900,
     currency: 'usd'
   },
+  // Not sold any more: everything it included is now in Device Check at $49.
+  // It stays in this catalog because a $99 payment made before the change must
+  // still be confirmable by the webhook, and the amount below is the historical
+  // one. 'purchasable: false' is what stops any new checkout for it.
   full_audit: {
     id: 'full_audit',
-    name: 'Full Device Audit',
+    name: 'Full Device Audit (formerly $99, now included in Device Check)',
     label: 'SiftAI Full Device Audit',
     mode: 'payment',
     interval: null,
     amount: 9900,
-    currency: 'usd'
+    currency: 'usd',
+    purchasable: false
   }
 };
 

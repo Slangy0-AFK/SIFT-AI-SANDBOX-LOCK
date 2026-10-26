@@ -35,7 +35,10 @@ export default function useScannerUnlocks() {
     isAuthed: data.authed === true,
     isPro: unlocked.has('pro'),
     hasDeviceCheck: unlocked.has('device_check'),
-    hasFullAudit: unlocked.has('full_audit'),
+    // The Full Device Audit is no longer sold: everything it included is in
+    // Device Check. Anyone who paid the old $99 still has it, so a device_check
+    // purchase counts as full-audit access too.
+    hasFullAudit: unlocked.has('full_audit') || unlocked.has('device_check'),
     unlocked
   };
 }

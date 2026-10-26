@@ -10,8 +10,11 @@ import { toast } from 'sonner';
 import TierLocked from '@/components/scanner/TierLocked';
 import SubmissionList from '@/components/scanner/SubmissionList';
 
-const EMPTY = { device_name: '', flagged_item: '', notes: '' };
+const EMPTY = { device_name: '', flagged_item: '', app_list: '', network_destinations: '', notes: '' };
 
+// One paid device tier. It covers what the retired $99 Full Device Audit covered:
+// a single flagged item, or the whole device (app list and where it connects),
+// with the evidence and a full written fix plan.
 export default function DeviceCheckForm({ unlocked }) {
   const [form, setForm] = useState(EMPTY);
   const queryClient = useQueryClient();
@@ -25,13 +28,15 @@ export default function DeviceCheckForm({ unlocked }) {
         tier: 'device_check',
         device_name: form.device_name.trim(),
         flagged_item: form.flagged_item.trim(),
+        app_list: form.app_list.trim(),
+        network_destinations: form.network_destinations.trim(),
         notes: form.notes.trim(),
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['device-submissions'] });
       setForm(EMPTY);
-      toast.success('Submitted. You will get a verdict, the evidence, and a fix list.');
+      toast.success('Submitted. You will get a verdict, the evidence, and a full written fix plan.');
     },
     onError: (error) => toast.error(error.response?.data?.error || error.message),
   });
@@ -41,7 +46,12 @@ export default function DeviceCheckForm({ unlocked }) {
       <TierLocked
         tier="Device Check"
         price="$49 one time"
-        includes={['Submit a flagged scan', 'A verdict, with the evidence', 'A fix list report']}
+        includes={[
+          'A flagged item, or the whole device',
+          'The app list and where the device connects',
+          'Every flagged item, with the evidence',
+          'A full written report and fix plan'
+        ]}
       />
     );
   }
@@ -51,9 +61,10 @@ export default function DeviceCheckForm({ unlocked }) {
   return (
     <div className="space-y-5">
       <div className="rounded-2xl border border-border bg-card p-6">
-        <h3 className="font-mono text-sm font-bold tracking-wide text-foreground">Submit a flagged scan</h3>
+        <h3 className="font-mono text-sm font-bold tracking-wide text-foreground">Submit a flagged item, or the whole device</h3>
         <p className="mt-2 font-mono text-xs leading-relaxed text-muted-foreground">
-          Send us the thing that came up and we will look at it closely. You get a verdict, the evidence behind it, and a fix list.
+          Send one thing you are worried about, or the whole picture. You get a verdict, the evidence behind it, and a full written
+          fix plan. Give us as much of the picture as you can.
         </p>
         <div className="mt-5 space-y-4">
           <div className="space-y-2">
@@ -75,11 +86,31 @@ export default function DeviceCheckForm({ unlocked }) {
             />
           </div>
           <div className="space-y-2">
+            <Label className="font-mono text-xs">Apps on the device</Label>
+            <Textarea
+              className="font-mono text-xs"
+              rows={3}
+              placeholder="One per line, or separated by commas"
+              value={form.app_list}
+              onChange={(e) => setForm((prev) => ({ ...prev, app_list: e.target.value }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="font-mono text-xs">Where the device connects</Label>
+            <Textarea
+              className="font-mono text-xs"
+              rows={3}
+              placeholder="Sites, apps or services you use on this device, if you know them"
+              value={form.network_destinations}
+              onChange={(e) => setForm((prev) => ({ ...prev, network_destinations: e.target.value }))}
+            />
+          </div>
+          <div className="space-y-2">
             <Label className="font-mono text-xs">What you noticed</Label>
             <Textarea
               className="font-mono text-xs"
               rows={4}
-              placeholder="Anything that helps: when it appeared, what you were doing, what it looked like"
+              placeholder="Anything that helps: when it appeared, what you were doing, what you want checked first"
               value={form.notes}
               onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))}
             />

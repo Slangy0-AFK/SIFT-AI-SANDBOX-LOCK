@@ -53,7 +53,7 @@ export default function Compliance() {
           <p className="text-foreground">{VT_UNAVAILABLE}</p>
           <p>
             SIFT AI therefore does not query VirusTotal, does not send anything to VirusTotal, and does not keep or show a VirusTotal
-            result. No tier includes a VirusTotal check, including Pro, Device Check and Full Device Audit.
+            result. No tier includes a VirusTotal check, including Pro and Device Check.
           </p>
           <p>
             If you want to look an item up yourself, you can do that directly at{' '}
@@ -144,7 +144,7 @@ export default function Compliance() {
             <Link to="/plans" className="text-primary hover:underline">
               Plans page
             </Link>
-            : Free at $0, Pro at $7 per month, Device Check at $49 one time, and Full Device Audit at $99 one time. Prices are shown in
+            : Free at $0, Pro at $7 per month, and Device Check at $49 one time, which includes the Full Device Audit that used to be $99. Prices are shown in
             US dollars.
           </p>
           <p>

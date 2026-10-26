@@ -34,7 +34,7 @@ export const HELP_ARTICLES = [
     text: 'SIFT AI runs in your browser. It checks the app name, permission screen, link, hash or message you upload or paste. It cannot look through a whole phone by itself, and it cannot see things you have not given it.',
     fix_steps: [
       'Bring the exact app name, permission screen, link, hash or message you want checked.',
-      'If you need the whole device looked at, book a Device Check or a Full Device Audit on the plans page.'
+      'If you need the whole device looked at, book a Device Check on the plans page: the app list, where the device connects, the evidence and a written fix plan are all included in it.'
     ]
   },
   {
@@ -145,7 +145,7 @@ export function triagePriority({ topic = '', text = '' } = {}) {
 export function missingDetailFor({ priority = 'other', ticketText = '' } = {}) {
   const text = String(ticketText || '');
   if (/\b[\w.+-]+@[\w-]+\.[\w.]+\b/.test(text)) {
-    if (priority === 'payment_unlock') return 'the tier you paid for (Pro, Device Check or Full Device Audit)';
+    if (priority === 'payment_unlock') return 'the tier you paid for (Pro or Device Check)';
   }
   if (priority === 'payment_unlock') {
     return /\b[\w.+-]+@[\w-]+\.[\w.]+\b/.test(text)

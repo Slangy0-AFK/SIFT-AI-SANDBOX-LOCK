@@ -1,5 +1,5 @@
-// VirusTotal is GATED. SIFT AI is a commercial product (Free, Pro, Device Check,
-// Full Device Audit) and the VirusTotal Public API must not be used in commercial
+// VirusTotal is GATED. SIFT AI is a commercial product (Free, Pro, Device Check)
+// and the VirusTotal Public API must not be used in commercial
 // products or services, must not be used as a substitute for antivirus products,
 // and must not be integrated in a project that may harm the antivirus industry.
 //

@@ -170,7 +170,7 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {SCANNER_PLANS.map((plan) => (
               <div key={plan.id} className={`rounded-2xl border bg-card p-6 ${plan.highlight ? 'border-primary/40' : 'border-border'}`}>
                 <h3 className="font-heading text-base font-bold">{plan.name}</h3>

@@ -27,7 +27,7 @@ export default function VirusTotalNotice({ compact = false }) {
       </p>
       {!compact && (
         <p className="mt-3 font-mono text-[11px] leading-relaxed text-muted-foreground">
-          Your own checks, your lists, your devices, and a Device Check or Full Device Audit are unaffected. More detail:{' '}
+          Your own checks, your lists, your devices, and a Device Check are unaffected. More detail:{' '}
           <Link to="/compliance" className="text-primary hover:underline">
             Compliance &amp; legal notes
           </Link>

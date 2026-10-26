@@ -60,13 +60,13 @@ export default function ProReport() {
       doc.setFontSize(9);
       if (submissions.length === 0) {
         doc.setTextColor(120);
-        doc.text('No Device Check or Full Audit submissions yet.', 25, y);
+        doc.text('No Device Check submissions yet.', 25, y);
         y += 7;
       }
       submissions.forEach((submission) => {
         if (y > 275) { doc.addPage(); y = 20; }
         doc.setTextColor(0);
-        doc.text(`- ${submission.tier} / ${submission.device_name} / ${submission.status}`, 25, y);
+        doc.text(`- ${submission.tier === 'full_audit' ? 'Device Check (formerly $99)' : 'Device Check'} / ${submission.device_name} / ${submission.status}`, 25, y);
         y += 7;
       });
 

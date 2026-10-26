@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Shield, ShieldAlert, ScanLine, ArrowRight, Upload, MessageSquare, Wrench } from 'lucide-react';
+import { Shield, ShieldAlert, ScanLine, ArrowRight, Upload, MessageSquare } from 'lucide-react';
 import FreeScan from '@/components/scanner/FreeScan';
 import RecentChecks from '@/components/scanner/RecentChecks';
 import HelperAgent from '@/components/scanner/HelperAgent';
@@ -26,13 +26,7 @@ const TIERS = [
     icon: ShieldAlert,
     name: 'Device Check',
     price: '$49 once',
-    text: 'A careful second look at one flagged item, with the evidence and a fix list.'
-  },
-  {
-    icon: Wrench,
-    name: 'Full Device Audit',
-    price: '$99 once',
-    text: 'A written review of a device: the app list, the network destinations and every flagged item.'
+    text: 'A careful second look at a flagged item or the whole device: the app list, where it connects, the evidence and a full written fix plan.'
   }
 ];
 
@@ -105,7 +99,7 @@ export default function ScanNow() {
 
         <section className="space-y-5">
           <h2 className="font-heading text-sm font-bold tracking-widest">WHEN YOU WANT MORE</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {TIERS.map((tier) => (
               <div key={tier.name} className="rounded-2xl border border-border bg-card p-5">
                 <tier.icon className="h-5 w-5 text-primary" />

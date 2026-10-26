@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import useScannerUnlocks from '@/hooks/useScannerUnlocks';
 import ProTools from '@/components/scanner/ProTools';
 import DeviceCheckForm from '@/components/scanner/DeviceCheckForm';
-import FullAuditForm from '@/components/scanner/FullAuditForm';
 import HelperAgent from '@/components/scanner/HelperAgent';
 
 const LOGO = 'https://media.base44.com/images/public/6a0db3181169f42924052c0d/650b247a7_amazon.PNG';
@@ -14,7 +13,6 @@ const LOGO = 'https://media.base44.com/images/public/6a0db3181169f42924052c0d/65
 const TIERS = [
   { id: 'pro', label: 'Pro' },
   { id: 'device_check', label: 'Device Check' },
-  { id: 'full_audit', label: 'Full Device Audit' },
 ];
 
 export default function ScannerTools() {
@@ -76,15 +74,7 @@ export default function ScannerTools() {
             <h2 className="font-mono text-sm font-bold tracking-widest text-foreground">DEVICE CHECK</h2>
             <span className="font-mono text-xs text-muted-foreground">$49 one time</span>
           </div>
-          <DeviceCheckForm unlocked={unlocked.has('device_check')} />
-        </section>
-
-        <section className="space-y-5">
-          <div className="flex items-center gap-2">
-            <h2 className="font-mono text-sm font-bold tracking-widest text-foreground">FULL DEVICE AUDIT</h2>
-            <span className="font-mono text-xs text-muted-foreground">$99 one time</span>
-          </div>
-          <FullAuditForm unlocked={unlocked.has('full_audit')} />
+          <DeviceCheckForm unlocked={unlocked.has('device_check') || unlocked.has('full_audit')} />
         </section>
 
         <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
