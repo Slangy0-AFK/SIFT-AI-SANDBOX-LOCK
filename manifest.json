@@ -1,7 +1,7 @@
 {
-  "name": "Agent Control Kit",
-  "short_name": "Agent Kit",
-  "description": "Open tools for checking an AI agent before it acts: gates that run in code, evals you can rerun, and calculators for sizing a job.",
+  "name": "SIFT AI",
+  "short_name": "SIFT AI",
+  "description": "Checks the apps, permissions, links and messages you are unsure about, and tells you in plain language what it can see.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f1729",
@@ -21,27 +21,27 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["developer", "utilities", "security"],
+  "categories": ["utilities", "security"],
   "shortcuts": [
     {
-      "name": "Governor Demo",
-      "short_name": "Demo",
-      "description": "Check a proposed agent action",
-      "url": "/governor-demo",
+      "name": "Phone Scanner",
+      "short_name": "Scanner",
+      "description": "Check an app, a permission list or a message",
+      "url": "/scan",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Evals",
-      "short_name": "Evals",
-      "description": "What each eval tests and what it found",
-      "url": "/evals",
+      "name": "Plans",
+      "short_name": "Plans",
+      "description": "What is free and what the paid tiers include",
+      "url": "/plans",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Pricing",
-      "short_name": "Pricing",
-      "description": "What is free and what is in the Full Kit",
-      "url": "/pricing",
+      "name": "Support",
+      "short_name": "Support",
+      "description": "Ask the helper or open a ticket",
+      "url": "/support",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]
