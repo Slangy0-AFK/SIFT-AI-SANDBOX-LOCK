@@ -9,6 +9,7 @@ import { ShieldCheck, Database, Code2 } from 'lucide-react';
 
 const allNavItems = [
   { path: '/prompt-guard', icon: ShieldCheck, label: 'Check a Message' },
+  { path: '/scanner', icon: Activity, label: 'Device Tools' },
   { path: '/developer', icon: Code2, label: 'Add to My App' },
   { path: '/profile', icon: User, label: 'Profile' },
   { path: '/subscription', icon: CreditCard, label: 'Subscription' },
@@ -17,6 +18,7 @@ const allNavItems = [
 
 const mobileBottomNav = [
   { path: '/prompt-guard', icon: ShieldCheck, label: 'Check' },
+  { path: '/scanner', icon: Activity, label: 'Tools' },
   { path: '/developer', icon: Code2, label: 'My App' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];

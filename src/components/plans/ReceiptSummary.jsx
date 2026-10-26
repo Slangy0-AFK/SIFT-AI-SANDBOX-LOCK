@@ -56,7 +56,7 @@ export default function ReceiptSummary({ plan, purchase }) {
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <Link to="/dashboard">
+        <Link to="/scanner">
           <Button className="font-mono text-xs gap-2">
             Go to the scanner <ArrowRight className="h-3.5 w-3.5" />
           </Button>

@@ -47,6 +47,7 @@ import SiteLayout from '@/components/kit/SiteLayout';
 import PromptGuard from '@/pages/PromptGuard';
 import ScannerPlans from '@/pages/ScannerPlans';
 import Receipt from '@/pages/Receipt';
+import ScannerTools from '@/pages/ScannerTools';
 // Add page imports here
 
 function AppRoutes() {
@@ -89,6 +90,7 @@ function AppRoutes() {
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
           <Route element={<SiteLayout />}>
             <Route path="/dashboard" element={<PageTransition><MyRuns /></PageTransition>} />
+            <Route path="/scanner" element={<PageTransition><ScannerTools /></PageTransition>} />
             <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
           </Route>
           <Route element={<AppLayout />}>

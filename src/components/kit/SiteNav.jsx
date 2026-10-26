@@ -53,6 +53,9 @@ export default function SiteNav() {
                   Admin
                 </Link>
               )}
+              <Link to="/scanner" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                My device tools
+              </Link>
               <Link to="/dashboard" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
                 My runs
               </Link>
@@ -101,6 +104,11 @@ export default function SiteNav() {
             <div className="flex flex-col gap-2 py-4">
               {user ? (
                 <>
+                  <Link to="/scanner" onClick={close}>
+                    <Button variant="outline" className="w-full">
+                      My device tools
+                    </Button>
+                  </Link>
                   <Link to="/dashboard" onClick={close}>
                     <Button variant="outline" className="w-full">
                       My runs

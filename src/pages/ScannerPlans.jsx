@@ -42,7 +42,7 @@ export default function ScannerPlans() {
 
   const handleSelect = (plan) => {
     if (plan.id === 'free') {
-      window.location.href = isAuthed ? '/dashboard' : '/register';
+      window.location.href = isAuthed ? '/scanner' : '/register';
       return;
     }
     checkout.mutate(plan.id);
@@ -60,7 +60,7 @@ export default function ScannerPlans() {
             <Link to="/login">
               <Button size="sm" variant="outline" className="font-mono text-xs">Log in</Button>
             </Link>
-            <Link to="/dashboard">
+            <Link to="/scanner">
               <Button size="sm" className="font-mono text-xs">Open the scanner</Button>
             </Link>
           </div>
