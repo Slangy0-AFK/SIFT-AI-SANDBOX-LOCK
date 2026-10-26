@@ -26,10 +26,14 @@ export default function SettingsPage() {
       toast.error('Please type DELETE to confirm');
       return;
     }
-    await base44.functions.invoke('appSupport', { action: 'account_deletion' });
-    toast.success('Account deletion request submitted. Your account will be removed within 30 days.');
-    setShowDeleteAccount(false);
-    setDeleteConfirm('');
+    try {
+      await base44.functions.invoke('appSupport', { action: 'account_deletion' });
+      toast.success('Account deletion request submitted. Your account will be removed within 30 days.');
+      setShowDeleteAccount(false);
+      setDeleteConfirm('');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'The request did not go through. Please try again later.');
+    }
   };
 
   return (

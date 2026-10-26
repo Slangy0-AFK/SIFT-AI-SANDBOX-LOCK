@@ -1,5 +1,6 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { analyzeScamText } from '../../shared/scamText.ts';
+import { spendCredit } from '../../shared/creditGuard.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -23,6 +24,12 @@ Deno.serve(async (req) => {
       return Response.json({ 
         error: 'Provide either text (for SMS analysis) or phone_number (for lookup)' 
       }, { status: 400 });
+    }
+
+    // The analysis below costs an integration credit. A signed-in account is
+    // counted against a daily ceiling; the scheduled run is not.
+    if (!isScheduler && !(await spendCredit(base44, 'text_analysis', user.id))) {
+      return Response.json({ error: 'Daily limit for message checks reached. Please try again tomorrow.' }, { status: 429 });
     }
 
     let analysis;

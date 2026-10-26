@@ -1,4 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
+import { spendCredit } from '../../shared/creditGuard.ts';
 
 const esc = (s: string) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 
@@ -14,6 +15,11 @@ Deno.serve(async (req) => {
     if (action === 'support_chat') {
       const text = String(message || '').slice(0, 2000);
       if (!text.trim()) return Response.json({ error: 'Message required' }, { status: 400 });
+      // Each reply costs an integration credit. Counted before the call so a
+      // loop stops at the cap.
+      if (!(await spendCredit(base44, 'support_chat', user.id))) {
+        return Response.json({ reply: "The support chat has reached today's limit. Please try again tomorrow." });
+      }
       const reply = await core.InvokeLLM({
         prompt: `You are the Sift-AI support assistant. Answer concisely. Sift-AI offers browser device diagnostics, VirusTotal/AlienVault reputation lookups, email and SMS threat analysis, an embeddable human-verification widget, a developer scan API, IP allowlists and data retention settings.\n\nUser question: ${text}`,
       });
@@ -23,6 +29,9 @@ Deno.serve(async (req) => {
     if (action === 'feedback') {
       const text = String(message || '').slice(0, 5000);
       if (!text.trim()) return Response.json({ error: 'Feedback required' }, { status: 400 });
+      if (!(await spendCredit(base44, 'support_email', user.id))) {
+        return Response.json({ error: "Today's message limit is reached. Please try again tomorrow." }, { status: 429 });
+      }
       await core.SendEmail({
         to: 'support@sift-ai-shield.app',
         subject: 'SIFT-AI User Feedback',
@@ -32,6 +41,9 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'account_deletion') {
+      if (!(await spendCredit(base44, 'support_email', user.id))) {
+        return Response.json({ error: "Today's message limit is reached. Please try again tomorrow." }, { status: 429 });
+      }
       await core.SendEmail({
         to: 'privacy@sift-ai-security.app',
         subject: 'Account Deletion Request',

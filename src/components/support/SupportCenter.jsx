@@ -47,9 +47,13 @@ export default function SupportCenter() {
 
   const submitFeedback = async () => {
     if (!feedback.trim() || !user) return;
-    await base44.functions.invoke('appSupport', { action: 'feedback', message: feedback });
-    setFeedbackSent(true);
-    toast.success('Feedback submitted — thank you!');
+    try {
+      await base44.functions.invoke('appSupport', { action: 'feedback', message: feedback });
+      setFeedbackSent(true);
+      toast.success('Feedback submitted — thank you!');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'The feedback did not go through. Please try again later.');
+    }
   };
 
   return (

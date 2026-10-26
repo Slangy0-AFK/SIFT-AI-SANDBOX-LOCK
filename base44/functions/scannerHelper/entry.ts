@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { writeAutoReply } from '../../shared/supportReply.ts';
+import { spendCredit } from '../../shared/creditGuard.ts';
 
 // Plain-language help the helper is allowed to answer from. Nothing here is a
 // scan result, and nothing here is invented: the helper never states a
@@ -67,9 +68,18 @@ export default async function (req) {
         });
       }
 
+      // The answer costs an integration credit, so it is counted before the
+      // call is made: a loop stops at the cap instead of running up a bill.
+      if (!(await spendCredit(base44, 'helper_ask', user?.id))) {
+        return Response.json({
+          reply: "The helper has reached today's limit on answers. Open a support ticket and a person will pick it up.",
+          can_open_ticket: true
+        });
+      }
+
       const articles = HELP_ARTICLES.map((a) => `- ${a.title}: ${a.text}`).join('\n');
 
-      const reply = await base44.integrations.Core.InvokeLLM({
+      const reply = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the in-app helper for SIFT AI, a consumer device checker that runs in the browser. You help a normal, non-technical person understand a scan they just ran and what to do next.
 
 Rules you must follow:
@@ -103,6 +113,12 @@ The user asks: ${question}`,
       const replyTo = user?.email || String(body.email || '').trim();
       if (!user && !emailLooksValid(replyTo)) {
         return Response.json({ error: 'email_required' }, { status: 400 });
+      }
+
+      // The automatic first reply costs an integration credit too, so opening a
+      // ticket is counted the same way.
+      if (!(await spendCredit(base44, 'helper_ticket', user?.id))) {
+        return Response.json({ error: "Today's ticket limit is reached. Please try again tomorrow." }, { status: 429 });
       }
 
       const title = `${TOPIC_TITLES[topic]}${user ? '' : ' (guest)'}`;
