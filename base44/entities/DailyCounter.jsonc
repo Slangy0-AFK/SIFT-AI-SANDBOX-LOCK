@@ -1,0 +1,45 @@
+{
+  "name": "DailyCounter",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "description": "Which public number this increment belongs to, e.g. device_scan, paradox_try"
+    },
+    "owner_key": {
+      "type": "string",
+      "description": "Who produced the increment: user:<id> for a signed-in account, or scheduler for the app's own jobs"
+    },
+    "bucket": {
+      "type": "string",
+      "description": "The day this increment belongs to, as YYYY-MM-DD"
+    }
+  },
+  "required": [
+    "kind",
+    "owner_key",
+    "bucket"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

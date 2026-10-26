@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { countStat } from '../../shared/statCounter.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -16,6 +17,12 @@ Deno.serve(async (req) => {
       if (!user) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
+    }
+
+    // The public demo numbers are moved by whoever runs the demo, so one account
+    // has a ceiling on how far it can move them in a day — see shared/statCounter.ts.
+    if (!(await countStat(base44, 'paradox_try', user, isScheduler))) {
+      return Response.json({ success: true, counted: false });
     }
 
     // Removed strict origin check to allow previews and valid cross-origin requests

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { countStat } from '../../shared/statCounter.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -16,6 +17,14 @@ Deno.serve(async (req) => {
       }
     }
     
+    // The public number is moved by whoever runs the check, so one account has a
+    // ceiling on how far it can move it in a day — see shared/statCounter.ts.
+    // Running out never blocks the check itself: the number simply stops moving.
+    if (!(await countStat(base44, 'device_scan', user, isScheduler))) {
+      const current = await base44.asServiceRole.entities.SiteStat.list();
+      return Response.json({ scans: current.length ? current[0].total_device_scans || 0 : 0, counted: false });
+    }
+
     // Removed strict origin check to allow previews and valid cross-origin requests
 
     const stats = await base44.asServiceRole.entities.SiteStat.list();

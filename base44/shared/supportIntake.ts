@@ -5,6 +5,10 @@
 import { audit } from './supportHarness.ts';
 import { priorityLabel, triagePriority } from './supportHelp.ts';
 import { ticketNumber, writeAutoReply } from './supportReply.ts';
+// The title and the reply address are typed by the person who opens the ticket,
+// and they go into a template variable, which lands in the subject line and in
+// the HTML body. Both are reduced to plain text before they get there.
+import { emailPlainValue } from './emailSafe.ts';
 
 const escapeHtml = (value: string) =>
   String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
@@ -62,10 +66,10 @@ export async function openTicket(base44, { user, topic, topicTitle, message, ema
         category: 'transactional',
         variables: {
           ticket_number: number,
-          topic: topicTitle,
+          topic: emailPlainValue(topicTitle, 80),
           submitted_at: `${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC`,
           status: `Open — ${priorityLabel(priority)}`,
-          requester_email: replyTo,
+          requester_email: emailPlainValue(replyTo, 160),
           user_message: escapeHtml(message).replace(/\n/g, '<br />'),
           app_name: 'SIFT AI'
         }

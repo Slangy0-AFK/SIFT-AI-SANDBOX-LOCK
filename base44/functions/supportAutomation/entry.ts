@@ -17,6 +17,7 @@ import {
 } from '../../shared/supportHarness.ts';
 import { openTicket } from '../../shared/supportIntake.ts';
 import { ticketNumber, writeSupportMessage } from '../../shared/supportReply.ts';
+import { emailPlainValue } from '../../shared/emailSafe.ts';
 
 // The support automation. Every action here is admitted, gated, audited and
 // reversible, and nothing is ever sent that the safety gate refused.
@@ -112,7 +113,7 @@ async function escalateTicket(base44, ticket, body) {
           category: 'transactional',
           variables: {
             ticket_number: number,
-            topic: ticket.title || 'Support ticket',
+            topic: emailPlainValue(ticket.title || 'Support ticket', 80),
             submitted_at: new Date().toISOString().slice(0, 16).replace('T', ' '),
             status: 'Waiting on the SIFT AI team',
             requester_email: 'reply address is on the ticket',
@@ -324,6 +325,13 @@ export default async function (req) {
     }
 
     if (action === 'status') {
+      const pl = (p) => (Array.isArray(p) ? `array(${p.length})` : `page(${(p?.items || []).length},has_more=${p?.has_more})`);
+      const withOpts = await base44.asServiceRole.entities.SupportTicket.filter({}, { sort: '-created_date', limit: 5 });
+      const noOpts = await base44.asServiceRole.entities.SupportTicket.filter({});
+      const posList = await base44.asServiceRole.entities.SupportTicket.list('-created_date', 3);
+      const cnt = await base44.asServiceRole.entities.SupportTicket.count({});
+      console.log(`[diag54] withOpts=${pl(withOpts)} noOpts=${pl(noOpts)} posList=${pl(posList)} count=${cnt}`);
+
       const state = await automationState(base44);
       const page = await base44.asServiceRole.entities.SupportTicket.filter({}, { sort: '-created_date', limit: 50 });
       const tickets = rows(page);
