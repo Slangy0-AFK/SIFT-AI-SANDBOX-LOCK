@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { trustedClientAddress } from '../../shared/clientAddress.ts';
 
 /**
  * IP Access Check - Intentionally public (no authentication required)
@@ -20,8 +21,7 @@ Deno.serve(async (req) => {
       // Get client IP from headers
       // Use the edge-provided IP only; the left-most X-Forwarded-For entry is client-controlled.
       // NOTE: this is an advisory UI check, not an access-control boundary.
-      const xff = req.headers.get('x-forwarded-for')?.split(',').map((s) => s.trim()).filter(Boolean) || [];
-      const ip = req.headers.get('cf-connecting-ip') || xff[xff.length - 1] || 'unknown';
+      const ip = trustedClientAddress(req);
 
       const whitelistedIPs = [];
       

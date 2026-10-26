@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { trustedClientAddress } from '../../shared/clientAddress.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -20,11 +21,8 @@ Deno.serve(async (req) => {
 
     // Removed strict origin check to allow previews and valid cross-origin requests
 
-    // Dedupe on an address the caller cannot choose. A caller can put anything at
-    // the front of X-Forwarded-For, so only the entry the edge itself appended (the
-    // last one) is usable, and the edge-provided header wins when it is present.
-    const xff = req.headers.get('x-forwarded-for')?.split(',').map((s) => s.trim()).filter(Boolean) || [];
-    const ip = req.headers.get('cf-connecting-ip') || xff[xff.length - 1] || 'unknown';
+    // Dedupe on an address the caller cannot choose — see shared/clientAddress.ts.
+    const ip = trustedClientAddress(req);
     // Format current date in user timezone (America/Chicago) or UTC based on environment needs, using ISO string part.
     // Deno runtime doesn't have formatChicagoTime utility directly easily available, so we just use UTC date as a proxy for 'day' tracking.
     const today = new Date().toISOString().split('T')[0];

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { trustedClientAddress } from '../../shared/clientAddress.ts';
 
 /**
  * Device Threat Scan
@@ -241,7 +242,10 @@ Deno.serve(async (req) => {
       const isAI = isAutonomousAgent(user_agent);
       await base44.asServiceRole.entities.Threat.create({
         user_id: user.id,
-        source_ip: req.headers.get('x-forwarded-for') || '127.0.0.1',
+        // The edge-observed client address, never the caller's forwarded list —
+        // see shared/clientAddress.ts. 'unknown' when no usable address is available,
+        // so a caller can never choose the address this threat is attributed to.
+        source_ip: trustedClientAddress(req),
         threat_level: criticalCount > 0 ? 'critical' : 'high',
         status: 'detected',
         agent_type: isAI ? 'autonomous_agent' : (isLegitWorkAgent(user_agent) ? 'human' : 'bot'),
