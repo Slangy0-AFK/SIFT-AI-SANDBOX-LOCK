@@ -9,6 +9,10 @@ const SPEND_CAP_USD = 5;
 const SEAL_TTL_MS = 5 * 60 * 1000;
 const GUARD_WINDOW_MS = 10 * 60 * 1000;
 const GUARD_LIMIT = 60;
+// A ceiling on the whole demo in the same window, counted on the server and
+// impossible for a caller to move: every check writes one record, so this is what
+// really bounds record creation when session ids are invented one after another.
+const DEMO_WINDOW_LIMIT = 1000;
 
 const TOOLS = {
   http_get: { kind: 'read', label: 'Fetch a web page' },
@@ -46,7 +50,14 @@ const enc = new TextEncoder();
 
 const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
 
-const sealSecret = () => secrets.get('INTERNAL_SECRET') || Deno.env.get('INTERNAL_SECRET') || '';
+const rootSecret = () => secrets.get('INTERNAL_SECRET') || Deno.env.get('INTERNAL_SECRET') || '';
+
+// The demo seal is signed with a key derived for the demo alone, never with the
+// internal secret itself. A visitor may ask for as many seals as they like and
+// still never hold a signature made with the app's own internal key: what they
+// get opens the demo's gates and nothing anywhere else. Same seal, same gates,
+// different key underneath.
+const DEMO_SEAL_LABEL = 'governor-demo-seal-v1';
 
 const sha256hex = async (text) => hex(await crypto.subtle.digest('SHA-256', enc.encode(text)));
 
@@ -191,16 +202,31 @@ const verifySeal = async (secret, sealRaw, actionHash) => {
   return { ok: true, note: 'Sealed when it was sent, and unchanged since.', signature: sig };
 };
 
+// Two ceilings on how much this demo can write, and the second one no caller can
+// move. The first is the visitor's own allowance; the second counts every run on
+// the demo in the same window, which is what bounds record creation when a caller
+// invents a fresh session id for every request.
+async function volumeRefused(base44, ownerKey) {
+  const guardSince = new Date(Date.now() - GUARD_WINDOW_MS).toISOString();
+  const [recentRuns, demoRuns] = await Promise.all([
+    base44.asServiceRole.entities.GovernorRun.count({ owner_key: ownerKey, created_date: { $gte: guardSince } }),
+    base44.asServiceRole.entities.GovernorRun.count({ created_date: { $gte: guardSince } })
+  ]);
+  return recentRuns >= GUARD_LIMIT || demoRuns >= DEMO_WINDOW_LIMIT;
+}
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
 
-    const secret = sealSecret();
-    if (!secret) {
+    const root = rootSecret();
+    if (!root) {
       console.error('[governorDemo] INTERNAL_SECRET is not set, so requests cannot be sealed.');
       return Response.json({ error: 'The demo seal is not configured.' }, { status: 500 });
     }
+    // Derived, domain-separated: seals made here are useless anywhere else.
+    const secret = await sha256hex(`${root}|${DEMO_SEAL_LABEL}`);
 
     const user = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
     const sessionId = String(body.session_id || '').trim().slice(0, 64);
@@ -222,6 +248,12 @@ export default async function (req) {
     const sealResult = await verifySeal(secret, body.seal, actionHash);
     const sealCheck = { gate: GATE_ORDER[0], status: sealResult.ok ? 'pass' : 'block', note: sealResult.note };
 
+    // One volume gate for both paths below, checked before anything is decided or
+    // written: a refusal never writes, and both counts are the server's own.
+    if (await volumeRefused(base44, ownerKey)) {
+      return Response.json({ error: 'That is a lot of demo runs in a short time. Try again in a few minutes.' }, { status: 429 });
+    }
+
     let decision;
     let audit = null;
     let sameTarget = 0;
@@ -229,12 +261,6 @@ export default async function (req) {
     if (!sealResult.ok) {
       decision = decide([sealCheck]);
     } else {
-      const guardSince = new Date(Date.now() - GUARD_WINDOW_MS).toISOString();
-      const recentRuns = await base44.asServiceRole.entities.GovernorRun.count({ owner_key: ownerKey, created_date: { $gte: guardSince } });
-      if (recentRuns >= GUARD_LIMIT) {
-        return Response.json({ error: 'That is a lot of demo runs in a short time. Try again in a few minutes.' }, { status: 429 });
-      }
-
       const loopSince = new Date(Date.now() - LOOP_WINDOW_MS).toISOString();
       const toolInfo = TOOLS[action.tool];
       const changesSomething = !toolInfo || toolInfo.kind !== 'read';

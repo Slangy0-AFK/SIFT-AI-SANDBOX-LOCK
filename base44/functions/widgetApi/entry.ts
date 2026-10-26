@@ -13,6 +13,13 @@ import {
 const CHALLENGE_TTL_MS = 5 * 60 * 1000;
 const TOKEN_TTL_MS = 10 * 60 * 1000;
 const MAX_CHALLENGE_ATTEMPTS = 5;
+// Issuing a challenge writes one record, and the site key is public (it sits in
+// the customer's page), so issuing is capped the way the app's own captcha
+// endpoint caps it: per site key, plus a ceiling across every key so one key being
+// hammered cannot fill the table for everyone else.
+const FLOOD_WINDOW_MS = 10 * 60 * 1000;
+const FLOOD_LIMIT_PER_KEY = 100;
+const FLOOD_LIMIT_TOTAL = 1000;
 
 export default async function(req) {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS_HEADERS });
@@ -29,6 +36,17 @@ export default async function(req) {
       const key = await findActiveKeyBySiteKey(base44, body.site_key);
       if (!key) return jsonCors({ error: 'Invalid site key' }, 401);
       if (!originAllowed(key, req.headers.get('origin'))) return jsonCors({ error: 'This domain is not allowed for this site key' }, 403);
+
+      // Refused before any record is written, and fail-closed: if the counts
+      // cannot be read the request throws and no challenge is issued.
+      const floodSince = new Date(Date.now() - FLOOD_WINDOW_MS).toISOString();
+      const [forThisKey, everywhere] = await Promise.all([
+        base44.asServiceRole.entities.WidgetChallenge.count({ site_key: key.site_key, created_date: { $gte: floodSince } }),
+        base44.asServiceRole.entities.WidgetChallenge.count({ created_date: { $gte: floodSince } })
+      ]);
+      if (forThisKey >= FLOOD_LIMIT_PER_KEY || everywhere >= FLOOD_LIMIT_TOTAL) {
+        return jsonCors({ error: 'Too many challenges right now. Please try again in a few minutes.' }, 429);
+      }
 
       const a = Math.floor(Math.random() * 20) + 1;
       const b = Math.floor(Math.random() * 20) + 1;
