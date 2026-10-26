@@ -325,13 +325,6 @@ export default async function (req) {
     }
 
     if (action === 'status') {
-      const pl = (p) => (Array.isArray(p) ? `array(${p.length})` : `page(${(p?.items || []).length},has_more=${p?.has_more})`);
-      const withOpts = await base44.asServiceRole.entities.SupportTicket.filter({}, { sort: '-created_date', limit: 5 });
-      const noOpts = await base44.asServiceRole.entities.SupportTicket.filter({});
-      const posList = await base44.asServiceRole.entities.SupportTicket.list('-created_date', 3);
-      const cnt = await base44.asServiceRole.entities.SupportTicket.count({});
-      console.log(`[diag54] withOpts=${pl(withOpts)} noOpts=${pl(noOpts)} posList=${pl(posList)} count=${cnt}`);
-
       const state = await automationState(base44);
       const page = await base44.asServiceRole.entities.SupportTicket.filter({}, { sort: '-created_date', limit: 50 });
       const tickets = rows(page);

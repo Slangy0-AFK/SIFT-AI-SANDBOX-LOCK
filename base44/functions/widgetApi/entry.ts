@@ -39,12 +39,16 @@ export default async function(req) {
 
       // Refused before any record is written, and fail-closed: if the counts
       // cannot be read the request throws and no challenge is issued.
+      // Counted from the matching rows themselves, because this function's pinned
+      // build has no count() method and a limit passed to a query comes back empty
+      // there. The window is the bound: only challenges from the last ten minutes
+      // are ever read.
       const floodSince = new Date(Date.now() - FLOOD_WINDOW_MS).toISOString();
-      const [forThisKey, everywhere] = await Promise.all([
-        base44.asServiceRole.entities.WidgetChallenge.count({ site_key: key.site_key, created_date: { $gte: floodSince } }),
-        base44.asServiceRole.entities.WidgetChallenge.count({ created_date: { $gte: floodSince } })
+      const [recentForKey, recentEverywhere] = await Promise.all([
+        base44.asServiceRole.entities.WidgetChallenge.filter({ site_key: key.site_key, created_date: { $gte: floodSince } }),
+        base44.asServiceRole.entities.WidgetChallenge.filter({ created_date: { $gte: floodSince } })
       ]);
-      if (forThisKey >= FLOOD_LIMIT_PER_KEY || everywhere >= FLOOD_LIMIT_TOTAL) {
+      if (recentForKey.length >= FLOOD_LIMIT_PER_KEY || recentEverywhere.length >= FLOOD_LIMIT_TOTAL) {
         return jsonCors({ error: 'Too many challenges right now. Please try again in a few minutes.' }, 429);
       }
 
