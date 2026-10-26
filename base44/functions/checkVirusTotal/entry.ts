@@ -1,15 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { lookupVirusTotal } from '../../shared/virusTotal.ts';
+import { VT_UNAVAILABLE, VT_MANUAL_URL } from '../../shared/virusTotal.ts';
 
 /**
- * VirusTotal Integration - Security Scanner
- * 
- * SECURITY NOTE: This function uses environment variables securely.
- * - No secrets are hardcoded, logged, or exposed in responses
- * - Base44 scanner warnings about env var names are false positives
- * - This is the recommended secure pattern for backend functions
+ * VirusTotal — GATED OFF.
+ *
+ * SIFT AI is a commercial product and the VirusTotal Public API must not be used
+ * in commercial products, must not substitute for antivirus products, and must not
+ * be integrated in a project that may harm the antivirus industry.
+ *
+ * This function therefore makes no request to VirusTotal, reads no key, and
+ * returns no result. The endpoint stays in place so any older client shows the
+ * plain explanation instead of an error.
  */
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -17,27 +19,24 @@ Deno.serve(async (req) => {
     const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
     const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
-    
-    let user = null;
+
     if (!isScheduler) {
-      user = await base44.auth.me().catch(() => null);
+      const user = await base44.auth.me().catch(() => null);
       if (!user) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
 
-    const { type, value } = await req.json();
-    // Secure: fetch secret at runtime (not hardcoded)
-    const apiKey = Deno.env.get("VIRUSTOTAL_API_KEY");
+    await req.json().catch(() => ({}));
 
-    if (!apiKey) {
-      return Response.json({ error: 'VirusTotal API key not configured' }, { status: 500 });
-    }
-
-    const lookup = await lookupVirusTotal(apiKey, type, value);
-    return Response.json(lookup.body, { status: lookup.status });
-
+    return Response.json({
+      available: false,
+      found: false,
+      notice: VT_UNAVAILABLE,
+      manual_url: VT_MANUAL_URL
+    });
   } catch (error) {
+    console.error('[checkVirusTotal]', error && error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

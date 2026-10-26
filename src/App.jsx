@@ -54,6 +54,7 @@ import MyDevices from '@/pages/MyDevices';
 import AllowBlock from '@/pages/AllowBlock';
 import HistoryPage from '@/pages/History';
 import CheckDetail from '@/pages/CheckDetail';
+import Compliance from '@/pages/Compliance';
 // Add page imports here
 
 function AppRoutes() {
@@ -89,6 +90,7 @@ function AppRoutes() {
           <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
         </Route>
         <Route path="/plans" element={<PageTransition><ScannerPlans /></PageTransition>} />
+        <Route path="/compliance" element={<PageTransition><Compliance /></PageTransition>} />
         <Route path="/receipt" element={<PageTransition><Receipt /></PageTransition>} />
         <Route path="/verify-demo" element={<Navigate to="/governor-demo" replace />} />
         <Route path="/login" element={<PageTransition><Login /></PageTransition>} />

@@ -8,10 +8,12 @@ export const VERDICTS = {
 };
 
 export const SCAN_TYPES = {
-  virustotal_url: 'Link',
-  virustotal_domain: 'Domain',
-  virustotal_hash: 'File hash',
-  virustotal_ip: 'IP address',
+  // Older records, from when a link, domain or hash check ran through VirusTotal.
+  // That is switched off, so the wording says so instead of implying a live result.
+  virustotal_url: 'Link (withdrawn VirusTotal check)',
+  virustotal_domain: 'Domain (withdrawn VirusTotal check)',
+  virustotal_hash: 'File hash (withdrawn VirusTotal check)',
+  virustotal_ip: 'IP address (withdrawn VirusTotal check)',
   message: 'Message or email',
   sms: 'Message or email',
   email: 'Message or email',
@@ -24,7 +26,7 @@ export function scanTypeLabel(scanType) {
 
 export const TYPE_FILTERS = [
   { id: 'all', label: 'Any kind', types: null },
-  { id: 'item', label: 'Link, domain or hash', types: ['virustotal_url', 'virustotal_domain', 'virustotal_hash', 'virustotal_ip'] },
+  { id: 'item', label: 'Link, domain or hash (withdrawn checks)', types: ['virustotal_url', 'virustotal_domain', 'virustotal_hash', 'virustotal_ip'] },
   { id: 'message', label: 'Message or email', types: ['message', 'sms', 'email'] },
   { id: 'device', label: 'Device check', types: ['device_scan'] }
 ];

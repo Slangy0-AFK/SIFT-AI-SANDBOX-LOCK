@@ -1,41 +1,42 @@
-// VirusTotal reputation lookup shared by checkVirusTotal and scanApi.
-// Returns { status, body } so callers can wrap it in their own Response.
-export async function lookupVirusTotal(apiKey, type, value) {
-  let endpoint;
-  if (type === 'ip') endpoint = `https://www.virustotal.com/api/v3/ip_addresses/${encodeURIComponent(value)}`;
-  else if (type === 'domain') endpoint = `https://www.virustotal.com/api/v3/domains/${encodeURIComponent(value)}`;
-  else if (type === 'url') endpoint = `https://www.virustotal.com/api/v3/urls/${btoa(value).replace(/=/g, '')}`;
-  else if (type === 'hash') endpoint = `https://www.virustotal.com/api/v3/files/${encodeURIComponent(value)}`;
-  else return { status: 400, body: { error: 'Invalid type. Must be: ip, domain, url, or hash' } };
+// VirusTotal is GATED. SIFT AI is a commercial product (Free, Pro, Device Check,
+// Full Device Audit) and the VirusTotal Public API must not be used in commercial
+// products or services, must not be used as a substitute for antivirus products,
+// and must not be integrated in a project that may harm the antivirus industry.
+//
+// So this module no longer calls VirusTotal at all. lookupVirusTotal is kept as a
+// single fail-closed choke point: even if some older code calls it, no request is
+// made to VirusTotal, no key is read, and no VirusTotal result is returned or
+// stored. Nothing here should be re-enabled without a Premium/Enterprise licence
+// obtained in writing, with the licence type re-checked first.
 
-  const response = await fetch(endpoint, { headers: { 'x-apikey': apiKey, 'Accept': 'application/json' } });
+export const VT_ENABLED = false;
 
-  if (response.status === 404) {
-    return { status: 200, body: { found: false, message: 'No analysis found for this item', data: null } };
+// The exact wording shown to people wherever a VirusTotal check used to be.
+export const VT_UNAVAILABLE =
+  'VirusTotal check unavailable — SIFT AI uses the free VirusTotal Public API, which must not be used in commercial products. A Premium VirusTotal licence is required before VT checks can be offered here.';
+
+// A plain link to VirusTotal, so a person can look an item up there themselves.
+// Nothing is uploaded through SIFT AI, and no result comes back into the app.
+export const VT_MANUAL_URL = 'https://www.virustotal.com';
+
+export const VT_MANUAL_HINT =
+  'If you choose to check it yourself, prefer a hash lookup over a file upload, and never upload a confidential, personal or work file.';
+
+const gated = (type, value) => ({
+  status: 200,
+  body: {
+    available: false,
+    enabled: VT_ENABLED,
+    found: false,
+    type,
+    value,
+    notice: VT_UNAVAILABLE,
+    manual_url: VT_MANUAL_URL
   }
-  if (!response.ok) {
-    const error = await response.text();
-    return { status: response.status, body: { error: `VirusTotal API error: ${error}` } };
-  }
+});
 
-  const result = await response.json();
-  const stats = result.data?.attributes?.last_analysis_stats || {};
-  const malicious = stats.malicious || 0;
-  const suspicious = stats.suspicious || 0;
-  const total = Object.values(stats).reduce((a, b) => a + b, 0);
-
-  return {
-    status: 200,
-    body: {
-      found: true,
-      type,
-      value,
-      data: result.data,
-      stats,
-      threatLevel: malicious > 5 ? 'critical' : malicious > 2 ? 'high' : malicious > 0 ? 'medium' : suspicious > 0 ? 'warning' : 'safe',
-      scannedBy: total,
-      maliciousCount: malicious,
-      suspiciousCount: suspicious,
-    },
-  };
+// Fail-closed: the same answer whether or not a key exists.
+export async function lookupVirusTotal(_apiKey, type, value) {
+  console.warn('[virusTotal] the VirusTotal lookup was refused: the Public API is not licensed for a commercial product');
+  return gated(type, value);
 }

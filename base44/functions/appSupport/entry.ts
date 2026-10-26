@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
         return Response.json({ reply: "The support chat has reached today's limit. Please try again tomorrow." });
       }
       const reply = await core.InvokeLLM({
-        prompt: `You are the SIFT AI support assistant. Answer concisely. SIFT AI offers browser device diagnostics, VirusTotal/AlienVault reputation lookups, email and SMS threat analysis, an embeddable human-verification widget, a developer scan API, IP allowlists and data retention settings.\n\nUser question: ${text}`,
+        prompt: `You are the SIFT AI support assistant. Answer concisely. SIFT AI offers browser device diagnostics, AlienVault OTX reputation checks, SIFT AI's own rogue-AI checklist, email and SMS threat analysis, an embeddable human-verification widget, a developer scan API, IP allowlists and data retention settings. VirusTotal checks are NOT offered: they are unavailable because the free VirusTotal Public API must not be used in a commercial product, so never describe a VirusTotal check as something SIFT AI does or will do.\n\nUser question: ${text}`,
       });
       return Response.json({ reply });
     }

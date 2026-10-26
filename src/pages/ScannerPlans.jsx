@@ -6,6 +6,7 @@ import { Shield, AlertTriangle, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import PlanTierCard from '@/components/plans/PlanTierCard';
+import VirusTotalNotice from '@/components/scanner/VirusTotalNotice';
 import useScannerUnlocks from '@/hooks/useScannerUnlocks';
 import { SCANNER_PLANS, PAID_TIER_IDS, HONEST_NOTE } from '@/lib/scannerPlans';
 
@@ -124,6 +125,10 @@ export default function ScannerPlans() {
         <div className="mt-10 flex items-start gap-3 rounded-xl border border-border bg-card p-4">
           <Shield className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
           <p className="font-mono text-xs leading-relaxed text-muted-foreground">{HONEST_NOTE}</p>
+        </div>
+
+        <div className="mt-4">
+          <VirusTotalNotice compact />
         </div>
 
         <p className="mt-6 font-mono text-xs text-muted-foreground">

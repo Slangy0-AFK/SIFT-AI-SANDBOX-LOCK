@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowRight, Loader2, ScanLine, ShieldAlert, ShieldCheck, ShieldQuestion } from 'lucide-react';
+import ScannerLegalNotice from '@/components/legal/ScannerLegalNotice';
+import VirusTotalNotice from '@/components/scanner/VirusTotalNotice';
 
 const MODES = [
   { id: 'item', label: 'A link, domain or file hash' },
@@ -18,49 +20,6 @@ const VERDICT_STYLES = {
   unknown: { icon: ShieldQuestion, tone: 'text-amber-400 border-amber-400/40', label: 'Unknown' },
   approved: { icon: ShieldCheck, tone: 'text-emerald-400 border-emerald-400/40', label: 'Approved' }
 };
-
-function classifyItem(raw) {
-  const value = raw.trim();
-  if (/^[a-f0-9]{32,64}$/i.test(value)) return { type: 'hash', value };
-  if (/^https?:\/\//i.test(value)) return { type: 'url', value };
-  const host = value.replace(/^www\./i, '');
-  if (/^[^\s/]+\.[^\s/]{2,}$/.test(host)) return { type: 'domain', value: host };
-  return null;
-}
-
-function itemVerdict(result) {
-  if (!result || result.found === false) {
-    return {
-      level: 'unknown',
-      headline: 'No record of this yet',
-      lines: ['Nothing is on file for this item, which is not the same as it being fine. Treat it as unproven.'],
-      next: 'Watch it: keep it for now and check again in a few days, or paste something else you are unsure about.'
-    };
-  }
-  const malicious = Number(result.maliciousCount || 0);
-  const suspicious = Number(result.suspiciousCount || 0);
-  const scanned = Number(result.scannedBy || 0);
-  if (malicious > 0 || suspicious > 0) {
-    return {
-      level: 'flagged',
-      headline: `${malicious + suspicious} of ${scanned} checkers flagged this`,
-      lines: [
-        `${malicious} called it harmful and ${suspicious} called it suspicious.`,
-        'The full list is on file with the check; the short version is that something is known against it.'
-      ],
-      next: 'Block it or remove it if you do not recognise it. If it is an app you need, open a Device Check and we will look closely.'
-    };
-  }
-  return {
-    level: 'approved',
-    headline: `Nothing known against it (${scanned} checkers)`,
-    lines: [
-      'None of the checkers that know this item called it harmful or suspicious today.',
-      'That is today, on the record we have. It is not a promise about tomorrow.'
-    ],
-    next: 'Allow it if you recognise it. If it asks for permissions that do not fit what it does, come back and check that too.'
-  };
-}
 
 function textVerdict(analysis) {
   if (!analysis || analysis.is_scam === undefined) {
@@ -146,7 +105,7 @@ export default function FreeScan({ isAuthed, onSignIn }) {
     const text = input.trim();
     setError('');
     if (!text) {
-      setError(mode === 'item' ? 'Paste a link, a domain or a file hash first.' : 'Paste the message or the email first.');
+      setError('Paste the message or the email first.');
       return;
     }
     if (!isAuthed) {
@@ -158,29 +117,14 @@ export default function FreeScan({ isAuthed, onSignIn }) {
     setVerdict(null);
     setSavedId('');
     try {
-      let next;
-      let scanType;
-      let listPayload;
-
-      if (mode === 'item') {
-        const item = classifyItem(text);
-        if (!item) {
-          setBusy(false);
-          setError('That does not look like a link, a domain or a file hash. Switch to "A message or an email" if it is text.');
-          return;
-        }
-        const { data } = await base44.functions.invoke('checkVirusTotal', { type: item.type, value: item.value });
-        if (data?.error) throw new Error(data.error);
-        next = { ...itemVerdict(data), item: item.value };
-        scanType = `virustotal_${item.type}`;
-        listPayload = { action: 'list_check', item_type: item.type, value: item.value };
-      } else {
-        const { data } = await base44.functions.invoke('analyzeTextThreat', { text });
-        if (data?.error) throw new Error(data.error);
-        next = { ...textVerdict(data), item: text.slice(0, 120) };
-        scanType = 'message';
-        listPayload = { action: 'list_check', item_type: 'message', text };
-      }
+      // The link, domain and hash check ran through VirusTotal, which is switched
+      // off for this app, so a check only runs on a message or an email now. That
+      // analysis is SIFT AI's own and nothing is sent to VirusTotal.
+      const { data } = await base44.functions.invoke('analyzeTextThreat', { text });
+      if (data?.error) throw new Error(data.error);
+      let next = { ...textVerdict(data), item: text.slice(0, 120) };
+      const scanType = 'message';
+      const listPayload = { action: 'list_check', item_type: 'message', text };
 
       // The person's own lists decide the final answer on their account. If the
       // list check cannot run, the plain check result stands.
@@ -231,6 +175,39 @@ export default function FreeScan({ isAuthed, onSignIn }) {
 
   const style = verdict ? VERDICT_STYLES[verdict.level] : null;
   const chosenDevice = devices.find((device) => device.id === deviceId) || null;
+
+  // With VirusTotal switched off there is no link, domain or hash check left to
+  // run, so that mode explains itself instead of offering a button that must not
+  // be pressed.
+  if (mode === 'item') {
+    return (
+      <div className="space-y-4 rounded-2xl border border-border bg-card p-6">
+        <div className="flex flex-wrap gap-2">
+          {MODES.map((option) => (
+            <Button
+              key={option.id}
+              size="sm"
+              variant={mode === option.id ? 'default' : 'outline'}
+              className="font-mono text-xs"
+              onClick={() => {
+                setMode(option.id);
+                setVerdict(null);
+                setError('');
+              }}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </div>
+        <VirusTotalNotice />
+        <p className="font-mono text-[11px] leading-relaxed text-muted-foreground">
+          Switch to <span className="text-foreground">A message or an email</span> to check something here, or open a Device Check from the
+          plans page if you want a person to look closely at one item.
+        </p>
+        <ScannerLegalNotice />
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-border bg-card p-6">
@@ -350,6 +327,10 @@ export default function FreeScan({ isAuthed, onSignIn }) {
           Want a person to look at this closely? See Device Check →
         </Link>
       )}
+
+      <div className="mt-5">
+        <ScannerLegalNotice />
+      </div>
     </div>
   );
 }

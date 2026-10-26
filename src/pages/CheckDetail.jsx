@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ScanLine } from 'lucide-react';
 import HelperAgent from '@/components/scanner/HelperAgent';
+import ScannerLegalNotice from '@/components/legal/ScannerLegalNotice';
+import VirusTotalNotice from '@/components/scanner/VirusTotalNotice';
 import { formatWhen, scanTypeLabel, VERDICTS, verdictOf } from '@/lib/scanLabels';
 
 function parseResult(raw) {
@@ -78,6 +80,7 @@ export default function CheckDetail() {
   const verdict = verdictOf(check);
   const style = VERDICTS[verdict];
   const result = parseResult(check.result);
+  const withdrawnVt = String(check.scan_type || '').startsWith('virustotal_');
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -98,6 +101,16 @@ export default function CheckDetail() {
             {check.device_name ? ` · ${check.device_name}` : ''}
           </p>
         </div>
+
+        {withdrawnVt && (
+          <>
+            <VirusTotalNotice />
+            <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+              This record is from before VirusTotal checks were switched off here, so it is shown for your records only. No VirusTotal
+              result is kept for it any more.
+            </p>
+          </>
+        )}
 
         {(check.list_effect === 'block' || check.list_effect === 'allow') && (
           <div className="rounded-xl border border-primary/40 bg-primary/5 p-4">
@@ -131,6 +144,8 @@ export default function CheckDetail() {
         </div>
 
         {check.error_message && <p className="font-mono text-xs text-destructive">{check.error_message}</p>}
+
+        <ScannerLegalNotice />
 
         <div className="flex flex-wrap gap-3">
           <Link to="/scan">

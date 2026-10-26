@@ -5,7 +5,7 @@ export const SCANNER_PLANS = [
     price: '$0',
     cadence: 'forever',
     blurb: 'The everyday checks, at no cost.',
-    features: ['The everyday checks', 'VirusTotal + OTX checks', 'Your own scan history', 'My devices', 'Allowlist & blocklist'],
+    features: ["SIFT AI's own rogue-AI checklist", 'AlienVault OTX reputation checks', 'Your own scan history', 'My devices', 'Allowlist & blocklist'],
     cta: 'Start free'
   },
   {
@@ -14,7 +14,7 @@ export const SCANNER_PLANS = [
     price: '$7',
     cadence: 'per month',
     blurb: 'For keeping an eye on your own devices over time.',
-    features: ['Reusable scan profiles', 'Re-checks of flagged items', 'PDF reports', 'Priority support'],
+    features: ['Reusable scan profiles', 'PDF reports', 'Priority support'],
     cta: 'Get Pro',
     highlight: true
   },
@@ -45,7 +45,7 @@ export function planById(tierId) {
 }
 
 export const NEXT_STEPS = {
-  pro: 'Pro is active on your account. Reusable scan profiles, re-checks of flagged items, PDF reports and priority support are unlocked. It renews monthly, and you can cancel any time.',
+  pro: 'Pro is active on your account. Reusable scan profiles, PDF reports and priority support are unlocked. It renews monthly, and you can cancel any time.',
   device_check:
     'Your Device Check is booked. Next: open the device scanner and submit the flagged scan you want looked at. You get a verdict, the evidence behind it, and a fix list report.',
   full_audit:

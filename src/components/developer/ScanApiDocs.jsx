@@ -20,7 +20,7 @@ export default function ScanApiDocs() {
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2"><ScanLine className="w-4 h-4 text-primary" /> Scan API</CardTitle>
         <CardDescription className="text-xs">
-          Check IPs, domains, URLs, and file hashes against VirusTotal, or analyze message text for phishing and scam indicators.
+          Analyze message text for phishing and scam indicators. Reputation look-ups through VirusTotal are switched off: the free VirusTotal Public API must not be used in a commercial product, and a Premium VirusTotal licence is required before they can be offered again.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

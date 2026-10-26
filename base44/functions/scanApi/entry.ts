@@ -1,7 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
-import { secrets } from 'base44:runtime';
 import { CORS_HEADERS, jsonCors, findActiveKeyBySecret, touchKey } from '../../shared/apiKeys.ts';
-import { lookupVirusTotal } from '../../shared/virusTotal.ts';
+import { VT_UNAVAILABLE, VT_MANUAL_URL } from '../../shared/virusTotal.ts';
 import { analyzeScamText } from '../../shared/scamText.ts';
 
 // Public, API-key-authenticated scan endpoint for customers.
@@ -27,11 +26,13 @@ export default async function(req) {
     if (type === 'text') {
       result = await analyzeScamText(base44.asServiceRole.integrations, value);
     } else if (REPUTATION_TYPES.has(type)) {
-      const vtKey = secrets.get('VIRUSTOTAL_API_KEY');
-      if (!vtKey) return jsonCors({ error: 'Reputation lookups are not configured' }, 500);
-      const lookup = await lookupVirusTotal(vtKey, type, value.trim());
-      if (lookup.status !== 200) return jsonCors(lookup.body, lookup.status);
-      result = lookup.body;
+      // VirusTotal is gated: no key is read, no request is made to VirusTotal, and
+      // no VirusTotal result is returned through this API. The endpoint stays in
+      // place so an integrator gets a plain explanation instead of a raw error.
+      return jsonCors(
+        { ok: false, available: false, type, value: value.trim(), notice: VT_UNAVAILABLE, manual_url: VT_MANUAL_URL },
+        200
+      );
     } else {
       return jsonCors({ error: 'type must be one of: ip, domain, url, hash, text' }, 400);
     }

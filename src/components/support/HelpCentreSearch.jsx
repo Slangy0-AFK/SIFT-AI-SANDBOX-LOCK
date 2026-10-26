@@ -3,6 +3,23 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BookOpen, Loader2, Search, Wrench } from 'lucide-react';
+import { VT_MANUAL_URL } from '@/lib/virusTotalNotice';
+
+// A fix step that names virustotal.com gets a real link, so the manual route is one
+// tap away. Nothing here sends anything to VirusTotal.
+function StepText({ step }) {
+  if (!step.includes(VT_MANUAL_URL)) return <>{step}</>;
+  const [before, after] = step.split(VT_MANUAL_URL);
+  return (
+    <>
+      {before}
+      <a href={VT_MANUAL_URL} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+        virustotal.com
+      </a>
+      {after}
+    </>
+  );
+}
 
 // The searchable help centre. It answers from the same articles the in-app helper,
 // the automatic ticket reply and the support agent use, and it costs nothing: the
@@ -77,7 +94,7 @@ export default function HelpCentreSearch() {
                   <ul className="mt-2 space-y-1">
                     {article.fix_steps.map((step) => (
                       <li key={step} className="font-mono text-xs text-foreground">
-                        {step}
+                        <StepText step={step} />
                       </li>
                     ))}
                   </ul>
