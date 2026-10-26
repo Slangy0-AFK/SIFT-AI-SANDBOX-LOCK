@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
-import { spendCredit } from '../../shared/creditGuard.ts';
+import { admit, admitSpend, audit } from '../../shared/supportHarness.ts';
 import { HELP_ARTICLES } from '../../shared/supportHelp.ts';
 import { openTicket } from '../../shared/supportIntake.ts';
 
@@ -38,6 +38,13 @@ export default async function (req) {
 
       // Refuse outright rather than letting a model decide: these are never needed.
       if (SENSITIVE_PATTERNS.test(question)) {
+        await audit(base44, {
+          action: 'answer',
+          gate: 'safety_check',
+          decision: 'blocked',
+          reason: 'the question asked for a secret or an identifier, so no model was called and nothing was spent',
+          actor: 'agent'
+        });
         return Response.json({
           reply:
             "I will not take passwords, one-time codes, card details, phone numbers, IMEI or serial numbers, and you should not send them to anyone. If you are worried about an account, change that password on the site itself and check the sign-in history there. I can open a ticket for anything else.",
@@ -45,9 +52,26 @@ export default async function (req) {
         });
       }
 
+      // The harness decides before anything is said or spent: the tool gate, the
+      // owner's kill switch and the audit log. A refusal stops the answer instead
+      // of quietly spending the credit, and the person is told what to do next.
+      const answered = await admit(base44, {
+        action: 'answer',
+        actor: 'agent',
+        detail: `helper question asked from ${page || 'the app'}`
+      });
+      if (!answered.ok) {
+        return Response.json({
+          reply: 'The automatic helper is switched off right now. Open a support ticket and a person will pick it up.',
+          paused: true,
+          gate: answered.gate,
+          can_open_ticket: true
+        });
+      }
+
       // The answer costs an integration credit, so it is counted before the
       // call is made: a loop stops at the cap instead of running up a bill.
-      if (!(await spendCredit(base44, 'helper_ask', user?.id))) {
+      if (!(await admitSpend(base44, 'helper_ask', user?.id, { action: 'answer' }))) {
         return Response.json({
           reply: "The helper has reached today's limit on answers. Open a support ticket and a person will pick it up.",
           can_open_ticket: true
@@ -80,6 +104,15 @@ The user asks: ${question}`,
         model: 'gemini_3_flash'
       });
 
+      await audit(base44, {
+        action: 'answer',
+        gate: 'outcome',
+        decision: 'completed',
+        reason: 'answered from the help articles and the on-screen context',
+        actor: 'agent',
+        detail: `asked from ${page || 'the app'}`
+      });
+
       return Response.json({ reply, can_open_ticket: true });
     }
 
@@ -95,7 +128,7 @@ The user asks: ${question}`,
 
       // The automatic first reply costs an integration credit too, so opening a
       // ticket is counted the same way.
-      if (!(await spendCredit(base44, 'helper_ticket', user?.id))) {
+      if (!(await admitSpend(base44, 'helper_ticket', user?.id, { action: 'open_ticket' }))) {
         return Response.json({ error: "Today's ticket limit is reached. Please try again tomorrow." }, { status: 429 });
       }
 

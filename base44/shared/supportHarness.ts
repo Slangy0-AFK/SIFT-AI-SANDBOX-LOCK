@@ -22,7 +22,11 @@ export const ALLOWED_ACTIONS = [
   'status',
   'pause',
   'resume',
-  'reopen'
+  'reopen',
+  // The two in-app chat agents, and the one automatic reply for a ticket.
+  'answer',
+  'support_chat',
+  'auto_reply'
 ];
 
 // How many of each message the automation may ever put on one ticket.

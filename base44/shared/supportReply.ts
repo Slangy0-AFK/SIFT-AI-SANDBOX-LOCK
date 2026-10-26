@@ -2,6 +2,7 @@
 // one choke point: the safety gate runs before any message is written, and a
 // message that fails it is never sent.
 
+import { admit } from './supportHarness.ts';
 import { HELP_ARTICLES, helpBlock, safetyCheck, searchHelp, TEMPLATES } from './supportHelp.ts';
 
 export const ticketNumber = (id) =>
@@ -61,6 +62,20 @@ export async function writeAutoReply(base44, ticketId, { title, description }) {
   }
 
   const number = ticket?.ticket_number || ticketNumber(ticketId);
+
+  // The harness runs before the reply is composed: the tool gate, the owner's
+  // kill switch, the loop gate and the audit log all decide here. A refusal
+  // means the automatic part simply does not run — the ticket keeps its place on
+  // the queue and the owner is still alerted, so nothing is dropped.
+  const allowed = await admit(base44, {
+    action: 'auto_reply',
+    actor: 'automation',
+    ticket,
+    kind: 'first_reply',
+    detail: 'the automatic first reply for this ticket'
+  });
+  if (!allowed.ok) return null;
+
   const matched = searchHelp(`${title} ${description}`, 2);
   const articles = matched.length ? matched : HELP_ARTICLES.slice(0, 2);
 

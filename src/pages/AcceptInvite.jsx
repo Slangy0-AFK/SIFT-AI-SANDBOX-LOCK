@@ -102,11 +102,11 @@ export default function AcceptInvitePage() {
       // If user doesn't exist, redirect to registration
       if (!userExists) {
         setTimeout(() => {
-          navigate('/onboarding', { 
+          navigate('/register', { 
             state: { 
               invite_accepted: true, 
               email: formData.email,
-              message: 'Your device is enrolled! Now create your account to access premium features.'
+              message: 'Your device is enrolled. Now create your account.'
             } 
           });
         }, 1500);
@@ -154,7 +154,7 @@ export default function AcceptInvitePage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -165,8 +165,8 @@ export default function AcceptInvitePage() {
           <h1 className="font-mono text-2xl font-bold text-white mb-2">
             SIFT AI
           </h1>
-          <p className="font-mono text-xs text-purple-200">
-            Family Security Enrollment
+          <p className="font-mono text-xs text-muted-foreground">
+            Device enrollment
           </p>
         </div>
 
@@ -198,11 +198,11 @@ export default function AcceptInvitePage() {
               <h3 className="font-mono text-xs font-semibold text-primary mb-3">INCLUDED FEATURES:</h3>
               <ul className="space-y-1.5">
                 {[
-                  'Real-time AI threat detection',
-                  'Email & SMS phishing protection',
-                  'Zero-day anomaly monitoring',
-                  'Quantum-resistant encryption',
-                  'Multi-device security'
+                  'Checks a link, app, file hash or message in the browser',
+                  'Your own allowlist and blocklist',
+                  'Every check saved in your history',
+                  'A device slot on the plan you were invited to',
+                  'Tickets answered by the SIFT AI support team'
                 ].map((feature, i) => (
                   <li key={i} className="flex items-center gap-2">
                     <CheckCircle2 className="w-3 h-3 text-green-400 flex-shrink-0" />

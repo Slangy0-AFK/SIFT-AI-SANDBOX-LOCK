@@ -56,6 +56,10 @@ import HistoryPage from '@/pages/History';
 import CheckDetail from '@/pages/CheckDetail';
 import Compliance from '@/pages/Compliance';
 import Sources from '@/pages/Sources';
+import TermsOfService from '@/pages/TermsOfService';
+import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import RefundPolicy from '@/pages/RefundPolicy';
+import AcceptInvite from '@/pages/AcceptInvite';
 // Add page imports here
 
 function AppRoutes() {
@@ -93,6 +97,10 @@ function AppRoutes() {
         <Route path="/plans" element={<PageTransition><ScannerPlans /></PageTransition>} />
         <Route path="/compliance" element={<PageTransition><Compliance /></PageTransition>} />
         <Route path="/sources" element={<PageTransition><Sources /></PageTransition>} />
+        <Route path="/terms" element={<PageTransition><TermsOfService /></PageTransition>} />
+        <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
+        <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
+        <Route path="/accept-invite/:token" element={<PageTransition><AcceptInvite /></PageTransition>} />
         <Route path="/receipt" element={<PageTransition><Receipt /></PageTransition>} />
         <Route path="/verify-demo" element={<Navigate to="/governor-demo" replace />} />
         <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
