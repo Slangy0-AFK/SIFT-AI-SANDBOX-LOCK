@@ -19,8 +19,9 @@ Deno.serve(async (req) => {
 
     if (!user) { return Response.json({ error: 'Unauthorized' }, { status: 401 }); }
 
-    // Parse request
-    const { invitation_token, user_email, user_full_name } = await req.json();
+    // Parse request. Only the token is read: who is accepting is decided by the
+    // signed-in caller's own account below, never by anything sent in this body.
+    const { invitation_token } = await req.json();
 
     if (!invitation_token) {
       return Response.json({ error: 'Invitation token is required' }, { status: 400 });
@@ -50,34 +51,28 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'This invitation has expired' }, { status: 400 });
     }
 
-    // Check if user exists
-    let existingUser = null;
-    if (user_email) {
-      const users = await base44.asServiceRole.entities.User.filter({ email: user_email });
-      existingUser = users[0];
+    // Only the invited address may accept, and only from its own signed-in
+    // account. A client-supplied email is never used to pick the accepting
+    // user, so a token holder cannot accept on someone else's behalf and the
+    // endpoint cannot be used to probe which addresses have accounts.
+    const callerEmail = String(user.email || '').trim().toLowerCase();
+    const inviteeEmail = String(invitation.invitee_email || '').trim().toLowerCase();
+
+    if (!inviteeEmail || callerEmail !== inviteeEmail) {
+      console.warn(`[ACCEPT] Invitation ${invitation.id} attempted by a caller who is not the invitee`);
+      return Response.json({
+        error: 'This invitation was sent to a different email address. Sign in with the invited address to accept it.'
+      }, { status: 403 });
     }
 
-    // If no user provided, check if invitee email matches a user
-    if (!existingUser) {
-      const users = await base44.asServiceRole.entities.User.filter({ 
-        email: invitation.invitee_email 
-      });
-      existingUser = users[0];
-    }
+    // Accepted by the caller's own account id.
+    await base44.asServiceRole.entities.Invitation.update(invitation.id, {
+      status: 'accepted',
+      accepted_at: new Date().toISOString(),
+      accepted_by_user_id: user.id,
+    });
 
-    // Update invitation status
-    const updateData = {
-      status: existingUser ? 'accepted' : 'pending',
-      accepted_at: existingUser ? new Date().toISOString() : null,
-    };
-
-    if (existingUser) {
-      updateData.accepted_by_user_id = existingUser.id;
-    }
-
-    await base44.asServiceRole.entities.Invitation.update(invitation.id, updateData);
-
-    console.log(`[ACCEPT] Invitation ${invitation.id} validated for ${invitation.invitee_email}`);
+    console.log(`[ACCEPT] Invitation ${invitation.id} accepted by invitee ${user.id}`);
 
     return Response.json({
       success: true,
@@ -86,10 +81,10 @@ Deno.serve(async (req) => {
         device_slots: invitation.device_slots,
         expires_at: invitation.expires_at,
       },
-      user_exists: !!existingUser,
-      existing_user_email: existingUser?.email || null,
-      next_step: existingUser ? 'enroll_device' : 'register_first',
-      message: existingUser ? 'Invitation accepted. Proceed to device enrollment.' : 'Invitation validated. Please complete registration first.'
+      user_exists: true,
+      existing_user_email: user.email,
+      next_step: 'enroll_device',
+      message: 'Invitation accepted. Proceed to device enrollment.'
     });
 
   } catch (error) {

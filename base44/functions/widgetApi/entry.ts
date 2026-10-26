@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { secrets } from 'base44:runtime';
 import {
-  CORS_HEADERS, jsonCors, randomToken, signPayload, verifyPayload,
+  CORS_HEADERS, jsonCors, randomToken, signPayload, verifyPayload, sha256Hex,
   findActiveKeyBySiteKey, findActiveKeyBySecret, originAllowed, touchKey,
 } from '../../shared/apiKeys.ts';
 
@@ -12,6 +12,7 @@ import {
 //   siteverify { secret, token }  (customer server)      -> success true/false (single-use)
 const CHALLENGE_TTL_MS = 5 * 60 * 1000;
 const TOKEN_TTL_MS = 10 * 60 * 1000;
+const MAX_CHALLENGE_ATTEMPTS = 5;
 
 export default async function(req) {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS_HEADERS });
@@ -31,15 +32,30 @@ export default async function(req) {
 
       const a = Math.floor(Math.random() * 20) + 1;
       const b = Math.floor(Math.random() * 20) + 1;
+      const challengeId = randomToken(16);
+      const exp = Date.now() + CHALLENGE_TTL_MS;
+
+      // The answer stays on the server, keyed to an opaque random id, and the
+      // signed token carries only that id and its expiry — so the token handed
+      // to the page cannot be decoded to read the sum it is asking for.
+      await base44.asServiceRole.entities.WidgetChallenge.create({
+        challenge_id: challengeId,
+        site_key: key.site_key,
+        answer_hash: await sha256Hex(`${challengeId}:${a + b}`),
+        attempts: 0,
+        status: 'pending',
+        expires_at: new Date(exp).toISOString(),
+      });
+
       const challengeToken = await signPayload(signingSecret, {
-        kind: 'challenge', site_key: key.site_key, a, b, exp: Date.now() + CHALLENGE_TTL_MS,
+        kind: 'challenge', site_key: key.site_key, cid: challengeId, exp,
       });
       return jsonCors({ challenge_token: challengeToken, instruction: `What is ${a} + ${b}?`, expires_in: CHALLENGE_TTL_MS / 1000 });
     }
 
     if (action === 'verify') {
       const payload = await verifyPayload(signingSecret, body.challenge_token);
-      if (!payload || payload.kind !== 'challenge' || payload.site_key !== body.site_key) {
+      if (!payload || payload.kind !== 'challenge' || payload.site_key !== body.site_key || !payload.cid) {
         return jsonCors({ success: false, error: 'Invalid challenge' }, 400);
       }
       if (payload.exp < Date.now()) return jsonCors({ success: false, error: 'Challenge expired' }, 400);
@@ -48,9 +64,36 @@ export default async function(req) {
       if (!key) return jsonCors({ success: false, error: 'Invalid site key' }, 401);
       if (!originAllowed(key, req.headers.get('origin'))) return jsonCors({ success: false, error: 'Domain not allowed' }, 403);
 
-      if (parseInt(body.answer, 10) !== payload.a + payload.b) {
+      // The stored pair behind this challenge id is the only answer source, and
+      // each challenge allows one verification with a few tries — so guessing
+      // the small answer space, or replaying a solved challenge, gets nowhere.
+      const challenges = await base44.asServiceRole.entities.WidgetChallenge.filter({
+        challenge_id: payload.cid, site_key: key.site_key,
+      });
+      const challenge = challenges[0];
+      if (!challenge) return jsonCors({ success: false, error: 'Invalid challenge' }, 400);
+      if ((challenge.attempts || 0) >= MAX_CHALLENGE_ATTEMPTS) {
+        return jsonCors({ success: false, error: 'Too many attempts. Please reload the challenge.' }, 429);
+      }
+      if (challenge.status !== 'pending') {
+        return jsonCors({ success: false, error: 'Invalid challenge' }, 400);
+      }
+      if (new Date(challenge.expires_at).getTime() < Date.now()) {
+        return jsonCors({ success: false, error: 'Challenge expired' }, 400);
+      }
+
+      const submitted = await sha256Hex(`${challenge.challenge_id}:${parseInt(body.answer, 10)}`);
+      if (submitted !== challenge.answer_hash) {
+        const attempts = (challenge.attempts || 0) + 1;
+        await base44.asServiceRole.entities.WidgetChallenge.update(challenge.id, {
+          attempts,
+          status: attempts >= MAX_CHALLENGE_ATTEMPTS ? 'locked' : 'pending',
+        });
         return jsonCors({ success: false, error: 'Incorrect answer' });
       }
+
+      // One challenge, one verification token.
+      await base44.asServiceRole.entities.WidgetChallenge.update(challenge.id, { status: 'used' });
 
       const nonce = randomToken(16);
       const token = await signPayload(signingSecret, {

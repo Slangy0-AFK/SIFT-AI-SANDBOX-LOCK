@@ -1,0 +1,66 @@
+{
+  "name": "WidgetChallenge",
+  "type": "object",
+  "properties": {
+    "challenge_id": {
+      "type": "string",
+      "description": "Opaque random id handed to the visitor inside the signed challenge token; the only handle to this record"
+    },
+    "site_key": {
+      "type": "string",
+      "description": "Widget site key the challenge was issued for"
+    },
+    "answer_hash": {
+      "type": "string",
+      "description": "SHA-256 of the challenge id plus the correct answer. The answer itself is never stored or sent"
+    },
+    "attempts": {
+      "type": "number",
+      "default": 0,
+      "description": "Wrong answers submitted against this challenge"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "used",
+        "locked"
+      ],
+      "default": "pending",
+      "description": "used = already verified, locked = attempt limit reached"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this challenge stops being answerable"
+    }
+  },
+  "required": [
+    "challenge_id",
+    "site_key",
+    "answer_hash",
+    "expires_at"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
