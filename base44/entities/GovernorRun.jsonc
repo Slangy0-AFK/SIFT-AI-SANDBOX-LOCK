@@ -1,0 +1,116 @@
+{
+  "name": "GovernorRun",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Signed-in owner, empty for guest demo runs"
+    },
+    "owner_key": {
+      "type": "string",
+      "description": "Chain owner: the user id, or guest:<session id>"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Random browser id used for guest demo runs"
+    },
+    "tool": {
+      "type": "string",
+      "description": "Tool the agent proposed to use"
+    },
+    "target": {
+      "type": "string",
+      "description": "What the tool would act on"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Estimated cost or charge in USD"
+    },
+    "source": {
+      "type": "string",
+      "description": "Where the instruction came from"
+    },
+    "based_on_doc": {
+      "type": "boolean",
+      "default": false
+    },
+    "citation": {
+      "type": "string"
+    },
+    "kill_switch": {
+      "type": "boolean",
+      "default": false
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "hold",
+        "block"
+      ]
+    },
+    "gate": {
+      "type": "string",
+      "description": "The gate that produced the verdict"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Plain-language reason"
+    },
+    "action_hash": {
+      "type": "string",
+      "description": "SHA-256 of the canonical action"
+    },
+    "signature": {
+      "type": "string",
+      "description": "HMAC seal on the request"
+    },
+    "prev_hash": {
+      "type": "string",
+      "description": "Hash of the previous entry in this owner's chain"
+    },
+    "entry_hash": {
+      "type": "string",
+      "description": "Hash of this entry, chained to prev_hash"
+    },
+    "decided_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "owner_key",
+    "tool",
+    "verdict",
+    "gate"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

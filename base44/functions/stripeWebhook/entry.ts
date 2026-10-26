@@ -70,6 +70,38 @@ Deno.serve(async (req) => {
         }
       }
 
+      if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        const checkoutSessionId = session.id;
+
+        const kitResult = await base44.asServiceRole.entities.KitPurchase.filter({ stripe_session_id: checkoutSessionId });
+        const kitList = kitResult && kitResult.items ? kitResult.items : kitResult;
+        const kitPurchase = (kitList || [])[0];
+
+        if (kitPurchase && kitPurchase.status !== 'paid') {
+          const buyerEmail = String(
+            (session.customer_details && session.customer_details.email) || session.customer_email || ''
+          ).toLowerCase();
+          const amountMatches = !kitPurchase.price_cents || session.amount_total === kitPurchase.price_cents;
+
+          if (session.payment_status === 'paid' && amountMatches) {
+            const update = {
+              status: 'paid',
+              amount_total: session.amount_total,
+              currency: session.currency,
+              paid_at: new Date().toISOString()
+            };
+            if (buyerEmail) update.email = buyerEmail;
+            await base44.asServiceRole.entities.KitPurchase.update(kitPurchase.id, update);
+            console.log(`[Stripe Webhook] Kit purchase ${kitPurchase.id} marked paid`);
+          } else {
+            console.warn(
+              `[Stripe Webhook] Kit purchase ${kitPurchase.id} not confirmed (payment_status=${session.payment_status}, amount=${session.amount_total})`
+            );
+          }
+        }
+      }
+
       return Response.json({ received: true });
     };
 

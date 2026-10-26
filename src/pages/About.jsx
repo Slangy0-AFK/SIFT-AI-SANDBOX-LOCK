@@ -1,72 +1,138 @@
-import React, { useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Shield } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
-import { useAuth } from '@/lib/AuthContext';
+import { ArrowUpRight, Github, ShieldCheck } from 'lucide-react';
+import LimitsNote from '@/components/kit/LimitsNote';
+import { GITHUB_PROFILE, GRAY_SWAN_PROFILE, OWNER_SITE, REPOS, repoUrl } from '@/lib/kitContent';
+
+const NOT_HERE = [
+  'No resume and no private contact details.',
+  'No private prompt library.',
+  'No Gray Swan private-network challenge prompts.',
+  'Nothing that is not already public in the repos.'
+];
 
 export default function About() {
-  const { isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    base44.analytics.track({ eventName: 'view_about_page' });
-  }, []);
+  const governor = REPOS.filter((repo) => repo.part === 'Governor');
+  const evals = REPOS.filter((repo) => repo.part === 'Eval');
+  const calculators = REPOS.filter((repo) => repo.part === 'Calculator');
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center p-6 pt-12 relative">
-      <div 
-        className="fixed inset-0 z-0 opacity-20 pointer-events-none"
-        style={{
-          backgroundImage: 'url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=2072")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
-        }}
-      />
-      <div className="fixed inset-0 z-0 bg-background/80 pointer-events-none" />
-      
-      <div className="relative z-10 flex flex-col items-center w-full max-w-5xl">
-        <div className="max-w-3xl w-full mb-6">
-          <Link to={isAuthenticated ? "/dashboard" : "/"}>
-          <Button variant="ghost" className="gap-2 -ml-4">
-            <ArrowLeft className="w-4 h-4" /> {isAuthenticated ? "Back to Dashboard" : "Back to Home"}
-          </Button>
-        </Link>
-      </div>
-      <Card className="max-w-3xl w-full border-border">
-        <CardHeader>
-          <CardTitle className="text-2xl text-foreground text-center font-bold">
-            <h1>About Sift-AI</h1>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-foreground/80 text-sm leading-relaxed">
-          <p>
-            Sift-AI is a practical threat detection toolkit. It combines browser-based device diagnostics, email and SMS threat analysis, live reputation lookups (VirusTotal, AlienVault OTX), and a human-verification widget and scanning API that developers can use in their own applications.
-          </p>
-          <p>
-            What exactly do we do? Our device scanner inspects your browser environment for automation flags, tracking scripts, risky extensions, and other anomalies — entirely client-side, without touching your files. Our email and SMS scanners analyze messages for phishing and scam indicators. Our verification widget uses timed challenges, rate limiting, and strike-based lockouts to help keep automated traffic out of your forms.
-          </p>
-          <p>
-            Who is this for? Individuals who want to check a suspicious link, email, or device, and developers who want to add human verification or threat scanning to their own site without building it from scratch.
-          </p>
-          <p>
-            We only ship what we can actually do. Sift-AI does not run a network firewall, does not intercept traffic on your behalf, and does not claim protections it cannot deliver.
-          </p>
-        </CardContent>
-      </Card>
+    <div className="mx-auto max-w-4xl px-4 py-14">
+      <p className="font-heading text-xs uppercase tracking-widest text-primary">About</p>
+      <h1 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">Doug Leslie, AI red teamer.</h1>
+      <p className="mt-4 text-muted-foreground">
+        Doug breaks AI agents on purpose, then writes down what held and what did not. The Agent Control Kit is the small, open part
+        of that work: gates that run in code, evals you can rerun, and two calculators for sizing a job and setting a floor.
+      </p>
+      <p className="mt-4 text-muted-foreground">
+        The idea is simple. Do not hope the agent behaves. Decide, before it acts, whether this action is allowed, and keep a record
+        of the decision that a person can read afterwards.
+      </p>
 
-      <div className="max-w-3xl w-full mt-12 text-center pb-12">
-        <h2 className="text-xl font-bold mb-4">
-          {isAuthenticated ? "Return to your secure console" : "Ready to secure your infrastructure?"}
-        </h2>
-        <Link to={isAuthenticated ? "/dashboard" : "/register"}>
-          <Button size="lg" className="px-8 font-semibold">
-            {isAuthenticated ? "Go to Dashboard" : "Get Started"}
-          </Button>
+      <div className="mt-8 flex flex-wrap gap-3">
+        <a href={GITHUB_PROFILE} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium hover:border-primary/40">
+          <Github className="h-4 w-4" />
+          GitHub
+        </a>
+        <a href={GRAY_SWAN_PROFILE} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium hover:border-primary/40">
+          Gray Swan Arena profile
+          <ArrowUpRight className="h-3.5 w-3.5" />
+        </a>
+        <a href={OWNER_SITE} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium hover:border-primary/40">
+          sift-ai.net
+          <ArrowUpRight className="h-3.5 w-3.5" />
+        </a>
+      </div>
+
+      <section className="mt-14">
+        <h2 className="font-heading text-xl font-bold tracking-tight">Governor</h2>
+        <p className="mt-2 text-sm text-muted-foreground">The gates themselves, written as code rather than as instructions to a model.</p>
+        <ul className="mt-4 space-y-3">
+          {governor.map((repo) => (
+            <li key={repo.name} className="rounded-xl border border-border bg-card p-4">
+              <a href={repoUrl(repo.name)} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-primary">
+                {repo.name}
+              </a>
+              <p className="mt-1 text-sm text-muted-foreground">{repo.summary}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="font-heading text-xl font-bold tracking-tight">Evals</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Checks that can be run again by anyone. The results and their limits are both written down.
+        </p>
+        <ul className="mt-4 space-y-3">
+          {evals.map((repo) => (
+            <li key={repo.name} className="rounded-xl border border-border bg-card p-4">
+              <a href={repoUrl(repo.name)} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-primary">
+                {repo.name}
+              </a>
+              <p className="mt-1 text-sm text-muted-foreground">{repo.summary}</p>
+            </li>
+          ))}
+        </ul>
+        <Link to="/evals" className="mt-4 inline-block text-sm font-medium text-primary hover:underline">
+          Read what each eval found
         </Link>
-      </div>
-      </div>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="font-heading text-xl font-bold tracking-tight">Calculators</h2>
+        <ul className="mt-4 space-y-3">
+          {calculators.map((repo) => (
+            <li key={repo.name} className="rounded-xl border border-border bg-card p-4">
+              <a href={repoUrl(repo.name)} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-primary">
+                {repo.name}
+              </a>
+              <p className="mt-1 text-sm text-muted-foreground">{repo.summary}</p>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-4 flex flex-wrap gap-4 text-sm font-medium">
+          <Link to="/sizing-calculator" className="text-primary hover:underline">
+            Sizing calculator
+          </Link>
+          <Link to="/scaler" className="text-primary hover:underline">
+            The floor dial, Setting(T)
+          </Link>
+        </div>
+      </section>
+
+      <section className="mt-12 rounded-xl border border-border bg-card p-6">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-primary" />
+          <h2 className="font-heading text-lg font-bold">What this is not</h2>
+        </div>
+        <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+          <li>It is not a claim that the kit makes a model smarter, more truthful, or safe in general.</li>
+          <li>It is not an independent audit of anyone's system, including Doug's own runs.</li>
+          <li>The results are lab and repo test results from authored scenarios, and they are labelled that way everywhere here.</li>
+        </ul>
+      </section>
+
+      <section className="mt-8 rounded-xl border border-border bg-card p-6">
+        <h2 className="font-heading text-lg font-bold">Not published here</h2>
+        <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+          {NOT_HERE.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+        <p className="mt-4 text-sm text-muted-foreground">
+          To get in touch about an audit of your own agent, use the booking form on the{' '}
+          <Link to="/pricing" className="text-primary hover:underline">
+            pricing page
+          </Link>
+          . Your request stays private to your account.
+        </p>
+      </section>
+
+      <LimitsNote className="mt-8">
+        Everything published on this site is already public in the repos above. If you want to check a claim, open the repo and run
+        the test yourself.
+      </LimitsNote>
     </div>
   );
 }

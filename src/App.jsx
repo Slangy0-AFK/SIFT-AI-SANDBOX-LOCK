@@ -32,9 +32,18 @@ import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
-import Landing from '@/pages/Landing';
 import Developer from '@/pages/Developer';
-
+import Home from '@/pages/Home';
+import GovernorDemo from '@/pages/GovernorDemo';
+import Evals from '@/pages/Evals';
+import SizingCalculator from '@/pages/SizingCalculator';
+import Scaler from '@/pages/Scaler';
+import Pricing from '@/pages/Pricing';
+import About from '@/pages/About';
+import ThankYou from '@/pages/ThankYou';
+import MyRuns from '@/pages/MyRuns';
+import AdminDashboard from '@/pages/AdminDashboard';
+import SiteLayout from '@/components/kit/SiteLayout';
 import PromptGuard from '@/pages/PromptGuard';
 // Add page imports here
 
@@ -58,15 +67,27 @@ function AppRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageTransition><Landing /></PageTransition>} />
-        <Route path="/verify-demo" element={<Navigate to="/#try-it" replace />} />
+        <Route element={<SiteLayout />}>
+          <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+          <Route path="/governor-demo" element={<PageTransition><GovernorDemo /></PageTransition>} />
+          <Route path="/evals" element={<PageTransition><Evals /></PageTransition>} />
+          <Route path="/sizing-calculator" element={<PageTransition><SizingCalculator /></PageTransition>} />
+          <Route path="/scaler" element={<PageTransition><Scaler /></PageTransition>} />
+          <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
+          <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+          <Route path="/thank-you" element={<PageTransition><ThankYou /></PageTransition>} />
+        </Route>
+        <Route path="/verify-demo" element={<Navigate to="/governor-demo" replace />} />
         <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
         <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
         <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
         <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+          <Route element={<SiteLayout />}>
+            <Route path="/dashboard" element={<PageTransition><MyRuns /></PageTransition>} />
+            <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
+          </Route>
           <Route element={<AppLayout />}>
-            <Route path="/dashboard" element={<Navigate to="/prompt-guard" replace />} />
             <Route path="/prompt-guard" element={<PageTransition><PromptGuard /></PageTransition>} />
             <Route path="/profile" element={<PageTransition><UserProfile /></PageTransition>} />
             <Route path="/subscription" element={<PageTransition><SubscriptionPage /></PageTransition>} />

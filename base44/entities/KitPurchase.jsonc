@@ -1,0 +1,76 @@
+{
+  "name": "KitPurchase",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "Buyer email as recorded by Stripe at checkout"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Claimed app user, set after payment is confirmed"
+    },
+    "stripe_session_id": {
+      "type": "string",
+      "description": "The only link from the payment back to the buyer"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "refunded"
+      ],
+      "default": "pending"
+    },
+    "price_cents": {
+      "type": "number",
+      "description": "Server-side price the session was created with"
+    },
+    "amount_total": {
+      "type": "number",
+      "description": "Amount Stripe reports as charged"
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd"
+    },
+    "paid_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "stripe_session_id",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

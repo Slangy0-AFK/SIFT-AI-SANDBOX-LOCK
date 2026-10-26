@@ -1,0 +1,47 @@
+{
+  "name": "KitSettings",
+  "type": "object",
+  "properties": {
+    "product_name": {
+      "type": "string",
+      "description": "Name shown on the paid tier and on the Stripe checkout page"
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd"
+    },
+    "price_cents": {
+      "type": "number",
+      "default": 0,
+      "description": "Paid tier price in cents. 0 means the owner has not set a price yet"
+    },
+    "paid_tier_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Checkout stays closed until the owner turns this on"
+    },
+    "note": {
+      "type": "string",
+      "maxLength": 500
+    }
+  },
+  "required": [],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
