@@ -17,6 +17,7 @@ export function stripeSecretKey() {
 }
 
 export function appBaseUrl(req) {
-  const raw = req.headers.get('X-Base44-App-Url') || readSecret('WIX_CHECKOUT_APP_URL') || PUBLISHED_APP_URL;
+  // Platform header first; the app's own published origin as the fallback.
+  const raw = req.headers.get('X-Base44-App-Url') || PUBLISHED_APP_URL;
   return String(raw).replace(/\/+$/, '');
 }
