@@ -1,8 +1,5 @@
-export const GITHUB_PROFILE = 'https://github.com/Slangy0-AFK';
 export const GRAY_SWAN_PROFILE = 'https://app.grayswan.ai/arena/user/6a15c8ba7b1ae32bf238bc32';
 export const OWNER_SITE = 'https://sift-ai.net';
-
-export const repoUrl = (name) => `${GITHUB_PROFILE}/${name}`;
 
 export const REPOS = [
   {
@@ -64,8 +61,8 @@ export const EVALS = [
         text: 'The repo selftest, in our lab, over the scenario set that ships with the repo: 15 checks spanning the six behaviours.'
       },
       {
-        heading: 'How to reproduce it',
-        text: 'Clone the repo and run its selftest, then read the per-behaviour output. The numbers on this page come from that output.'
+        heading: 'Where the numbers come from',
+        text: 'The per-behaviour output of that selftest, from the run in our lab.'
       },
       {
         heading: 'What it does not show',
@@ -132,8 +129,8 @@ export const EVALS = [
         text: 'The repo validator across the five phases: 20 checks passed.'
       },
       {
-        heading: 'How to reproduce it',
-        text: 'Clone the repo and run the validator. All 20 checks are the repo’s own.'
+        heading: 'Where the numbers come from',
+        text: 'The validator’s own 20 checks, run across the five phases in our lab.'
       },
       {
         heading: 'What it does not show',

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, Github, ShieldCheck } from 'lucide-react';
+import { ArrowUpRight, ShieldCheck } from 'lucide-react';
 import LimitsNote from '@/components/kit/LimitsNote';
-import { GITHUB_PROFILE, GRAY_SWAN_PROFILE, OWNER_SITE, REPOS, repoUrl } from '@/lib/kitContent';
+import { GRAY_SWAN_PROFILE, OWNER_SITE, REPOS } from '@/lib/kitContent';
 
 const NOT_HERE = [
   'No resume and no private contact details.',
@@ -31,10 +31,6 @@ export default function About() {
       </p>
 
       <div className="mt-8 flex flex-wrap gap-3">
-        <a href={GITHUB_PROFILE} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium hover:border-primary/40">
-          <Github className="h-4 w-4" />
-          GitHub
-        </a>
         <a href={GRAY_SWAN_PROFILE} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium hover:border-primary/40">
           Gray Swan Arena profile
           <ArrowUpRight className="h-3.5 w-3.5" />
@@ -51,9 +47,7 @@ export default function About() {
         <ul className="mt-4 space-y-3">
           {governor.map((repo) => (
             <li key={repo.name} className="rounded-xl border border-border bg-card p-4">
-              <a href={repoUrl(repo.name)} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-primary">
-                {repo.name}
-              </a>
+              <span className="text-sm font-medium">{repo.name}</span>
               <p className="mt-1 text-sm text-muted-foreground">{repo.summary}</p>
             </li>
           ))}
@@ -68,9 +62,7 @@ export default function About() {
         <ul className="mt-4 space-y-3">
           {evals.map((repo) => (
             <li key={repo.name} className="rounded-xl border border-border bg-card p-4">
-              <a href={repoUrl(repo.name)} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-primary">
-                {repo.name}
-              </a>
+              <span className="text-sm font-medium">{repo.name}</span>
               <p className="mt-1 text-sm text-muted-foreground">{repo.summary}</p>
             </li>
           ))}
@@ -85,9 +77,7 @@ export default function About() {
         <ul className="mt-4 space-y-3">
           {calculators.map((repo) => (
             <li key={repo.name} className="rounded-xl border border-border bg-card p-4">
-              <a href={repoUrl(repo.name)} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:text-primary">
-                {repo.name}
-              </a>
+              <span className="text-sm font-medium">{repo.name}</span>
               <p className="mt-1 text-sm text-muted-foreground">{repo.summary}</p>
             </li>
           ))}
@@ -131,8 +121,8 @@ export default function About() {
       </section>
 
       <LimitsNote className="mt-8">
-        Everything published on this site is already public in the repos above. If you want to check a claim, open the repo and run
-        the test yourself.
+        Every number on this site is a lab or repo test result, labelled as such. The checks themselves run right here: try them in
+        the Governor Demo and on the Evals page.
       </LimitsNote>
     </div>
   );

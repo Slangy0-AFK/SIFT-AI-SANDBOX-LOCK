@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calculator, FileWarning, Gauge, Github, ListChecks, PlayCircle, Repeat, ShieldQuestion, Wallet } from 'lucide-react';
+import { ArrowRight, Calculator, FileWarning, Gauge, ListChecks, PlayCircle, Repeat, ShieldQuestion, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LimitsNote from '@/components/kit/LimitsNote';
-import { GITHUB_PROFILE, REPOS, repoUrl } from '@/lib/kitContent';
+import { REPOS } from '@/lib/kitContent';
 
 const GATES = ['Admission before spend', 'Tool gate', 'Spend cap', 'Kill switch', 'Loop gate', 'Audit log'];
 
@@ -107,18 +107,9 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-4 py-16">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h2 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">The eight repos</h2>
-              <p className="mt-2 text-muted-foreground">All of it is open. Read the code, run the tests yourself.</p>
+              <h2 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">The eight checks</h2>
+              <p className="mt-2 text-muted-foreground">Everything runs here. Open a check and try it without leaving the site.</p>
             </div>
-            <a
-              href={GITHUB_PROFILE}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-            >
-              <Github className="h-4 w-4" />
-              github.com/Slangy0-AFK
-            </a>
           </div>
 
           <ul className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -128,14 +119,7 @@ export default function Home() {
                   <span className="rounded border border-border bg-secondary/40 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
                     {repo.part}
                   </span>
-                  <a
-                    href={repoUrl(repo.name)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="truncate text-sm font-medium hover:text-primary"
-                  >
-                    {repo.name}
-                  </a>
+                  <span className="truncate text-sm font-medium">{repo.name}</span>
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">{repo.summary}</p>
               </li>

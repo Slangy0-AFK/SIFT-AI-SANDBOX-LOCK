@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Github, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import EvalCard from '@/components/kit/EvalCard';
 import LimitsNote from '@/components/kit/LimitsNote';
 import useKitAccess from '@/hooks/useKitAccess';
-import { EVALS, GITHUB_PROFILE } from '@/lib/kitContent';
+import { EVALS } from '@/lib/kitContent';
 
 export default function Evals() {
   const { paid, admin, loading } = useKitAccess();
@@ -47,20 +47,17 @@ export default function Evals() {
 
       <div className="mt-12 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-card p-6">
         <div>
-          <p className="font-heading text-base font-semibold">Every eval is a repo you can run yourself</p>
+          <p className="font-heading text-base font-semibold">Every eval can be run from here</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            The numbers on this page come from those repos' own tests, in our lab. Clone them and check the output directly.
+            The numbers on this page come from those tests, run in our lab. Open the Governor Demo to watch the same checks decide
+            on an action.
           </p>
         </div>
-        <a
-          href={GITHUB_PROFILE}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-        >
-          <Github className="h-4 w-4" />
-          Open on GitHub
-        </a>
+        <Link to="/governor-demo">
+          <Button size="sm" variant="outline">
+            Open the Governor Demo
+          </Button>
+        </Link>
       </div>
     </div>
   );

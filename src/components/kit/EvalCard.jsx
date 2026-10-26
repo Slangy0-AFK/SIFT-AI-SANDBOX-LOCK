@@ -1,9 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { repoUrl } from '@/lib/kitContent';
 
 export default function EvalCard({ item, paid }) {
   return (
@@ -53,15 +52,6 @@ export default function EvalCard({ item, paid }) {
           </div>
         )}
 
-        <a
-          href={repoUrl(item.repo)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-        >
-          View the repo on GitHub
-          <ArrowUpRight className="h-3.5 w-3.5" />
-        </a>
       </CardContent>
     </Card>
   );

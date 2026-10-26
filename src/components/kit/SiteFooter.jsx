@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Github } from 'lucide-react';
-import { GITHUB_PROFILE, GRAY_SWAN_PROFILE, OWNER_SITE } from '@/lib/kitContent';
+import { GRAY_SWAN_PROFILE, OWNER_SITE } from '@/lib/kitContent';
 
 const PAGES = [
   ['/', 'Home'],
@@ -38,17 +37,6 @@ export default function SiteFooter() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Elsewhere</p>
           <ul className="mt-3 space-y-2 text-sm">
-            <li>
-              <a
-                href={GITHUB_PROFILE}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <Github className="h-4 w-4" />
-                GitHub
-              </a>
-            </li>
             <li>
               <a
                 href={GRAY_SWAN_PROFILE}

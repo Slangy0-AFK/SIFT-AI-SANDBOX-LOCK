@@ -13,7 +13,7 @@ const FREE_ITEMS = [
   'The sizing calculator',
   'The Setting(T) calculator',
   'Eval summaries: what each one tests, what the lab run found, and where it stops',
-  'Every repo on GitHub'
+  'Every check, runnable right here in the browser'
 ];
 
 const PAID_ITEMS = [
