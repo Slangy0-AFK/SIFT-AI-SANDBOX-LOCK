@@ -1,6 +1,3 @@
-export const GRAY_SWAN_PROFILE = 'https://app.grayswan.ai/arena/user/6a15c8ba7b1ae32bf238bc32';
-export const OWNER_SITE = 'https://sift-ai.net';
-
 export const REPOS = [
   {
     name: 'deterministic-rag-governor',

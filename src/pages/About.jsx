@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import LimitsNote from '@/components/kit/LimitsNote';
-import { GRAY_SWAN_PROFILE, OWNER_SITE, REPOS } from '@/lib/kitContent';
+import { REPOS } from '@/lib/kitContent';
 
 const NOT_HERE = [
   'No resume and no private contact details.',
@@ -29,17 +29,6 @@ export default function About() {
         The idea is simple. Do not hope the agent behaves. Decide, before it acts, whether this action is allowed, and keep a record
         of the decision that a person can read afterwards.
       </p>
-
-      <div className="mt-8 flex flex-wrap gap-3">
-        <a href={GRAY_SWAN_PROFILE} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium hover:border-primary/40">
-          Gray Swan Arena profile
-          <ArrowUpRight className="h-3.5 w-3.5" />
-        </a>
-        <a href={OWNER_SITE} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium hover:border-primary/40">
-          sift-ai.net
-          <ArrowUpRight className="h-3.5 w-3.5" />
-        </a>
-      </div>
 
       <section className="mt-14">
         <h2 className="font-heading text-xl font-bold tracking-tight">Governor</h2>

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { GRAY_SWAN_PROFILE, OWNER_SITE } from '@/lib/kitContent';
 
 const PAGES = [
   ['/', 'Home'],
@@ -15,7 +14,7 @@ const PAGES = [
 export default function SiteFooter() {
   return (
     <footer className="border-t border-border bg-card/40">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-3">
         <div>
           <p className="font-heading text-sm font-bold">Agent Control Kit</p>
           <p className="mt-2 text-sm text-muted-foreground">Open tools for checking an AI agent before it acts.</p>
@@ -31,32 +30,6 @@ export default function SiteFooter() {
                 </Link>
               </li>
             ))}
-          </ul>
-        </div>
-
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Elsewhere</p>
-          <ul className="mt-3 space-y-2 text-sm">
-            <li>
-              <a
-                href={GRAY_SWAN_PROFILE}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Gray Swan Arena profile
-              </a>
-            </li>
-            <li>
-              <a
-                href={OWNER_SITE}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                sift-ai.net
-              </a>
-            </li>
           </ul>
         </div>
 
