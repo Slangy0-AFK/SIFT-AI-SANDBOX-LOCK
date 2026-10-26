@@ -139,6 +139,69 @@ The user asks: ${question}`,
       });
     }
 
+    if (action === 'list_check') {
+      // The person's own allowlist and blocklist. This is deterministic: it
+      // reads their list and compares strings. No model and no outside service.
+      if (!user) return Response.json({ match: null, reason: 'guest' });
+
+      const rawValue = String(body.value || '').slice(0, 300);
+      const rawText = String(body.text || '').slice(0, 4000);
+
+      const normalize = (raw: string) =>
+        String(raw || '')
+          .trim()
+          .toLowerCase()
+          .replace(/^https?:\/\//, '')
+          .replace(/^www\./, '')
+          .replace(/[?#].*$/, '')
+          .replace(/\/+$/, '');
+      const hostOf = (raw: string) => {
+        const value = normalize(raw);
+        return value.split('/')[0] || value;
+      };
+
+      const candidates = new Set([normalize(rawValue), hostOf(rawValue)].filter((value) => value.length > 2));
+      const haystack = normalize(rawText);
+
+      const listPage = await base44.entities.ListEntry.filter({ user_id: user.id }, { sort: '-created_date', limit: 200 });
+      const entries = listPage.items || [];
+
+      const matches = (entry: any) => {
+        const listed = normalize(entry.value);
+        const listedHost = hostOf(entry.value);
+        if (rawValue && (candidates.has(listed) || candidates.has(listedHost))) return true;
+        // A blocked item is caught wherever it turns up, including inside a
+        // pasted message. Short fragments are ignored so a stray match cannot
+        // flag an innocent message.
+        if (haystack && listed.length >= 4 && haystack.includes(listed)) return true;
+        if (haystack && listedHost.length >= 4 && haystack.includes(listedHost)) return true;
+        return false;
+      };
+
+      const blocked = entries.filter((entry: any) => entry.kind === 'block').find(matches);
+      // An allowlist only clears the exact item the person added. It never
+      // clears a whole message, because a message can carry anything.
+      const allowed = rawValue ? entries.filter((entry: any) => entry.kind === 'allow').find(matches) : undefined;
+      const hit = blocked || allowed;
+
+      if (!hit) return Response.json({ match: null, listed: entries.length });
+
+      await base44.asServiceRole.entities.ListEntry
+        .update(hit.id, { hits: Number(hit.hits || 0) + 1, last_hit: new Date().toISOString() })
+        .catch((e) => console.warn('[scannerHelper] list hit counter failed:', e && e.message));
+
+      return Response.json({
+        match: hit.kind === 'block' ? 'block' : 'allow',
+        entry: {
+          id: hit.id,
+          kind: hit.kind,
+          item_type: hit.item_type,
+          value: hit.value,
+          note: hit.note || ''
+        }
+      });
+    }
+
     return Response.json({ error: 'Unknown action' }, { status: 400 });
   } catch (error) {
     console.error('[scannerHelper] Error:', error);

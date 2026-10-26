@@ -3,7 +3,8 @@
   "type": "object",
   "properties": {
     "user_id": {
-      "type": "string"
+      "type": "string",
+      "description": "Owner of the device record"
     },
     "subscriber_id": {
       "type": "string",
@@ -29,7 +30,8 @@
     },
     "last_seen": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "Last time a check was filed against this device"
     },
     "status": {
       "type": "string",
@@ -41,7 +43,8 @@
     },
     "description": {
       "type": "string",
-      "maxLength": 1000
+      "maxLength": 1000,
+      "description": "Optional note from the owner about the device"
     }
   },
   "required": [
@@ -49,9 +52,7 @@
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "data.user_id": "{{user.id}}"
     },
     "read": {
       "$or": [
@@ -69,14 +70,28 @@
       ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     }
   }
 }

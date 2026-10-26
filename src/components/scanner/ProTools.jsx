@@ -10,7 +10,7 @@ export default function ProTools({ unlocked }) {
       <TierLocked
         tier="Pro"
         price="$7 per month"
-        includes={['Saved device profiles', 'Re-checks of flagged items', 'PDF reports', 'Priority support']}
+        includes={['Reusable scan profiles', 'Re-checks of flagged items', 'PDF reports', 'Priority support']}
       />
     );
   }

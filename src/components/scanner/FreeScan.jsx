@@ -1,19 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, ScanLine, ShieldAlert, ShieldCheck, ShieldQuestion } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowRight, Loader2, ScanLine, ShieldAlert, ShieldCheck, ShieldQuestion } from 'lucide-react';
 
 const MODES = [
   { id: 'item', label: 'A link, domain or file hash' },
   { id: 'text', label: 'A message or an email' }
 ];
 
+const NO_DEVICE = 'none';
+
 const VERDICT_STYLES = {
   flagged: { icon: ShieldAlert, tone: 'text-destructive border-destructive/40', label: 'Flagged' },
   unknown: { icon: ShieldQuestion, tone: 'text-amber-400 border-amber-400/40', label: 'Unknown' },
-  approved: { icon: ShieldCheck, tone: 'text-emerald-400 border-emerald-400/40', label: 'Nothing known against it' }
+  approved: { icon: ShieldCheck, tone: 'text-emerald-400 border-emerald-400/40', label: 'Approved' }
 };
 
 function classifyItem(raw) {
@@ -84,12 +87,60 @@ function textVerdict(analysis) {
   };
 }
 
+// The person's own allowlist and blocklist get the last word, and the result
+// says so out loud either way.
+function applyList(verdict, hit) {
+  const note = hit.entry?.note ? ` Your note on it: ${hit.entry.note}` : '';
+  if (hit.kind === 'block') {
+    return {
+      ...verdict,
+      level: 'flagged',
+      headline: 'On your blocklist',
+      lines: [
+        `You put ${hit.entry.value} on your blocklist, so it comes back flagged here.`,
+        `The checker on its own said: ${verdict.headline}.`
+      ],
+      next: `Take it off the list if you have changed your mind about it.${note}`,
+      list: { kind: 'block', value: hit.entry.value }
+    };
+  }
+  return {
+    ...verdict,
+    level: 'approved',
+    headline: 'On your allowlist',
+    lines: [
+      `You put ${hit.entry.value} on your allowlist, so your list treats it as approved.`,
+      `The checker's own finding, stated plainly: ${verdict.headline}.`
+    ],
+    next: `Watch it anyway. Your list decides what happens here, not whether the item is genuinely safe.${note}`,
+    list: { kind: 'allow', value: hit.entry.value }
+  };
+}
+
 export default function FreeScan({ isAuthed, onSignIn }) {
   const [mode, setMode] = useState('item');
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [verdict, setVerdict] = useState(null);
+  const [devices, setDevices] = useState([]);
+  const [deviceId, setDeviceId] = useState('');
+  const [savedId, setSavedId] = useState('');
+
+  // The account's own devices, so a check can be filed against one. Arriving
+  // from "Check something for this device" preselects that device.
+  useEffect(() => {
+    if (!isAuthed) return;
+    const wanted = new URLSearchParams(window.location.search).get('device') || '';
+    base44.entities.Device
+      .filter({ status: 'active' }, { sort: '-created_date', limit: 50 })
+      .then((page) => {
+        const list = page.items || [];
+        setDevices(list);
+        if (wanted && list.some((device) => device.id === wanted)) setDeviceId(wanted);
+      })
+      .catch(() => {});
+  }, [isAuthed]);
 
   const run = async () => {
     const text = input.trim();
@@ -105,10 +156,11 @@ export default function FreeScan({ isAuthed, onSignIn }) {
 
     setBusy(true);
     setVerdict(null);
+    setSavedId('');
     try {
       let next;
       let scanType;
-      let threatLevel;
+      let listPayload;
 
       if (mode === 'item') {
         const item = classifyItem(text);
@@ -121,14 +173,22 @@ export default function FreeScan({ isAuthed, onSignIn }) {
         if (data?.error) throw new Error(data.error);
         next = { ...itemVerdict(data), item: item.value };
         scanType = `virustotal_${item.type}`;
-        threatLevel = next.level === 'flagged' ? 'high' : next.level === 'unknown' ? 'warning' : 'safe';
+        listPayload = { action: 'list_check', item_type: item.type, value: item.value };
       } else {
         const { data } = await base44.functions.invoke('analyzeTextThreat', { text });
         if (data?.error) throw new Error(data.error);
         next = { ...textVerdict(data), item: text.slice(0, 120) };
-        scanType = 'sms';
-        threatLevel = next.level === 'flagged' ? 'high' : next.level === 'unknown' ? 'warning' : 'safe';
+        scanType = 'message';
+        listPayload = { action: 'list_check', item_type: 'message', text };
       }
+
+      // The person's own lists decide the final answer on their account. If the
+      // list check cannot run, the plain check result stands.
+      const listHit = await base44.functions
+        .invoke('scannerHelper', listPayload)
+        .then((res) => res.data || null)
+        .catch(() => null);
+      if (listHit?.match) next = applyList(next, listHit);
 
       setVerdict(next);
 
@@ -136,15 +196,31 @@ export default function FreeScan({ isAuthed, onSignIn }) {
       // has nowhere to file it, and we say so on the page.
       const me = await base44.auth.me().catch(() => null);
       if (me?.id) {
-        await base44.entities.ScanSession.create({
+        const chosen = devices.find((device) => device.id === deviceId) || null;
+        const threatLevel = next.level === 'flagged' ? 'high' : next.level === 'unknown' ? 'warning' : 'safe';
+        const saved = await base44.entities.ScanSession.create({
           user_id: me.id,
           scan_type: scanType,
           status: 'complete',
           input_value: next.item.slice(0, 300),
-          result: JSON.stringify({ headline: next.headline, lines: next.lines, next: next.next }).slice(0, 4000),
+          result: JSON.stringify({
+            headline: next.headline,
+            lines: next.lines,
+            next: next.next,
+            list: next.list || null
+          }).slice(0, 4000),
           threat_level: threatLevel,
-          is_threat: next.level === 'flagged'
+          is_threat: next.level === 'flagged',
+          list_effect: next.list ? next.list.kind : '',
+          device_id: chosen?.id || '',
+          device_name: chosen?.device_name || ''
         });
+        setSavedId(saved?.id || '');
+        if (chosen) {
+          await base44.entities.Device
+            .update(chosen.id, { last_seen: new Date().toISOString() })
+            .catch(() => {});
+        }
       }
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'The check did not finish.');
@@ -154,6 +230,7 @@ export default function FreeScan({ isAuthed, onSignIn }) {
   };
 
   const style = verdict ? VERDICT_STYLES[verdict.level] : null;
+  const chosenDevice = devices.find((device) => device.id === deviceId) || null;
 
   return (
     <div className="rounded-2xl border border-border bg-card p-6">
@@ -187,6 +264,34 @@ export default function FreeScan({ isAuthed, onSignIn }) {
         className="mt-4 font-mono text-xs"
       />
 
+      {isAuthed && (
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <span className="font-mono text-xs text-muted-foreground">File this check under</span>
+          {devices.length === 0 ? (
+            <Link to="/devices" className="font-mono text-xs text-primary hover:underline">
+              Add a device first →
+            </Link>
+          ) : (
+            <Select value={deviceId || NO_DEVICE} onValueChange={(value) => setDeviceId(value === NO_DEVICE ? '' : value)}>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NO_DEVICE}>No device</SelectItem>
+                {devices.map((device) => (
+                  <SelectItem key={device.id} value={device.id}>
+                    {device.device_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {chosenDevice && (
+            <span className="font-mono text-[11px] text-muted-foreground">Saved to {chosenDevice.device_name}</span>
+          )}
+        </div>
+      )}
+
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <Button onClick={run} disabled={busy} className="gap-2 font-mono text-xs">
           {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ScanLine className="h-3.5 w-3.5" />}
@@ -214,6 +319,29 @@ export default function FreeScan({ isAuthed, onSignIn }) {
             ))}
           </ul>
           <p className="mt-4 text-sm text-foreground">{verdict.next}</p>
+          {verdict.list && (
+            <p className="mt-4 font-mono text-[11px] text-foreground">
+              {verdict.list.kind === 'block'
+                ? 'Your blocklist affected this answer.'
+                : 'Your allowlist affected this answer.'}
+            </p>
+          )}
+        </div>
+      )}
+
+      {verdict && (
+        <div className="mt-4 flex flex-wrap items-center gap-4 font-mono text-xs">
+          {savedId && (
+            <Link to={`/check/${savedId}`} className="text-primary hover:underline">
+              Open the saved record
+            </Link>
+          )}
+          <Link to="/history" className="inline-flex items-center gap-1 text-primary hover:underline">
+            All your checks <ArrowRight className="h-3 w-3" />
+          </Link>
+          <Link to="/allow-block" className="text-primary hover:underline">
+            Allow or block this
+          </Link>
         </div>
       )}
 

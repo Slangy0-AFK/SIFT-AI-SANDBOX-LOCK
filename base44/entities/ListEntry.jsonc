@@ -1,0 +1,94 @@
+{
+  "name": "ListEntry",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Owner. Only this account can see or change the entry"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "block"
+      ],
+      "description": "block = the item comes back flagged; allow = that exact item is treated as approved by this list"
+    },
+    "item_type": {
+      "type": "string",
+      "enum": [
+        "url",
+        "domain",
+        "app",
+        "hash"
+      ],
+      "description": "What kind of thing was added"
+    },
+    "value": {
+      "type": "string",
+      "description": "The link, domain, app name or file hash as the person typed it"
+    },
+    "note": {
+      "type": "string",
+      "maxLength": 300,
+      "description": "Optional note from the person, e.g. why it is on the list"
+    },
+    "hits": {
+      "type": "number",
+      "default": 0,
+      "description": "How many checks this entry has changed the answer for"
+    },
+    "last_hit": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this entry last changed a check"
+    }
+  },
+  "required": [
+    "user_id",
+    "kind",
+    "item_type",
+    "value"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

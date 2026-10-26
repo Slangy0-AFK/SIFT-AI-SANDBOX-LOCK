@@ -14,6 +14,7 @@
         "virustotal_hash",
         "email",
         "sms",
+        "message",
         "device_scan"
       ]
     },
@@ -43,6 +44,24 @@
     "is_threat": {
       "type": "boolean",
       "default": false
+    },
+    "list_effect": {
+      "type": "string",
+      "enum": [
+        "",
+        "allow",
+        "block"
+      ],
+      "default": "",
+      "description": "Which of the owner's own lists changed the answer, if either did"
+    },
+    "device_id": {
+      "type": "string",
+      "description": "Device this check was filed against, when the owner picked one"
+    },
+    "device_name": {
+      "type": "string",
+      "description": "Name of that device at the time of the check"
     },
     "description": {
       "type": "string",

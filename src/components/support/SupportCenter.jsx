@@ -11,7 +11,7 @@ const FAQS = [
   { q: 'What is SIFT AI?', a: 'SIFT AI is a personal checker for rogue or unauthorised AI on the devices you own. Its main tool is the Phone Scanner, which checks the app, permission screen, link, hash or message you bring to it.' },
   { q: 'Can it scan my whole phone?', a: 'No. It is a website, not an app on your phone, and a browser cannot look through a whole device by itself. It checks the single item you upload or paste, one at a time.' },
   { q: 'What do "nothing known against it", "Unknown" and "Flagged" mean?', a: 'Nothing known against it means no checker we use has anything bad on record for that item today, which is not a promise about tomorrow. Unknown means there is not enough information either way, so we say so instead of guessing. Flagged means something is on record, and you get the evidence and the next step.' },
-  { q: 'What do I get with Pro?', a: 'Saved device profiles, re-checks of items that were flagged, PDF reports of your checks, and priority help. The one-time Device Check and Full Device Audit are for when you want a person to look closely at one item or a whole device.' },
+  { q: 'What do I get with Pro?', a: 'Reusable scan profiles, re-checks of items that were flagged, PDF reports of your checks, and priority help. My Devices, your history and your allowlist and blocklist are free for everyone. The one-time Device Check and Full Device Audit are for when you want a person to look closely at one item or a whole device.' },
   { q: 'I paid and a tier is still locked', a: 'Open a ticket with the Help / Ask button and choose the payment topic. A tier unlocks as soon as the payment is confirmed, so tell us the email you paid with and we will look it up.' },
 ];
 

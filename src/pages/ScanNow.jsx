@@ -20,7 +20,7 @@ const TIERS = [
     icon: Shield,
     name: 'Pro',
     price: '$7 / month',
-    text: 'Saved device profiles, re-checks of flagged items, PDF reports and priority help.'
+    text: 'Reusable scan profiles, re-checks of flagged items, PDF reports and priority help.'
   },
   {
     icon: ShieldAlert,

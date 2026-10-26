@@ -4,6 +4,9 @@ import { Link } from 'react-router-dom';
 const PAGES = [
   ['/', 'Home'],
   ['/scan', 'Phone Scanner'],
+  ['/devices', 'My Devices'],
+  ['/allow-block', 'Allowlist & Blocklist'],
+  ['/history', 'Your checks'],
   ['/plans', 'Plans'],
   ['/support', 'Support']
 ];

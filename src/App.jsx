@@ -50,6 +50,10 @@ import Receipt from '@/pages/Receipt';
 import ScannerTools from '@/pages/ScannerTools';
 import ScanNow from '@/pages/ScanNow';
 import Support from '@/pages/Support';
+import MyDevices from '@/pages/MyDevices';
+import AllowBlock from '@/pages/AllowBlock';
+import HistoryPage from '@/pages/History';
+import CheckDetail from '@/pages/CheckDetail';
 // Add page imports here
 
 function AppRoutes() {
@@ -95,6 +99,10 @@ function AppRoutes() {
           <Route element={<SiteLayout />}>
             <Route path="/dashboard" element={<PageTransition><MyRuns /></PageTransition>} />
             <Route path="/scanner" element={<PageTransition><ScannerTools /></PageTransition>} />
+            <Route path="/devices" element={<PageTransition><MyDevices /></PageTransition>} />
+            <Route path="/allow-block" element={<PageTransition><AllowBlock /></PageTransition>} />
+            <Route path="/history" element={<PageTransition><HistoryPage /></PageTransition>} />
+            <Route path="/check/:id" element={<PageTransition><CheckDetail /></PageTransition>} />
             <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
           </Route>
           <Route element={<AppLayout />}>

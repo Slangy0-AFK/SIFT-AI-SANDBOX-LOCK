@@ -8,6 +8,9 @@ import { cn } from '@/lib/utils';
 const NAV = [
   { label: 'Home', to: '/' },
   { label: 'Phone Scanner', to: '/scan' },
+  { label: 'My Devices', to: '/devices' },
+  { label: 'Allow & Block', to: '/allow-block' },
+  { label: 'History', to: '/history' },
   { label: 'Plans', to: '/plans' },
   { label: 'Support', to: '/support' }
 ];
@@ -38,7 +41,7 @@ export default function SiteNav() {
           <span className="font-heading text-sm font-bold tracking-tight sm:text-base">SIFT AI</span>
         </Link>
 
-        <nav className="hidden items-center gap-5 text-sm font-medium lg:flex">
+        <nav className="hidden items-center gap-4 text-sm font-medium lg:flex">
           {NAV.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.to === '/'} className={desktopLink}>
               {item.label}
