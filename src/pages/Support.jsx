@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, MessageCircle } from 'lucide-react';
 import SubmitTicketForm from '@/components/support/SubmitTicketForm';
 import SupportCenter from '@/components/support/SupportCenter';
+import HelpCentreSearch from '@/components/support/HelpCentreSearch';
 import HelperAgent from '@/components/scanner/HelperAgent';
 
 export default function Support() {
@@ -35,6 +36,8 @@ export default function Support() {
             straight to the SIFT AI team. Every ticket gets an automatic first reply, and a person on the team reads all of them.
           </p>
         </div>
+
+        <HelpCentreSearch />
 
         <SupportCenter />
 

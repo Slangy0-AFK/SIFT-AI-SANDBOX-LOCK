@@ -11,14 +11,6 @@ const PAGES = [
   ['/support', 'Support']
 ];
 
-const LAB_TOOLS = [
-  ['/governor-demo', 'Governor demo'],
-  ['/evals', 'Evals'],
-  ['/sizing-calculator', 'Sizing calculator'],
-  ['/pricing', 'Full Kit'],
-  ['/about', 'About']
-];
-
 export default function SiteFooter() {
   return (
     <footer className="border-t border-border bg-card/40">
@@ -42,16 +34,6 @@ export default function SiteFooter() {
             ))}
           </ul>
 
-          <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Lab tools</p>
-          <ul className="mt-3 space-y-2 text-sm">
-            {LAB_TOOLS.map(([to, label]) => (
-              <li key={to}>
-                <Link to={to} className="text-muted-foreground transition-colors hover:text-foreground">
-                  {label}
-                </Link>
-              </li>
-            ))}
-          </ul>
         </div>
 
         <div>

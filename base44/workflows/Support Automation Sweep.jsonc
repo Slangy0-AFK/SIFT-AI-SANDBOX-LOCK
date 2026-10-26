@@ -1,0 +1,47 @@
+{
+  "description": "Hourly pass over the open support tickets: asks for the one missing detail, checks whether the fix worked, sends a status update, escalates after two unresolved replies, and closes after seven days of silence. Every step is gated, logged and capped.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 * * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "support_automation_sweep",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "sweep_tickets": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "supportAutomation",
+            "args": {
+              "action": "sweep"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Run the ticket sweep",
+            "description": "One gated step per open ticket"
+          }
+        }
+      }
+    ]
+  },
+  "name": "Support Automation Sweep"
+}

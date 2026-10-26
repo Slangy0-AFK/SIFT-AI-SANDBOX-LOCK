@@ -1,36 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
-import { writeAutoReply } from '../../shared/supportReply.ts';
 import { spendCredit } from '../../shared/creditGuard.ts';
+import { HELP_ARTICLES } from '../../shared/supportHelp.ts';
+import { openTicket } from '../../shared/supportIntake.ts';
 
-// Plain-language help the helper is allowed to answer from. Nothing here is a
-// scan result, and nothing here is invented: the helper never states a
-// VirusTotal or OTX finding it was not given by the app itself.
-const HELP_ARTICLES = [
-  {
-    title: 'What the three verdicts mean',
-    text: 'Approved means nothing is known against the item. Unknown means there is not enough information either way, so we say so instead of guessing. Flagged means something is known against it and you get the evidence. None of the three is a promise that a device is clean or safe.'
-  },
-  {
-    title: 'What to do about a flagged item',
-    text: 'Three choices. Allow it if you recognise it and want to keep it. Block or uninstall it if you do not recognise it or it does not need the permissions it asks for. Watch it if you are unsure: keep it for now and check again in a few days.'
-  },
-  {
-    title: 'What a browser can and cannot check',
-    text: 'SIFT AI runs in your browser. It checks the app name, permission screen, link, hash or message you upload or paste. It cannot look through a whole phone by itself, and it cannot see things you have not given it.'
-  },
-  {
-    title: 'Permissions that do not fit',
-    text: 'A simple torch app asking for contacts, or a game asking to read your messages, is the usual sign of something that wants more than it needs. Ask yourself whether the permission makes sense for what the app does.'
-  },
-  {
-    title: 'Paying and unlocking',
-    text: 'Card payments are handled by Stripe on the plans page, and you do not need an account to pay. A tier unlocks on your account as soon as the payment is confirmed. If a tier has not unlocked after paying, open a ticket and we will look it up by the payment.'
-  },
-  {
-    title: 'Your data and history',
-    text: 'Your scans and tickets belong to your account only. Nobody else can see them. We do not need your passwords, card numbers, one-time codes, phone number, IMEI or serial numbers, and the helper will never ask for them.'
-  }
-];
+// The helper answers from the same articles the ticket automation, the help centre
+// and the support agent use: base44/shared/supportHelp.ts. There is no second copy.
 
 const SENSITIVE_PATTERNS =
   /(password|passcode|one[- ]?time code|\botp\b|api[ -]?key|secret key|serial number|\bimei\b|social security|\bssn\b|card number|\bcvv\b|bank account|routing number)/i;
@@ -124,67 +98,27 @@ The user asks: ${question}`,
         return Response.json({ error: "Today's ticket limit is reached. Please try again tomorrow." }, { status: 429 });
       }
 
-      const title = `${TOPIC_TITLES[topic]}${user ? '' : ' (guest)'}`;
-      const description = [
-        `Topic: ${TOPIC_TITLES[topic]}`,
-        `Reply to: ${replyTo}`,
-        `Page: ${page || 'not stated'}`,
-        context ? `On screen at the time: ${context}` : '',
-        '',
-        message
-      ]
-        .filter(Boolean)
-        .join('\n');
-
-      // A signed-in user's ticket is created with their own token, so it is
-      // scoped to them by the app's rules. A guest ticket is created server-side
-      // because a guest has no account yet.
-      const ticket = user
-        ? await base44.entities.SupportTicket.create({ title, description })
-        : await base44.asServiceRole.entities.SupportTicket.create({ title, description });
-
-      // The first reply is written now, on the server, so a ticket is never
-      // left sitting with no answer. A person still reads every ticket after.
-      const firstReply = await writeAutoReply(base44, ticket.id, { title, description });
-
-      // Every ticket is also emailed to the owner address already configured for
-      // this app, so nothing can sit unseen in the in-app list. The address is
-      // read server-side: it is never returned to the caller or shown on a page.
-      const ownerEmail = Deno.env.get('ADMIN_EMAIL');
-      let ownerNotified = false;
-      if (ownerEmail) {
-        try {
-          await base44.asServiceRole.integrations.Core.SendEmail({
-            to: ownerEmail,
-            from_name: 'SIFT AI Support',
-            template_name: 'OwnerTicketAlert',
-            category: 'transactional',
-            variables: {
-              ticket_number: ticket.id,
-              topic: TOPIC_TITLES[topic],
-              submitted_at: `${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC`,
-              status: 'Open',
-              requester_email: replyTo,
-              user_message: escapeHtml(message).replace(/\n/g, '<br />'),
-              app_name: 'SIFT AI'
-            }
-          });
-          ownerNotified = true;
-        } catch (emailError) {
-          // A failed email must never lose the ticket itself.
-          console.error('[scannerHelper] owner ticket email failed:', emailError && emailError.message);
-        }
-      } else {
-        console.error('[scannerHelper] ADMIN_EMAIL is not set: ticket email was not sent');
-      }
+      // One intake path, shared with the support agent and the automation: the
+      // ticket is numbered, triaged, answered and sent to the owner there.
+      const opened = await openTicket(base44, {
+        user,
+        topic,
+        topicTitle: TOPIC_TITLES[topic],
+        message,
+        email,
+        page,
+        context
+      });
 
       return Response.json({
-        ticket_id: ticket.id,
-        title,
-        reply_to: user ? user.email : replyTo,
-        owner_notified: ownerNotified,
-        first_reply: firstReply,
-        message: firstReply
+        ticket_id: opened.ticket.id,
+        ticket_number: opened.number,
+        title: opened.title,
+        priority: opened.priority,
+        reply_to: opened.replyTo,
+        owner_notified: opened.ownerNotified,
+        first_reply: opened.firstReply,
+        message: opened.firstReply
           ? 'Ticket opened, and the first reply is already on it. A person reads every one.'
           : 'Ticket opened. A person reads every one and will follow up.'
       });
