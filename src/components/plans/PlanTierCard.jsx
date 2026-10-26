@@ -3,15 +3,15 @@ import { Check, Loader2, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-export default function PlanTierCard({ plan, unlocked, stripeConnected, isAuthed, loading, onSelect }) {
+export default function PlanTierCard({ plan, unlocked, blockedReason, isAuthed, loading, onSelect }) {
   const isFree = plan.id === 'free';
-  const blocked = !isFree && !stripeConnected;
+  const blocked = !isFree && Boolean(blockedReason);
   const held = unlocked && !isFree;
 
   const label = held
     ? 'Unlocked'
     : blocked
-    ? 'Stripe not connected yet'
+    ? blockedReason
     : isFree
     ? (isAuthed ? 'Open the scanner' : plan.cta)
     : plan.cta;

@@ -17,13 +17,24 @@ export default function ScannerPlans() {
 
   const { unlocked, isAuthed } = useScannerUnlocks();
 
-  const { data: stripe } = useQuery({
+  const { data: stripe, isLoading: stripeLoading } = useQuery({
     queryKey: ['stripe-status'],
     queryFn: async () => (await base44.functions.invoke('stripeStatus', {})).data,
     staleTime: 60000,
     retry: false,
   });
+
+  // The paid buttons follow the answer Stripe itself gave to the server: either not
+  // connected, or connected but not yet able to take a charge. While that answer is
+  // still in flight nothing is locked or warned about — treating "not answered yet"
+  // as "not connected" is what made the page flash a locked button.
   const stripeConnected = stripe?.connected === true;
+  const canPay = stripeConnected && stripe?.charges_enabled !== false;
+  const blockedReason = stripeLoading || canPay
+    ? null
+    : stripeConnected
+    ? 'Payments not switched on yet'
+    : 'Stripe not connected yet';
 
   const checkout = useMutation({
     mutationFn: async (tier) => {
@@ -85,11 +96,13 @@ export default function ScannerPlans() {
           </div>
         )}
 
-        {!stripeConnected && (
+        {blockedReason && (
           <div className="mt-6 flex items-start gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 p-4">
             <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-400" />
             <p className="font-mono text-xs text-amber-400">
-              Stripe not connected yet — paid tiers cannot be bought until payment is switched on. The free checks work as normal.
+              {stripeConnected
+                ? 'Card payments are not switched on yet — Stripe still has to finish setting up this account, so the paid tiers cannot be bought yet. The free checks work as normal.'
+                : 'Stripe not connected yet — paid tiers cannot be bought until payment is switched on. The free checks work as normal.'}
             </p>
           </div>
         )}
@@ -100,7 +113,7 @@ export default function ScannerPlans() {
               key={plan.id}
               plan={plan}
               unlocked={plan.id === 'free' || unlocked.has(plan.id)}
-              stripeConnected={stripeConnected}
+              blockedReason={blockedReason}
               isAuthed={isAuthed}
               loading={checkout.isPending && PAID_TIER_IDS.includes(plan.id)}
               onSelect={handleSelect}
