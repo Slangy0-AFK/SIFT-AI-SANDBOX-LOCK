@@ -1,0 +1,58 @@
+{
+  "name": "StripeConnectState",
+  "type": "object",
+  "properties": {
+    "state_hash": {
+      "type": "string",
+      "description": "SHA-256 of the one-time state handed to Stripe. The state itself is never stored, so a database read cannot be replayed as a connection."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "used"
+      ],
+      "default": "pending",
+      "description": "used = already spent, so the same state can never complete a second connection"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Short window in which the state is accepted"
+    },
+    "used_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "started_by": {
+      "type": "string",
+      "description": "Admin that started the connection; only that same account may complete it"
+    }
+  },
+  "required": [
+    "state_hash",
+    "expires_at"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
