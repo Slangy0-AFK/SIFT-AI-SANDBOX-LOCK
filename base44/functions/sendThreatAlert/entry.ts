@@ -1,5 +1,21 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Every field of a threat record was written by whoever triggered the check, so it
+// is escaped before it goes into this email: a value cannot add markup, a link or a
+// hidden element to the alert. The subject is flattened instead, since a subject
+// line is not HTML — there it only has to lose anything that could start a new
+// header line.
+const escapeHtml = (value) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const headerSafe = (value) =>
+  String(value ?? '').replace(/[\r\n\u0000-\u001f]/g, ' ').trim().slice(0, 200);
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -32,17 +48,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Threat not found' }, { status: 404 });
     }
 
-    const subject = `🚨 Critical Security Alert - ${threat.source_ip}`;
+    const subject = `🚨 Critical Security Alert - ${headerSafe(threat.source_ip)}`;
     const body = `
       <h2>Critical Threat Detected</h2>
-      <p><strong>Source IP:</strong> ${threat.source_ip}</p>
-      <p><strong>Threat Level:</strong> ${threat.threat_level?.toUpperCase()}</p>
-      <p><strong>Status:</strong> ${threat.status?.toUpperCase()}</p>
-      <p><strong>Environment:</strong> ${threat.environment?.toUpperCase()}</p>
-      <p><strong>Agent Type:</strong> ${threat.agent_type?.toUpperCase()}</p>
-      <p><strong>Detected:</strong> ${new Date(threat.created_date).toLocaleString()}</p>
+      <p><strong>Source IP:</strong> ${escapeHtml(threat.source_ip)}</p>
+      <p><strong>Threat Level:</strong> ${escapeHtml(threat.threat_level?.toUpperCase())}</p>
+      <p><strong>Status:</strong> ${escapeHtml(threat.status?.toUpperCase())}</p>
+      <p><strong>Environment:</strong> ${escapeHtml(threat.environment?.toUpperCase())}</p>
+      <p><strong>Agent Type:</strong> ${escapeHtml(threat.agent_type?.toUpperCase())}</p>
+      <p><strong>Detected:</strong> ${escapeHtml(new Date(threat.created_date).toLocaleString())}</p>
       <hr/>
-      <p><strong>Notes:</strong> ${(threat.notes || 'No additional notes').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+      <p><strong>Notes:</strong> ${escapeHtml(threat.notes || 'No additional notes')}</p>
       <br/>
       <p style="color: #666; font-size: 12px;">This is an automated alert from SIFT AI.</p>
     `;
