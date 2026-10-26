@@ -16,7 +16,7 @@ export default function Evals() {
       <p className="font-heading text-xs uppercase tracking-widest text-primary">Evals</p>
       <h1 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">Checks you can run on an agent.</h1>
       <p className="mt-4 max-w-3xl text-muted-foreground">
-        Five evals from the kit. Each one says what it tests, what Doug's lab run found, and where the result stops being useful.
+        Five evals from the kit. Each one says what it tests, what our lab run found, and where the result stops being useful.
         The scenarios are authored, so a pass is a check, not a certificate.
       </p>
 
@@ -49,7 +49,7 @@ export default function Evals() {
         <div>
           <p className="font-heading text-base font-semibold">Every eval is a repo you can run yourself</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            The numbers on this page come from those repos' own tests, in Doug's lab. Clone them and check the output directly.
+            The numbers on this page come from those repos' own tests, in our lab. Clone them and check the output directly.
           </p>
         </div>
         <a

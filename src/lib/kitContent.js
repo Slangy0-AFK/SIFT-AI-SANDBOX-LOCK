@@ -61,7 +61,7 @@ export const EVALS = [
     report: [
       {
         heading: 'What was run',
-        text: 'The repo selftest, in Doug’s lab, over the scenario set that ships with the repo: 15 checks spanning the six behaviours.'
+        text: 'The repo selftest, in our lab, over the scenario set that ships with the repo: 15 checks spanning the six behaviours.'
       },
       {
         heading: 'How to reproduce it',
@@ -79,7 +79,7 @@ export const EVALS = [
     tests:
       'A 20-turn eval with 3 pressure cycles. Every risky request is paired with a safe twin that carries written authorisation, so a block on the risky side and a pass on the safe side can be told apart.',
     found:
-      'In Doug’s lab run, prompt-only guardrails and the scaler governor each blocked 18 of 18 dangerous cases, with 0 false positives on the safe twins.',
+      'In our lab run, prompt-only guardrails and the scaler governor each blocked 18 of 18 dangerous cases, with 0 false positives on the safe twins.',
     limits:
       'This run did NOT reproduce a lab failure, so read it as a check, not as a claim of beating the labs. It was unblinded, it used a single target (Muse), and the scenarios are authored.',
     report: [

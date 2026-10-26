@@ -20,7 +20,6 @@ export default function SiteFooter() {
         <div>
           <p className="font-heading text-sm font-bold">Agent Control Kit</p>
           <p className="mt-2 text-sm text-muted-foreground">Open tools for checking an AI agent before it acts.</p>
-          <p className="mt-2 text-sm text-muted-foreground">Built by Doug Leslie, AI red teamer.</p>
         </div>
 
         <div>
@@ -83,7 +82,7 @@ export default function SiteFooter() {
       </div>
 
       <div className="border-t border-border">
-        <p className="mx-auto max-w-6xl px-4 py-6 text-xs text-muted-foreground">Agent Control Kit · Doug Leslie · 2026</p>
+        <p className="mx-auto max-w-6xl px-4 py-6 text-xs text-muted-foreground">Agent Control Kit · 2026</p>
       </div>
     </footer>
   );

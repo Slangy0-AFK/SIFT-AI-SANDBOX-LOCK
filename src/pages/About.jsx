@@ -19,9 +19,10 @@ export default function About() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-14">
       <p className="font-heading text-xs uppercase tracking-widest text-primary">About</p>
-      <h1 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">Doug Leslie, AI red teamer.</h1>
+      <h1 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">AI red teaming, in the open.</h1>
       <p className="mt-4 text-muted-foreground">
-        Doug breaks AI agents on purpose, then writes down what held and what did not. The Agent Control Kit is the small, open part
+        The work behind this kit breaks AI agents on purpose, then writes down what held and what did not. The Agent Control Kit is
+        the small, open part
         of that work: gates that run in code, evals you can rerun, and two calculators for sizing a job and setting a floor.
       </p>
       <p className="mt-4 text-muted-foreground">
@@ -108,7 +109,7 @@ export default function About() {
         </div>
         <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
           <li>It is not a claim that the kit makes a model smarter, more truthful, or safe in general.</li>
-          <li>It is not an independent audit of anyone's system, including Doug's own runs.</li>
+          <li>It is not an independent audit of anyone's system, including the kit's own runs.</li>
           <li>The results are lab and repo test results from authored scenarios, and they are labelled that way everywhere here.</li>
         </ul>
       </section>
