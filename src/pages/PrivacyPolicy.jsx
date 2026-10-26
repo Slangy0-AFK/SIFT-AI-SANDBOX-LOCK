@@ -3,7 +3,7 @@ import { Shield, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const LAST_UPDATED = 'May 20, 2026';
-const APP_NAME = 'SIFT-AI Quantum Shield';
+const APP_NAME = 'SIFT AI';
 const CONTACT_EMAIL = import.meta.env.VITE_PRIVACY_EMAIL || 'support@sift-ai-security.app';
 
 export default function PrivacyPolicy() {
@@ -45,7 +45,7 @@ export default function PrivacyPolicy() {
         <section className="space-y-2">
           <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">3. How We Use Your Information</h2>
           <ul className="list-disc list-inside space-y-1">
-            <li>To provide, operate, and maintain the SIFT-AI platform</li>
+            <li>To provide, operate, and maintain the SIFT AI platform</li>
             <li>To manage your account, devices, and subscription</li>
             <li>To process and verify in-app purchases via Google Play Billing</li>
             <li>To send important service and security notifications</li>
@@ -97,7 +97,7 @@ export default function PrivacyPolicy() {
         <section className="space-y-2">
           <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">8. Children's Privacy</h2>
           <p>
-            SIFT-AI is a professional cybersecurity platform not directed at children under 13. We do not knowingly collect
+            SIFT AI is a professional cybersecurity platform not directed at children under 13. We do not knowingly collect
             personal data from children. If we become aware of such collection, we will delete it immediately.
           </p>
         </section>

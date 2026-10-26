@@ -223,7 +223,7 @@ export default function ParadoxGate() {
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground mt-3 max-w-2xl leading-relaxed">
-                This is a public preview of Sift-AI's layered verification system, which combines timed challenges,
+                This is a public preview of SIFT AI's layered verification system, which combines timed challenges,
                 behavioral signals, and rate limiting to separate humans from automated agents. Repeated failures
                 trigger a strike-based lockout. The full challenge set and detection methods are proprietary and
                 are not shown in this demo.

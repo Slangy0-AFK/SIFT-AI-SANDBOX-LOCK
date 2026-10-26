@@ -31,9 +31,9 @@ export default function WelcomeModal({ onClose }) {
               <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
             </div>
           </div>
-          <h2 className="font-mono text-lg font-bold text-foreground">WELCOME TO SIFT-AI</h2>
+          <h2 className="font-mono text-lg font-bold text-foreground">WELCOME TO SIFT AI</h2>
           <p className="font-mono text-xs text-muted-foreground mt-1">
-            Your quantum-powered security shield is now active
+            SIFT AI is ready when you are
           </p>
         </div>
 

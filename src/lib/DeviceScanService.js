@@ -51,7 +51,7 @@ async function runBackgroundScan() {
       if (prefs.notifications) {
         toast.error(msg, { duration: 6000 });
         if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('SIFT-AI Security Alert', { body: msg, icon: '/favicon.ico' });
+          new Notification('SIFT AI Security Alert', { body: msg, icon: '/favicon.ico' });
         }
       }
       // Auto-neutralize immediately on threat detection

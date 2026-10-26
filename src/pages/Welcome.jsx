@@ -98,8 +98,8 @@ export default function Welcome() {
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-pulse" />
             </div>
             <div className="text-left">
-              <h1 className="font-mono text-3xl font-bold text-foreground tracking-wider">SIFT-AI</h1>
-              <p className="font-mono text-xs text-muted-foreground tracking-widest">QUANTUM SHIELD</p>
+              <h1 className="font-mono text-3xl font-bold text-foreground tracking-wider">SIFT AI</h1>
+              <p className="font-mono text-xs text-muted-foreground tracking-widest">PERSONAL DEVICE CHECKER</p>
             </div>
           </div>
           
@@ -200,7 +200,7 @@ export default function Welcome() {
       <div className="border-t border-border p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <p className="font-mono text-xs text-muted-foreground">
-            © 2026 SIFT-AI Quantum Shield. All rights reserved.
+            © 2026 SIFT AI. All rights reserved.
           </p>
           <div className="flex items-center gap-2">
             <Badge className="font-mono text-xs bg-green-400/10 text-green-400 border-green-400/20 border">

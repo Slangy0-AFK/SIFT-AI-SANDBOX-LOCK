@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
     const safeTitle = (data.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const safeDesc = (data.description || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-    const prompt = `You are a helpful automated support agent for SIFT-AI. A user submitted the following ticket:
+    const prompt = `You are a helpful automated support agent for SIFT AI. A user submitted the following ticket:
 
 <untrusted_ticket_data>
 <title>${safeTitle}</title>

@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
           return Response.json({ success: true, action: 'otx_threat_created', threat_id: newThreat.id, otx_data: otxRes.data });
         }
       } catch (otxErr) {
-        console.error('[AEGIS] AlienVault OTX check failed:', otxErr.message);
+        console.error('[SIFT AI] AlienVault OTX check failed:', otxErr.message);
       }
     }
 
@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
       if ((a.severity === 'critical' || a.severity === 'fatal') && (a.confidence_score || 0) >= 75) {
         await base44Service.entities.ZeroDayAnomaly.update(a.id, {
           status: 'contained',
-          mitigation_applied: 'Auto-contained by Aegis Threat Detection Engine',
+          mitigation_applied: 'Auto-contained by SIFT AI Threat Detection Engine',
         });
         
         await base44Service.entities.SecurityEvent.create({
@@ -174,7 +174,7 @@ Deno.serve(async (req) => {
           base_chain_step: 'base12',
         });
         
-        console.log(`[AEGIS] Auto-contained anomaly: ${a.id} | Type: ${a.anomaly_type} | Score: ${a.confidence_score}`);
+        console.log(`[SIFT AI] Auto-contained anomaly: ${a.id} | Type: ${a.anomaly_type} | Score: ${a.confidence_score}`);
       }
       
       return Response.json({ success: true, action: 'anomaly_processed', anomaly_id: a.id });
@@ -184,7 +184,7 @@ Deno.serve(async (req) => {
     if (!targetThreatId) {
       // Bulk scan mode — process all active threats
       const activeThreats = await base44Service.entities.Threat.filter({ status: 'detected' });
-      console.log(`[AEGIS] Bulk scan: processing ${activeThreats.length} detected threats`);
+      console.log(`[SIFT AI] Bulk scan: processing ${activeThreats.length} detected threats`);
       
       const results = [];
       for (const threat of activeThreats.slice(0, 20)) { // cap at 20 per run
@@ -205,13 +205,13 @@ Deno.serve(async (req) => {
     return Response.json({ success: true, action: 'threat_processed', ...result });
     
   } catch (error) {
-    console.error('[AEGIS] Threat detection engine error:', error.message);
+    console.error('[SIFT AI] Threat detection engine error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
 
 async function processThreat(threat, base44Service, AI_ATTACK_SIGNATURES) {
-  console.log(`[AEGIS] Processing threat: ${threat.id} | IP: ${threat.source_ip} | Level: ${threat.threat_level} | Status: ${threat.status}`);
+  console.log(`[SIFT AI] Processing threat: ${threat.id} | IP: ${threat.source_ip} | Level: ${threat.threat_level} | Status: ${threat.status}`);
 
   // ── AI Attack Auto-Reject ──────────────────────────────────────────────
   const combined = [threat.notes, threat.paradox_response, threat.base_chain_signature].join(' ');
@@ -333,7 +333,7 @@ Return JSON:
 
       await base44Service.entities.FirewallLog.create({
         rule_id: ruleIdAI,
-        rule_name: 'Aegis AI Real-Time Blocker',
+        rule_name: 'SIFT AI Real-Time Blocker',
         action_taken: 'blocked',
         source_ip: threat.source_ip,
         threat_level: 'critical',
@@ -341,7 +341,7 @@ Return JSON:
         direction: 'inbound',
         protocol: 'tcp',
       });
-      console.log(`[AEGIS] AI ATTACK BLOCKED: ${threat.source_ip} | Type: ${analysis.ai_attack_type} | Confidence: ${analysis.confidence_score}%`);
+      console.log(`[SIFT AI] AI ATTACK BLOCKED: ${threat.source_ip} | Type: ${analysis.ai_attack_type} | Confidence: ${analysis.confidence_score}%`);
 
       if (threat.user_id) {
         try {
@@ -350,12 +350,12 @@ Return JSON:
           if (targetUser && targetUser.email) {
             await base44Service.integrations.Core.SendEmail({
               to: targetUser.email,
-              subject: '🚨 Sift-AI — Autonomous AI Attack Blocked on Your Account',
-              body: `Hi ${targetUser.full_name || targetUser.email},\n\nSift-AI's real-time threat engine has detected and automatically blocked an autonomous AI attack targeting your device or account.\n\nIP Address: ${threat.source_ip}\nAttack Type: ${analysis.ai_attack_type}\nConfidence: ${analysis.confidence_score}%\n\nThe attacker's IP address has been permanently blocked at the firewall level.\n\n— Sift-AI Security`,
+              subject: '🚨 SIFT AI — Autonomous AI Attack Blocked on Your Account',
+              body: `Hi ${targetUser.full_name || targetUser.email},\n\nSIFT AI's real-time threat engine has detected and automatically blocked an autonomous AI attack targeting your device or account.\n\nIP Address: ${threat.source_ip}\nAttack Type: ${analysis.ai_attack_type}\nConfidence: ${analysis.confidence_score}%\n\nThe attacker's IP address has been permanently blocked at the firewall level.\n\n— SIFT AI Security`,
             });
           }
         } catch (e) {
-          console.error('[AEGIS] Failed to send AI attack notification:', e.message);
+          console.error('[SIFT AI] Failed to send AI attack notification:', e.message);
         }
       }
 
@@ -375,7 +375,7 @@ Return JSON:
       }
     }
   } catch (aiError) {
-    console.warn('[AEGIS] AI analysis failed, using heuristic fallback:', aiError.message);
+    console.warn('[SIFT AI] AI analysis failed, using heuristic fallback:', aiError.message);
     // Fall back to signature-based detection
     const aiSig = detectAIAttack(combined, AI_ATTACK_SIGNATURES || []);
     if (aiSig) {
@@ -395,7 +395,7 @@ Return JSON:
           status: 'contained',
           source_ip: threat.source_ip,
           confidence_score: 98,
-          mitigation_applied: 'Auto-rejected by Aegis AI attack detector',
+          mitigation_applied: 'Auto-rejected by SIFT AI attack detector',
           notes: `Matched AI attack signature: "${aiSig}" from ${threat.source_ip}`,
           environment: threat.environment || 'production',
         }),
@@ -430,7 +430,7 @@ Return JSON:
 
       await base44Service.entities.FirewallLog.create({
         rule_id: ruleIdFallback,
-        rule_name: 'Aegis AI Attack Blocker',
+        rule_name: 'SIFT AI Attack Blocker',
         action_taken: 'blocked',
         source_ip: threat.source_ip,
         threat_level: 'critical',
@@ -438,7 +438,7 @@ Return JSON:
         direction: 'inbound',
         protocol: 'tcp',
       });
-      console.log(`[AEGIS] AI ATTACK BLOCKED: ${threat.source_ip} | Sig: "${aiSig}"`);
+      console.log(`[SIFT AI] AI ATTACK BLOCKED: ${threat.source_ip} | Sig: "${aiSig}"`);
 
       if (threat.user_id) {
         try {
@@ -447,12 +447,12 @@ Return JSON:
           if (targetUser && targetUser.email) {
             await base44Service.integrations.Core.SendEmail({
               to: targetUser.email,
-              subject: '🚨 Sift-AI — Autonomous AI Attack Blocked on Your Account',
-              body: `Hi ${targetUser.full_name || targetUser.email},\n\nSift-AI's real-time threat engine has detected and automatically blocked an autonomous AI attack targeting your device or account.\n\nIP Address: ${threat.source_ip}\nAttack Signature: ${aiSig}\n\nThe attacker's IP address has been permanently blocked at the firewall level.\n\n— Sift-AI Security`,
+              subject: '🚨 SIFT AI — Autonomous AI Attack Blocked on Your Account',
+              body: `Hi ${targetUser.full_name || targetUser.email},\n\nSIFT AI's real-time threat engine has detected and automatically blocked an autonomous AI attack targeting your device or account.\n\nIP Address: ${threat.source_ip}\nAttack Signature: ${aiSig}\n\nThe attacker's IP address has been permanently blocked at the firewall level.\n\n— SIFT AI Security`,
             });
           }
         } catch (e) {
-          console.error('[AEGIS] Failed to send AI attack notification:', e.message);
+          console.error('[SIFT AI] Failed to send AI attack notification:', e.message);
         }
       }
 
@@ -514,7 +514,7 @@ Return JSON:
   
   // Generate base chain signature on lock/destroy
   if (newStatus === 'locked' || newStatus === 'destroyed') {
-    updates.base_chain_signature = `AEGIS-${Date.now().toString(36).toUpperCase()}-${threat.source_ip.replace(/\./g, '')}`;
+    updates.base_chain_signature = `SIFT-${Date.now().toString(36).toUpperCase()}-${threat.source_ip.replace(/\./g, '')}`;
   }
   
   await base44Service.entities.Threat.update(threat.id, updates);
@@ -552,7 +552,7 @@ Return JSON:
 
     await base44Service.entities.FirewallLog.create({
       rule_id: ruleId,
-      rule_name: 'Aegis Auto-Block',
+      rule_name: 'SIFT AI Auto-Block',
       action_taken: 'blocked',
       source_ip: threat.source_ip,
       threat_level: threat.threat_level,
@@ -562,7 +562,7 @@ Return JSON:
     });
   }
   
-  console.log(`[AEGIS] Threat ${threat.id} → ${newStatus} | Score: ${threatScore} | Agent: ${agentType}`);
+  console.log(`[SIFT AI] Threat ${threat.id} → ${newStatus} | Score: ${threatScore} | Agent: ${agentType}`);
   
   return {
     threat_id: threat.id,

@@ -253,8 +253,8 @@ Deno.serve(async (req) => {
       if (notifyOnThreat) {
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: user.email,
-          subject: '🚨 Sift-AI — Hidden Threat Detected on Your Device',
-          body: `Hi ${user.full_name || user.email},\n\nSift-AI detected hidden threats on your device during a full in-depth scan.\n\nScan ID: ${scanId}\nThreats found: ${totalThreats}\nWarnings: ${totalWarnings}\n\nFindings:\n${allFindings.map(f => `• [${f.severity.toUpperCase()}] ${f.label}`).join('\n')}\n\nLog in to your Sift-AI dashboard to view full details and block threats.\n\n— Sift-AI Security`,
+          subject: '🚨 SIFT AI — Hidden Threat Detected on Your Device',
+          body: `Hi ${user.full_name || user.email},\n\nSIFT AI detected hidden threats on your device during a full in-depth scan.\n\nScan ID: ${scanId}\nThreats found: ${totalThreats}\nWarnings: ${totalWarnings}\n\nFindings:\n${allFindings.map(f => `• [${f.severity.toUpperCase()}] ${f.label}`).join('\n')}\n\nLog in to your SIFT AI dashboard to view full details and block threats.\n\n— SIFT AI Security`,
         }).catch(() => {});
       }
     }

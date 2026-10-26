@@ -29,7 +29,7 @@ export default function Contact() {
             <h1>Contact Us</h1>
           </CardTitle>
           <CardDescription className="text-sm mt-2">
-            Reach out to the Sift-AI support and security operations team.
+            Reach out to the SIFT AI support and security operations team.
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -10,7 +10,8 @@ import {
   ShieldAlert,
   ShieldCheck,
   ShieldQuestion,
-  Smartphone
+  Smartphone,
+  Ticket
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LimitsNote from '@/components/kit/LimitsNote';
@@ -189,18 +190,21 @@ export default function Home() {
           <MessageCircle className="h-6 w-6 text-primary" />
           <h2 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">Not sure about something?</h2>
           <p className="max-w-2xl text-muted-foreground">
-            The helper inside the scanner answers plain questions about your own result, and you can open a support ticket from the
-            same button whenever you want a person to look at it.
+            The helper inside the scanner answers plain questions about your own result. When you want a person, submit a support
+            ticket: it goes straight to the SIFT AI team, you get an automatic first reply, and a person reads every one.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Link to="/scan">
+            <Link to="/support#submit-ticket">
               <Button className="w-full gap-2 sm:w-auto">
+                <Ticket className="h-4 w-4" />
+                Submit a support ticket
+              </Button>
+            </Link>
+            <Link to="/scan">
+              <Button variant="outline" className="w-full gap-2 sm:w-auto">
                 <ScanLine className="h-4 w-4" />
                 Open the Phone Scanner
               </Button>
-            </Link>
-            <Link to="/support">
-              <Button variant="outline" className="w-full sm:w-auto">Support</Button>
             </Link>
           </div>
         </div>

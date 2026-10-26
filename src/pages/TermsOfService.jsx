@@ -3,7 +3,7 @@ import { FileText, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const LAST_UPDATED = 'May 20, 2026';
-const APP_NAME = 'SIFT-AI Quantum Shield';
+const APP_NAME = 'SIFT AI';
 const CONTACT_EMAIL = import.meta.env.VITE_LEGAL_EMAIL || 'support@sift-ai-security.app';
 
 export default function TermsOfService() {
@@ -35,7 +35,7 @@ export default function TermsOfService() {
         <section className="space-y-2">
           <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">2. Description of Service</h2>
           <p>
-            SIFT-AI Quantum Shield is a cybersecurity monitoring and threat detection platform that provides real-time threat analysis,
+            SIFT AI is a cybersecurity monitoring and threat detection platform that provides real-time threat analysis,
             zero-day anomaly detection, honeypot/tarpit environments, workflow automation, and security event logging. The Service
             is intended for professional security operations and enterprise use.
           </p>
@@ -56,7 +56,7 @@ export default function TermsOfService() {
         <section className="space-y-2">
           <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">4. Subscriptions and Billing</h2>
           <p>
-            SIFT-AI offers Free, Pro, and Enterprise subscription tiers. Subscriptions are billed through Google Play Billing.
+            SIFT AI offers Free, Pro, and Enterprise subscription tiers. Subscriptions are billed through Google Play Billing.
             By subscribing, you authorize recurring charges based on your selected plan and billing cycle (monthly or annual).
           </p>
           <p className="mt-2">
@@ -108,7 +108,7 @@ export default function TermsOfService() {
           <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">7. Intellectual Property</h2>
           <p>
             All content, features, and functionality of the Service — including algorithms, UI, brand assets, and threat detection
-            logic — are owned by SIFT-AI and protected by applicable intellectual property laws. You may not reproduce or distribute
+            logic — are owned by SIFT AI and protected by applicable intellectual property laws. You may not reproduce or distribute
             any part of the Service without written permission.
           </p>
         </section>
@@ -134,7 +134,7 @@ export default function TermsOfService() {
         <section className="space-y-2">
           <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">10. Limitation of Liability</h2>
           <p>
-            To the maximum extent permitted by law, SIFT-AI shall not be liable for any indirect, incidental, special, or consequential
+            To the maximum extent permitted by law, SIFT AI shall not be liable for any indirect, incidental, special, or consequential
             damages arising from your use of the Service, including data breaches, security incidents, or loss of business,
             even if we have been advised of the possibility of such damages.
           </p>
@@ -152,7 +152,7 @@ export default function TermsOfService() {
           <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">12. Governing Law</h2>
           <p>
             These Terms are governed by applicable law. Any disputes shall be resolved through binding arbitration, except where
-            prohibited by law. You waive any right to participate in class-action lawsuits against SIFT-AI.
+            prohibited by law. You waive any right to participate in class-action lawsuits against SIFT AI.
           </p>
         </section>
 
@@ -167,7 +167,7 @@ export default function TermsOfService() {
         <section className="space-y-2">
           <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">14. Digital Goods Disclosure</h2>
           <p>
-            <span className="text-foreground font-semibold">Digital Product Notice:</span> SIFT-AI Quantum Shield is a digital service providing cybersecurity tools and threat detection capabilities.
+            <span className="text-foreground font-semibold">Digital Product Notice:</span> SIFT AI is a digital service providing cybersecurity tools and threat detection capabilities.
             By purchasing a subscription, you are acquiring access to digital features and services delivered electronically.
           </p>
           <p className="mt-2">

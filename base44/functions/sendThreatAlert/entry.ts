@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
       <hr/>
       <p><strong>Notes:</strong> ${(threat.notes || 'No additional notes').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
       <br/>
-      <p style="color: #666; font-size: 12px;">This is an automated alert from Aegis Quantum Shield.</p>
+      <p style="color: #666; font-size: 12px;">This is an automated alert from SIFT AI.</p>
     `;
 
     const recipient = email || user.email;
@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
       to: recipient,
       subject: subject,
       body: body,
-      from_name: 'Aegis Quantum Shield'
+      from_name: 'SIFT AI'
     });
 
     await base44.asServiceRole.entities.SecurityEvent.create({

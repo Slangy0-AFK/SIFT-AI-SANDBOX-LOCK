@@ -126,7 +126,7 @@ export default function SettingsPage() {
               <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
               <div className="flex-1">
                 <div className="font-mono text-[11px] font-semibold text-foreground">Delete My Account</div>
-                <div className="font-mono text-xs text-muted-foreground mt-0.5">Permanently remove your SIFT-AI account and all associated data within 30 days.</div>
+                <div className="font-mono text-xs text-muted-foreground mt-0.5">Permanently remove your SIFT AI account and all associated data within 30 days.</div>
               </div>
             </div>
             {!showDeleteAccount ? (

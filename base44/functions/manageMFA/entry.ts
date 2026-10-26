@@ -27,8 +27,8 @@ Deno.serve(async (req) => {
       }
       
       const secret = speakeasy.generateSecret({
-        name: `Aegis Shield (${user.email})`,
-        issuer: 'Aegis Quantum Shield',
+        name: `SIFT AI (${user.email})`,
+        issuer: 'SIFT AI',
         length: 32,
       });
 

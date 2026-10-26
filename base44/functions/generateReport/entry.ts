@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     // Title
     doc.setFontSize(20);
     doc.setTextColor(0, 123, 255);
-    doc.text('AEGIS QUANTUM SHIELD', 20, 20);
+    doc.text('SIFT AI', 20, 20);
     
     doc.setFontSize(12);
     doc.setTextColor(100);
@@ -156,7 +156,7 @@ Deno.serve(async (req) => {
       doc.setFontSize(8);
       doc.setTextColor(150);
       doc.text(`Page ${i} of ${pageCount}`, 100, 290);
-      doc.text('© 2026 Aegis Quantum Shield - Confidential', 20, 290);
+      doc.text('© 2026 SIFT AI - Confidential', 20, 290);
     }
 
     const pdfBytes = doc.output('arraybuffer');

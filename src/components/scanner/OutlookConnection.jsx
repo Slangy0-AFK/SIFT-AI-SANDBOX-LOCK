@@ -130,7 +130,7 @@ export default function OutlookConnection({ onConnected }) {
         <Alert className="bg-blue-500/10 border-blue-500/30">
           <Mail className="w-4 h-4 text-blue-500" />
           <AlertDescription className="text-sm">
-            You'll be asked to grant SIFT-AI permission to read your Outlook messages and access your account information.
+            You'll be asked to grant SIFT AI permission to read your Outlook messages and access your account information.
             This allows us to scan for threats and protect your inbox.
           </AlertDescription>
         </Alert>
@@ -163,7 +163,7 @@ export default function OutlookConnection({ onConnected }) {
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
-          By connecting, you agree to let SIFT-AI scan your Outlook for security threats.
+          By connecting, you agree to let SIFT AI scan your Outlook for security threats.
           You can disconnect at any time.
         </p>
       </CardContent>

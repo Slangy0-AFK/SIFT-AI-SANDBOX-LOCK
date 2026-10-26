@@ -4,16 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Ticket } from 'lucide-react';
-
-const TOPICS = [
-  { id: 'flagged_item', label: 'A flagged item worries me' },
-  { id: 'tier_unlock', label: 'I paid but a tier is still locked' },
-  { id: 'payment', label: 'A payment or receipt question' },
-  { id: 'talk_to_support', label: 'Talk to SIFT AI support' },
-  { id: 'other', label: 'Something else' }
-];
-
-const SENSITIVE = /(password|passcode|one[- ]?time code|\botp\b|api[ -]?key|secret key|serial number|\bimei\b|card number|\bcvv\b)/i;
+import { SENSITIVE_TICKET_CONTENT as SENSITIVE, TICKET_TOPICS as TOPICS } from '@/lib/supportTopics';
 
 export default function HelperTicketForm({ page, context = '', onClose }) {
   const [topic, setTopic] = useState('flagged_item');
@@ -79,7 +70,7 @@ export default function HelperTicketForm({ page, context = '', onClose }) {
     <div className="border-t border-border p-4">
       <div className="flex items-center gap-2">
         <Ticket className="h-4 w-4 text-primary" />
-        <p className="font-mono text-xs font-bold">Open a support ticket</p>
+        <p className="font-mono text-xs font-bold">Submit a support ticket</p>
       </div>
 
       <div className="mt-3 space-y-2">

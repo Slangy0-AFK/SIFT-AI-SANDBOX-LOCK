@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aegis-v2';
+const CACHE_NAME = 'siftai-v2';
 const ASSETS = [
   '/',
   '/index.html',

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, MessageCircle, Send, X } from 'lucide-react';
+import { Loader2, MessageCircle, Send, Ticket, X } from 'lucide-react';
 import HelperTicketForm from './HelperTicketForm';
 
 const QUICK = [
@@ -140,13 +140,15 @@ export default function HelperAgent({ page, context = '' }) {
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
-              <button
-                type="button"
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setShowTicket(true)}
-                className="mt-2 font-mono text-[11px] text-primary hover:underline"
+                className="mt-2 w-full gap-2 font-mono text-xs"
               >
-                Open a support ticket instead →
-              </button>
+                <Ticket className="h-3.5 w-3.5 text-primary" />
+                Submit a support ticket
+              </Button>
             </div>
           )}
         </div>

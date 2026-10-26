@@ -97,9 +97,9 @@ Deno.serve(async (req) => {
       // For test mode: email the OTP to the user so testers can receive it
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: user.email,
-        subject: 'AEGIS — Your Phone Recovery Code',
-        body: `Your AEGIS account recovery code is: ${otp}\n\nThis code expires in 10 minutes.\n\nPhone number used: ${phone}\n\nIf you did not request this, please ignore this message.`,
-        from_name: 'AEGIS Quantum Shield',
+        subject: 'SIFT AI — Your Phone Recovery Code',
+        body: `Your SIFT AI account recovery code is: ${otp}\n\nThis code expires in 10 minutes.\n\nPhone number used: ${phone}\n\nIf you did not request this, please ignore this message.`,
+        from_name: 'SIFT AI',
       });
 
       console.log(`[PHONE RECOVERY] OTP sent for ${user.email} → phone ending ${phone.slice(-4)}`);

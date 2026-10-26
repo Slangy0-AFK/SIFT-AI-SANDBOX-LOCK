@@ -45,6 +45,9 @@ const TOPIC_TITLES = {
 
 const emailLooksValid = (value) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(value || ''));
 
+const escapeHtml = (value: string) =>
+  String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -144,10 +147,41 @@ The user asks: ${question}`,
       // left sitting with no answer. A person still reads every ticket after.
       const firstReply = await writeAutoReply(base44, ticket.id, { title, description });
 
+      // Every ticket is also emailed to the owner address already configured for
+      // this app, so nothing can sit unseen in the in-app list. The address is
+      // read server-side: it is never returned to the caller or shown on a page.
+      const ownerEmail = Deno.env.get('ADMIN_EMAIL');
+      let ownerNotified = false;
+      if (ownerEmail) {
+        try {
+          await base44.asServiceRole.integrations.Core.SendEmail({
+            to: ownerEmail,
+            template_name: 'OwnerTicketAlert',
+            category: 'transactional',
+            variables: {
+              ticket_number: ticket.id,
+              topic: TOPIC_TITLES[topic],
+              submitted_at: `${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC`,
+              status: 'Open',
+              requester_email: replyTo,
+              user_message: escapeHtml(message).replace(/\n/g, '<br />'),
+              app_name: 'SIFT AI'
+            }
+          });
+          ownerNotified = true;
+        } catch (emailError) {
+          // A failed email must never lose the ticket itself.
+          console.error('[scannerHelper] owner ticket email failed:', emailError && emailError.message);
+        }
+      } else {
+        console.error('[scannerHelper] ADMIN_EMAIL is not set: ticket email was not sent');
+      }
+
       return Response.json({
         ticket_id: ticket.id,
         title,
         reply_to: user ? user.email : replyTo,
+        owner_notified: ownerNotified,
         first_reply: firstReply,
         message: firstReply
           ? 'Ticket opened, and the first reply is already on it. A person reads every one.'

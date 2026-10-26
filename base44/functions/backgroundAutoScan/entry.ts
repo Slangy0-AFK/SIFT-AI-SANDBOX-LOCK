@@ -105,8 +105,8 @@ async function sendThreatNotification(serviceClient, userEmail, summary) {
   try {
     await serviceClient.integrations.Core.SendEmail({
       to: userEmail,
-      subject: '🚨 AEGIS Auto-Scan Alert — Threat Detected',
-      body: `AEGIS Quantum Shield detected a security threat during automated background scan.\n\n📊 Scan Summary:\n• Threats: ${summary.threats}\n• Warnings: ${summary.warnings}\n• Scan ID: ${summary.scan_id}\n• Time: ${new Date().toISOString()}\n\nAEGIS has automatically logged this event. Log in to your dashboard to review.\n\n— AEGIS Quantum Shield`,
+      subject: '🚨 SIFT AI Auto-Scan Alert — Threat Detected',
+      body: `SIFT AI detected a security threat during automated background scan.\n\n📊 Scan Summary:\n• Threats: ${summary.threats}\n• Warnings: ${summary.warnings}\n• Scan ID: ${summary.scan_id}\n• Time: ${new Date().toISOString()}\n\nSIFT AI has automatically logged this event. Log in to your dashboard to review.\n\n— SIFT AI`,
     });
     console.log(`[AUTO-SCAN] Threat notification sent to ${userEmail}`);
   } catch (e) {

@@ -271,7 +271,7 @@ export default function DeviceScanner() {
       if (data.summary?.threats > 0) {
       toast.error(`⚠️ ${data.summary.threats} hidden threat(s) detected on your device!`, { duration: 8000 });
       if (prefs.notifications && 'Notification' in window && Notification.permission === 'granted') {
-        new Notification('Sift-AI Security Alert', {
+        new Notification('SIFT AI Security Alert', {
           body: `${data.summary.threats} hidden threat(s) found. Check your dashboard.`,
           icon: '/favicon.ico',
         });

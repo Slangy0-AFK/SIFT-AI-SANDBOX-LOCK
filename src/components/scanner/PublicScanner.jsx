@@ -229,7 +229,7 @@ export default function PublicScanner() {
               </div>
               <div className="mt-4 flex justify-end">
                 <Link to="/developer">
-                  <Button size="sm" className="font-medium">Use Sift-AI In Your App</Button>
+                  <Button size="sm" className="font-medium">Use SIFT AI In Your App</Button>
                 </Link>
               </div>
             </motion.div>

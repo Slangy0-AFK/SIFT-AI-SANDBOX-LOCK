@@ -81,7 +81,7 @@ export default function InstallPrompt() {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-mono text-sm font-bold text-foreground">
-                      Install SIFT-AI Quantum Shield
+                      Install SIFT AI
                     </h3>
                     <p className="font-mono text-xs text-muted-foreground mt-1 leading-relaxed">
                       Get always-on protection with native app experience. Works offline, instant access, real-time alerts.
@@ -136,7 +136,7 @@ export default function InstallPrompt() {
             <Card className="border-primary/30 bg-card">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="font-mono text-sm tracking-wider">INSTALL SIFT-AI APP</CardTitle>
+                  <CardTitle className="font-mono text-sm tracking-wider">INSTALL SIFT AI APP</CardTitle>
                   <button onClick={closeInstructions} className="text-muted-foreground hover:text-foreground">
                     <X className="w-4 h-4" />
                   </button>
@@ -175,7 +175,7 @@ export default function InstallPrompt() {
                     <div>
                       <p className="font-mono text-xs font-semibold text-foreground">Confirm Install</p>
                       <p className="font-mono text-xs text-muted-foreground mt-0.5">
-                        Tap "Install" and the SIFT-AI app will be added to your home screen
+                        Tap "Install" and the SIFT AI app will be added to your home screen
                       </p>
                     </div>
                   </div>

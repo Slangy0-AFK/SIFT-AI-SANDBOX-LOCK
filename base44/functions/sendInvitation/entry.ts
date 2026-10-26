@@ -114,11 +114,11 @@ Deno.serve(async (req) => {
     try {
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: invitee_email,
-        subject: `You're invited to join ${user.email}'s AEGIS Security Plan`,
+        subject: `You're invited to join ${user.email}'s SIFT AI Security Plan`,
         body: `
 <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 12px; margin-bottom: 20px;">
-    <h1 style="color: white; margin: 0; font-size: 24px;">🛡️ AEGIS Quantum Shield</h1>
+    <h1 style="color: white; margin: 0; font-size: 24px;">🛡️ SIFT AI</h1>
     <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 14px;">Family Security Enrollment</p>
   </div>
 
@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
     <h2 style="margin: 0 0 15px 0; color: #2d3748; font-size: 20px;">You're Invited!</h2>
     
     <p style="color: #4a5568; line-height: 1.6; margin: 0 0 15px 0;">
-      <strong style="color: #2d3748;">${user.email}</strong> has invited you to join their AEGIS Quantum Shield security plan.
+      <strong style="color: #2d3748;">${user.email}</strong> has invited you to join their SIFT AI security plan.
     </p>
 
     <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 20px 0;">
@@ -168,7 +168,7 @@ Deno.serve(async (req) => {
     </p>
 
     <p style="color: #a0aec0; font-size: 12px; margin: 30px 0 0 0; padding-top: 20px; border-top: 1px solid #e2e8f0;">
-      This is an automated message from AEGIS Quantum Shield. Please do not reply to this email.
+      This is an automated message from SIFT AI. Please do not reply to this email.
     </p>
   </div>
 </div>

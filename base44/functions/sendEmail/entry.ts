@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
       to,
       subject,
       body,
-      from_name: from_name || 'Aegis Quantum Shield',
+      from_name: from_name || 'SIFT AI',
     });
 
     return Response.json({
