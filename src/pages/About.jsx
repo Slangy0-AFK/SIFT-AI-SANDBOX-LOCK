@@ -21,8 +21,8 @@ export default function About() {
       <p className="font-heading text-xs uppercase tracking-widest text-primary">About</p>
       <h1 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">Open tools for checking an AI agent before it acts.</h1>
       <p className="mt-4 text-muted-foreground">
-        The work behind this kit breaks AI agents on purpose, then writes down what held and what did not. The Agent Control Kit is
-        the small, open part
+        The work behind SIFT AI breaks AI agents on purpose, then writes down what held and what did not. The lab tools here are the
+        small, open part
         of that work: gates that run in code, evals you can rerun, and two calculators for sizing a job and setting a floor.
       </p>
       <p className="mt-4 text-muted-foreground">

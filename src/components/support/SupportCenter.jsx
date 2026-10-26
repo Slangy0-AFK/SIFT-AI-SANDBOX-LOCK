@@ -8,10 +8,11 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 const FAQS = [
-  { q: 'What does SiftAI do?', a: 'It checks messages before they reach your AI chatbot or assistant, and stops ones that try to trick it into breaking rules or leaking private info.' },
-  { q: 'How do I add it to my app?', a: 'Go to "Add to My App", make a key, and paste the short code example into your app. It takes about five minutes.' },
-  { q: 'What do "Safe", "Check" and "Blocked" mean?', a: 'Safe means the message looks normal. Check means something seems a little off. Blocked means it is clearly trying to trick your AI.' },
-  { q: 'What do I get with Pro?', a: 'More keys for your apps, extra-careful checks that catch cleverly reworded tricks, your full check history, and priority help.' },
+  { q: 'What is SIFT AI?', a: 'SIFT AI is a personal checker for rogue or unauthorised AI on the devices you own. Its main tool is the Phone Scanner, which checks the app, permission screen, link, hash or message you bring to it.' },
+  { q: 'Can it scan my whole phone?', a: 'No. It is a website, not an app on your phone, and a browser cannot look through a whole device by itself. It checks the single item you upload or paste, one at a time.' },
+  { q: 'What do "nothing known against it", "Unknown" and "Flagged" mean?', a: 'Nothing known against it means no checker we use has anything bad on record for that item today, which is not a promise about tomorrow. Unknown means there is not enough information either way, so we say so instead of guessing. Flagged means something is on record, and you get the evidence and the next step.' },
+  { q: 'What do I get with Pro?', a: 'Saved device profiles, re-checks of items that were flagged, PDF reports of your checks, and priority help. The one-time Device Check and Full Device Audit are for when you want a person to look closely at one item or a whole device.' },
+  { q: 'I paid and a tier is still locked', a: 'Open a ticket with the Help / Ask button and choose the payment topic. A tier unlocks as soon as the payment is confirmed, so tell us the email you paid with and we will look it up.' },
 ];
 
 export default function SupportCenter() {
@@ -230,8 +231,14 @@ function TicketManager({ user }) {
     if (!title.trim() || !desc.trim() || !user) return;
     setLoading(true);
     try {
-      await base44.entities.SupportTicket.create({ title, description: desc });
-      toast.success('Ticket submitted! An automated agent is reviewing it.');
+      const { data } = await base44.functions.invoke('scannerHelper', {
+        action: 'open_ticket',
+        topic: 'other',
+        message: `${title.trim()}\n\n${desc.trim()}`,
+        page: 'Support centre',
+      });
+      if (data?.error) throw new Error(data.error);
+      toast.success('Ticket submitted. The first reply is already on it, and a person reads every one.');
       setTitle('');
       setDesc('');
       refetch();

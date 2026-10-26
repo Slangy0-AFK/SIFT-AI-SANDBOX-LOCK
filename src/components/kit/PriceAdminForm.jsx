@@ -9,7 +9,7 @@ import { base44 } from '@/api/base44Client';
 export default function PriceAdminForm({ settings, onSaved }) {
   const [price, setPrice] = useState('');
   const [currency, setCurrency] = useState('usd');
-  const [productName, setProductName] = useState('Agent Control Kit Full Kit');
+  const [productName, setProductName] = useState('SIFT AI Full Kit');
   const [enabled, setEnabled] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -18,7 +18,7 @@ export default function PriceAdminForm({ settings, onSaved }) {
     if (!settings) return;
     setPrice(settings.price_cents ? (settings.price_cents / 100).toFixed(2) : '');
     setCurrency(settings.currency || 'usd');
-    setProductName(settings.product_name || 'Agent Control Kit Full Kit');
+    setProductName(settings.product_name || 'SIFT AI Full Kit');
     setEnabled(Boolean(settings.paid_tier_enabled));
   }, [settings]);
 
@@ -34,7 +34,7 @@ export default function PriceAdminForm({ settings, onSaved }) {
       const data = {
         price_cents: cents,
         currency: currency.trim().toLowerCase() || 'usd',
-        product_name: productName.trim() || 'Agent Control Kit Full Kit',
+        product_name: productName.trim() || 'SIFT AI Full Kit',
         paid_tier_enabled: enabled
       };
       if (settings?.id) await base44.entities.KitSettings.update(settings.id, data);

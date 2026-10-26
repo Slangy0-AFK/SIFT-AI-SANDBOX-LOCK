@@ -6,7 +6,13 @@ export const PUBLISHED_APP_URL = 'https://siftai.base44.app';
 
 export function readSecret(name) {
   try {
-    return secrets.get(name) || null;
+    const value = secrets.get(name);
+    if (value) return value;
+  } catch (error) {
+    console.warn(`[stripeEnv] runtime secret lookup failed for ${name}:`, error && error.message);
+  }
+  try {
+    return Deno.env.get(name) || null;
   } catch (error) {
     return null;
   }

@@ -24,10 +24,10 @@ export default function AlienVaultWidget({ onThreatDetected }) {
       setResult(res.data);
       
       if (res.data.is_threat) {
-        toast.error(`Threat detected in AlienVault OTX: ${res.data.pulses} pulses`);
+        toast.error(`On record in AlienVault OTX: ${res.data.pulses} reports.`);
         if (onThreatDetected) onThreatDetected(indicator.trim(), res.data);
       } else {
-        toast.success('Indicator appears clean in AlienVault OTX');
+        toast.success('Nothing on record for this indicator in AlienVault OTX today.');
       }
     } catch (err) {
       toast.error(err.message || 'AlienVault scan failed');
@@ -40,7 +40,7 @@ export default function AlienVaultWidget({ onThreatDetected }) {
     <Card className="border-border/50">
       <CardHeader className="pb-3">
         <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
-          <Network className="w-4 h-4 text-primary" /> ALIENVAULT OTX SCANNER
+          <Network className="w-4 h-4 text-primary" /> INDICATOR LOOKUP (AlienVault OTX)
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -73,12 +73,12 @@ export default function AlienVaultWidget({ onThreatDetected }) {
                 <span className="font-mono text-xs font-bold text-foreground">OTX Result</span>
               </div>
               <Badge className={`font-mono text-xs rounded-full px-2 py-0.5 ${result.is_threat ? 'bg-destructive/20 text-destructive' : 'bg-green-500/20 text-green-500'}`}>
-                {result.is_threat ? `${result.pulses} PULSES` : 'CLEAN'}
+                {result.is_threat ? `${result.pulses} REPORTS` : 'NOT ON RECORD'}
               </Badge>
             </div>
             
             <p className="font-mono text-xs text-muted-foreground mb-2 break-all">
-              {result.details?.details || (result.is_threat ? 'Indicator present in active OTX pulses' : 'No significant threat intelligence found')}
+              {result.details?.details || (result.is_threat ? 'On record in active OTX reports' : 'Nothing on record for this indicator today. That is not a promise about tomorrow.')}
             </p>
 
             {result.tags && result.tags.length > 0 && (

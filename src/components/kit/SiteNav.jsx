@@ -7,12 +7,12 @@ import { cn } from '@/lib/utils';
 
 const NAV = [
   { label: 'Home', to: '/' },
-  { label: 'Governor Demo', to: '/governor-demo' },
-  { label: 'Evals', to: '/evals' },
-  { label: 'Sizing Calculator', to: '/sizing-calculator' },
-  { label: 'Pricing', to: '/pricing' },
-  { label: 'About', to: '/about' }
+  { label: 'Phone Scanner', to: '/scan' },
+  { label: 'Plans', to: '/plans' },
+  { label: 'Support', to: '/support' }
 ];
+
+const LOGO = 'https://media.base44.com/images/public/6a0db3181169f42924052c0d/650b247a7_amazon.PNG';
 
 const desktopLink = ({ isActive }) =>
   cn('transition-colors hover:text-foreground', isActive ? 'font-semibold text-foreground' : 'text-muted-foreground');
@@ -33,8 +33,9 @@ export default function SiteNav() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link to="/" onClick={close} className="font-heading text-sm font-bold tracking-tight sm:text-base">
-          Agent Control Kit
+        <Link to="/" onClick={close} className="flex items-center gap-2.5">
+          <img src={LOGO} alt="SIFT AI" className="h-7 w-auto rounded-sm object-contain" />
+          <span className="font-heading text-sm font-bold tracking-tight sm:text-base">SIFT AI</span>
         </Link>
 
         <nav className="hidden items-center gap-5 text-sm font-medium lg:flex">

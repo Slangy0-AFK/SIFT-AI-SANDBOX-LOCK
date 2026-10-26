@@ -7,6 +7,7 @@ import useScannerUnlocks from '@/hooks/useScannerUnlocks';
 import ProTools from '@/components/scanner/ProTools';
 import DeviceCheckForm from '@/components/scanner/DeviceCheckForm';
 import FullAuditForm from '@/components/scanner/FullAuditForm';
+import HelperAgent from '@/components/scanner/HelperAgent';
 
 const LOGO = 'https://media.base44.com/images/public/6a0db3181169f42924052c0d/650b247a7_amazon.PNG';
 
@@ -23,13 +24,19 @@ export default function ScannerTools() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border bg-card/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
-          <Link to="/" className="flex items-center gap-3">
-            <img src={LOGO} alt="SiftAI" className="h-8 w-auto rounded-sm object-contain" />
+          <Link to="/scan" className="flex items-center gap-3">
+            <img src={LOGO} alt="SIFT AI" className="h-8 w-auto rounded-sm object-contain" />
+            <span className="font-heading text-sm font-bold tracking-tight">SIFT AI</span>
             <span className="font-mono text-xs tracking-widest text-muted-foreground">DEVICE TOOLS</span>
           </Link>
-          <Link to="/plans">
-            <Button size="sm" variant="outline" className="font-mono text-xs">Plans</Button>
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link to="/scan">
+              <Button size="sm" variant="outline" className="font-mono text-xs">Phone Scanner</Button>
+            </Link>
+            <Link to="/plans">
+              <Button size="sm" variant="outline" className="font-mono text-xs">Plans</Button>
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -82,15 +89,24 @@ export default function ScannerTools() {
 
         <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
           <Shield className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
-          <p className="font-mono text-xs leading-relaxed text-muted-foreground">
-            No guaranteed detection and no guaranteed results. A scan is a check, not a certificate.
-          </p>
+          <div className="space-y-2">
+            <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+              No guaranteed detection and no guaranteed results. A check is a check, not a certificate, and nothing here says a
+              device is clean or safe.
+            </p>
+            <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+              SIFT AI is a website, not an app on your phone. A browser cannot look through a whole device by itself, so these
+              checks only cover what you upload or paste.
+            </p>
+          </div>
         </div>
 
         <Link to="/plans" className="inline-flex items-center gap-2 font-mono text-xs text-primary hover:underline">
           See every plan <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </main>
+
+      <HelperAgent page="Device tools (/scanner)" />
     </div>
   );
 }

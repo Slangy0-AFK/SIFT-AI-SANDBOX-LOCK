@@ -20,9 +20,15 @@ export default function useScannerUnlocks() {
     retry: false
   });
 
-  const unlocked = new Set(data.purchases.map((p) => p.tier));
-  const activePlan = data.subs.find((s) => ['pro', 'enterprise'].includes(s.plan) && s.status === 'active');
-  if (activePlan) unlocked.add('pro');
+  // Only a payment the payment provider confirmed unlocks anything: a purchase
+  // counts once it is marked paid, and a plan record counts once a Stripe
+  // subscription is actually attached to it. Older or leftover plan rows that
+  // were never paid for unlock nothing.
+  const unlocked = new Set(data.purchases.filter((p) => p.status === 'paid').map((p) => p.tier));
+  const livePlan = data.subs.find(
+    (s) => ['pro', 'enterprise'].includes(s.plan) && s.status === 'active' && s.stripe_subscription_id
+  );
+  if (livePlan) unlocked.add('pro');
 
   return {
     isLoading,

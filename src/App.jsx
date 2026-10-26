@@ -48,6 +48,8 @@ import PromptGuard from '@/pages/PromptGuard';
 import ScannerPlans from '@/pages/ScannerPlans';
 import Receipt from '@/pages/Receipt';
 import ScannerTools from '@/pages/ScannerTools';
+import ScanNow from '@/pages/ScanNow';
+import Support from '@/pages/Support';
 // Add page imports here
 
 function AppRoutes() {
@@ -79,6 +81,8 @@ function AppRoutes() {
           <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
           <Route path="/about" element={<PageTransition><About /></PageTransition>} />
           <Route path="/thank-you" element={<PageTransition><ThankYou /></PageTransition>} />
+          <Route path="/scan" element={<PageTransition><ScanNow /></PageTransition>} />
+          <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
         </Route>
         <Route path="/plans" element={<PageTransition><ScannerPlans /></PageTransition>} />
         <Route path="/receipt" element={<PageTransition><Receipt /></PageTransition>} />
