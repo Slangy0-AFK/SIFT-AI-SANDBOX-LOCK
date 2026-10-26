@@ -19,7 +19,7 @@ export default function About() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-14">
       <p className="font-heading text-xs uppercase tracking-widest text-primary">About</p>
-      <h1 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">AI red teaming, in the open.</h1>
+      <h1 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">Open tools for checking an AI agent before it acts.</h1>
       <p className="mt-4 text-muted-foreground">
         The work behind this kit breaks AI agents on purpose, then writes down what held and what did not. The Agent Control Kit is
         the small, open part

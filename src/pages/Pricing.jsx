@@ -19,7 +19,7 @@ const FREE_ITEMS = [
 const PAID_ITEMS = [
   'Full reports for all five evals',
   'Audit log download, with the hash chain verified',
-  'A booking form for a paid red-team or agent-governance audit'
+  'A booking form for a paid agent-governance audit'
 ];
 
 const money = (cents, currency) =>
