@@ -19,7 +19,7 @@ export default function DeviceForm({ device, userId, onDone, onCancel }) {
   const save = async () => {
     const clean = name.trim();
     if (!clean) {
-      setError('Give it a name you will recognise, like "Sam\'s phone".');
+      setError('Give the device a name you will recognise, such as "My phone" or "Work laptop".');
       return;
     }
     setBusy(true);
@@ -54,7 +54,7 @@ export default function DeviceForm({ device, userId, onDone, onCancel }) {
             id="device-name"
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="Sam's phone"
+            placeholder="My phone"
             maxLength={60}
           />
         </div>

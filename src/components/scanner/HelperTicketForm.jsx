@@ -9,7 +9,7 @@ const TOPICS = [
   { id: 'flagged_item', label: 'A flagged item worries me' },
   { id: 'tier_unlock', label: 'I paid but a tier is still locked' },
   { id: 'payment', label: 'A payment or receipt question' },
-  { id: 'talk_to_doug', label: 'Talk to Doug' },
+  { id: 'talk_to_support', label: 'Talk to SIFT AI support' },
   { id: 'other', label: 'Something else' }
 ];
 

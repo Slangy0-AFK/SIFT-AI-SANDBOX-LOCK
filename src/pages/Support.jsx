@@ -19,8 +19,8 @@ export default function Support() {
         <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
           <MessageCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
           <p className="text-sm text-muted-foreground">
-            Choose <span className="text-foreground">Talk to Doug</span> in the ticket form if you want your question to go straight
-            to the person who runs SIFT AI. Every ticket gets an automatic first reply, and a human reads all of them.
+            Choose <span className="text-foreground">Talk to SIFT AI support</span> in the ticket form if you want your question to
+            go straight to the SIFT AI team. Every ticket gets an automatic first reply, and a person on the team reads all of them.
           </p>
         </div>
 

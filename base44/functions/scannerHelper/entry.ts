@@ -38,7 +38,7 @@ const TOPIC_TITLES = {
   payment: 'Payment question',
   tier_unlock: 'Tier unlock question',
   flagged_item: 'Flagged item question',
-  talk_to_doug: 'Talk to Doug',
+  talk_to_support: 'Talk to SIFT AI support',
   other: 'Support question'
 };
 

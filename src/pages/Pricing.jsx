@@ -112,7 +112,7 @@ export default function Pricing() {
                 <span className="ml-2 text-sm font-normal text-muted-foreground">one time</span>
               </p>
             ) : (
-              <p className="mt-1 font-heading text-lg text-muted-foreground">Price to be set by the owner</p>
+              <p className="mt-1 font-heading text-lg text-muted-foreground">Price to be set by the SIFT AI team</p>
             )}
           </CardHeader>
 
@@ -147,7 +147,7 @@ export default function Pricing() {
                 </Button>
                 {!openForSale && (
                   <p className="text-xs text-muted-foreground">
-                    Checkout is closed until the owner sets the price. No price has been invented for this page.
+                    Checkout is closed until the SIFT AI team sets the price. No price has been invented for this page.
                   </p>
                 )}
               </div>
