@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, MessageCircle, Send, Ticket, X } from 'lucide-react';
 import HelperTicketForm from './HelperTicketForm';
+import GuestChallenge from '@/components/support/GuestChallenge';
 
 const QUICK = [
   'What does my verdict mean?',
@@ -20,6 +21,7 @@ export default function HelperAgent({ page, context = '' }) {
   const [showTicket, setShowTicket] = useState(false);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  const [challenge, setChallenge] = useState(null);
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -33,30 +35,37 @@ export default function HelperAgent({ page, context = '' }) {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, open, showTicket]);
 
-  const ask = async (question) => {
+  const ask = async (question, proof = null) => {
     const text = String(question || '').trim();
     if (!text || busy) return;
     setInput('');
-    setMessages((prev) => [...prev, { role: 'user', content: text }]);
+    if (!proof) setMessages((prev) => [...prev, { role: 'user', content: text }]);
     setBusy(true);
     try {
-      const { data } = await base44.functions.invoke('scannerHelper', {
-        action: 'ask',
-        question: text,
-        page,
-        context
-      });
+      const payload = { action: 'ask', question: text, page, context };
+      if (proof) {
+        payload.captcha_challenge_id = proof.challenge_id;
+        payload.captcha_answer = proof.answer;
+      }
+      const { data } = await base44.functions.invoke('scannerHelper', payload);
+      setChallenge(null);
       setMessages((prev) => [
         ...prev,
         { role: 'assistant', content: data?.reply || data?.error || 'I could not answer that one. Open a ticket and a person will take it.' }
       ]);
     } catch (err) {
+      const code = err.response?.data?.error;
+      if (code === 'captcha_required' || code === 'captcha_wrong') {
+        // No account behind this question, so it is held until the quick check is solved.
+        setChallenge({ question: text, wrong: code === 'captcha_wrong', at: Date.now() });
+        return;
+      }
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
           content:
-            err.response?.data?.error ||
+            code ||
             'I could not reach the helper just now. Use "Open a ticket" below and a person will pick it up.'
         }
       ]);
@@ -116,39 +125,50 @@ export default function HelperAgent({ page, context = '' }) {
             <HelperTicketForm page={page} context={context} onClose={() => setShowTicket(false)} />
           ) : (
             <div className="border-t border-border p-3">
-              <div className="mb-2 flex flex-wrap gap-1.5">
-                {QUICK.map((prompt) => (
-                  <button
-                    key={prompt}
-                    type="button"
-                    onClick={() => ask(prompt)}
-                    className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground hover:text-foreground"
-                  >
-                    {prompt}
-                  </button>
-                ))}
-              </div>
-              <div className="flex items-end gap-2">
-                <Textarea
-                  value={input}
-                  onChange={(event) => setInput(event.target.value)}
-                  rows={2}
-                  placeholder="Ask about your result…"
-                  className="text-xs"
+              {challenge ? (
+                <GuestChallenge
+                  key={challenge.at}
+                  wrong={challenge.wrong}
+                  note="You are not signed in, so this quick check keeps the helper for people. Your question is kept."
+                  onSolved={(proof) => ask(challenge.question, proof)}
                 />
-                <Button size="sm" onClick={() => ask(input)} disabled={busy} className="h-11">
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowTicket(true)}
-                className="mt-2 w-full gap-2 font-mono text-xs"
-              >
-                <Ticket className="h-3.5 w-3.5 text-primary" />
-                Submit a support ticket
-              </Button>
+              ) : (
+                <>
+                  <div className="mb-2 flex flex-wrap gap-1.5">
+                    {QUICK.map((prompt) => (
+                      <button
+                        key={prompt}
+                        type="button"
+                        onClick={() => ask(prompt)}
+                        className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+                      >
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <Textarea
+                      value={input}
+                      onChange={(event) => setInput(event.target.value)}
+                      rows={2}
+                      placeholder="Ask about your result…"
+                      className="text-xs"
+                    />
+                    <Button size="sm" onClick={() => ask(input)} disabled={busy} className="h-11">
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowTicket(true)}
+                    className="mt-2 w-full gap-2 font-mono text-xs"
+                  >
+                    <Ticket className="h-3.5 w-3.5 text-primary" />
+                    Submit a support ticket
+                  </Button>
+                </>
+              )}
             </div>
           )}
         </div>

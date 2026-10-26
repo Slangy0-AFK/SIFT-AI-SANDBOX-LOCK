@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { constantTimeEqual } from '../../shared/constantTime.ts';
+import { MAX_ATTEMPTS, sha256Hex, verifyChallenge } from '../../shared/captcha.ts';
 
 /**
  * Human verification challenge.
@@ -17,15 +17,9 @@ import { constantTimeEqual } from '../../shared/constantTime.ts';
  */
 
 const CHALLENGE_MINUTES = 5;
-const MAX_ATTEMPTS = 3;
 const SITE_LABEL = 'siftai-public';
 const FLOOD_WINDOW_MS = 10 * 60 * 1000;
 const FLOOD_LIMIT = 100;
-
-async function sha256Hex(text) {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
-}
 
 function json(payload, status = 200) {
   return Response.json(payload, { status });
@@ -49,50 +43,29 @@ Deno.serve(async (req) => {
         return json({ success: false, verified: false, error: 'Enter your answer first.' }, 400);
       }
 
-      // The stored pair behind this id is the only answer source, and it is
-      // never sent anywhere: the page is told right or wrong, nothing more.
-      const found = await base44.asServiceRole.entities.WidgetChallenge.filter({ challenge_id: challengeId });
-      const challenge = rowsOf(found)[0];
-      if (!challenge) {
+      // One rule for every challenge in the app (shared/captcha.ts), so the
+      // helper and the ticket form judge an answer exactly as this page does.
+      const check = await verifyChallenge(base44, { challengeId, answer: submitted });
+      if (check.ok) return json({ success: true, verified: true });
+      if (check.reason === 'missing') {
         return json({ success: false, verified: false, error: 'That challenge is no longer valid. Load a new one.' }, 400);
       }
-      if (challenge.status !== 'pending') {
+      if (check.reason === 'spent') {
         return json({ success: false, verified: false, locked: true, error: 'That challenge has already been dealt with. Load a new one.' }, 400);
       }
-      if (new Date(challenge.expires_at).getTime() < Date.now()) {
-        await base44.asServiceRole.entities.WidgetChallenge.update(challenge.id, { status: 'locked' });
+      if (check.reason === 'expired') {
         return json({ success: false, verified: false, locked: true, error: 'That challenge expired. Load a new one.' });
       }
-
-      const attempts = Number(challenge.attempts || 0);
-      if (attempts >= MAX_ATTEMPTS) {
-        await base44.asServiceRole.entities.WidgetChallenge.update(challenge.id, { status: 'locked' });
+      if (check.reason === 'locked') {
         return json({ success: false, verified: false, locked: true, error: 'Too many attempts on this challenge. Load a new one.' });
       }
-
-      const computed = await sha256Hex(`${challenge.challenge_id}:${parseInt(submitted, 10)}`);
-      // Constant-time: the answer must not be guessable by measuring the check.
-      if (!constantTimeEqual(computed, challenge.answer_hash)) {
-        const next = attempts + 1;
-        await base44.asServiceRole.entities.WidgetChallenge.update(challenge.id, {
-          attempts: next,
-          status: next >= MAX_ATTEMPTS ? 'locked' : 'pending',
-        });
-        return json({
-          success: false,
-          verified: false,
-          locked: next >= MAX_ATTEMPTS,
-          remaining_attempts: Math.max(0, MAX_ATTEMPTS - next),
-          error: 'That answer is not right.',
-        });
-      }
-
-      // One challenge, one pass: a solved challenge cannot be replayed.
-      await base44.asServiceRole.entities.WidgetChallenge.update(challenge.id, {
-        status: 'used',
-        attempts: attempts + 1,
+      return json({
+        success: false,
+        verified: false,
+        locked: check.locked === true,
+        remaining_attempts: check.remaining,
+        error: 'That answer is not right.',
       });
-      return json({ success: true, verified: true });
     }
 
     // Issuing a challenge writes one record, so a flood of them is refused

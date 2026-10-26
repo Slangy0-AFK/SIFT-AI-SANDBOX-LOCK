@@ -3,16 +3,10 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useAlertNotifications } from '../notifications/useAlertNotifications';
 import TermsAgreementModal from '../onboarding/TermsAgreementModal';
-import useParadoxBackground from '@/hooks/useParadoxBackground';
 import { useAutoRegisterDevice } from '@/hooks/useAutoRegisterDevice';
 
 function AlertWatcher() {
   useAlertNotifications();
-  return null;
-}
-
-function ParadoxWatcher() {
-  useParadoxBackground();
   return null;
 }
 
@@ -34,7 +28,6 @@ export default function AppLayout() {
       
       <div className="relative z-10">
         <AlertWatcher />
-        <ParadoxWatcher />
         <TermsAgreementModal />
         <Sidebar />
       {/* desktop: offset for sidebar | mobile: offset for top bar + bottom nav */}

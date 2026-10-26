@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { admit, admitSpend, audit } from '../../shared/supportHarness.ts';
 import { HELP_ARTICLES } from '../../shared/supportHelp.ts';
 import { openTicket } from '../../shared/supportIntake.ts';
+import { verifyChallenge } from '../../shared/captcha.ts';
 
 // The helper answers from the same articles the ticket automation, the help centre
 // and the support agent use: base44/shared/supportHelp.ts. There is no second copy.
@@ -31,6 +32,29 @@ export default async function (req) {
     const context = String(body.context || '').slice(0, 900);
 
     const user = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
+
+    // A visitor with no account must show that a person is asking before the
+    // helper answers or a ticket is opened: both spend an integration credit, and
+    // a ticket also emails the team. The challenge is the app's own (the same one
+    // the subscription page uses), it is judged on the server, and one solved
+    // challenge pays for exactly one action. Nothing is written when it fails.
+    if (!user && (action === 'ask' || action === 'open_ticket')) {
+      const check = await verifyChallenge(base44, {
+        challengeId: String(body.captcha_challenge_id || '').slice(0, 120),
+        answer: body.captcha_answer
+      });
+      if (!check.ok) {
+        console.warn(`[scannerHelper] guest ${action} refused: challenge ${check.reason}`);
+        return Response.json(
+          {
+            error: check.reason === 'wrong' ? 'captcha_wrong' : 'captcha_required',
+            locked: check.locked === true,
+            remaining_attempts: check.remaining
+          },
+          { status: 403 }
+        );
+      }
+    }
 
     if (action === 'ask') {
       const question = String(body.question || '').slice(0, 700).trim();

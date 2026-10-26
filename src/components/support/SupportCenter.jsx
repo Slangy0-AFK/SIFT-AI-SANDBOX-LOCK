@@ -209,7 +209,6 @@ export default function SupportCenter() {
               { title: 'Terms of Service', href: '/terms' },
               { title: 'Privacy Policy', href: '/privacy-policy' },
               { title: 'Refund Policy', href: '/refund-policy' },
-              { title: 'Data Processing Agreement', href: '#' },
             ].map((policy, i) => (
               <a key={i} href={policy.href} className="flex items-center justify-between p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-secondary/50 transition-colors">
                 <span className="font-mono text-xs font-medium">{policy.title}</span>
