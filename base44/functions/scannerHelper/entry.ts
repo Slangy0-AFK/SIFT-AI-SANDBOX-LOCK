@@ -156,6 +156,7 @@ The user asks: ${question}`,
         try {
           await base44.asServiceRole.integrations.Core.SendEmail({
             to: ownerEmail,
+            from_name: 'SIFT AI Support',
             template_name: 'OwnerTicketAlert',
             category: 'transactional',
             variables: {
