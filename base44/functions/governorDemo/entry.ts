@@ -240,6 +240,13 @@ export default async function (req) {
     const action = normalize(body.request);
     const actionHash = await sha256hex(canonical(action));
 
+    // One volume gate for every path, checked before anything is minted, decided or
+    // written: a refusal never writes and never hands out a seal, and both counts are
+    // the server's own, so inventing a fresh session id buys no extra allowance.
+    if (await volumeRefused(base44, ownerKey)) {
+      return Response.json({ error: 'That is a lot of demo runs in a short time. Try again in a few minutes.' }, { status: 429 });
+    }
+
     if (body.step === 'seal') {
       const expires = Date.now() + SEAL_TTL_MS;
       const nonce = crypto.randomUUID().replace(/-/g, '');
@@ -249,12 +256,6 @@ export default async function (req) {
 
     const sealResult = await verifySeal(secret, body.seal, actionHash);
     const sealCheck = { gate: GATE_ORDER[0], status: sealResult.ok ? 'pass' : 'block', note: sealResult.note };
-
-    // One volume gate for both paths below, checked before anything is decided or
-    // written: a refusal never writes, and both counts are the server's own.
-    if (await volumeRefused(base44, ownerKey)) {
-      return Response.json({ error: 'That is a lot of demo runs in a short time. Try again in a few minutes.' }, { status: 429 });
-    }
 
     let decision;
     let audit = null;
