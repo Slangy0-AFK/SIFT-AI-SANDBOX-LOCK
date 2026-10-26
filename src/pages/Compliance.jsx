@@ -83,8 +83,34 @@ export default function Compliance() {
             or package OTX data as a product of its own, and it is not offered as a standalone feed.
           </p>
           <p>
-            OTX is a third-party service under its own agreement with its own terms, which we do not control and which can change. If
-            you rely on an OTX indicator for anything important, treat it as one opinion among several.
+            OTX is a third-party service under its own agreement with its own terms, which we do not control and which can change. Its
+            agreement restricts commercial exploitation and use outside its intended use, so its commercial position for this app is not
+            confirmed — that is flagged on the{' '}
+            <Link to="/sources" className="text-primary hover:underline">
+              Sources page
+            </Link>
+            . If you rely on an OTX indicator for anything important, treat it as one opinion among several.
+          </p>
+        </Section>
+
+        <Section title="Where the checks come from">
+          <p>
+            A link, domain, IP address or file hash is checked against open threat feeds, each shown separately so you can see which one
+            said what. They are named, with their terms position, on the{' '}
+            <Link to="/sources" className="text-primary hover:underline">
+              Sources page
+            </Link>
+            . When a feed has nothing on an item it reads “Not found in these feeds”, which is not the same as clean. The strongest an item
+            can read is “No hits in the checks run”.
+          </p>
+          <p>
+            Some of those feeds restrict commercial use, and SIFT AI does not claim any of them is commercial-safe until its terms are
+            settled. That is flagged source by source on the Sources page.
+          </p>
+          <p>
+            SIFT AI cannot run an antivirus engine for you. ClamAV is not run inside SIFT AI, no ClamAV result is produced, and none is
+            ever invented. Until a separate ClamAV service is added, a file is checked by its hash together with the local scan checklist
+            you run on your own machine. Your own antivirus is still the antivirus.
           </p>
         </Section>
 

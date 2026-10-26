@@ -6,7 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowRight, Loader2, ScanLine, ShieldAlert, ShieldCheck, ShieldQuestion } from 'lucide-react';
 import ScannerLegalNotice from '@/components/legal/ScannerLegalNotice';
-import VirusTotalNotice from '@/components/scanner/VirusTotalNotice';
+import OpenSourceCheck from '@/components/scanner/OpenSourceCheck';
+import { applyList } from '@/lib/listVerdict';
 
 const MODES = [
   { id: 'item', label: 'A link, domain or file hash' },
@@ -43,36 +44,6 @@ function textVerdict(analysis) {
     headline: 'Nothing in this matched the usual scam patterns',
     lines: ['That is not a promise that the sender is who they say they are.'],
     next: 'Reply only if you were expecting it, and never send codes, passwords or card details.'
-  };
-}
-
-// The person's own allowlist and blocklist get the last word, and the result
-// says so out loud either way.
-function applyList(verdict, hit) {
-  const note = hit.entry?.note ? ` Your note on it: ${hit.entry.note}` : '';
-  if (hit.kind === 'block') {
-    return {
-      ...verdict,
-      level: 'flagged',
-      headline: 'On your blocklist',
-      lines: [
-        `You put ${hit.entry.value} on your blocklist, so it comes back flagged here.`,
-        `The checker on its own said: ${verdict.headline}.`
-      ],
-      next: `Take it off the list if you have changed your mind about it.${note}`,
-      list: { kind: 'block', value: hit.entry.value }
-    };
-  }
-  return {
-    ...verdict,
-    level: 'approved',
-    headline: 'On your allowlist',
-    lines: [
-      `You put ${hit.entry.value} on your allowlist, so your list treats it as approved.`,
-      `The checker's own finding, stated plainly: ${verdict.headline}.`
-    ],
-    next: `Watch it anyway. Your list decides what happens here, not whether the item is genuinely safe.${note}`,
-    list: { kind: 'allow', value: hit.entry.value }
   };
 }
 
@@ -176,9 +147,8 @@ export default function FreeScan({ isAuthed, onSignIn }) {
   const style = verdict ? VERDICT_STYLES[verdict.level] : null;
   const chosenDevice = devices.find((device) => device.id === deviceId) || null;
 
-  // With VirusTotal switched off there is no link, domain or hash check left to
-  // run, so that mode explains itself instead of offering a button that must not
-  // be pressed.
+  // A link, domain, IP address or file hash is checked against the open feeds.
+  // VirusTotal is not involved anywhere: its public API must not be used commercially.
   if (mode === 'item') {
     return (
       <div className="space-y-4 rounded-2xl border border-border bg-card p-6">
@@ -199,11 +169,7 @@ export default function FreeScan({ isAuthed, onSignIn }) {
             </Button>
           ))}
         </div>
-        <VirusTotalNotice />
-        <p className="font-mono text-[11px] leading-relaxed text-muted-foreground">
-          Switch to <span className="text-foreground">A message or an email</span> to check something here, or open a Device Check from the
-          plans page if you want a person to look closely at one item.
-        </p>
+        <OpenSourceCheck isAuthed={isAuthed} devices={devices} deviceId={deviceId} />
         <ScannerLegalNotice />
       </div>
     );

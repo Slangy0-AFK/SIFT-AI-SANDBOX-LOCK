@@ -12,6 +12,7 @@
         "virustotal_domain",
         "virustotal_url",
         "virustotal_hash",
+        "open_source",
         "email",
         "sms",
         "message",

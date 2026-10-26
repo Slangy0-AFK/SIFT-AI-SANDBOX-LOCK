@@ -7,6 +7,7 @@ import { ArrowLeft, ScanLine } from 'lucide-react';
 import HelperAgent from '@/components/scanner/HelperAgent';
 import ScannerLegalNotice from '@/components/legal/ScannerLegalNotice';
 import VirusTotalNotice from '@/components/scanner/VirusTotalNotice';
+import OpenSourceResults from '@/components/scanner/OpenSourceResults';
 import { formatWhen, scanTypeLabel, VERDICTS, verdictOf } from '@/lib/scanLabels';
 
 function parseResult(raw) {
@@ -142,6 +143,10 @@ export default function CheckDetail() {
           )}
           {result?.next && <p className="mt-4 text-sm text-foreground">{result.next}</p>}
         </div>
+
+        {result?.sources?.length > 0 && (
+          <OpenSourceResults sources={result.sources} value={check.input_value} showVerdict={false} />
+        )}
 
         {check.error_message && <p className="font-mono text-xs text-destructive">{check.error_message}</p>}
 

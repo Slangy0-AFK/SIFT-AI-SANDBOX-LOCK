@@ -14,6 +14,7 @@ export const SCAN_TYPES = {
   virustotal_domain: 'Domain (withdrawn VirusTotal check)',
   virustotal_hash: 'File hash (withdrawn VirusTotal check)',
   virustotal_ip: 'IP address (withdrawn VirusTotal check)',
+  open_source: 'Link, domain, IP or file hash',
   message: 'Message or email',
   sms: 'Message or email',
   email: 'Message or email',
@@ -26,7 +27,7 @@ export function scanTypeLabel(scanType) {
 
 export const TYPE_FILTERS = [
   { id: 'all', label: 'Any kind', types: null },
-  { id: 'item', label: 'Link, domain or hash (withdrawn checks)', types: ['virustotal_url', 'virustotal_domain', 'virustotal_hash', 'virustotal_ip'] },
+  { id: 'item', label: 'Link, domain, IP or hash', types: ['open_source', 'virustotal_url', 'virustotal_domain', 'virustotal_hash', 'virustotal_ip'] },
   { id: 'message', label: 'Message or email', types: ['message', 'sms', 'email'] },
   { id: 'device', label: 'Device check', types: ['device_scan'] }
 ];
