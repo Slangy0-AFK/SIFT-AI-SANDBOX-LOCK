@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import Stripe from 'npm:stripe@14.0.0';
+import { stripeCredentials } from '../../shared/stripeConnect.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -20,12 +21,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing planKey or billingCycle' }, { status: 400 });
     }
     
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
-    if (!stripeSecretKey) {
+    // Which Stripe account payments run on: the connected account once the owner
+    // has connected one, otherwise the app's own account. The amount is unchanged.
+    const { apiKey, source } = await stripeCredentials(base44);
+    if (!apiKey) {
       return Response.json({ error: 'Stripe is not configured' }, { status: 500 });
     }
+    console.log(`[stripeCheckout] Stripe credentials: ${source}`);
 
-    const stripe = new Stripe(stripeSecretKey);
+    const stripe = new Stripe(apiKey);
     
     // Calculate price
     let amount = 0;

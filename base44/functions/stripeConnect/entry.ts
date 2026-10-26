@@ -66,8 +66,8 @@ export default async function (req) {
 
     // The actions below run from the app, and only for an admin: connecting an
     // account decides where the app's money goes.
-    if (!user) return json({ error: 'Unauthorized' }, { status: 401 });
-    if (user.role !== 'admin') return json({ error: 'Forbidden' }, { status: 403 });
+    if (!user) return json({ error: 'Unauthorized' }, 401);
+    if (user.role !== 'admin') return json({ error: 'Forbidden' }, 403);
 
     const body = await req.json().catch(() => ({}));
     const action = typeof body.action === 'string' ? body.action : 'status';
@@ -75,7 +75,18 @@ export default async function (req) {
     if (action === 'start') return startConnection(base44, req, user);
     if (action === 'status') return connectionStatus(base44);
 
-    return json({ error: 'Unknown action' }, { status: 400 });
+    if (action === 'complete') {
+      // Same checks as the redirect: admin only, and the state must be unspent,
+      // unexpired and started by this same admin.
+      const code = String(body.code || '').trim();
+      const state = String(body.state || '').trim();
+      if (!code || !state) return json({ error: 'Missing code or state' }, 400);
+      const result = await completeConnection(base44, { code, state, userId: user.id });
+      if (!result.ok) return json({ ok: false, reason: result.reason }, 400);
+      return json({ ok: true });
+    }
+
+    return json({ error: 'Unknown action' }, 400);
   } catch (error) {
     console.error('[stripeConnect] Error:', error && error.message);
     return json({ error: error.message }, { status: 500 });
@@ -91,7 +102,7 @@ async function startConnection(base44, req, user) {
         message:
           'The Connect client id is not set. Add the STRIPE_CONNECT_CLIENT_ID secret (the ca_... value from Stripe) in the app Secrets, then try again.'
       },
-      { status: 503 }
+      503
     );
   }
   if (!stripeSecretKey()) {
@@ -100,7 +111,7 @@ async function startConnection(base44, req, user) {
         error: 'stripe_not_configured',
         message: 'The Stripe secret key is not set in the app Secrets, so the token exchange cannot run.'
       },
-      { status: 503 }
+      503
     );
   }
 

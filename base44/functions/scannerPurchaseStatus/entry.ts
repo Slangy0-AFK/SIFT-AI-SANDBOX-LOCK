@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import Stripe from 'npm:stripe@14.0.0';
 import { SCANNER_TIERS } from '../../shared/scannerPlans.ts';
 import { confirmAndGrant, firstRecord } from '../../shared/scannerFulfillment.ts';
-import { stripeSecretKey } from '../../shared/stripeEnv.ts';
+import { stripeCredentials } from '../../shared/stripeConnect.ts';
 
 // Backs the receipt page. The Stripe session id is the lookup key and is long
 // and unguessable, so a guest can read their own receipt straight after paying.
@@ -13,8 +13,9 @@ export default async function (req) {
     if (!sessionId) return Response.json({ error: 'session_id is required' }, { status: 400 });
 
     const base44 = createClientFromRequest(req);
-    const secretKey = stripeSecretKey();
-    const stripe = secretKey ? new Stripe(secretKey) : null;
+    // The session has to be read from the same Stripe account it was created on.
+    const { apiKey } = await stripeCredentials(base44);
+    const stripe = apiKey ? new Stripe(apiKey) : null;
 
     let purchase = firstRecord(
       await base44.asServiceRole.entities.ScannerPurchase.filter({ stripe_session_id: sessionId })

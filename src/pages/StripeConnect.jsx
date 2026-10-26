@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { base44 } from '@/api/base44Client';
 import { CheckCircle2, AlertTriangle, Info } from 'lucide-react';
 import StripeConnectPanel from '@/components/settings/StripeConnectPanel';
 
@@ -23,8 +24,22 @@ const RESULTS = {
 
 export default function StripeConnect() {
   const params = new URLSearchParams(window.location.search);
-  const result = RESULTS[params.get('connect')];
   const reason = params.get('reason');
+  const code = params.get('code');
+  const state = params.get('state');
+  const [fallback, setFallback] = useState(null);
+
+  // The endpoint is the URL registered in Stripe. If Stripe lands on this page
+  // instead, the exchange is run from here through the same server-side checks.
+  useEffect(() => {
+    if (!code || !state) return;
+    base44.functions
+      .invoke('stripeConnect', { action: 'complete', code, state })
+      .then((res) => setFallback(res.data?.ok ? 'ok' : 'error'))
+      .catch(() => setFallback('error'));
+  }, [code, state]);
+
+  const result = RESULTS[fallback || params.get('connect')];
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6">

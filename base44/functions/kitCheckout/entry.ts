@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import Stripe from 'npm:stripe@14.0.0';
+import { stripeCredentials } from '../../shared/stripeConnect.ts';
 
 // Public on purpose: buyers do not need an account. The price always comes from
 // server-side settings, never from the caller.
@@ -8,11 +9,15 @@ export default async function (req) {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
 
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
-    if (!stripeSecretKey) {
-      console.error('[kitCheckout] STRIPE_SECRET_KEY is not set.');
+    // Which Stripe account payments run on: the connected account once the owner
+    // has connected one, otherwise the app's own account. The price still comes
+    // from the server-side settings, never from the caller.
+    const { apiKey, source } = await stripeCredentials(base44);
+    if (!apiKey) {
+      console.error('[kitCheckout] no Stripe key available.');
       return Response.json({ error: 'Checkout is not configured yet.' }, { status: 500 });
     }
+    console.log(`[kitCheckout] Stripe credentials: ${source}`);
 
     const settingsPage = await base44.asServiceRole.entities.KitSettings.filter({}, { limit: 1 });
     const settings = (settingsPage.items || [])[0] || null;
@@ -28,7 +33,7 @@ export default async function (req) {
     // The platform sets X-Base44-App-Url on every call; the literal is the app's published URL.
     const appUrl = (req.headers.get('X-Base44-App-Url') || 'https://siftai.base44.app').replace(/\/$/, '');
 
-    const stripe = new Stripe(stripeSecretKey);
+    const stripe = new Stripe(apiKey);
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],

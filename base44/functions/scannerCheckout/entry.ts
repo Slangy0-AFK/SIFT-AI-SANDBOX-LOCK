@@ -2,7 +2,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import Stripe from 'npm:stripe@14.0.0';
 import { getTier } from '../../shared/scannerPlans.ts';
 import { firstRecord } from '../../shared/scannerFulfillment.ts';
-import { appBaseUrl, stripeSecretKey } from '../../shared/stripeEnv.ts';
+import { appBaseUrl } from '../../shared/stripeEnv.ts';
+import { stripeCredentials } from '../../shared/stripeConnect.ts';
 
 // Starts a Stripe Checkout Session for one scanner tier.
 // Open to guests on purpose: paying must not require an account first. The tier
@@ -23,17 +24,21 @@ export default async function (req) {
       );
     }
 
-    const secretKey = stripeSecretKey();
-    if (!secretKey) {
-      console.error('[scannerCheckout] STRIPE_SECRET_KEY is not set');
-      return Response.json({ error: 'stripe_not_connected' }, { status: 503 });
-    }
-
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
     const appUrl = appBaseUrl(req);
 
-    const stripe = new Stripe(secretKey);
+    // Which Stripe account payments run on: the connected account once the owner
+    // has connected one, otherwise the app's own account. The tier decides the
+    // price, never the caller.
+    const { apiKey, source } = await stripeCredentials(base44);
+    if (!apiKey) {
+      console.error('[scannerCheckout] no Stripe key available');
+      return Response.json({ error: 'stripe_not_connected' }, { status: 503 });
+    }
+    console.log(`[scannerCheckout] Stripe credentials: ${source}`);
+
+    const stripe = new Stripe(apiKey);
     const session = await stripe.checkout.sessions.create({
       mode: tier.mode,
       payment_method_types: ['card'],

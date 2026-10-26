@@ -1,5 +1,6 @@
 import Stripe from 'npm:stripe@14.0.0';
-import { stripeSecretKey } from '../../shared/stripeEnv.ts';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
+import { stripeCredentials } from '../../shared/stripeConnect.ts';
 
 // Answers one question for the pricing page: can a card payment actually be taken
 // right now? The answer comes from Stripe itself, checked server-side, so the paid
@@ -14,25 +15,32 @@ import { stripeSecretKey } from '../../shared/stripeEnv.ts';
 // into repeated calls on Stripe.
 const CACHE_MS = 60 * 1000;
 let cached = null;
-const cacheAnswer = (body) => {
-  cached = { at: Date.now(), body };
+const cacheAnswer = (source, body) => {
+  cached = { at: Date.now(), source, body };
   return body;
 };
 
-export default async function () {
-  if (cached && Date.now() - cached.at < CACHE_MS) {
+export default async function (req) {
+  const base44 = createClientFromRequest(req);
+
+  // Which Stripe account the answer is about: the connected account when one is
+  // stored, otherwise the app's own. It is part of the cache key, so connecting an
+  // account is reflected at once instead of after the cache expires.
+  const { apiKey, source } = await stripeCredentials(base44);
+
+  if (cached && cached.source === source && Date.now() - cached.at < CACHE_MS) {
     console.log('[stripeStatus] answered from cache');
     return Response.json(cached.body);
   }
 
-  const secretKey = stripeSecretKey();
+  const secretKey = apiKey;
   if (!secretKey) return Response.json({ connected: false, reason: 'not_configured' });
 
   try {
     const stripe = new Stripe(secretKey, { timeout: 5000, maxNetworkRetries: 1 });
     const account = await stripe.accounts.retrieve();
     console.log('[stripeStatus] checked with Stripe');
-    return Response.json(cacheAnswer({
+    return Response.json(cacheAnswer(source, {
       connected: true,
       charges_enabled: account?.charges_enabled !== false
     }));
@@ -42,7 +50,7 @@ export default async function () {
       // Stripe refused the stored key itself, so payments cannot be taken. That
       // answer is stable, so it is held like a successful one.
       console.error('[stripeStatus] Stripe rejected the stored key, status', status);
-      return Response.json(cacheAnswer({ connected: false, reason: 'rejected' }));
+      return Response.json(cacheAnswer(source, { connected: false, reason: 'rejected' }));
     }
 
     // Stripe could not be reached (timeout or network). The key is present and was
