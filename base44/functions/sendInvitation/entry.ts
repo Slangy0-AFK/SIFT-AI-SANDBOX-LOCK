@@ -11,11 +11,14 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    // Authenticate user
-    // Allow: scheduler secret header or authenticated user
-    const schedulerSecret = Deno.env.get('SCHEDULER_SECRET');
+    // A person sends this, from their own account. The automation secret is read
+    // so that path is refused outright: neither a workflow nor anything holding an
+    // internal secret can make this app mail an invitee.
+    const automationSecret = Deno.env.get('SCHEDULER_SECRET');
     const providedSecret = req.headers.get('x-scheduler-secret') || req.headers.get('x-automation-secret');
-    const isScheduler = schedulerSecret && providedSecret === schedulerSecret;
+    if (automationSecret && providedSecret) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const user = await base44.auth.me().catch(() => null);
     if (!user) {
@@ -86,6 +89,34 @@ Deno.serve(async (req) => {
       return Response.json({ 
         error: `Cannot allocate ${device_slots} slots. You have ${maxDevices - totalCommitted} device slots remaining.` 
       }, { status: 400 });
+    }
+
+    // The recipient has to be a real account in this app. This is the only thing
+    // that stops an invitation being mailed to a stranger just because a caller
+    // typed their address, so it fails closed: a check that cannot be completed
+    // sends nothing at all.
+    if (invitee_email === String(user.email || '').toLowerCase()) {
+      return Response.json({ error: 'That is your own address. Invite someone else.' }, { status: 400 });
+    }
+
+    let registered = null;
+    try {
+      const found = await base44.asServiceRole.entities.User.filter({ email: invitee_email });
+      const rows = Array.isArray(found) ? found : (found && found.items) || [];
+      registered = rows[0] || null;
+    } catch (error) {
+      console.error('[INVITE] Recipient check failed:', error && error.message);
+      return Response.json(
+        { error: 'We could not check that address just now. Nothing was sent — please try again.' },
+        { status: 503 }
+      );
+    }
+
+    if (!registered) {
+      return Response.json(
+        { error: 'That person needs a SIFT AI account before they can be invited. Ask them to sign up first, then send the invitation.' },
+        { status: 403 }
+      );
     }
 
     // Generate secure token

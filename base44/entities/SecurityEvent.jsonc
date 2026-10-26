@@ -16,7 +16,8 @@
         "threat_locked",
         "threat_destroyed",
         "mirror_redirect",
-        "access_granted"
+        "access_granted",
+        "admin_key_failed"
       ]
     },
     "threat_id": {

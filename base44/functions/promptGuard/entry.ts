@@ -9,6 +9,10 @@ export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch(() => null);
+    // Fail closed: the playground is a signed-in tool (its page sits behind the
+    // login guard), so an anonymous caller is refused outright rather than served
+    // the heuristic mode.
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     const body = await req.json().catch(() => ({}));
     const text = body.text;
     if (typeof text !== 'string' || !text.trim()) return Response.json({ error: 'text is required' }, { status: 400 });
@@ -18,7 +22,6 @@ export default async function(req) {
 
     let deep = false;
     if (body.deep === true) {
-      if (!user) return Response.json({ error: 'Sign in to use deep analysis' }, { status: 401 });
       const since = new Date(Date.now() - 86400000).toISOString();
       const used = await base44.asServiceRole.entities.PromptGuardEvent.filter({ user_id: user.id, mode: 'deep', created_date: { $gte: since } });
       if (used.length >= DEEP_DAILY_LIMIT) return Response.json({ error: 'Daily deep-analysis limit reached' }, { status: 429 });
