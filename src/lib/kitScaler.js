@@ -1,4 +1,4 @@
-// Setting(T) = 1 + A0 / ln(T), from Doug's paper. A dial, not a theory.
+// Setting(T) = 1 + A0 / ln(T). A dial, not a theory.
 
 export const DEFAULT_A0 = 314;
 export const X_MIN = 2;
