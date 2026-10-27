@@ -4,6 +4,14 @@ import { HELP_ARTICLES } from '../../shared/supportHelp.ts';
 import { openTicket } from '../../shared/supportIntake.ts';
 import { verifyChallenge } from '../../shared/captcha.ts';
 import { isPaidSubscriber } from '../../shared/planAccess.ts';
+import {
+  GUARD_RULES,
+  INJECTION_REFUSAL,
+  frameUntrusted,
+  guardChatReply,
+  sanitize,
+  scanChatMessage
+} from '../../shared/chatGuard.ts';
 
 // The helper answers from the same articles the ticket automation, the help centre
 // and the support agent use: base44/shared/supportHelp.ts. There is no second copy.
@@ -98,6 +106,25 @@ export default async function (req) {
         });
       }
 
+      // A message that is aimed at the helper instead of the app is refused here,
+      // before the harness and before any credit: nothing is called or spent. The
+      // detector is shared with the support assistant (base44/shared/chatGuard.ts).
+      const chatScan = scanChatMessage(question);
+      if (chatScan.verdict === 'block') {
+        await audit(base44, {
+          action: 'answer',
+          gate: 'safety_check',
+          decision: 'blocked',
+          reason: `the message tried to instruct the helper (${chatScan.categories.join(', ')}), so no model was called and nothing was spent`,
+          actor: 'agent'
+        });
+        return Response.json({
+          reply: INJECTION_REFUSAL,
+          blocked_injection: true,
+          can_open_ticket: true
+        });
+      }
+
       // The harness decides before anything is said or spent: the tool gate, the
       // owner's kill switch and the audit log. A refusal stops the answer instead
       // of quietly spending the credit, and the person is told what to do next.
@@ -126,6 +153,10 @@ export default async function (req) {
 
       const articles = HELP_ARTICLES.map((a) => `- ${a.title}: ${a.text}`).join('\n');
 
+      // A fresh secret token lives in this one prompt only. If it ever comes
+      // back in the reply, the model was talked into repeating its instructions.
+      const canary = `SIFT-${crypto.randomUUID().slice(0, 8)}`;
+
       const reply = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are the in-app helper for SIFT AI, a consumer device checker that runs in the browser. You help a normal, non-technical person understand a scan they just ran and what to do next.
 
@@ -140,15 +171,32 @@ Rules you must follow:
 - You only ever see the current user's own result. Never claim knowledge of anyone else's scans or tickets.
 - Keep it to about four sentences, then offer the next step (Allow, Block / uninstall, Watch, or open a ticket).
 
+${GUARD_RULES.replace('{{canary}}', canary)}
+
 Help articles:
 ${articles}
 
-Where the user is: ${page || 'the app'}
-What is on screen for them right now: ${context || 'nothing in particular'}
+Where the user is: ${sanitize(page || 'the app', 60)}
+What is on screen for them right now:
+${frameUntrusted('untrusted_context', context || 'nothing in particular', 900)}
 
-The user asks: ${question}`,
+${frameUntrusted('untrusted_question', question, 700)}`,
         model: 'gemini_3_flash'
       });
+
+      // Nothing reaches the screen unchecked: a link, a download, a fake system
+      // tag or a leaked token replaces the whole reply with the safe one.
+      const checked = guardChatReply(reply, canary);
+      if (checked.replaced) {
+        await audit(base44, {
+          action: 'answer',
+          gate: 'safety_check',
+          decision: 'blocked',
+          reason: `the model reply was held back (${checked.reasons.join(', ')})`,
+          actor: 'agent'
+        });
+        return Response.json({ reply: checked.text, held_back: true, can_open_ticket: true });
+      }
 
       await audit(base44, {
         action: 'answer',
@@ -159,7 +207,7 @@ The user asks: ${question}`,
         detail: `asked from ${page || 'the app'}`
       });
 
-      return Response.json({ reply, can_open_ticket: true });
+      return Response.json({ reply: checked.text, can_open_ticket: true });
     }
 
     if (action === 'open_ticket') {

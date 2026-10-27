@@ -2,6 +2,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { admit, admitSpend, audit } from '../../shared/supportHarness.ts';
 import { HELP_ARTICLES, helpBlock, searchHelp } from '../../shared/supportHelp.ts';
 import { isPaidSubscriber } from '../../shared/planAccess.ts';
+import {
+  GUARD_RULES,
+  INJECTION_REFUSAL,
+  frameUntrusted,
+  guardChatReply,
+  scanChatMessage
+} from '../../shared/chatGuard.ts';
 
 const esc = (s: string) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 
@@ -34,6 +41,25 @@ Deno.serve(async (req) => {
           paid_only: true
         });
       }
+
+      // A message aimed at the assistant instead of the app is refused here,
+      // before the harness and before any credit. The detector is shared with the
+      // in-app helper (base44/shared/chatGuard.ts).
+      const chatScan = scanChatMessage(text);
+      if (chatScan.verdict === 'block') {
+        await audit(base44, {
+          action: 'support_chat',
+          gate: 'safety_check',
+          decision: 'blocked',
+          reason: `the message tried to instruct the assistant (${chatScan.categories.join(', ')}), so no model was called and nothing was spent`,
+          actor: 'agent'
+        });
+        return Response.json({ reply: INJECTION_REFUSAL, blocked_injection: true });
+      }
+
+      // A fresh secret token lives in this one prompt only. If it ever comes
+      // back in the reply, the model was talked into repeating its instructions.
+      const canary = `SIFT-${crypto.randomUUID().slice(0, 8)}`;
 
       // The harness decides before anything is said or spent: the tool gate, the
       // owner's kill switch and the audit log. A refusal stops the reply and
@@ -74,11 +100,27 @@ Rules you must follow:
 - Never name any individual: you are the SIFT AI support team.
 - Keep it short, plain and calm, with no jargon.
 
+${GUARD_RULES.replace('{{canary}}', canary)}
+
 Help articles:
 ${helpBlock(articles)}
 
-The person asks: ${text}`,
+${frameUntrusted('untrusted_question', text, 2000)}`,
       });
+
+      // Nothing reaches the screen unchecked: a link, a download, a fake system
+      // tag or a leaked token replaces the whole reply with the safe one.
+      const checked = guardChatReply(reply, canary);
+      if (checked.replaced) {
+        await audit(base44, {
+          action: 'support_chat',
+          gate: 'safety_check',
+          decision: 'blocked',
+          reason: `the model reply was held back (${checked.reasons.join(', ')})`,
+          actor: 'agent'
+        });
+        return Response.json({ reply: checked.text, held_back: true });
+      }
 
       await audit(base44, {
         action: 'support_chat',
@@ -88,7 +130,7 @@ The person asks: ${text}`,
         actor: 'agent'
       });
 
-      return Response.json({ reply });
+      return Response.json({ reply: checked.text });
     }
 
     if (action === 'feedback') {
