@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LimitsNote from '@/components/kit/LimitsNote';
+import AgentGuarantees from '@/components/home/AgentGuarantees';
 import { SCANNER_PLANS } from '@/lib/scannerPlans';
 
 const CHECKS = [
@@ -160,6 +161,8 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <AgentGuarantees />
 
       <section className="border-t border-border bg-secondary/5">
         <div className="mx-auto max-w-6xl px-4 py-16">
