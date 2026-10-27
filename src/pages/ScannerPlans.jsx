@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Shield, AlertTriangle, Info } from 'lucide-react';
+import { Shield, AlertTriangle, Info, Gift } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import PlanTierCard from '@/components/plans/PlanTierCard';
@@ -15,7 +15,7 @@ export default function ScannerPlans() {
   const params = new URLSearchParams(window.location.search);
   const canceled = params.get('checkout') === 'canceled';
 
-  const { unlocked, isAuthed } = useScannerUnlocks();
+  const { unlocked, isAuthed, isFounding } = useScannerUnlocks();
 
   const { data: stripe, isLoading: stripeLoading } = useQuery({
     queryKey: ['stripe-status'],
@@ -24,13 +24,29 @@ export default function ScannerPlans() {
     retry: false,
   });
 
+  // The founding offer: everything the app sells is free for the first 50 accounts,
+  // and buying stays closed while places remain.
+  const { data: founding } = useQuery({
+    queryKey: ['founding-offer'],
+    queryFn: async () => (await base44.entities.FoundingOffer.list('-created_date', 1))[0] || null,
+    staleTime: 60000,
+    retry: false,
+  });
+
+  const foundingOpen = founding?.open === true;
+  const foundingLeft = founding ? Math.max(0, Number(founding.limit || 50) - Number(founding.claimed || 0)) : 0;
+
   // The paid buttons follow the answer Stripe itself gave to the server: either not
   // connected, or connected but not yet able to take a charge. While that answer is
   // still in flight nothing is locked or warned about — treating "not answered yet"
   // as "not connected" is what made the page flash a locked button.
   const stripeConnected = stripe?.connected === true;
   const canPay = stripeConnected && stripe?.charges_enabled !== false;
-  const blockedReason = stripeLoading || canPay
+  // The founding offer comes first: while free places remain the paid cards say so,
+  // rather than offering a checkout the server would refuse.
+  const blockedReason = foundingOpen
+    ? 'Founding places still free'
+    : stripeLoading || canPay
     ? null
     : stripeConnected
     ? 'Payments not switched on yet'
@@ -47,7 +63,13 @@ export default function ScannerPlans() {
     },
     onError: (error) => {
       const code = error.response?.data?.error;
-      toast.error(code === 'stripe_not_connected' ? 'Stripe not connected yet.' : error.message);
+      toast.error(
+        code === 'founding_places_open'
+          ? 'Free founding places are still open, so nothing is for sale yet.'
+          : code === 'stripe_not_connected'
+          ? 'Stripe not connected yet.'
+          : error.message
+      );
     },
   });
 
@@ -86,6 +108,27 @@ export default function ScannerPlans() {
             something that already came up. Card payments are handled by Stripe — you do not need an account to pay.
           </p>
         </div>
+
+        {foundingOpen && (
+          <div className="mt-6 flex items-start gap-3 rounded-xl border border-primary/40 bg-primary/10 p-4">
+            <Gift className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+            <p className="font-mono text-xs leading-relaxed text-primary">
+              Founding offer: everything the app sells is free for the first 50 accounts — Pro and the one-time Device
+              Check. {foundingLeft === 1 ? 'One place is' : `${foundingLeft} places are`} left. Buying stays closed while
+              the places last and opens by itself once they are gone{isAuthed ? '.' : ' — sign up to claim one.'}
+            </p>
+          </div>
+        )}
+
+        {isFounding && (
+          <div className="mt-6 flex items-start gap-3 rounded-xl border border-primary/40 bg-secondary/20 p-4">
+            <Shield className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+            <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+              You hold one of the founding places: Pro and the Device Check are unlocked on this account, free, for good.
+              Nothing to renew and nothing to cancel.
+            </p>
+          </div>
+        )}
 
         {canceled && (
           <div className="mt-6 flex items-start gap-3 rounded-xl border border-border bg-secondary/20 p-4">

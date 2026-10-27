@@ -18,6 +18,16 @@ export default function SubscriptionPage() {
     initialData: [],
   });
 
+  // While free founding places remain, buying is closed — the same offer the plans
+  // page shows and the server enforces.
+  const { data: founding } = useQuery({
+    queryKey: ['founding-offer'],
+    queryFn: async () => (await base44.entities.FoundingOffer.list('-created_date', 1))[0] || null,
+    staleTime: 60000,
+    retry: false,
+  });
+  const foundingOpen = founding?.open === true;
+
   const rawPlan = subscriptions[0]?.plan || 'free';
   const currentPlan = PLANS[rawPlan] ? rawPlan : (rawPlan === 'enterprise' ? 'pro' : 'free');
 
@@ -27,7 +37,14 @@ export default function SubscriptionPage() {
       if (res.data?.redirectUrl) window.location.href = res.data.redirectUrl;
       else throw new Error(res.data?.error || "We couldn't start checkout. Please try again.");
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error) => {
+      const code = error.response?.data?.error || error.message;
+      toast.error(
+        code === 'founding_places_open'
+          ? 'Free founding places are still open, so nothing is for sale yet.'
+          : error.message
+      );
+    },
   });
 
   const handleSelectPlan = (planKey) => {
@@ -44,6 +61,14 @@ export default function SubscriptionPage() {
           <Link to="/plans" className="text-primary hover:underline">See all plans</Link>
         </p>
       </div>
+
+      {foundingOpen && (
+        <p className="font-mono text-xs leading-relaxed text-primary">
+          Free founding places are still open, so upgrades wait until they are taken — the first 50 accounts get
+          everything the app sells, free.{' '}
+          <Link to="/plans" className="underline">See the offer</Link>
+        </p>
+      )}
 
       <Card className={`border-2 ${currentPlan === 'pro' ? 'border-primary/30' : 'border-border'}`}>
         <CardContent className="pt-5 pb-5 flex items-center justify-between gap-4">

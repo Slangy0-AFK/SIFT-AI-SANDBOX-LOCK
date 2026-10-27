@@ -4,6 +4,7 @@ import { getTier } from '../../shared/scannerPlans.ts';
 import { firstRecord } from '../../shared/scannerFulfillment.ts';
 import { appBaseUrl } from '../../shared/stripeEnv.ts';
 import { stripeCredentials } from '../../shared/stripeConnect.ts';
+import { offerState } from '../../shared/foundingSeats.ts';
 
 // Starts a Stripe Checkout Session for one scanner tier.
 // Open to guests on purpose: paying must not require an account first. The tier
@@ -26,6 +27,17 @@ export default async function (req) {
 
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
+
+    // The founding offer runs first: while free places remain, buying is shut so
+    // nobody pays for what is still being given away, and it opens by itself the
+    // moment the last place is taken. Decided from the places on record, never from
+    // anything the browser sends.
+    const offer = await offerState(base44);
+    if (offer.open) {
+      console.log(`[scannerCheckout] refused: ${offer.left} founding places remain, so buying is still closed`);
+      return Response.json({ error: 'founding_places_open', places_left: offer.left }, { status: 409 });
+    }
+
     const appUrl = appBaseUrl(req);
 
     // Which Stripe account payments run on: the connected account once the owner

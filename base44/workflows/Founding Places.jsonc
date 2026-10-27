@@ -1,0 +1,42 @@
+{
+  "name": "Founding Places",
+  "description": "Gives the first fifty accounts created since the offer opened a free founding place with everything the app sells unlocked. The paid checkout opens by itself once the places are gone.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "app_user_auth",
+      "events": [
+        "signup",
+        "login"
+      ]
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "founding_places",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "claim_a_place": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "claimFoundingPlace",
+            "args": {
+              "user_id": "${ .trigger.user_id }",
+              "email": "${ .trigger.email }",
+              "event_type": "${ .trigger.event_type }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Claim a founding place",
+            "description": "Only for accounts created since the offer opened"
+          }
+        }
+      }
+    ]
+  }
+}

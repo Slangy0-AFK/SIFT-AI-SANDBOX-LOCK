@@ -10,13 +10,18 @@ export default function useScannerUnlocks() {
     queryFn: async () => {
       const authed = await base44.auth.isAuthenticated();
       if (!authed) return { authed: false, subs: [], purchases: [] };
-      const [subs, purchases] = await Promise.all([
+      const me = await base44.auth.me();
+      const [subs, purchases, places] = await Promise.all([
         base44.entities.Subscription.list('-created_date', 5),
-        base44.entities.ScannerPurchase.filter({ status: 'paid' }, { sort: '-created_date', limit: 20 })
+        base44.entities.ScannerPurchase.filter({ status: 'paid' }, { sort: '-created_date', limit: 20 }),
+        // This account's own founding place, named explicitly so an admin reading the
+        // page still only ever sees their own. The app decides on the server whether a
+        // place was granted; this only reads what it decided.
+        base44.entities.FoundingPlace.filter({ user_id: me.id, honored: true })
       ]);
-      return { authed: true, subs: subs || [], purchases: purchases.items || [] };
+      return { authed: true, subs: subs || [], purchases: purchases.items || [], places: places.items || [] };
     },
-    initialData: { authed: false, subs: [], purchases: [] },
+    initialData: { authed: false, subs: [], purchases: [], places: [] },
     retry: false
   });
 
@@ -30,9 +35,18 @@ export default function useScannerUnlocks() {
   );
   if (livePlan) unlocked.add('pro');
 
+  // A founding place unlocks everything the app sells, with no payment behind it:
+  // the place was granted, not bought.
+  const isFounding = (data.places || []).length > 0;
+  if (isFounding) {
+    unlocked.add('pro');
+    unlocked.add('device_check');
+  }
+
   return {
     isLoading,
     isAuthed: data.authed === true,
+    isFounding,
     isPro: unlocked.has('pro'),
     hasDeviceCheck: unlocked.has('device_check'),
     // The Full Device Audit is no longer sold: everything it included is in
