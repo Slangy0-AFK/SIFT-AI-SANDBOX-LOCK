@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 const NAV = [
   { label: 'Home', to: '/' },
-  { label: 'Phone Scanner', to: '/scan' },
+  { label: 'Device Scanner', to: '/scan' },
   { label: 'My Devices', to: '/devices' },
   { label: 'Allow & Block', to: '/allow-block' },
   { label: 'History', to: '/history' },

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 const STEPS = [
   {
     icon: ScanLine,
-    title: 'Send it to the Phone Scanner',
+    title: 'Send it to the Device Scanner',
     text: 'Submit a link, a domain, a file hash or a message you want checked.'
   },
   {
@@ -115,7 +115,7 @@ export default function About() {
         <div className="mt-8 rounded-2xl border border-border bg-card p-6">
           <h3 className="font-heading text-base font-bold">What a check does not do</h3>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            <li>It does not scan a whole phone on its own.</li>
+            <li>It does not scan a whole device on its own.</li>
             <li>It does not watch a device in real time.</li>
             <li>It does not guarantee that a device is clean. “No hits in the checks run” means no hits in those checks, not a guarantee.</li>
           </ul>

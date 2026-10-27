@@ -75,7 +75,7 @@ export default function Home() {
           <span className="font-mono text-xs tracking-[0.3em] text-primary">SIFT AI</span>
           <h1 className="mt-4 font-heading text-3xl font-bold tracking-tight sm:text-5xl">Find the AI you did not install.</h1>
           <p className="mx-auto mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">
-            SIFT AI is a personal checker for rogue and unauthorised AI on the devices you already own. Its main tool is the Phone
+            SIFT AI is a personal checker for rogue and unauthorised AI on the devices you already own. Its main tool is the Device
             Scanner: upload or paste the app, the permission screen, the link or the message you are unsure about, and get a verdict
             you can act on.
           </p>
@@ -109,7 +109,7 @@ export default function Home() {
           <LimitsNote
             items={[
               'One item at a time: paste or upload a single link, message, file or app name.',
-              'Runs in your browser, so there is nothing to install on your phone.',
+              'Runs in your browser, so there is nothing to install on your device.',
               'Results come back in plain language, with no jargon to decode.',
               'Honest by design: a check never calls a device clean or safe.',
             ]}
@@ -206,7 +206,7 @@ export default function Home() {
             <Link to="/scan">
               <Button variant="outline" className="w-full gap-2 sm:w-auto">
                 <ScanLine className="h-4 w-4" />
-                Open the Phone Scanner
+                Open the Device Scanner
               </Button>
             </Link>
           </div>

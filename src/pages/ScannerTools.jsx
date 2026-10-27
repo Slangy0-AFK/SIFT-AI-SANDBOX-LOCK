@@ -29,7 +29,7 @@ export default function ScannerTools() {
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/scan">
-              <Button size="sm" variant="outline" className="font-mono text-xs">Phone Scanner</Button>
+              <Button size="sm" variant="outline" className="font-mono text-xs">Device Scanner</Button>
             </Link>
             <Link to="/plans">
               <Button size="sm" variant="outline" className="font-mono text-xs">Plans</Button>
@@ -85,7 +85,7 @@ export default function ScannerTools() {
               device is clean or safe.
             </p>
             <p className="font-mono text-xs leading-relaxed text-muted-foreground">
-              SIFT AI is a website, not an app on your phone. A browser cannot look through a whole device by itself, so these
+              SIFT AI is a website, not an app on your device. A browser cannot look through a whole device by itself, so these
               checks only cover what you upload or paste.
             </p>
           </div>

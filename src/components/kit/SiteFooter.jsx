@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const PAGES = [
   ['/', 'Home'],
-  ['/scan', 'Phone Scanner'],
+  ['/scan', 'Device Scanner'],
   ['/devices', 'My Devices'],
   ['/allow-block', 'Allowlist & Blocklist'],
   ['/history', 'Your checks'],
@@ -19,7 +19,7 @@ export default function SiteFooter() {
         <div>
           <p className="font-heading text-sm font-bold">SIFT AI</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            A personal checker for rogue and unauthorised AI on the devices you own. The Phone Scanner is its main tool.
+            A personal checker for rogue and unauthorised AI on the devices you own. The Device Scanner is its main tool.
           </p>
         </div>
 

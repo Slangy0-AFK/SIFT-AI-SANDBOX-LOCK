@@ -46,7 +46,7 @@ export default function Support() {
         <SupportCenter submitFormOnPage />
 
         <Link to="/scan" className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
-          Back to the Phone Scanner <ArrowRight className="h-3.5 w-3.5" />
+          Back to the Device Scanner <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </main>
 

@@ -44,7 +44,7 @@ export function listTypeLabel(itemType) {
 }
 
 export const DEVICE_TYPES = [
-  { id: 'android', label: 'Android phone' },
+  { id: 'android', label: 'Android' },
   { id: 'ios', label: 'iPhone' },
   { id: 'tablet', label: 'Tablet' },
   { id: 'desktop', label: 'Laptop or desktop' },
@@ -90,4 +90,4 @@ export function formatWhen(value) {
 }
 
 export const BROWSER_LIMIT =
-  'SIFT AI runs in your browser. It checks only the item you paste or upload, and a browser cannot look through a whole phone by itself. Nothing here says a device is clean or safe.';
+  'SIFT AI runs in your browser. It checks only the item you paste or upload, and a browser cannot look through a whole device by itself. Nothing here says a device is clean or safe.';

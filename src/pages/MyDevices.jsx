@@ -94,7 +94,7 @@ export default function MyDevices() {
             <Smartphone className="mx-auto h-6 w-6 text-primary" />
             <p className="mt-3 font-heading text-sm font-bold">No devices yet</p>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Add the phone, tablet or laptop you want to keep an eye on. Then check a link, a hash or a message and file it
+              Add the device you want to keep an eye on. Then check a link, a hash or a message and file it
               against that device, so its checks stay together in one place.
             </p>
           </div>

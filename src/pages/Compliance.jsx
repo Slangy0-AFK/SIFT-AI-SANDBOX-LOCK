@@ -129,7 +129,7 @@ export default function Compliance() {
 
         <Section title="What you agree to when you check something">
           <p>
-            Only check your own device, or an item you have permission to check. Do not check someone else&apos;s phone, account or
+            Only check your own device, or an item you have permission to check. Do not check someone else&apos;s device, account or
             files without their permission.
           </p>
           <p>

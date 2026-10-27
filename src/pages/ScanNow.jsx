@@ -44,13 +44,13 @@ export default function ScanNow() {
     <div className="min-h-screen bg-background text-foreground">
       <main className="mx-auto max-w-5xl space-y-10 px-4 py-12">
         <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">Phone Scanner</h1>
+          <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">Device Scanner</h1>
           <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
             Bring the thing you are unsure about: a link, a domain, a file hash, a message, an app name or a permission screen. You
             get one of three answers: nothing is known against it, unknown, or flagged with the evidence.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
-            {['Runs in your browser', 'Nothing is installed on your phone', 'Your checks stay on your account'].map((line) => (
+            {['Runs in your browser', 'Nothing is installed on your device', 'Your checks stay on your account'].map((line) => (
               <span key={line} className="rounded-md border border-border bg-secondary/30 px-2.5 py-1 font-mono text-xs text-muted-foreground">
                 {line}
               </span>
@@ -60,7 +60,7 @@ export default function ScanNow() {
 
         <div className="rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4">
           <p className="font-mono text-xs leading-relaxed text-amber-400">
-            Please read this: SIFT AI is a website, not an app on your phone, and a browser cannot look through a whole phone by
+            Please read this: SIFT AI is a website, not an app on your device, and a browser cannot look through a whole device by
             itself. It checks only the single item you upload or paste. It never claims a device is clean or safe, and it never
             needs your passwords, one-time codes, card details, phone number, IMEI or serial numbers.
           </p>
@@ -136,7 +136,7 @@ export default function ScanNow() {
         <p className="font-mono text-xs leading-relaxed text-muted-foreground">{HONEST_NOTE}</p>
       </main>
 
-      <HelperAgent page="Phone Scanner (/scan)" />
+      <HelperAgent page="Device Scanner (/scan)" />
     </div>
   );
 }

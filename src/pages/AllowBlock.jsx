@@ -98,7 +98,7 @@ export default function AllowBlock() {
         <p className="font-mono text-xs leading-relaxed text-muted-foreground">
           Your lists affect your own checks only. See them in action on the{' '}
           <Link to="/scan" className="text-primary hover:underline">
-            Phone Scanner
+            Device Scanner
           </Link>
           , and everything you have run in{' '}
           <Link to="/history" className="text-primary hover:underline">

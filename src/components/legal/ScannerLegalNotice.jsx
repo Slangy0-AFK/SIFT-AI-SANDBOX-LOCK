@@ -22,7 +22,7 @@ export default function ScannerLegalNotice() {
           look-up. SIFT AI uploads nothing to it for you.
         </li>
         <li>
-          · Only check your own device, or an item you had permission to check. Do not check someone else&apos;s phone without their
+          · Only check your own device, or an item you had permission to check. Do not check someone else&apos;s device without their
           permission.
         </li>
       </ul>

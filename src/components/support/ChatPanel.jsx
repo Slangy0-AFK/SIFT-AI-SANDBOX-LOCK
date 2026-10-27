@@ -11,7 +11,7 @@ const QUICK = [
   'What does my verdict mean?',
   'Something is flagged and I am worried',
   'I paid and a tier is still locked',
-  'Can SIFT AI scan my whole phone?'
+  'Can SIFT AI scan my whole device?'
 ];
 
 const GREETING =

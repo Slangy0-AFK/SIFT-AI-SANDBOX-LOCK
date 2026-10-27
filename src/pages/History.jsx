@@ -140,12 +140,12 @@ export default function History() {
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
               {counts?.total
                 ? 'Try "Everything", or a different kind of check.'
-                : 'Run your first check on the Phone Scanner: a link, a domain, a file hash or a message.'}
+                : 'Run your first check on the Device Scanner: a link, a domain, a file hash or a message.'}
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
               <Link to="/scan">
                 <Button className="gap-2 font-mono text-xs">
-                  <ScanLine className="h-3.5 w-3.5" /> Open the Phone Scanner
+                  <ScanLine className="h-3.5 w-3.5" /> Open the Device Scanner
                 </Button>
               </Link>
               {counts?.total ? (

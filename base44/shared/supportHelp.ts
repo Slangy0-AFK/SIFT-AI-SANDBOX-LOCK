@@ -31,7 +31,7 @@ export const HELP_ARTICLES = [
   {
     id: 'browser_limits',
     title: 'What a browser can and cannot check',
-    text: 'SIFT AI runs in your browser. It checks the app name, permission screen, link, hash or message you upload or paste. It cannot look through a whole phone by itself, and it cannot see things you have not given it.',
+    text: 'SIFT AI runs in your browser. It checks the app name, permission screen, link, hash or message you upload or paste. It cannot look through a whole device by itself, and it cannot see things you have not given it.',
     fix_steps: [
       'Bring the exact app name, permission screen, link, hash or message you want checked.',
       'If you need the whole device looked at, book a Device Check on the plans page: the app list, where the device connects, the evidence and a written fix plan are all included in it.'
