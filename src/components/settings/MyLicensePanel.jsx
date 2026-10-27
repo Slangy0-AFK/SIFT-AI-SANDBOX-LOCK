@@ -67,11 +67,18 @@ export default function MyLicensePanel() {
 
             <p className="text-sm text-muted-foreground">{data.unlocks}</p>
 
-            <Link to="/license">
-              <Button variant="outline" className="text-xs">
-                Open my license
-              </Button>
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <Link to="/license">
+                <Button variant="outline" className="text-xs">
+                  Open my license
+                </Button>
+              </Link>
+              <Link to="/plugin">
+                <Button variant="outline" className="text-xs">
+                  Download plug-in
+                </Button>
+              </Link>
+            </div>
           </>
         )}
       </CardContent>

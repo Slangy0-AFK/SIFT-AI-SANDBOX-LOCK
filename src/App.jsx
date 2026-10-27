@@ -64,6 +64,7 @@ import RefundPolicy from '@/pages/RefundPolicy';
 import AcceptInvite from '@/pages/AcceptInvite';
 import StripeConnect from '@/pages/StripeConnect';
 import License from '@/pages/License';
+import PluginDownload from '@/pages/PluginDownload';
 // Add page imports here
 
 function AppRoutes() {
@@ -97,6 +98,7 @@ function AppRoutes() {
           <Route path="/thank-you" element={<PageTransition><ThankYou /></PageTransition>} />
           <Route path="/scan" element={<PageTransition><ScanNow /></PageTransition>} />
           <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
+          <Route path="/plugin" element={<PageTransition><PluginDownload /></PageTransition>} />
           <Route path="/stripe-connect" element={<PageTransition><StripeConnect /></PageTransition>} />
         </Route>
         <Route path="/plans" element={<PageTransition><ScannerPlans /></PageTransition>} />

@@ -218,6 +218,9 @@ export default function ScannerPlans() {
           <Link to="/license" className="font-mono text-xs font-medium text-primary underline underline-offset-4">
             {isAuthed ? 'Open my license' : 'Sign in to see my key'}
           </Link>
+          <Link to="/plugin" className="font-mono text-xs font-medium text-primary underline underline-offset-4">
+            Download plug-in
+          </Link>
         </div>
 
         {licenseTerms && (

@@ -29,7 +29,7 @@
     },
     "plan_label": {
       "type": "string",
-      "description": "Human name of what was bought, e.g. SiftAI Pro (monthly)"
+      "description": "Human name of what was bought, e.g. SIFT AI Pro (monthly)"
     },
     "order_number": {
       "type": "string",
@@ -41,7 +41,11 @@
     },
     "key_hash": {
       "type": "string",
-      "description": "HMAC-SHA256 of the key. This is what a key is matched against; the key itself is never stored in the clear."
+      "description": "HMAC-SHA256 of the key under a server-side secret. This is what a key is matched against; the key itself is never stored in the clear."
+    },
+    "key_sha256": {
+      "type": "string",
+      "description": "Plain SHA-256 of the key in its canonical shape. The buyer's own product works this out for itself and sends it to the plug-in check in place of the key, so a key never travels. It cannot be turned back into a key. Filled in for keys issued earlier the first time one is checked."
     },
     "key_encrypted": {
       "type": "string",

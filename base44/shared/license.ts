@@ -146,6 +146,64 @@ export async function openLicenseKey(blob: any) {
   }
 }
 
+// The plug-in's own handle on a key: a plain SHA-256 of the key in its canonical
+// shape, which the buyer's own product works out for itself and sends in place of
+// the key, so a key never travels to a check. It cannot be turned back into a key.
+export function canonicalLicenseKey(raw: any) {
+  return normalizeLicenseKey(raw) || String(raw || '').trim().toUpperCase();
+}
+
+export async function keySha256(raw: any) {
+  const value = canonicalLicenseKey(raw);
+  if (!value) return '';
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+export async function licenseBySha256(base44: any, hash: any) {
+  const value = String(hash || '').trim().toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(value)) return null;
+  return first(await base44.asServiceRole.entities.License.filter({ key_sha256: value }));
+}
+
+// The key itself, for a caller that still hands one over: matched against the
+// fingerprint stored when it was issued. The hash the plug-in sends is filled in
+// here once, so the next check of that key needs nothing but the hash.
+export async function licenseByRawKey(base44: any, rawKey: any) {
+  const key = normalizeLicenseKey(rawKey);
+  if (!key) return null;
+  const hash = await fingerprint(key);
+  if (!hash) return null;
+  const license = first(await base44.asServiceRole.entities.License.filter({ key_hash: hash }));
+  if (!license) return null;
+  if (!license.key_sha256) {
+    await base44.asServiceRole.entities.License
+      .update(license.id, { key_sha256: await keySha256(key) })
+      .catch((error) => console.warn('[license] the plug-in hash could not be stored:', error && error.message));
+  }
+  return license;
+}
+
+// Keys issued before the plug-in existed carry no hash of their own. Their
+// encrypted copy is opened once, here, so an older key works with the plug-in
+// without its owner doing anything.
+export async function backfillKeySha256(base44: any, limit = 20) {
+  const all = rows(await base44.asServiceRole.entities.License.filter({}, { limit }));
+  const pending = all.filter((license: any) => !license.key_sha256);
+  let filled = 0;
+  for (const license of pending) {
+    const key = await openLicenseKey(license.key_encrypted);
+    if (!key) continue;
+    try {
+      await base44.asServiceRole.entities.License.update(license.id, { key_sha256: await keySha256(key) });
+      filled += 1;
+    } catch (error) {
+      console.warn('[license] the plug-in hash could not be stored:', error && error.message);
+    }
+  }
+  return filled;
+}
+
 // A key bought for a set term ends by date as well as by status: a year paid
 // upfront answers active for that year and expired afterwards, whether or not the
 // stored status has been tidied up yet.
@@ -461,7 +519,7 @@ export async function adminLicenseList(base44: any, limit = 100) {
 // Activation is the one endpoint a stranger can reach, so it is counted per
 // connection. A setup that activates once is nowhere near this; a script
 // guessing keys stops here.
-export async function admitValidation(base44: any, clientKey: any, cap = 60) {
+export async function admitValidation(base44: any, clientKey: any, cap = 60, kind = 'license_try') {
   const address = String(clientKey || '').trim();
   if (!address || address === 'unknown') return true;
 
@@ -469,12 +527,12 @@ export async function admitValidation(base44: any, clientKey: any, cap = 60) {
   const bucket = new Date().toISOString().slice(0, 10);
 
   const page = await base44.asServiceRole.entities.DailyCounter.filter(
-    { kind: 'license_try', owner_key: ownerKey, bucket },
+    { kind, owner_key: ownerKey, bucket },
     { limit: cap }
   );
   const seen = rows(page).length;
   if (seen >= cap || page?.has_more === true) return false;
 
-  await base44.asServiceRole.entities.DailyCounter.create({ kind: 'license_try', owner_key: ownerKey, bucket });
+  await base44.asServiceRole.entities.DailyCounter.create({ kind, owner_key: ownerKey, bucket });
   return true;
 }
