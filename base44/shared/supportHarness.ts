@@ -26,7 +26,9 @@ export const ALLOWED_ACTIONS = [
   // The two in-app chat agents, and the one automatic reply for a ticket.
   'answer',
   'support_chat',
-  'auto_reply'
+  'auto_reply',
+  // One named step of a ticket's own lifecycle, asked for by its workflow.
+  'lifecycle_step'
 ];
 
 // How many of each message the automation may ever put on one ticket.

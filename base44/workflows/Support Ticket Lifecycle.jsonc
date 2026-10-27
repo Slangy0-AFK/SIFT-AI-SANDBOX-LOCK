@@ -1,0 +1,154 @@
+{
+  "description": "One pass per ticket, on its own clock: triage, one ask for the missing detail, a check on whether the fix worked, an escalation check, and the seven-day silent close. Every step is gated, logged, and can only run if the ticket still needs it.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "SupportTicket"
+    }
+  },
+  "name": "Support Ticket Lifecycle",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "support_ticket_lifecycle",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "triage_ticket": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "supportAutomation",
+            "args": {
+              "action": "lifecycle_step",
+              "step": "triage",
+              "ticket_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "let_them_read",
+          "x-base44": {
+            "title": "Triage the ticket",
+            "description": "Owner, priority and status written down"
+          }
+        }
+      },
+      {
+        "let_them_read": {
+          "wait": "PT1H",
+          "then": "ask_for_the_detail",
+          "x-base44": {
+            "title": "Give them an hour",
+            "description": "Time to read the first reply and try it"
+          }
+        }
+      },
+      {
+        "ask_for_the_detail": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "supportAutomation",
+            "args": {
+              "action": "lifecycle_step",
+              "step": "ask_detail",
+              "ticket_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "wait_a_day_for_that_detail",
+          "x-base44": {
+            "title": "Ask for the one missing detail",
+            "description": "Once, and only if something is missing"
+          }
+        }
+      },
+      {
+        "wait_a_day_for_that_detail": {
+          "wait": "P1D",
+          "then": "ask_if_it_is_fixed",
+          "x-base44": {
+            "title": "Wait a day",
+            "description": "Their chance to send the detail"
+          }
+        }
+      },
+      {
+        "ask_if_it_is_fixed": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "supportAutomation",
+            "args": {
+              "action": "lifecycle_step",
+              "step": "fix_check",
+              "ticket_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "wait_for_their_answer",
+          "x-base44": {
+            "title": "Ask whether the fix worked",
+            "description": "Once, if they have not replied"
+          }
+        }
+      },
+      {
+        "wait_for_their_answer": {
+          "wait": "P1D",
+          "then": "check_for_escalation",
+          "x-base44": {
+            "title": "Wait for their answer",
+            "description": "A day to reply"
+          }
+        }
+      },
+      {
+        "check_for_escalation": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "supportAutomation",
+            "args": {
+              "action": "lifecycle_step",
+              "step": "escalate",
+              "ticket_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "wait_a_week",
+          "x-base44": {
+            "title": "Escalate if two replies went unresolved",
+            "description": "Hands the ticket to a person"
+          }
+        }
+      },
+      {
+        "wait_a_week": {
+          "wait": "P7D",
+          "then": "close_if_still_silent",
+          "x-base44": {
+            "title": "Wait a week",
+            "description": "The last chance to reply"
+          }
+        }
+      },
+      {
+        "close_if_still_silent": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "supportAutomation",
+            "args": {
+              "action": "lifecycle_step",
+              "step": "close_if_silent",
+              "ticket_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Closing message, then close",
+            "description": "Only after seven days of silence"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -24,7 +24,7 @@ import { emailPlainValue } from '../../shared/emailSafe.ts';
 //
 // Actions an app user may call: search (the help centre), my_tickets, open_ticket.
 // Actions only the owner or a workflow may call: sweep, respond, status, pause,
-// resume, reopen.
+// resume, reopen, lifecycle_step.
 
 const DAY_HOURS = 24;
 const CLOSE_AFTER_HOURS = 7 * DAY_HOURS;
@@ -255,6 +255,98 @@ async function respond(base44, messageId) {
   return { handled: result.acted, replied: result.acted };
 }
 
+// The named steps a ticket's own workflow asks for. The workflow decides WHEN to
+// ask; this decides whether the ticket still needs that step at all, using the
+// same rules as the sweep, so the two can never disagree or send the same thing
+// twice.
+const LIFECYCLE_KINDS = {
+  ask_detail: 'ask_detail',
+  fix_check: 'fix_check',
+  escalate: 'escalation',
+  close_if_silent: 'closing'
+};
+
+const LIFECYCLE_STEPS = ['triage', ...Object.keys(LIFECYCLE_KINDS)];
+
+async function runLifecycleStep(base44, ticketId, step) {
+  const ticket = await base44.asServiceRole.entities.SupportTicket
+    .get(ticketId)
+    .catch((e) => (e.status === 404 ? null : Promise.reject(e)));
+  if (!ticket) return { step, acted: false, reason: 'ticket not found' };
+
+  const number = ticket.ticket_number || ticketNumber(ticket.id);
+
+  // Triage: the owner id is written onto the ticket once, right after it is
+  // filed, so the person can read their own thread and their own daily ceiling
+  // counts it. A ticket sent with no account says "(guest)" and is left as it is.
+  if (step === 'triage') {
+    if (!ticket.user_id && ticket.created_by_id && !/\(guest\)$/.test(String(ticket.title || '').trim())) {
+      await base44.asServiceRole.entities.SupportTicket.update(ticket.id, { user_id: ticket.created_by_id });
+    }
+    await audit(base44, {
+      action: 'lifecycle_step',
+      gate: 'outcome',
+      decision: 'completed',
+      reason: `ticket ${number} triaged: ${ticket.priority || 'other'}, status ${ticket.status || 'open'}`,
+      ticket_id: ticket.id,
+      ticket_number: number,
+      detail: 'step triage'
+    });
+    return { step, acted: true, status: ticket.status || 'open', priority: ticket.priority || 'other' };
+  }
+
+  const kind = LIFECYCLE_KINDS[step];
+  if (!kind) return { step, acted: false, reason: 'unknown step' };
+
+  // An escalated ticket belongs to a person. A timer never closes it.
+  if (kind === 'closing' && (ticket.escalated || ticket.status === 'waiting_on_team')) {
+    return { step, acted: false, reason: `ticket ${number} is with the SIFT AI team` };
+  }
+
+  const messages = await countMessages(base44, ticket.id);
+  const decision = decideNext(ticket, messages);
+
+  if (!decision || decision.kind !== kind) {
+    await audit(base44, {
+      action: 'lifecycle_step',
+      gate: 'loop_gate',
+      decision: 'skipped',
+      reason: decision
+        ? `the ticket's next step is ${decision.kind}, not ${step}`
+        : `nothing further is needed on ${number}`,
+      ticket_id: ticket.id,
+      ticket_number: number,
+      detail: `step ${step}`
+    });
+    return { step, acted: false, reason: "not the ticket's next step", waiting_on: decision?.kind || null };
+  }
+
+  if (messages.length >= MESSAGE_CAP) {
+    await audit(base44, {
+      action: 'lifecycle_step',
+      gate: 'loop_gate',
+      decision: 'skipped',
+      reason: `this ticket already carries ${messages.length} messages, the ceiling for one ticket`,
+      ticket_id: ticket.id,
+      ticket_number: number,
+      detail: `step ${step}`
+    });
+    return { step, acted: false, reason: 'ticket message ceiling reached' };
+  }
+
+  const allowed = await admit(base44, {
+    action: 'lifecycle_step',
+    actor: 'automation',
+    ticket,
+    kind,
+    detail: `step ${step}`
+  });
+  if (!allowed.ok) return { step, acted: false, gate: allowed.gate, reason: allowed.reason };
+
+  const result = await applyAction(base44, ticket, decision);
+  return { step, acted: result.acted, kind, status: decision.status || ticket.status, reason: result.reason };
+}
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -317,7 +409,7 @@ export default async function (req) {
     }
 
     // Everything below is the owner's or a workflow's, never a visitor's.
-    if (['sweep', 'respond', 'status', 'pause', 'resume', 'reopen'].includes(action)) {
+    if (['sweep', 'respond', 'status', 'pause', 'resume', 'reopen', 'lifecycle_step'].includes(action)) {
       if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
       if (!isAdmin) return Response.json({ error: 'Forbidden' }, { status: 403 });
     } else {
@@ -383,6 +475,20 @@ export default async function (req) {
       const messageId = String(body.message_id || '');
       if (!messageId) return Response.json({ error: 'message_id is required' }, { status: 400 });
       const result = await respond(base44, messageId);
+      return Response.json(result);
+    }
+
+    // lifecycle_step — one named step of one ticket, asked for by that ticket's
+    // own workflow. It runs only if the ticket still needs that step, and every
+    // step passes the same harness the rest of the automation does.
+    if (action === 'lifecycle_step') {
+      const ticketId = String(body.ticket_id || '');
+      if (!ticketId) return Response.json({ error: 'ticket_id is required' }, { status: 400 });
+      const step = String(body.step || '');
+      if (!LIFECYCLE_STEPS.includes(step)) {
+        return Response.json({ error: 'Unknown step', allowed: LIFECYCLE_STEPS }, { status: 400 });
+      }
+      const result = await runLifecycleStep(base44, ticketId, step);
       return Response.json(result);
     }
 
