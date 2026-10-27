@@ -58,18 +58,31 @@ export default async function (req) {
         );
       }
 
-      const result = await validateLicense(base44, rawKey);
+      // Activation is the lock: the key is handed over with the one model it is
+      // for and the deployment it runs on, and that binding is what sticks.
+      const binding = {
+        model: String(body.model || body.model_name || '').slice(0, 120),
+        deploymentId: String(body.deployment_id || body.deployment || '').slice(0, 160)
+      };
+      const result = await validateLicense(base44, rawKey, binding);
       // Logged by outcome and order only: a key never reaches a log.
       if (result.ok) {
-        console.log(`[licenseKey] activation accepted for order ${result.order_number} (${result.status})`);
-        return Response.json({ valid: true, status: result.status, message: 'Active.' });
+        console.log(
+          `[licenseKey] activation accepted for order ${result.order_number} (${result.status}${result.locked ? ', now locked to one model' : ''})`
+        );
+        return Response.json({
+          valid: true,
+          status: result.status,
+          locked_to: result.model_name || '',
+          message: result.locked ? `Active. This key is locked to ${result.model_name}.` : 'Active.'
+        });
       }
 
       console.warn(`[licenseKey] activation refused: ${result.reason}`);
       return Response.json({
         valid: false,
         reason: result.reason,
-        message: VALIDATION_MESSAGES[result.reason] || VALIDATION_MESSAGES.invalid
+        message: result.message || VALIDATION_MESSAGES[result.reason] || VALIDATION_MESSAGES.invalid
       });
     }
 

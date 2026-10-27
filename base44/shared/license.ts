@@ -35,29 +35,37 @@ export const LICENSE_UNLOCKS =
 // Shown on the license page, in the confirmation email and in the downloaded
 // file. One copy, so all three always agree.
 export const LICENSE_TERMS = [
-  'One key, one buyer. It was issued to your account and it is yours alone.',
-  "Do not share it, publish it, resell it or pass it on. A key that turns up anywhere but your own setup is revoked, and it stops working for you too.",
-  'It activates once. The first setup to activate it is the one it binds to, and a second activation of the same key is refused.',
-  'If you need it in a rebuilt or second setup, regenerate it from your license page. The new key works and the old one stops.',
-  'It does not give you the SIFT AI code, the pattern library, anything the app runs internally, or anyone else\'s data.',
+  'One key, one model, one use. The key is issued for the one model named on the order, and it locks to that model.',
+  'It is a use licence, not ownership of anything: it does not give you the SIFT AI code, the model, the pattern library, anything the app runs internally, or anyone else\'s data.',
+  'Non-exclusive and non-transferable. Do not share it, publish it, resell it or pass it on, and do not copy the key or the integration code to a second model.',
+  'Do not publish the code or the key. A key that turns up anywhere but your own locked setup is revoked, and it stops working for you too.',
+  'The first model to activate the key is the only one it works with. A second, different model is refused: "This key is already locked to another model."',
+  'To move it to another model, the old binding is revoked first, then a new key is issued and locks to the new model. No two live copies, ever.',
   'We never ask for a password, an API key for another service, an IMEI, a serial number or payment details to use a key.'
 ];
 
 export const LICENSE_INSTRUCTIONS = [
-  'Your key is already applied to your SIFT AI account. There is nothing to switch on here.',
-  'In your own model or test setup, paste the key wherever it asks for a SIFT AI license key — the licensing field in your harness, or the environment variable your runner reads.',
-  'When your setup activates, it hands the key to SIFT AI once. A good key answers "active"; a key that is wrong, already used, expired or revoked answers with a plain refusal.',
+  'Your key is issued to your account, and your own copy of it is on your license page.',
+  'In your own product, set SIFT_LICENSE_KEY to the key, SIFT_MODEL_NAME to the one model it is for, and SIFT_DEPLOYMENT_ID to the deployment or domain it runs on.',
+  'Call the SIFT AI plug-in before your model sees a message, and around every tool your model asks for. It hands SIFT AI the key hash and the binding, and gets back one word: active, expired, revoked or invalid.',
+  'The first binding to arrive is the one that sticks. Any other binding for the same key is refused, and the key is flagged for the SIFT AI team.',
   'An active answer turns the guardrails on, and anything else leaves them off. Your own product carries on running either way.',
-  'Keep it out of shared logs, screenshots and public repositories.',
-  'Rebuilt your setup, or need it in a second one? Regenerate the key on your license page.'
+  'Keep the key out of shared logs, screenshots and public repositories. Need it on a different model? Revoke it, then issue a new key.'
 ];
 
 // The plain answer a refused activation gets. Nothing about the pattern that
 // caught it, and nothing about anyone else.
+// The plain answers a refused binding gets. Nothing about the pattern that
+// caught it, nothing about anyone else, and never a key.
+export const BINDING_MESSAGES: any = {
+  no_binding: 'A model name and a deployment ID are needed to lock this key to one model.',
+  locked_elsewhere: 'This key is already locked to another model.',
+  wrong_model: 'This key was issued for a different model.'
+};
+
 export const VALIDATION_MESSAGES = {
   invalid: 'That key is not one SIFT AI recognises. Check for a typo, or copy it again from your license page.',
-  already_used:
-    'That key has already been activated. A key activates once, in the one setup it was first used in. If you need it somewhere new, regenerate it on your license page.',
+  ...BINDING_MESSAGES,
   revoked: 'That key has been revoked and no longer works. Open your license page to check it or issue yourself a new one.',
   expired: 'That key has expired. Open your license page for the current one.',
   too_many: 'Too many activation attempts from this connection today. Please try again tomorrow.'
@@ -265,7 +273,7 @@ async function mailLicense(base44: any, license: any, key: string, { reissued = 
         license_key: key,
         unlocks: LICENSE_UNLOCKS,
         apply_note: LICENSE_INSTRUCTIONS[1],
-        keep_note: LICENSE_INSTRUCTIONS[3],
+        keep_note: LICENSE_INSTRUCTIONS[5],
         license_url: 'https://sift-ai.net/license',
         app_name: 'SIFT AI'
       }
@@ -326,6 +334,9 @@ export async function issueLicense(base44: any, input: any) {
     source,
     entitlement,
     plan_label: String(input?.planLabel || '').slice(0, 120),
+    // The one model this key is for, named by the buyer on the order. Empty on a
+    // founding key, which is named by the first model that activates it.
+    model_name: String(input?.modelName || '').trim().slice(0, 120),
     order_number: `SIFT-${randomChars(6)}`,
     purchase_id: purchaseId,
     key_hash: await fingerprint(key),
@@ -377,6 +388,13 @@ export async function ownerLicense(base44: any, userId: any) {
     plan_label: license.plan_label || '',
     masked_key: license.key_hint,
     key: effectiveStatus(license) === 'active' ? await openLicenseKey(license.key_encrypted) : '',
+    // The one model this key is locked to, and nothing about anyone else.
+    model_name: license.model_name || '',
+    deployment_id: license.deployment_id || '',
+    binding_locked_at: license.binding_locked_at || null,
+    binding_conflicts: Number(license.binding_conflicts || 0),
+    last_conflict_binding: license.last_conflict_binding || '',
+    flagged_at: license.flagged_at || null,
     order_number: license.order_number || '',
     amount_cents: Number(license.amount_cents || 0),
     currency: String(license.currency || 'usd').toLowerCase(),
@@ -390,9 +408,98 @@ export async function ownerLicense(base44: any, userId: any) {
   };
 }
 
-// Activate a key handed over by the buyer's own setup. One activation sticks:
-// the first setup to use the key is the one it binds to.
-export async function validateLicense(base44: any, rawKey: any) {
+const sameText = (a: any, b: any) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+
+// One key, one model, one use.
+//
+// The first binding to arrive is the one that sticks. Every check after that
+// only reads; this is the single write a check can make. A second, different
+// binding is refused with a plain answer and the key is flagged for the team,
+// who can revoke it from the console. A customer cannot move a key themselves:
+// moving means revoking it and issuing a new one, so there are never two live
+// copies of one key.
+export async function lockBinding(base44: any, license: any, { model = '', deploymentId = '' }: any = {}) {
+  const wanted = {
+    model: String(model || '').trim().slice(0, 120),
+    deployment: String(deploymentId || '').trim().slice(0, 160)
+  };
+
+  // A check that carries no binding cannot lock anything, and must not be taken
+  // as one that is free to run anywhere.
+  if (!wanted.model || !wanted.deployment) {
+    return { ok: false, reason: 'no_binding', message: BINDING_MESSAGES.no_binding };
+  }
+
+  const matches = (record: any) =>
+    sameText(record?.model_name, wanted.model) && sameText(record?.deployment_id, wanted.deployment);
+
+  if (license.binding_locked_at || license.deployment_id) {
+    if (matches(license)) return { ok: true, license, newlyLocked: false };
+    // A key named for one model at purchase cannot be pointed at another.
+    const reason = license.binding_locked_at ? 'locked_elsewhere' : 'wrong_model';
+    const flagged = await recordBindingConflict(base44, license, wanted);
+    return { ok: false, reason, message: BINDING_MESSAGES[reason], license: flagged, conflict: true };
+  }
+
+  // Re-read right before writing, so two bindings arriving at the same instant
+  // cannot both believe they are the first.
+  const fresh = await base44.asServiceRole.entities.License
+    .get(license.id)
+    .catch((error: any) => (error.status === 404 ? license : Promise.reject(error)));
+
+  if (fresh.binding_locked_at || fresh.deployment_id) {
+    if (matches(fresh)) return { ok: true, license: fresh, newlyLocked: false };
+    const flagged = await recordBindingConflict(base44, fresh, wanted);
+    return { ok: false, reason: 'locked_elsewhere', message: BINDING_MESSAGES.locked_elsewhere, license: flagged, conflict: true };
+  }
+
+  const stamp = new Date().toISOString();
+  const updated = await base44.asServiceRole.entities.License.update(license.id, {
+    model_name: wanted.model,
+    deployment_id: wanted.deployment,
+    binding_locked_at: stamp,
+    activations: 1,
+    activated_at: stamp
+  });
+
+  // Whichever binding is stored is the one that stands. It is read back rather
+  // than trusted from this write: if another arrival won the same moment, or
+  // wrote just after this one, this binding is refused like any other.
+  const stored = await base44.asServiceRole.entities.License
+    .get(license.id)
+    .catch((error: any) => (error.status === 404 ? updated : Promise.reject(error)));
+
+  if (!matches(stored)) {
+    const flagged = await recordBindingConflict(base44, updated, wanted);
+    return { ok: false, reason: 'locked_elsewhere', message: BINDING_MESSAGES.locked_elsewhere, license: flagged, conflict: true };
+  }
+
+  console.log(`[license] ${updated.order_number} is locked to one model and cannot be moved`);
+  return { ok: true, license: updated, newlyLocked: true };
+}
+
+// A second binding for one key: refused, counted, and left on the team's console
+// with the name of the model it came from. Never the key, and never anything
+// about the person behind it.
+async function recordBindingConflict(base44: any, license: any, wanted: any) {
+  const seen = `${wanted.model} / ${wanted.deployment}`.slice(0, 200);
+  console.warn(`[license] a second binding was refused for order ${license.order_number || 'unknown'}: ${seen}`);
+  return base44.asServiceRole.entities.License
+    .update(license.id, {
+      binding_conflicts: Number(license.binding_conflicts || 0) + 1,
+      last_conflict_at: new Date().toISOString(),
+      last_conflict_binding: seen,
+      flagged_at: new Date().toISOString()
+    })
+    .catch((error: any) => {
+      console.error('[license] the refused binding could not be recorded:', error && error.message);
+      return license;
+    });
+}
+
+// Activate a key handed over by the buyer's own setup. Activation is the lock:
+// the first binding to arrive is the one model the key works with.
+export async function validateLicense(base44: any, rawKey: any, binding: any = {}) {
   const key = normalizeLicenseKey(rawKey);
   if (!key) return { ok: false, reason: 'invalid' };
 
@@ -401,6 +508,7 @@ export async function validateLicense(base44: any, rawKey: any) {
 
   const license = first(await base44.asServiceRole.entities.License.filter({ key_hash: hash }));
   if (!license) return { ok: false, reason: 'invalid' };
+
   const status = effectiveStatus(license);
   if (status === 'revoked') return { ok: false, reason: 'revoked' };
   if (status === 'expired') {
@@ -413,14 +521,26 @@ export async function validateLicense(base44: any, rawKey: any) {
     }
     return { ok: false, reason: 'expired' };
   }
-  if (Number(license.activations || 0) > 0) return { ok: false, reason: 'already_used' };
+  if (status !== 'active') return { ok: false, reason: 'invalid' };
 
-  await base44.asServiceRole.entities.License.update(license.id, {
-    activations: 1,
-    activated_at: new Date().toISOString()
-  });
+  // The hash the plug-in sends is filled in here, once, so the same key works
+  // there without its owner changing anything.
+  if (!license.key_sha256) {
+    await base44.asServiceRole.entities.License
+      .update(license.id, { key_sha256: await keySha256(key) })
+      .catch((error) => console.warn('[license] the plug-in hash could not be stored:', error && error.message));
+  }
 
-  return { ok: true, status: license.source === 'founding' ? 'founding' : 'active', order_number: license.order_number };
+  const locked = await lockBinding(base44, license, binding);
+  if (!locked.ok) return { ok: false, reason: locked.reason, message: locked.message };
+
+  return {
+    ok: true,
+    status: locked.license.source === 'founding' ? 'founding' : 'active',
+    order_number: locked.license.order_number,
+    model_name: locked.license.model_name,
+    locked: locked.newlyLocked === true
+  };
 }
 
 export async function revokeLicense(base44: any, license: any, reason: any) {
@@ -474,7 +594,16 @@ export async function regenerateLicense(base44: any, license: any, { reason = ''
     activated_at: null,
     revoked_at: null,
     revoked_reason: String(reason || '').slice(0, 200),
-    regenerated_at: new Date().toISOString()
+    regenerated_at: new Date().toISOString(),
+    // A replacement key starts unlocked: it locks to the first model that uses
+    // it, and the model the old key was on is not carried across.
+    model_name: '',
+    deployment_id: '',
+    binding_locked_at: null,
+    binding_conflicts: 0,
+    last_conflict_at: null,
+    last_conflict_binding: '',
+    flagged_at: null
   });
 
   // The buyer is told about their own new key; nobody else is.
@@ -509,6 +638,12 @@ export async function adminLicenseList(base44: any, limit = 100) {
     order_number: license.order_number || '',
     source: license.source,
     plan_label: license.plan_label || '',
+    model_name: license.model_name || '',
+    deployment_id: license.deployment_id || '',
+    binding_locked_at: license.binding_locked_at || null,
+    binding_conflicts: Number(license.binding_conflicts || 0),
+    last_conflict_binding: license.last_conflict_binding || '',
+    flagged_at: license.flagged_at || null,
     email: license.email || '',
     user_id: license.user_id || '',
     issued_at: license.issued_at || license.created_date || null,

@@ -51,6 +51,9 @@ export default function MyLicensePanel() {
                 {data.status_label}
               </span>
               <span className="font-mono text-xs text-muted-foreground">Order {data.order_number}</span>
+              {data.model_name && (
+                <span className="font-mono text-xs text-muted-foreground">Model: {data.model_name}</span>
+              )}
               {data.issued_at && (
                 <span className="text-xs text-muted-foreground">
                   {data.source === 'founding' ? 'Granted' : 'Bought'} {formatChicagoTime(data.issued_at)}

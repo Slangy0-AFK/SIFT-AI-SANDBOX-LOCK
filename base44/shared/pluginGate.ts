@@ -1,21 +1,16 @@
-// What the plug-in answers, and nothing more.
+// What a check answers, and nothing more.
 //
-// A check comes in with a hashed key (or, for a test by hand, the key itself)
-// and goes out with one of five words: Active, Expired, Revoked, Invalid or
-// Stopped. No key, no hash, no order number, no reason from anyone else's
-// record, and nothing about the pattern that failed.
+// A check comes in with a hashed key and the binding it claims (model name and
+// deployment ID) and goes out with one of five words: Active, Expired, Revoked,
+// Invalid or Stopped. The first binding to arrive is locked in; any other
+// binding for the same key is refused and flagged for the team.
 //
-// Nothing here activates anything. The one-time activation is the purchase
-// path's business; a check can run on every message a buyer's product handles,
-// so it only ever reads.
+// Nothing here activates anything on its own: a check can run on every message a
+// buyer's product handles, so it only ever reads, plus the one write that locks
+// a key to its model for the first time.
 
-import {
-  LICENSE_UNLOCKS,
-  backfillKeySha256,
-  effectiveStatus,
-  licenseByRawKey,
-  licenseBySha256
-} from './license.ts';
+import { backfillKeySha256, effectiveStatus, licenseByRawKey, licenseBySha256, lockBinding } from './license.ts';
+import { guardPolicy } from './guardPolicy.ts';
 
 const rows = (page: any) => (Array.isArray(page) ? page : page?.items || []);
 const first = (page: any) => rows(page)[0] || null;
@@ -33,8 +28,8 @@ export const PLUGIN_STATUS = {
 export const PLUGIN_ENDPOINT = 'https://siftai.base44.app/functions/validateLicense';
 
 // How a check is counted per connection. Generous on purpose: a product that
-// checks every message is doing nothing wrong, while a script guessing keys
-// gains nothing from a hash it cannot reverse.
+// checks on startup and periodically is doing nothing wrong, while a script
+// guessing keys gains nothing from a hash it cannot reverse.
 export const PLUGIN_CHECK_CAP = 600;
 
 // The team's stop switch, read at check time. While it is on, every plug-in is
@@ -44,26 +39,29 @@ export async function killSwitchOn(base44: any) {
   return { on: record?.kill_switch === true, reason: String(record?.reason || '') };
 }
 
-// Resolve a check to one status. A revoked or unknown key unlocks nothing, and
-// no answer says which of the two it was.
-export async function resolvePluginKey(base44: any, { keyHash = '', rawKey = '' }: any = {}) {
+// The key, by the hash the buyer's product works out, or by the key itself for a
+// test by hand. A key issued before hashing existed has its hash filled in once,
+// so the buyer changes nothing.
+async function findLicense(base44: any, { keyHash = '', rawKey = '' }: any = {}) {
   const sent = String(keyHash || '').trim().toLowerCase();
   const usable = /^[0-9a-f]{64}$/.test(sent);
   let license = usable ? await licenseBySha256(base44, sent) : null;
 
-  // A key issued before the plug-in existed has no hash of its own yet. Fill in
-  // what is missing once, then look again, so the buyer changes nothing.
   if (!license) {
     const filled = await backfillKeySha256(base44, 20);
     if (filled && usable) license = await licenseBySha256(base44, sent);
   }
-
-  // The key itself, for a setup that has not been switched to sending the hash.
   if (!license && String(rawKey || '').trim()) license = await licenseByRawKey(base44, rawKey);
-  if (!license) return { status: PLUGIN_STATUS.invalid, active: false, license: null };
+  return license;
+}
+
+// One check: the key, then the one model it is allowed to run on.
+export async function checkPlugin(base44: any, { keyHash = '', rawKey = '', model = '', deploymentId = '' }: any = {}) {
+  const license = await findLicense(base44, { keyHash, rawKey });
+  if (!license) return { status: PLUGIN_STATUS.invalid, active: false, reason: 'invalid' };
 
   const status = effectiveStatus(license);
-  if (status === 'revoked') return { status: PLUGIN_STATUS.revoked, active: false, license };
+  if (status === 'revoked') return { status: PLUGIN_STATUS.revoked, active: false, reason: 'revoked', license };
 
   if (status === 'expired') {
     // Recorded once, so the record and the answer agree from then on.
@@ -72,22 +70,48 @@ export async function resolvePluginKey(base44: any, { keyHash = '', rawKey = '' 
         .update(license.id, { status: 'expired' })
         .catch((error: any) => console.warn('[pluginGate] the end date could not be written back:', error && error.message));
     }
-    return { status: PLUGIN_STATUS.expired, active: false, license };
+    return { status: PLUGIN_STATUS.expired, active: false, reason: 'expired', license };
   }
 
-  if (status !== 'active') return { status: PLUGIN_STATUS.invalid, active: false, license };
-  return { status: PLUGIN_STATUS.active, active: true, license };
+  if (status !== 'active') return { status: PLUGIN_STATUS.invalid, active: false, reason: 'invalid', license };
+
+  // The lock. A key with no binding takes this one; a key already locked to
+  // another model refuses it and is flagged for the team.
+  const locked = await lockBinding(base44, license, { model, deploymentId });
+  if (!locked.ok) {
+    return {
+      status: PLUGIN_STATUS.invalid,
+      active: false,
+      reason: locked.reason,
+      message: locked.message,
+      license: locked.license || license,
+      conflict: locked.conflict === true
+    };
+  }
+
+  return { status: PLUGIN_STATUS.active, active: true, reason: 'active', license: locked.license, newlyLocked: locked.newlyLocked === true };
 }
 
-// The one shape every answer takes. What it unlocks is sent only while the key
-// is Active, so a refused check can never be read as an unlock.
-export function pluginAnswer({ status, active = false, license = null, killSwitch = false }: any = {}) {
+// The one shape every check answer takes. What the key unlocks is settled on the
+// licence itself; a check only says whether it is running.
+export function pluginAnswer({ status, active = false, license = null, message = '', killSwitch = false }: any = {}) {
   return {
     status,
     active: active === true,
     expires_at: (license && license.expires_at) || null,
-    unlocks: active === true ? LICENSE_UNLOCKS : null,
+    ...(active === true ? { locked_to: (license && license.model_name) || '', policy_version: policyVersion() } : {}),
+    ...(message ? { message } : {}),
     checked_at: new Date().toISOString(),
     ...(killSwitch || status === PLUGIN_STATUS.stopped ? { kill_switch: true } : {})
   };
+}
+
+// The rules for a key that is valid and locked. This is the only way the
+// pattern library leaves SIFT AI, and it only ever goes to a locked binding.
+export function policyAnswer(license: any) {
+  return { ...guardPolicy(), locked_to: (license && license.model_name) || '' };
+}
+
+export function policyVersion() {
+  return guardPolicy().policy_version;
 }

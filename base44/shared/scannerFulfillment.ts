@@ -109,6 +109,11 @@ export async function confirmAndGrant(base44, stripe, session) {
   // to them with the order confirmation. Issued before the purchase is marked
   // paid, so a key that could not be issued leaves the purchase retriable rather
   // than paid and keyless, and a redelivered event finds the work already done.
+  // The model the buyer named on the order. It is what the key is issued for,
+  // and the key locks to the binding that matches it.
+  const modelField = (session.custom_fields || []).find((field: any) => field.key === 'model_name');
+  const modelName = String((modelField && modelField.text && modelField.text.value) || '').slice(0, 120);
+
   const issued = await issueLicense(base44, {
     userId: purchase.user_id || '',
     email,
@@ -116,6 +121,7 @@ export async function confirmAndGrant(base44, stripe, session) {
     entitlement: purchase.tier,
     purchaseId: purchase.id,
     planLabel: tier.label,
+    modelName,
     termMonths: tier.months || 0,
     amountCents: Number(session.amount_total),
     currency: String(session.currency || 'usd').toLowerCase(),

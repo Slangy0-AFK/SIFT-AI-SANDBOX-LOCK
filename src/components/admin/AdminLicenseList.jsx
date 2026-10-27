@@ -78,10 +78,22 @@ export default function AdminLicenseList() {
                   <p className="mt-1 font-mono text-xs text-muted-foreground">
                     {license.order_number} · {license.masked_key} · {license.plan_label || license.source}
                   </p>
+                  <p className="mt-1 font-mono text-xs text-muted-foreground">
+                    {license.model_name
+                      ? `locked to ${license.model_name}${license.deployment_id ? ` / ${license.deployment_id}` : ''}`
+                      : 'not locked to a model yet'}
+                  </p>
                 </div>
                 <span className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${licenseBadgeClass(license.status_label)}`}>
                   {license.status_label}
                 </span>
+                {license.flagged_at && (
+                  <span className="rounded-full border border-amber-400/40 px-2.5 py-0.5 text-xs font-semibold text-amber-400">
+                    Flagged — a second binding was refused
+                    {license.last_conflict_binding ? ` (${license.last_conflict_binding})` : ''}
+                    {license.binding_conflicts > 1 ? ` ×${license.binding_conflicts}` : ''}
+                  </span>
+                )}
                 <span className="text-xs text-muted-foreground">
                   {license.activations > 0 ? 'activated' : 'not activated'}
                 </span>

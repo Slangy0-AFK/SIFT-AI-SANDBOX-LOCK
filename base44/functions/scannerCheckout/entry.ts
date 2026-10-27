@@ -72,6 +72,15 @@ export default async function (req) {
           }
         }
       ],
+      // The model this key is for is named by the buyer on the order: one key,
+      // one model, one use. The label is what they read on the checkout page.
+      custom_fields: [
+        {
+          key: 'model_name',
+          label: 'Model or product this key is for (one model only)',
+          type: 'text'
+        }
+      ],
       success_url: `${appUrl}/receipt?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/plans?checkout=canceled`,
       ...(user && user.email ? { customer_email: user.email } : {})

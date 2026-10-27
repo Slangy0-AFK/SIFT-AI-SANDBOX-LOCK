@@ -39,13 +39,47 @@
       "type": "string",
       "description": "The purchase record this key was issued from. The only link from a payment to a key."
     },
+    "model_name": {
+      "type": "string",
+      "maxLength": 120,
+      "description": "The ONE model or product this key is for. Named by the buyer at purchase; for a founding key it is named by the first model that activates it. One key, one model, one use."
+    },
+    "deployment_id": {
+      "type": "string",
+      "maxLength": 160,
+      "description": "The deployment ID or domain the key locked to. Never a person's details: the buyer supplies it, and it is the only place the locked key may run."
+    },
+    "binding_locked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The moment the key locked to its one model. Set once: only one active binding exists per key, ever."
+    },
+    "binding_conflicts": {
+      "type": "number",
+      "default": 0,
+      "description": "Times the same key was seen with a different binding. Each one is refused; the count and the last one seen are on the team's console."
+    },
+    "last_conflict_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_conflict_binding": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "The binding that was refused, e.g. 'Model B / staging-2'. Never a key."
+    },
+    "flagged_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Set when a second binding was seen for this key, so the team can look and revoke it. Cleared when a replacement key is issued."
+    },
     "key_hash": {
       "type": "string",
       "description": "HMAC-SHA256 of the key under a server-side secret. This is what a key is matched against; the key itself is never stored in the clear."
     },
     "key_sha256": {
       "type": "string",
-      "description": "Plain SHA-256 of the key in its canonical shape. The buyer's own product works this out for itself and sends it to the plug-in check in place of the key, so a key never travels. It cannot be turned back into a key. Filled in for keys issued earlier the first time one is checked."
+      "description": "Plain SHA-256 of the key in its canonical shape. The buyer's own product works this out for itself and sends it to the check in place of the key, so a key never travels. It cannot be turned back into a key. Filled in for keys issued earlier the first time one is checked."
     },
     "key_encrypted": {
       "type": "string",
@@ -67,7 +101,7 @@
     "activations": {
       "type": "number",
       "default": 0,
-      "description": "Times the key has been activated. A key activates once: the first setup to use it is the one it binds to."
+      "description": "1 once the key has locked to its one model."
     },
     "activated_at": {
       "type": "string",

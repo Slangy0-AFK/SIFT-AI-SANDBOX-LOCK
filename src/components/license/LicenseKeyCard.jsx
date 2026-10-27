@@ -49,6 +49,12 @@ export default function LicenseKeyCard({ license, onRevoke, onRegenerate, busy =
         {shown && usable ? key : license.masked_key}
       </p>
 
+      <p className="mt-2 text-xs text-muted-foreground">
+        {license.model_name
+          ? `Locked to ${license.model_name}${license.deployment_id ? ` · ${license.deployment_id}` : ''}`
+          : 'Not locked yet. It locks to the first model that activates it, and cannot be moved after that.'}
+      </p>
+
       {usable && license.expires_at && (
         <p className="mt-2 text-xs text-muted-foreground">
           Works until {formatChicagoTime(license.expires_at)}.

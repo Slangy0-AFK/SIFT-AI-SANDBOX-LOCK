@@ -24,8 +24,14 @@ export default function LicenseHowTo({ instructions = [], endpoint }) {
           </p>
           <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-all font-mono text-[11px] leading-relaxed text-foreground">
 {`POST ${endpoint}
-{"action": "validate", "key": "your key here"}`}
+{"action": "validate", "key": "your key here",
+ "model": "the one model this key is for",
+ "deployment_id": "the deployment it runs on"}`}
           </pre>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            The first activation is the lock: the key works with that one model from then on. A second, different model is refused
+            with &ldquo;This key is already locked to another model.&rdquo;
+          </p>
         </div>
       )}
     </div>

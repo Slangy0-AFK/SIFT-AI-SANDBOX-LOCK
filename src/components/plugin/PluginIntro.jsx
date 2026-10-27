@@ -5,9 +5,11 @@ import { Plug, ShieldCheck } from 'lucide-react';
 // it is a guardrail layer around a model, never a fix for one.
 export default function PluginIntro() {
   const points = [
-    'It is a layer around your model. It does not patch, fix, rewrite or retrain your model, and it never touches model weights.',
+    'One key, one model, one use. The key locks to the first model that activates it, and a second, different model is refused.',
+    'It is a guardrail layer around your model. It does not patch, fix, rewrite or retrain your model, and it never touches model weights.',
     'It is your own code, in your own product. SIFT AI does not install it for you and cannot reach inside your setup.',
-    "It does not contain SIFT AI's pattern library, its raw prompts or any of its internal code.",
+    'The file carries no detection rules: they arrive with your locked key, so a copy of it on its own does nothing.',
+    'A use licence, not ownership: no sharing, no reselling, and no copying the key or the code to a second model.',
     'It never asks for a password, another service\u2019s API key, an IMEI, a serial number or payment details.'
   ];
 
@@ -20,8 +22,8 @@ export default function PluginIntro() {
         A guardrail layer around your model.
       </h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-        It stops bad instructions reaching your model, and bad outputs leaving it. You copy one file into your own product, set one
-        environment variable, and call it before your model runs.
+        It stops bad instructions reaching your model, and bad outputs leaving it. You copy one file into your own product, set your
+        key and the one model it is for, and call it before your model runs.
       </p>
 
       <ul className="mt-5 grid gap-2 sm:grid-cols-2">
