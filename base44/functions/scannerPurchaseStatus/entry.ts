@@ -3,6 +3,7 @@ import Stripe from 'npm:stripe@14.0.0';
 import { SCANNER_TIERS } from '../../shared/scannerPlans.ts';
 import { confirmAndGrant, firstRecord } from '../../shared/scannerFulfillment.ts';
 import { stripeCredentials } from '../../shared/stripeConnect.ts';
+import { attachLicenseToAccount } from '../../shared/license.ts';
 
 // Backs the receipt page. The Stripe session id is the lookup key and is long
 // and unguessable, so a guest can read their own receipt straight after paying.
@@ -36,6 +37,9 @@ export default async function (req) {
     const buyerEmail = String(purchase.email || '').toLowerCase();
     if (user && !purchase.user_id && buyerEmail && String(user.email || '').toLowerCase() === buyerEmail) {
       purchase = await base44.asServiceRole.entities.ScannerPurchase.update(purchase.id, { user_id: user.id });
+      // The key that came with this purchase moves to the account that has just
+      // proved it owns the address the purchase was made under.
+      await attachLicenseToAccount(base44, { purchaseId: purchase.id, userId: user.id, email: buyerEmail });
       if (purchase.tier === 'pro') {
         const sub = firstRecord(
           await base44.asServiceRole.entities.Subscription.filter({ checkout_session_id: sessionId })

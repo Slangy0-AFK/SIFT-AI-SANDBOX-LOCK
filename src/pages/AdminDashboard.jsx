@@ -6,6 +6,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import PriceAdminForm from '@/components/kit/PriceAdminForm';
+import AdminLicenseList from '@/components/admin/AdminLicenseList';
 
 export default function AdminDashboard() {
   const [user, setUser] = useState(null);
@@ -132,6 +133,8 @@ export default function AdminDashboard() {
           )}
         </CardContent>
       </Card>
+
+      <AdminLicenseList />
 
       <Card className="mt-8">
         <CardHeader>

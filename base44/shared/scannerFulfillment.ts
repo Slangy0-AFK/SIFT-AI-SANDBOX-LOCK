@@ -1,4 +1,5 @@
 import { SCANNER_TIERS } from './scannerPlans.ts';
+import { issueLicense } from './license.ts';
 
 export function firstRecord(result) {
   if (!result) return null;
@@ -77,6 +78,24 @@ export async function confirmAndGrant(base44, stripe, session) {
       });
     }
   }
+
+  // The buyer's license: one key, issued once, applied to this account and sent
+  // to them with the order confirmation. Issued before the purchase is marked
+  // paid, so a key that could not be issued leaves the purchase retriable rather
+  // than paid and keyless, and a redelivered event finds the work already done.
+  const issued = await issueLicense(base44, {
+    userId: purchase.user_id || '',
+    email,
+    source: 'purchase',
+    entitlement: purchase.tier,
+    purchaseId: purchase.id,
+    planLabel: tier.label,
+    amountCents: Number(session.amount_total),
+    currency: String(session.currency || 'usd').toLowerCase(),
+    paidAt
+  });
+  if (issued.created) console.log(`[license] key ${issued.license.order_number} issued for purchase ${purchase.id}`);
+  else if (issued.reason) console.warn(`[license] no key issued for purchase ${purchase.id}: ${issued.reason}`);
 
   await base44.asServiceRole.entities.ScannerPurchase.update(purchase.id, {
     status: 'paid',

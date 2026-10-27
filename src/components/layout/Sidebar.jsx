@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Shield, Activity, Bug, FileText, Settings, CreditCard, Radiation, Menu, X, User, ShieldAlert, Mail, ChevronLeft, MessageCircle } from 'lucide-react';
+import { Shield, Activity, Bug, FileText, Settings, CreditCard, Radiation, Menu, X, User, ShieldAlert, Mail, ChevronLeft, MessageCircle, Key } from 'lucide-react';
 import NotificationBell from '../notifications/NotificationBell';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -14,6 +14,7 @@ const allNavItems = [
   { path: '/developer', icon: Code2, label: 'Add to My App' },
   { path: '/profile', icon: User, label: 'Profile' },
   { path: '/subscription', icon: CreditCard, label: 'Subscription' },
+  { path: '/license', icon: Key, label: 'My License' },
   { path: '/settings', icon: Settings, label: 'Settings' },
   { path: '/admin/tickets', icon: Mail, label: 'Support Tickets', adminOnly: true },
 ];

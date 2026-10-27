@@ -2,11 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Shield, AlertTriangle, Info, Gift } from 'lucide-react';
+import { Shield, AlertTriangle, Info, Gift, Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import PlanTierCard from '@/components/plans/PlanTierCard';
 import useScannerUnlocks from '@/hooks/useScannerUnlocks';
+import LicenseTerms from '@/components/license/LicenseTerms';
 import { SCANNER_PLANS, PAID_TIER_IDS, HONEST_NOTE } from '@/lib/scannerPlans';
 
 const LOGO = 'https://media.base44.com/images/public/6a0db3181169f42924052c0d/650b247a7_amazon.PNG';
@@ -30,6 +31,16 @@ export default function ScannerPlans() {
     queryKey: ['founding-offer'],
     queryFn: async () => (await base44.entities.FoundingOffer.list('-created_date', 1))[0] || null,
     staleTime: 60000,
+    retry: false,
+  });
+
+  // The terms that come with every license key. Read from the server, so this
+  // page, the buyer's own license page and the confirmation email cannot say
+  // different things.
+  const { data: licenseTerms } = useQuery({
+    queryKey: ['license-terms'],
+    queryFn: async () => (await base44.functions.invoke('licenseKey', { action: 'terms' })).data,
+    staleTime: Infinity,
     retry: false,
   });
 
@@ -168,6 +179,24 @@ export default function ScannerPlans() {
           <Shield className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
           <p className="font-mono text-xs leading-relaxed text-muted-foreground">{HONEST_NOTE}</p>
         </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <Key className="h-4 w-4 flex-shrink-0 text-primary" />
+          <p className="max-w-2xl font-mono text-xs leading-relaxed text-muted-foreground">
+            Every paid plan, and every founding place, comes with a SIFT AI license key for testing the governor and
+            hardening filter in your own model and environment. It is applied to your account automatically, and your own
+            copy waits on your license page.
+          </p>
+          <Link to="/license" className="font-mono text-xs font-medium text-primary underline underline-offset-4">
+            {isAuthed ? 'Open my license' : 'Sign in to see my key'}
+          </Link>
+        </div>
+
+        {licenseTerms && (
+          <div className="mt-4">
+            <LicenseTerms unlocks={licenseTerms.unlocks} terms={licenseTerms.terms} />
+          </div>
+        )}
 
         <p className="mt-6 font-mono text-xs text-muted-foreground">
           Pro renews monthly and can be cancelled any time. The one-time Device Check is charged once, at checkout.

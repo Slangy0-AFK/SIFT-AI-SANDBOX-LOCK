@@ -63,6 +63,7 @@ import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import RefundPolicy from '@/pages/RefundPolicy';
 import AcceptInvite from '@/pages/AcceptInvite';
 import StripeConnect from '@/pages/StripeConnect';
+import License from '@/pages/License';
 // Add page imports here
 
 function AppRoutes() {
@@ -118,6 +119,7 @@ function AppRoutes() {
             <Route path="/devices" element={<PageTransition><MyDevices /></PageTransition>} />
             <Route path="/allow-block" element={<PageTransition><AllowBlock /></PageTransition>} />
             <Route path="/history" element={<PageTransition><HistoryPage /></PageTransition>} />
+            <Route path="/license" element={<PageTransition><License /></PageTransition>} />
             <Route path="/check/:id" element={<PageTransition><CheckDetail /></PageTransition>} />
             <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
             <Route path="/admin/tickets" element={<PageTransition><AdminTickets /></PageTransition>} />

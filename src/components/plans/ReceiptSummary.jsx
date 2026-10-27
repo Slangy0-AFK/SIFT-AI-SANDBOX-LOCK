@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCircle2, Clock, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Clock, ArrowRight, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatChicagoTime } from '@/lib/utils';
 import { NEXT_STEPS } from '@/lib/scannerPlans';
@@ -61,6 +61,13 @@ export default function ReceiptSummary({ plan, purchase }) {
             Go to the scanner <ArrowRight className="h-3.5 w-3.5" />
           </Button>
         </Link>
+        {paid && (
+          <Link to="/license">
+            <Button variant="outline" className="font-mono text-xs gap-2">
+              <Key className="h-3.5 w-3.5" /> Your license key
+            </Button>
+          </Link>
+        )}
         <Link to="/plans">
           <Button variant="outline" className="font-mono text-xs">
             Back to plans

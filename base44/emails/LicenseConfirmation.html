@@ -1,0 +1,99 @@
+<mjml>
+  <mj-head>
+    <mj-title>Your SIFT AI license key</mj-title>
+    <mj-preview>Your order is confirmed and your license key is inside.</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="Inter, Helvetica, Arial, sans-serif" />
+      <mj-section background-color="#10141e" padding="0 36px" />
+      <mj-column padding="0" />
+      <mj-text color="#f5f7fa" font-size="15px" line-height="1.65" padding="0" />
+      <mj-button background-color="#0ea9f1" color="#0f1524" border-radius="10px" font-size="15px" font-weight="700" inner-padding="14px 28px" padding="0" align="left" />
+      <mj-image padding="0" />
+      <mj-divider border-color="#263143" border-width="1px" padding="0" />
+      <mj-class name="label" font-size="11px" letter-spacing="2px" text-transform="uppercase" font-weight="700" color="#0ea9f1" />
+      <mj-class name="h" font-weight="700" />
+      <mj-class name="muted" color="#0ea9f1" />
+      <mj-class name="key" font-family="'JetBrains Mono', 'Courier New', Courier, monospace" font-size="18px" font-weight="700" letter-spacing="1px" color="#0f1524" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#10141e" width="600px">
+    <mj-wrapper background-color="#10141e" padding="24px 12px">
+      <mj-section background-color="#0ea9f1" padding="24px 36px" border-radius="10px 10px 0 0">
+        <mj-column>
+          <mj-image src="https://media.base44.com/images/public/6a0db3181169f42924052c0d/7f04a6bd9_logo.png" alt="SIFT AI" width="40px" align="center" padding="0 0 12px" />
+          <mj-text align="center" font-size="12px" letter-spacing="4px" font-weight="700" text-transform="uppercase" color="#0f1524">SIFT AI</mj-text>
+        </mj-column>
+      </mj-section>
+
+      <mj-section padding="40px 36px 8px">
+        <mj-column>
+          <mj-text mj-class="label" padding="0 0 10px">Order confirmed</mj-text>
+          <mj-text mj-class="h" font-size="26px" line-height="1.25" padding="0 0 14px">{{headline}}</mj-text>
+          <mj-text padding="0">{{note}}</mj-text>
+        </mj-column>
+      </mj-section>
+
+      <mj-section padding="28px 36px 8px">
+        <mj-group>
+          <mj-column>
+            <mj-text mj-class="label" padding="0 0 4px">Order number</mj-text>
+            <mj-text mj-class="h" font-size="16px" padding="0">{{order_number}}</mj-text>
+          </mj-column>
+          <mj-column>
+            <mj-text mj-class="label" padding="0 0 4px">Date</mj-text>
+            <mj-text mj-class="h" font-size="16px" padding="0">{{issued_line}}</mj-text>
+          </mj-column>
+        </mj-group>
+      </mj-section>
+
+      <mj-section padding="20px 36px 8px">
+        <mj-column>
+          <mj-text mj-class="label" padding="0 0 4px">What you bought</mj-text>
+          <mj-text mj-class="h" font-size="15px" padding="0 0 14px">{{plan_label}}</mj-text>
+          <mj-text mj-class="label" padding="0 0 4px">Amount</mj-text>
+          <mj-text mj-class="h" font-size="15px" padding="0">{{amount_line}}</mj-text>
+        </mj-column>
+      </mj-section>
+
+      <mj-section padding="28px 36px 8px">
+        <mj-column background-color="#f5f7fa" border-radius="10px" padding="20px 22px">
+          <mj-text mj-class="label" color="#0ea9f1" padding="0 0 8px">Your license key</mj-text>
+          <mj-text mj-class="key" padding="0 0 10px">{{license_key}}</mj-text>
+          <mj-text font-size="13px" color="#0f1524" line-height="1.6" padding="0">One key, one buyer. Keep it to yourself: it activates once, in the one setup that uses it first.</mj-text>
+        </mj-column>
+      </mj-section>
+
+      <mj-section padding="24px 36px 8px">
+        <mj-column>
+          <mj-text mj-class="label" padding="0 0 8px">What it unlocks</mj-text>
+          <mj-text padding="0 0 16px">{{unlocks}}</mj-text>
+          <mj-text mj-class="label" padding="0 0 8px">How to apply it</mj-text>
+          <mj-text padding="0 0 12px">{{apply_note}}</mj-text>
+          <mj-text padding="0">{{keep_note}}</mj-text>
+        </mj-column>
+      </mj-section>
+
+      <mj-section padding="28px 36px 8px">
+        <mj-column>
+          <mj-button href="{{license_url}}">Open my license</mj-button>
+        </mj-column>
+      </mj-section>
+
+      <mj-section padding="24px 36px 8px">
+        <mj-divider padding="0 0 20px" />
+        <mj-text font-size="13px" line-height="1.7" mj-class="muted" padding="0">
+          Your key is already applied to your SIFT AI account. The full license terms, and a downloadable copy of your key, sit on
+          your license page at any time.
+        </mj-text>
+      </mj-section>
+
+      <mj-section background-color="#0ea9f1" padding="20px 36px" border-radius="0 0 10px 10px">
+        <mj-column>
+          <mj-text align="center" font-size="12px" color="#0f1524" padding="0">
+            This is a one-time message about your order, sent by SIFT AI.
+          </mj-text>
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

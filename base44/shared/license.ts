@@ -1,0 +1,416 @@
+// The license key: what a buyer gets to test the governor and the hardening
+// filter in their own model and environment, outside this app.
+//
+// Every decision about a key lives here, so the purchase path, the founding
+// path, the buyer's own page and the team's console all obey the same rules:
+//
+//   * a key is never stored in the clear. A HMAC is kept for matching and an
+//     encrypted copy for the buyer's own account to read back; nothing else.
+//   * one key per buyer. Issuing is idempotent on the purchase or the founding
+//     place, so a redelivered payment event cannot mint a second key.
+//   * a key activates once. The first setup to activate it is the one it binds
+//     to, and a second activation is refused, which is what makes a shared or
+//     resold key worthless to anyone but the buyer.
+//   * revoking and regenerating replace the fingerprint, so the replaced key
+//     stops working the moment a replacement exists.
+
+import { readSecret } from './runtimeSecrets.ts';
+
+const rows = (page: any) => (Array.isArray(page) ? page : page?.items || []);
+const first = (page: any) => rows(page)[0] || null;
+
+export const LICENSE_PREFIX = 'SIFT-LIC';
+
+// No 0, 1, I or O: a key gets read aloud and typed by hand.
+const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const KEY_LENGTH = 16;
+
+// Where a buyer's own setup hands its key over. Outside the app, so it is the
+// published function address rather than a page route.
+export const LICENSE_ENDPOINT = 'https://siftai.base44.app/functions/licenseKey';
+
+export const LICENSE_UNLOCKS =
+  'The SIFT AI governor and hardening filter, for testing in your own model and environment only.';
+
+// Shown on the license page, in the confirmation email and in the downloaded
+// file. One copy, so all three always agree.
+export const LICENSE_TERMS = [
+  'One key, one buyer. It was issued to your account and it is yours alone.',
+  "Do not share it, publish it, resell it or pass it on. A key that turns up anywhere but your own setup is revoked, and it stops working for you too.",
+  'It activates once. The first setup to activate it is the one it binds to, and a second activation of the same key is refused.',
+  'If you need it in a rebuilt or second setup, regenerate it from your license page. The new key works and the old one stops.',
+  'It does not give you the SIFT AI code, the pattern library, anything the app runs internally, or anyone else\'s data.',
+  'We never ask for a password, an API key for another service, an IMEI, a serial number or payment details to use a key.'
+];
+
+export const LICENSE_INSTRUCTIONS = [
+  'Your key is already applied to your SIFT AI account. There is nothing to switch on here.',
+  'In your own model or test setup, paste the key wherever it asks for a SIFT AI license key — the licensing field in your harness, or the environment variable your runner reads.',
+  'When your setup activates, it hands the key to SIFT AI once. A good key answers "active"; a key that is wrong, already used or revoked answers with a plain refusal.',
+  'Keep it out of shared logs, screenshots and public repositories.',
+  'Rebuilt your setup, or need it in a second one? Regenerate the key on your license page.'
+];
+
+// The plain answer a refused activation gets. Nothing about the pattern that
+// caught it, and nothing about anyone else.
+export const VALIDATION_MESSAGES = {
+  invalid: 'That key is not one SIFT AI recognises. Check for a typo, or copy it again from your license page.',
+  already_used:
+    'That key has already been activated. A key activates once, in the one setup it was first used in. If you need it somewhere new, regenerate it on your license page.',
+  revoked: 'That key has been revoked and no longer works. Open your license page to check it or issue yourself a new one.',
+  expired: 'That key has expired. Open your license page for the current one.',
+  too_many: 'Too many activation attempts from this connection today. Please try again tomorrow.'
+};
+
+const secret = () => readSecret('INTERNAL_SECRET');
+
+function randomChars(length: number) {
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  let out = '';
+  for (let i = 0; i < length; i += 1) out += ALPHABET[bytes[i] % ALPHABET.length];
+  return out;
+}
+
+export function newLicenseKey() {
+  const chars = randomChars(KEY_LENGTH);
+  return `${LICENSE_PREFIX}-${(chars.match(/.{4}/g) || []).join('-')}`;
+}
+
+// Whatever the buyer typed or pasted, in the one canonical shape we match on.
+export function normalizeLicenseKey(raw: any) {
+  const clean = String(raw || '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '');
+  if (!clean.startsWith('SIFTLIC')) return '';
+  const body = clean.slice(7);
+  if (body.length !== KEY_LENGTH) return '';
+  return `${LICENSE_PREFIX}-${(body.match(/.{4}/g) || []).join('-')}`;
+}
+
+// What goes in a list, and what the buyer sees until they reveal it.
+export function maskLicenseKey(key: any) {
+  const groups = String(key || '').split('-');
+  const head = groups.length >= 3 ? groups[2] : '';
+  return `${LICENSE_PREFIX}-${head}-••••-••••-••••`;
+}
+
+async function fingerprint(key: string) {
+  const value = secret();
+  if (!value) return '';
+  const keyRef = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(value),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', keyRef, new TextEncoder().encode(key));
+  return [...new Uint8Array(signature)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function cipherKey() {
+  const value = secret();
+  if (!value) return null;
+  const raw = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+}
+
+async function sealKey(key: string) {
+  const cipher = await cipherKey();
+  if (!cipher) return '';
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const sealed = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, cipher, new TextEncoder().encode(key));
+  const packed = new Uint8Array(iv.byteLength + sealed.byteLength);
+  packed.set(iv, 0);
+  packed.set(new Uint8Array(sealed), iv.byteLength);
+  return btoa(String.fromCharCode(...packed));
+}
+
+// The buyer's own key, read back for their account only.
+export async function openLicenseKey(blob: any) {
+  const cipher = await cipherKey();
+  if (!cipher || !blob) return '';
+  try {
+    const packed = Uint8Array.from(atob(String(blob)), (c) => c.charCodeAt(0));
+    const plain = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: packed.slice(0, 12) },
+      cipher,
+      packed.slice(12)
+    );
+    return new TextDecoder().decode(plain);
+  } catch (error) {
+    console.error('[license] the stored key could not be read back:', error && error.message);
+    return '';
+  }
+}
+
+export function licenseStatusLabel(license: any) {
+  if (!license) return 'None';
+  if (license.status === 'revoked') return 'Revoked';
+  if (license.status === 'expired') return 'Expired';
+  return license.source === 'founding' ? 'Founding (free)' : 'Active';
+}
+
+const chicagoDate = (value: any) => {
+  if (!value) return '';
+  try {
+    return new Intl.DateTimeFormat('en-US', { dateStyle: 'long', timeZone: 'America/Chicago' }).format(new Date(value));
+  } catch (error) {
+    return '';
+  }
+};
+
+const money = (cents: any, currency: any) =>
+  `${(Number(cents || 0) / 100).toFixed(2)} ${String(currency || 'usd').toUpperCase()}`;
+
+// The buyer's own copy, sent once, at the moment the key is issued. The key
+// itself goes only to the address the purchase was made under.
+async function mailLicense(base44: any, license: any, key: string, { reissued = false } = {}) {
+  const to = String(license.email || '').trim();
+  if (!to) {
+    console.warn('[license] no buyer address on the license, so no copy was emailed');
+    return { sent: false, reason: 'no_address' };
+  }
+
+  try {
+    const sent = await base44.asServiceRole.integrations.Core.SendEmail({
+      to,
+      from_name: 'SIFT AI',
+      template_name: 'LicenseConfirmation',
+      category: 'transactional',
+      variables: {
+        headline: reissued ? 'Here is your new license key.' : 'Your license key is ready.',
+        note: reissued
+          ? 'You asked for a replacement key. The key that came before it stopped working the moment this one was issued.'
+          : 'Thank you — your order is confirmed and your license key is below. Keep this email, or download the key from your account whenever you need it.',
+        order_number: license.order_number,
+        plan_label: license.plan_label || 'SIFT AI',
+        amount_line: license.source === 'founding' ? 'No charge — founding place' : money(license.amount_cents, license.currency),
+        issued_line: chicagoDate(license.issued_at || license.created_date),
+        license_key: key,
+        unlocks: LICENSE_UNLOCKS,
+        apply_note: LICENSE_INSTRUCTIONS[1],
+        keep_note: LICENSE_INSTRUCTIONS[3],
+        license_url: 'https://sift-ai.net/license',
+        app_name: 'SIFT AI'
+      }
+    });
+
+    // A blocked address is answered, not thrown: the key is issued either way
+    // and the buyer can still read it in their account.
+    if (sent && sent.success === false) {
+      console.warn(`[license] the copy for ${license.order_number} was refused: ${sent.reason}`);
+      return { sent: false, reason: sent.reason || 'the address could not be reached' };
+    }
+    return { sent: true, to };
+  } catch (error) {
+    console.error('[license] the buyer copy could not be sent:', error && error.message);
+    return { sent: false, reason: (error && error.message) || 'the send failed' };
+  }
+}
+
+// Issue the buyer's key. Idempotent on the purchase (or on the account's one
+// founding place), so a redelivered event returns the key that already exists
+// instead of minting another.
+export async function issueLicense(base44: any, input: any) {
+  if (!secret()) {
+    console.error('[license] INTERNAL_SECRET is not set, so no key was issued');
+    return { created: false, reason: 'no_secret' };
+  }
+
+  const userId = String(input?.userId || '');
+  const source = input?.source === 'founding' ? 'founding' : 'purchase';
+  const purchaseId = String(input?.purchaseId || '');
+
+  // Only the entitlements this app knows. A retired tier still has to be
+  // confirmable (an old payment is real), and it must never stop the key.
+  const known = ['pro', 'device_check', 'founding'];
+  const asked = String(input?.entitlement || '');
+  const entitlement = known.includes(asked) ? asked : source === 'founding' ? 'founding' : 'pro';
+
+  const existing = purchaseId
+    ? first(await base44.asServiceRole.entities.License.filter({ purchase_id: purchaseId }))
+    : userId
+    ? first(await base44.asServiceRole.entities.License.filter({ user_id: userId, source: 'founding' }))
+    : null;
+
+  if (existing) {
+    return { created: false, alreadyIssued: true, license: existing, key: await openLicenseKey(existing.key_encrypted) };
+  }
+
+  const key = newLicenseKey();
+  const license = await base44.asServiceRole.entities.License.create({
+    user_id: userId,
+    email: String(input?.email || '').toLowerCase().slice(0, 200),
+    source,
+    entitlement,
+    plan_label: String(input?.planLabel || '').slice(0, 120),
+    order_number: `SIFT-${randomChars(6)}`,
+    purchase_id: purchaseId,
+    key_hash: await fingerprint(key),
+    key_encrypted: await sealKey(key),
+    key_hint: maskLicenseKey(key),
+    status: 'active',
+    activations: 0,
+    issued_at: new Date().toISOString(),
+    amount_cents: Number(input?.amountCents || 0),
+    currency: String(input?.currency || 'usd').toLowerCase(),
+    paid_at: input?.paidAt || null
+  });
+
+  const mailed = await mailLicense(base44, license, key);
+  if (!mailed.sent) console.warn(`[license] ${license.order_number} was issued but the copy was not emailed`);
+  return { created: true, license, key, mailed };
+}
+
+// The account's own license: an active one if there is one, otherwise the most
+// recent, so a revoked or regenerated key still shows its true state.
+export async function ownerLicenseRecord(base44: any, userId: any) {
+  if (!userId) return null;
+  const all = rows(await base44.asServiceRole.entities.License.filter({ user_id: userId }, { sort: '-created_date', limit: 20 }));
+  return all.find((license: any) => license.status === 'active') || all[0] || null;
+}
+
+// Everything the buyer's own page and Settings section show. The key is
+// included only while it works, and only for this account.
+export async function ownerLicense(base44: any, userId: any) {
+  const shared = {
+    unlocks: LICENSE_UNLOCKS,
+    terms: LICENSE_TERMS,
+    instructions: LICENSE_INSTRUCTIONS,
+    endpoint: LICENSE_ENDPOINT
+  };
+
+  const license = await ownerLicenseRecord(base44, userId);
+  if (!license) return { has_license: false, ...shared };
+
+  return {
+    has_license: true,
+    ...shared,
+    id: license.id,
+    status: license.status,
+    status_label: licenseStatusLabel(license),
+    source: license.source,
+    entitlement: license.entitlement,
+    plan_label: license.plan_label || '',
+    masked_key: license.key_hint,
+    key: license.status === 'active' ? await openLicenseKey(license.key_encrypted) : '',
+    order_number: license.order_number || '',
+    amount_cents: Number(license.amount_cents || 0),
+    currency: String(license.currency || 'usd').toLowerCase(),
+    issued_at: license.issued_at || license.created_date || null,
+    paid_at: license.paid_at || null,
+    activated_at: license.activated_at || null,
+    regenerated_at: license.regenerated_at || null,
+    revoked_at: license.revoked_at || null,
+    activations: Number(license.activations || 0)
+  };
+}
+
+// Activate a key handed over by the buyer's own setup. One activation sticks:
+// the first setup to use the key is the one it binds to.
+export async function validateLicense(base44: any, rawKey: any) {
+  const key = normalizeLicenseKey(rawKey);
+  if (!key) return { ok: false, reason: 'invalid' };
+
+  const hash = await fingerprint(key);
+  if (!hash) return { ok: false, reason: 'invalid' };
+
+  const license = first(await base44.asServiceRole.entities.License.filter({ key_hash: hash }));
+  if (!license) return { ok: false, reason: 'invalid' };
+  if (license.status === 'revoked') return { ok: false, reason: 'revoked' };
+  if (license.status === 'expired') return { ok: false, reason: 'expired' };
+  if (Number(license.activations || 0) > 0) return { ok: false, reason: 'already_used' };
+
+  await base44.asServiceRole.entities.License.update(license.id, {
+    activations: 1,
+    activated_at: new Date().toISOString()
+  });
+
+  return { ok: true, status: license.source === 'founding' ? 'founding' : 'active', order_number: license.order_number };
+}
+
+export async function revokeLicense(base44: any, license: any, reason: any) {
+  return base44.asServiceRole.entities.License.update(license.id, {
+    status: 'revoked',
+    revoked_at: new Date().toISOString(),
+    revoked_reason: String(reason || 'revoked').slice(0, 200)
+  });
+}
+
+// A replacement key. The fingerprint is replaced, so the key it replaces stops
+// working at this moment, and activation starts again from nothing.
+export async function regenerateLicense(base44: any, license: any, { reason = '', notify = false } = {}) {
+  const key = newLicenseKey();
+  const updated = await base44.asServiceRole.entities.License.update(license.id, {
+    key_hash: await fingerprint(key),
+    key_encrypted: await sealKey(key),
+    key_hint: maskLicenseKey(key),
+    status: 'active',
+    activations: 0,
+    activated_at: null,
+    revoked_at: null,
+    revoked_reason: String(reason || '').slice(0, 200),
+    regenerated_at: new Date().toISOString()
+  });
+
+  // The buyer is told about their own new key; nobody else is.
+  const mailed = notify ? await mailLicense(base44, updated, key, { reissued: true }) : { sent: false };
+  return { license: updated, key, mailed };
+}
+
+// A guest who paid and later signs in with the same verified email: the key
+// they already own is moved to that account. Never matched on anything a
+// caller can claim for someone else.
+export async function attachLicenseToAccount(base44: any, { purchaseId, userId, email }: any) {
+  if (!purchaseId || !userId) return { attached: 0 };
+  const mine = rows(await base44.asServiceRole.entities.License.filter({ purchase_id: purchaseId }));
+  let attached = 0;
+  for (const license of mine) {
+    if (license.user_id) continue;
+    if (email && String(license.email || '').toLowerCase() !== String(email).toLowerCase()) continue;
+    await base44.asServiceRole.entities.License.update(license.id, { user_id: userId });
+    attached += 1;
+  }
+  return { attached };
+}
+
+// The team's list: status and order numbers, the masked hint, never the key.
+export async function adminLicenseList(base44: any, limit = 100) {
+  const all = rows(await base44.asServiceRole.entities.License.filter({}, { sort: '-created_date', limit }));
+  return all.map((license: any) => ({
+    id: license.id,
+    masked_key: license.key_hint,
+    status: license.status,
+    status_label: licenseStatusLabel(license),
+    order_number: license.order_number || '',
+    source: license.source,
+    plan_label: license.plan_label || '',
+    email: license.email || '',
+    user_id: license.user_id || '',
+    issued_at: license.issued_at || license.created_date || null,
+    activations: Number(license.activations || 0)
+  }));
+}
+
+// Activation is the one endpoint a stranger can reach, so it is counted per
+// connection. A setup that activates once is nowhere near this; a script
+// guessing keys stops here.
+export async function admitValidation(base44: any, clientKey: any, cap = 60) {
+  const address = String(clientKey || '').trim();
+  if (!address || address === 'unknown') return true;
+
+  const ownerKey = `ip:${address}`.slice(0, 60);
+  const bucket = new Date().toISOString().slice(0, 10);
+
+  const page = await base44.asServiceRole.entities.DailyCounter.filter(
+    { kind: 'license_try', owner_key: ownerKey, bucket },
+    { limit: cap }
+  );
+  const seen = rows(page).length;
+  if (seen >= cap || page?.has_more === true) return false;
+
+  await base44.asServiceRole.entities.DailyCounter.create({ kind: 'license_try', owner_key: ownerKey, bucket });
+  return true;
+}

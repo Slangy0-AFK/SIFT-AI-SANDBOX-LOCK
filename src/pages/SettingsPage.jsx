@@ -10,6 +10,7 @@ import AuditLogExport from '../components/settings/AuditLogExport';
 import PasswordReset from '../components/security/PasswordReset';
 import SlackIntegrationSetup from '../components/settings/SlackIntegrationSetup';
 import AdminKeyClaim from '../components/settings/AdminKeyClaim';
+import MyLicensePanel from '../components/settings/MyLicensePanel';
 
 export default function SettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState('');
@@ -48,6 +49,8 @@ export default function SettingsPage() {
       <div className="space-y-6">
 
         <AdminKeyClaim />
+
+        <MyLicensePanel />
 
       {/* Security Tools */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

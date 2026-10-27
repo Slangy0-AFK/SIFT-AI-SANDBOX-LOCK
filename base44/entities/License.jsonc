@@ -1,0 +1,140 @@
+{
+  "name": "License",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "The account this key is issued to. Empty only while a guest purchase waits to be claimed by the account that signs in with the same verified email."
+    },
+    "email": {
+      "type": "string",
+      "description": "Buyer address from checkout. Used to match an unclaimed purchase to the account that later signs in with it, and to send the buyer their own copy."
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "purchase",
+        "founding"
+      ],
+      "description": "purchase = came from a paid order; founding = the free founding place"
+    },
+    "entitlement": {
+      "type": "string",
+      "enum": [
+        "pro",
+        "device_check",
+        "founding"
+      ],
+      "description": "What was bought or granted, as the catalog names it"
+    },
+    "plan_label": {
+      "type": "string",
+      "description": "Human name of what was bought, e.g. SiftAI Pro (monthly)"
+    },
+    "order_number": {
+      "type": "string",
+      "description": "Short reference shown to the buyer and the team, e.g. SIFT-7K3M9Q. Never derived from the key."
+    },
+    "purchase_id": {
+      "type": "string",
+      "description": "The purchase record this key was issued from. The only link from a payment to a key."
+    },
+    "key_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256 of the key. This is what a key is matched against; the key itself is never stored in the clear."
+    },
+    "key_encrypted": {
+      "type": "string",
+      "description": "The key, encrypted with a server-side secret. Read back only for the buyer's own account and never listed."
+    },
+    "key_hint": {
+      "type": "string",
+      "description": "Masked form safe to show in lists, e.g. SIFT-LIC-4A2F-...."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked",
+        "expired"
+      ],
+      "default": "active"
+    },
+    "activations": {
+      "type": "number",
+      "default": 0,
+      "description": "Times the key has been activated. A key activates once: the first setup to use it is the one it binds to."
+    },
+    "activated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "regenerated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Set when a replacement key was issued. The replaced key stops working at this moment."
+    },
+    "revoked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "revoked_reason": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "amount_cents": {
+      "type": "number",
+      "description": "What the buyer paid, for the receipt. 0 for a founding place."
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd"
+    },
+    "paid_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "source",
+    "entitlement",
+    "order_number",
+    "key_hash",
+    "key_encrypted",
+    "key_hint",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
