@@ -21,7 +21,9 @@ Any change pushed to the repo will also be reflected in the Base44 Builder.
 VITE_BASE44_MOCK=false
 VITE_BASE44_APP_ID=your_app_id
 VITE_BASE44_APP_BASE_URL=https://sift-ai.net
-VITE_BASE44_ACCESS_TOKEN=your_integration_or_user_token
+# Never put a token or an API key in a VITE_ variable: every VITE_ value is embedded in the public
+# browser bundle. Tokens belong in the app's backend secrets. To pre-authenticate locally only, open
+# the dev server with ?access_token=<token> — the app keeps it in that browser and strips it from the URL.
 AUTH_CHALLENGE=Do you accept?
 AUTH_CHALLENGE_ANSWER=Yes
 # Optional: VITE_BASE44_FUNCTIONS_VERSION=latest
