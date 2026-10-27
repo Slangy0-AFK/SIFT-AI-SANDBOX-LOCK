@@ -1,13 +1,6 @@
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
-
-const STEPS = [
-  'Copy the file into your product, next to the code that calls your model.',
-  'Set SIFT_LICENSE_KEY to your SIFT AI license key. Your own copy of it is on your license page.',
-  'Call the guard before your model sees a message, and around every tool your model asks for. Both files show this at the top.',
-  'Tell it which tools your product is allowed to run, and with which arguments, so the tool gate has something to check against.',
-  'Test it in a test environment first, with the checklist below, before it goes anywhere near real traffic.'
-];
+import { PLUGIN_SETUP_STEPS } from '@/lib/pluginContent';
 
 // Plain-language setup. The note about who does the installing is the point:
 // nothing here is installed for the customer.
@@ -16,7 +9,7 @@ export default function PluginSetup() {
     <section className="rounded-2xl border border-border bg-card p-6 sm:p-8">
       <h2 className="font-heading text-lg font-semibold">Setting it up</h2>
       <ol className="mt-4 space-y-3">
-        {STEPS.map((line, index) => (
+        {PLUGIN_SETUP_STEPS.map((line, index) => (
           <li key={line} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
             <span className="font-mono text-xs text-primary">{index + 1}</span>
             <span>{line}</span>

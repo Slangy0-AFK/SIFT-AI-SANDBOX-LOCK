@@ -4,6 +4,7 @@ import { CheckCircle2, Clock, ArrowRight, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatChicagoTime } from '@/lib/utils';
 import { NEXT_STEPS } from '@/lib/scannerPlans';
+import ReceiptLicenseBundle from '@/components/plans/ReceiptLicenseBundle';
 
 function money(cents, currency) {
   const amount = (Number(cents) || 0) / 100;
@@ -54,9 +55,10 @@ export default function ReceiptSummary({ plan, purchase }) {
             {purchase.license.expires_at
               ? ` · works until ${formatChicagoTime(purchase.license.expires_at)}`
               : ''}
-            . The full key is in your own account, and a copy has gone to the address you paid with. Reveal it, copy it
-            or download the license file from your license page.
+            . The full key is in your own account, and a copy has gone to the address you paid with. Reveal it, copy it, or
+            take the whole set as one zip from your license page.
           </p>
+          <ReceiptLicenseBundle orderNumber={purchase.license.order_number} />
         </div>
       )}
 

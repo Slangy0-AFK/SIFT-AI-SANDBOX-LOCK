@@ -3,6 +3,7 @@ import { Copy, Download, Eye, EyeOff, RefreshCw, Ban, Loader2 } from 'lucide-rea
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { downloadLicenseFile } from '@/lib/licenseFile';
+import { bundleOffered, downloadLicenseBundle } from '@/lib/licenseBundle';
 import { formatChicagoTime } from '@/lib/utils';
 
 // The buyer's key: masked until they ask to see it, copyable, downloadable, and
@@ -10,9 +11,13 @@ import { formatChicagoTime } from '@/lib/utils';
 export default function LicenseKeyCard({ license, onRevoke, onRegenerate, busy = false }) {
   const [shown, setShown] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [packing, setPacking] = useState(false);
 
   const key = license.key || '';
   const usable = Boolean(key);
+  // The full version and a founding place take everything as one zip; a Device
+  // Check key keeps the plain license file.
+  const bundle = bundleOffered(license);
 
   const copy = async () => {
     if (!usable) {
@@ -27,13 +32,25 @@ export default function LicenseKeyCard({ license, onRevoke, onRegenerate, busy =
     }
   };
 
-  const download = () => {
+  const download = async () => {
     if (!usable) {
       toast.error('There is no working key to download. Issue a new one first.');
       return;
     }
-    downloadLicenseFile(license, key);
-    toast.success('License file downloaded.');
+    if (!bundle) {
+      downloadLicenseFile(license, key);
+      toast.success('License file downloaded.');
+      return;
+    }
+    setPacking(true);
+    try {
+      await downloadLicenseBundle(license);
+      toast.success('Your zip is downloading: the license file, the plug-in code, setup, terms and the checklist.');
+    } catch (error) {
+      toast.error('The zip could not be put together, so nothing was downloaded. Try again.');
+    } finally {
+      setPacking(false);
+    }
   };
 
   return (
@@ -84,8 +101,9 @@ export default function LicenseKeyCard({ license, onRevoke, onRegenerate, busy =
         <Button size="sm" variant="outline" className="gap-2 text-xs" onClick={copy} disabled={!usable}>
           <Copy className="h-3.5 w-3.5" /> Copy
         </Button>
-        <Button size="sm" variant="outline" className="gap-2 text-xs" onClick={download} disabled={!usable}>
-          <Download className="h-3.5 w-3.5" /> Download
+        <Button size="sm" variant="outline" className="gap-2 text-xs" onClick={download} disabled={!usable || packing}>
+          {packing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          {bundle ? 'Download everything (.zip)' : 'Download'}
         </Button>
         {onRegenerate && license.status !== 'revoked' && (
           <Button size="sm" variant="outline" className="gap-2 text-xs" onClick={onRegenerate} disabled={busy}>
@@ -94,6 +112,13 @@ export default function LicenseKeyCard({ license, onRevoke, onRegenerate, busy =
           </Button>
         )}
       </div>
+
+      {bundle && usable && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          One zip, nothing separate: the license file, the plug-in code, the setup instructions, the license terms and the test
+          checklist, all in it.
+        </p>
+      )}
 
       {onRegenerate && license.status !== 'revoked' && (
         <p className="mt-2 text-xs text-muted-foreground">

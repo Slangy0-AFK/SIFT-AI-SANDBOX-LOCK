@@ -1,6 +1,7 @@
 import React from 'react';
 import { Download, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PLUGIN_ENV_READS } from '@/lib/pluginContent';
 
 const ENDPOINT = 'https://siftai.base44.app/functions/validateLicense';
 
@@ -17,14 +18,6 @@ const FILES = [
     note: 'Python 3.7+ — standard library only',
     lead: false
   }
-];
-
-const READS = [
-  ['SIFT_LICENSE_KEY', 'Your SIFT AI license key.'],
-  ['SIFT_MODEL_NAME', 'The ONE model or product this key is for. The key locks to it on first use.'],
-  ['SIFT_DEPLOYMENT_ID', 'The deployment or domain it runs on. Not a person\u2019s details, just where the model lives.'],
-  ['SIFT_KILL_SWITCH', 'Optional. On, or unreadable, stops everything before anything else runs.'],
-  ['SIFT_AUDIT_LOG', 'Optional. Where the audit entries are written. Defaults to ./sift-guard-audit.log.']
 ];
 
 // The two files, and what each one needs from the customer's own environment.
@@ -74,7 +67,7 @@ export default function PluginDownloads() {
       </div>
 
       <dl className="mt-5 space-y-2">
-        {READS.map(([name, note]) => (
+        {PLUGIN_ENV_READS.map(([name, note]) => (
           <div key={name} className="flex flex-col gap-1 sm:flex-row sm:gap-3">
             <dt className="font-mono text-xs font-bold text-foreground sm:w-48 sm:flex-shrink-0">{name}</dt>
             <dd className="text-xs leading-relaxed text-muted-foreground">{note}</dd>
