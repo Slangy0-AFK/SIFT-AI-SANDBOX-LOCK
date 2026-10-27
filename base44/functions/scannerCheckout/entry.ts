@@ -22,7 +22,7 @@ export default async function (req) {
     // still be confirmed; its features are in Device Check now.
     if (tier.purchasable === false) {
       return Response.json(
-        { error: 'That plan is no longer sold. The whole package at $100 a year includes everything it had.' },
+        { error: 'That plan is no longer sold. The whole package at $50 includes everything it had.' },
         { status: 400 }
       );
     }
@@ -104,25 +104,22 @@ export default async function (req) {
     });
 
     // Pro keeps the app's existing plan record in step, so the rest of the app
-    // sees the plan change without knowing about scanner purchases. A yearly tier
-    // is recorded as annual, so the renewal date and the cancel flow read the right
-    // cycle.
+    // sees the plan change without knowing about scanner purchases.
     if (tier.mode === 'subscription' && user && user.id) {
-      const cycle = tier.interval === 'year' ? 'annual' : 'monthly';
       const existing = firstRecord(await base44.asServiceRole.entities.Subscription.filter({ user_id: user.id }));
       if (!existing) {
         await base44.asServiceRole.entities.Subscription.create({
           user_id: user.id,
           plan: 'pro',
           status: 'pending',
-          billing_cycle: cycle,
+          billing_cycle: 'monthly',
           checkout_session_id: session.id
         });
       } else if (existing.status !== 'active') {
         await base44.asServiceRole.entities.Subscription.update(existing.id, {
           plan: 'pro',
           status: 'pending',
-          billing_cycle: cycle,
+          billing_cycle: 'monthly',
           checkout_session_id: session.id
         });
       }

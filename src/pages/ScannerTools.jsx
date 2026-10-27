@@ -72,7 +72,7 @@ export default function ScannerTools() {
         <section className="space-y-5">
           <div className="flex items-center gap-2">
             <h2 className="font-mono text-sm font-bold tracking-widest text-foreground">WHOLE PACKAGE</h2>
-            <span className="font-mono text-xs text-muted-foreground">$100 a year</span>
+            <span className="font-mono text-xs text-muted-foreground">$50 one time</span>
           </div>
           <DeviceCheckForm unlocked={unlocked.has('device_check') || unlocked.has('full_audit')} />
         </section>

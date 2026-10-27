@@ -52,15 +52,12 @@ export async function confirmAndGrant(base44, stripe, session) {
   // Unlock first, mark the purchase paid after: a redelivered event then sees
   // "paid" and stops, instead of unlocking twice.
   if (liveSubscription) {
-    // A yearly tier renews twelve months out; a monthly one a month out. The
-    // record carries the same cycle the tier was sold on.
-    const yearly = tier.interval === 'year';
     const renewal = new Date();
-    renewal.setMonth(renewal.getMonth() + (yearly ? 12 : 1));
+    renewal.setMonth(renewal.getMonth() + 1);
     const fields = {
       plan: 'pro',
       status: 'active',
-      billing_cycle: yearly ? 'annual' : 'monthly',
+      billing_cycle: 'monthly',
       renewal_date: renewal.toISOString().split('T')[0],
       stripe_subscription_id: liveSubscription.id,
       stripe_customer_id:
@@ -138,9 +135,6 @@ export async function confirmAndGrant(base44, stripe, session) {
     amount_total: Number(session.amount_total),
     currency: String(session.currency || 'usd').toLowerCase(),
     paid_at: paidAt,
-    // A recurring purchase is filed with its subscription id, so what it unlocks
-    // lasts exactly as long as that subscription is live.
-    ...(liveSubscription ? { stripe_subscription_id: liveSubscription.id } : {}),
     ...(email ? { email } : {})
   });
 

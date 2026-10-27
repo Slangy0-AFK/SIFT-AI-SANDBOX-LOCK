@@ -32,9 +32,9 @@ export const SCANNER_PLANS = [
   {
     id: 'device_check',
     name: 'Whole package',
-    price: '$100',
-    cadence: 'per year',
-    blurb: 'Everything the app makes, renewed yearly.',
+    price: '$50',
+    cadence: 'one time',
+    blurb: 'Everything the app makes, in one purchase.',
     features: [
       'The harness and killswitch, JavaScript and Python',
       'The phone scan and every look-up, on your account',
@@ -64,7 +64,7 @@ export const PRO_YEARLY = {
 };
 
 // The $99 Full Audit is retired as a buyable tier: everything it included is now
-// in the whole package at $100 a year. This entry exists only so a purchase or receipt
+// in the whole package at $50. This entry exists only so a purchase or receipt
 // from before the change still resolves to a name, and it is never offered as a
 // plan — the plans list above is what the pages render.
 export const FORMER_PLANS = {
@@ -73,7 +73,7 @@ export const FORMER_PLANS = {
     name: 'Full Agent Audit (formerly $99, now included in the whole package)',
     price: '$99',
     cadence: 'formerly one time',
-    blurb: 'Retired as a buyable tier. Everything it included is in the whole package at $100 a year.',
+    blurb: 'Retired as a buyable tier. Everything it included is in the whole package at $50.',
     features: []
   }
 };
@@ -92,7 +92,7 @@ export const NEXT_STEPS = {
   pro_annual:
     'Your year of the harness is active on your account, and your license key is issued to it. It runs for the twelve months you paid for, and there is nothing to renew or cancel.',
   device_check:
-    'The whole package is active on your account: the harness and killswitch, the phone scan and look-ups, and the eval puzzles. It renews yearly and you can cancel any time. Next: open the killswitch demo and describe the one agent you want looked at — the tools it can reach, what it will accept as an instruction, and what it has actually done.',
+    'The whole package is active on your account: the harness and killswitch, the phone scan and look-ups, and the eval puzzles. Next: open the killswitch demo and describe the one agent you want looked at — the tools it can reach, what it will accept as an instruction, and what it has actually done.',
   // Kept so a purchase made before the change still shows sensible guidance.
   full_audit:
     'Your Full Audit is handled as part of the whole package: everything it included is there. Next: open the killswitch demo and describe the agent you want looked at.'

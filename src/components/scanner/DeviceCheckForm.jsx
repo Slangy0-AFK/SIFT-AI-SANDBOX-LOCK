@@ -45,7 +45,7 @@ export default function DeviceCheckForm({ unlocked }) {
     return (
       <TierLocked
         tier="Whole package"
-        price="$100 a year"
+        price="$50 one time"
         includes={[
           'A flagged item, or the whole device',
           'The app list and where the device connects',

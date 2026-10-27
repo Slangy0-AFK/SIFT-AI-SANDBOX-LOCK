@@ -3,8 +3,7 @@ import Stripe from 'npm:stripe@14.0.0';
 import { revokePlanKey } from '../../shared/license.ts';
 import { stripeCredentials } from '../../shared/stripeConnect.ts';
 
-// Ends a person's own renewing plan — monthly harness or yearly whole package —
-// at their own request.
+// Ends a person's own monthly Pro, at their own request.
 //
 // Cancelling is immediate: the plan stops and the license key that came with it
 // stops working at the same moment. The month they are already in stays paid —
@@ -60,7 +59,7 @@ export default async function (req) {
       cancelled: true,
       keys_revoked: keys.revoked,
       message:
-        'Your plan is cancelled and your license key has stopped working. The time you have already paid for is not refunded, and you can buy again whenever you like.'
+        'Your plan is cancelled and your license key has stopped working. The month you are in is not refunded, and you can buy Pro again whenever you like.'
     });
   } catch (error) {
     console.error('[cancelSubscription] Error:', error && error.message);
