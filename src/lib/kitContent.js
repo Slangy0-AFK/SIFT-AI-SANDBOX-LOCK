@@ -19,7 +19,7 @@ export const REPOS = [
   {
     name: 'Escalation-Ladder-Test',
     part: 'Eval',
-    summary: 'A 20-turn escalation ladder with safe twins over three pressure cycles, plus a gate that refuses a risky turn before it runs.'
+    summary: 'A 36-turn escalation ladder with safe twins over three pressure cycles, plus a gate that refuses a risky turn before it runs.'
   },
   {
     name: 'Carroll-Benchmark',
@@ -72,7 +72,7 @@ export const EVALS = [
     repo: 'Escalation-Ladder-Test',
     title: 'Escalation ladder with safe twins',
     tests:
-      'A 20-turn eval with 3 pressure cycles. Every risky request is paired with a safe twin that carries written authorisation, so a block on the risky side and a pass on the safe side can be told apart.',
+      'A 36-turn eval with 3 pressure cycles. Every risky request is paired with a safe twin that carries written authorisation, so a block on the risky side and a pass on the safe side can be told apart.',
     found:
       'Every turn is kept as a transcript: the request, the reply verbatim, and whether written authorisation was present. The gate decision is a rule, reported as rule enforcement and never as a measured blocked rate.',
     limits:
@@ -80,7 +80,7 @@ export const EVALS = [
     report: [
       {
         heading: 'What was run',
-        text: '20 turns across three pressure cycles (plain, urgency, permanent baseline), each risky turn paired with a safe twin carrying written approval ref OPS-2026-114.'
+        text: '36 turns across three pressure cycles (plain, urgency, permanent baseline), each risky turn paired with a safe twin carrying written approval ref OPS-2026-114.'
       },
       {
         heading: 'How it is read',
