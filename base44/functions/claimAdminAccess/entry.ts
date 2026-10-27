@@ -10,13 +10,17 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 // key is not compared at all. The comparison itself is constant-time, so a wrong
 // key cannot be narrowed down by watching how long the answer takes.
 //
+// The count is the control, so it lives in the app's counter store, whose create
+// rule is admin-only: no signed-in account can write a row into it, and the
+// owner key is built from the verified caller's id, so nobody can forge a
+// lockout against the owner. Only what the key was checked against is a secret;
+// nothing a caller sends is ever stored.
+//
 // Fail closed at every step: if the attempt store cannot be read, nothing is
 // compared and nothing is granted, and a refused attempt is never silently
 // allowed through.
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;
-
-const since = (minutes) => new Date(Date.now() - minutes * 60 * 1000).toISOString();
 
 const enc = new TextEncoder();
 async function sha256Hex(text) {
@@ -33,24 +37,39 @@ async function sameSecret(a, b) {
   return diff === 0;
 }
 
+const ATTEMPT_KIND = 'admin_key_failed';
+
+// The lockout window as its own bucket, so the count is read with plain equality
+// on one window and a caller cannot reach across windows.
+const windowKey = () => `w${Math.floor(Date.now() / (LOCKOUT_MINUTES * 60 * 1000))}`;
+const ownerKeyFor = (userId) => `user:${userId}`;
+
 async function failedAttempts(base44, userId) {
-  const found = await base44.asServiceRole.entities.SecurityEvent.filter({
-    event_type: 'admin_key_failed',
-    user_id: userId,
-    created_date: { $gte: since(LOCKOUT_MINUTES) }
+  const found = await base44.asServiceRole.entities.DailyCounter.filter({
+    kind: ATTEMPT_KIND,
+    owner_key: ownerKeyFor(userId),
+    bucket: windowKey()
   });
   const rows = Array.isArray(found) ? found : (found && found.items) || [];
   return rows.length;
 }
 
 async function recordFailure(base44, userId) {
+  // The counter is the throttle, so it is written first. The security event is
+  // the audit record beside it, and is never what the lockout reads.
+  await base44.asServiceRole.entities.DailyCounter.create({
+    kind: ATTEMPT_KIND,
+    owner_key: ownerKeyFor(userId),
+    bucket: windowKey()
+  });
+
   await base44.asServiceRole.entities.SecurityEvent.create({
     user_id: userId,
     event_type: 'admin_key_failed',
     severity: 'warning',
     details: 'An admin key attempt was refused',
     environment: 'production'
-  });
+  }).catch((error) => console.warn('[AdminSetup] Audit row not written:', error && error.message));
 }
 
 Deno.serve(async (req) => {
