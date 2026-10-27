@@ -51,13 +51,14 @@ export default function EvalBundleTest() {
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-border bg-secondary/20 p-3 text-xs text-muted-foreground">
-        One bundle, five puzzles. Run one at a time, or run all five on the same model to get the whole readout: what it held,
-        what it failed, and the behaviour behind each. A run costs one model call, and each account has a daily ceiling.
+        One bundle, six behaviours. Run one turn at a time, or run all six on the same model. Each turn is drawn from a fresh
+        seed, kept verbatim, and left review pending: no code marks it right or wrong. A turn costs one model call, and each
+        account has a daily ceiling.
       </div>
 
       <div className="flex flex-col gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 sm:flex-row sm:items-end">
         <label className="flex-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Run all five on
+          Run all six on
           <select
             value={bundleModel}
             onChange={(event) => setBundleModel(event.target.value)}
@@ -73,7 +74,7 @@ export default function EvalBundleTest() {
 
         <Button size="sm" className="gap-2" onClick={runAll} disabled={runningAll || busyIds.length > 0}>
           {runningAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-          {runningAll ? 'Running the bundle' : 'Run all five'}
+          {runningAll ? 'Recording the bundle' : 'Run all six'}
         </Button>
       </div>
 
@@ -95,8 +96,9 @@ export default function EvalBundleTest() {
       <EvalSummary results={resultList} />
 
       <p className="text-xs text-muted-foreground">
-        Each verdict is plain code checking one answer, so the strengths and weaknesses above are what this run showed. A pass is a
-        check, not a certificate: another prompt or another day can land somewhere else.
+        Nothing above is a result. The transcript is the artifact: a person reads every turn and quotes the words the judgment
+        rests on before anything is written up. It then describes this model, this seed and these payloads only, and it is not a
+        safety certification or proof about any lab's model.
       </p>
     </div>
   );

@@ -13,8 +13,8 @@ export default function Marketplace() {
       <h1 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">Four products, one place to test them.</h1>
       <p className="mt-4 max-w-3xl text-muted-foreground">
         The killswitch stops an agent before code runs. Two harnesses sit around it, one for JavaScript and one for Python. The
-        eval puzzle bundle is where you put a model through the awkward cases. Every product has a test button, and every result
-        tells you what ran and what it ran on.
+        eval puzzle bundle is where you put a model through the awkward cases. Every product has a test button, and every
+        transcript says what ran, on which model, and that it is waiting on a person.
       </p>
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -59,9 +59,9 @@ export default function Marketplace() {
         <ProductCard
           icon={Puzzle}
           name="Eval puzzles · one bundle"
-          tag="Bundle · 5 puzzles"
-          blurb="Five authored scenarios that try to make a model misbehave, with a verdict from plain code rather than another model."
-          points={['Direct override, pasted-injection, tool misuse, spend, loop', 'A model dropdown on every puzzle, so two models can be compared', 'Every result labelled with the puzzle and the model it ran on']}
+          tag="Bundle · 6 behaviours"
+          blurb="Six authored behaviours that push a model towards a risky change framed as approved or standard, recorded as a transcript rather than a verdict."
+          points={['Goal drift, reward hacking, collusion, bias amplification, black-box capability, temporal poisoning', 'A fresh seed and a fresh payload on every turn, so no run repeats the same table', 'Each turn kept verbatim and left review pending until a person quotes what they judged']}
           to="/evals"
           cta="Read what each puzzle tests"
         >
@@ -70,8 +70,8 @@ export default function Marketplace() {
       </div>
 
       <LimitsNote className="mt-10">
-        Nothing here scores a model or certifies an agent. A pass is a check on one answer from one run, and the harness only holds
-        where you place it.
+        Nothing here scores a model or certifies an agent. A transcript is one run's record and a gate holds only where you place
+        it.
       </LimitsNote>
     </div>
   );

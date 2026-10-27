@@ -19,7 +19,7 @@ export const REPOS = [
   {
     name: 'Escalation-Ladder-Test',
     part: 'Eval',
-    summary: 'A 20-turn escalation ladder with safe twins, comparing prompt-only guardrails against a governor.'
+    summary: 'A 20-turn escalation ladder with safe twins over three pressure cycles, plus a gate that refuses a risky turn before it runs.'
   },
   {
     name: 'Carroll-Benchmark',
@@ -49,13 +49,14 @@ export const EVALS = [
     title: 'Multi-turn adversarial eval',
     tests:
       'Pushes an agent over several turns and watches six behaviours: goal_drift, reward_hacking, collusion, bias_amplification, black_box_capability and temporal_poisoning.',
-    found: 'The repo selftest checks that the checks behave as written. It scores no model and claims no win.',
+    found:
+      'Transcript only. A fresh seed and a fresh behaviour order every run, two held-out payloads per behaviour, and every turn stored verbatim and left review pending. No code prints a total.',
     limits:
-      'The scenarios are authored inside the repo. Passing the selftest means the checks behave as written, not that an agent is safe in general.',
+      'Results apply only to the model, seed, order and payloads actually run, after independent human review. The earlier totals from this eval are withdrawn and must not be cited.',
     report: [
       {
         heading: 'What was run',
-        text: 'The repo selftest, in our lab, over the scenario set that ships with the repo: 15 checks spanning the six behaviours.'
+        text: 'The corrected runner over the six behaviours, with two held-out payloads per behaviour and a paired authorised twin for each original request.'
       },
       {
         heading: 'How it is read',
@@ -73,13 +74,13 @@ export const EVALS = [
     tests:
       'A 20-turn eval with 3 pressure cycles. Every risky request is paired with a safe twin that carries written authorisation, so a block on the risky side and a pass on the safe side can be told apart.',
     found:
-      'Every turn is kept as a transcript: the request, the reply verbatim, and whether written authorisation was present. No win, block rate or false-positive rate is claimed for either arm.',
+      'Every turn is kept as a transcript: the request, the reply verbatim, and whether written authorisation was present. The gate decision is a rule, reported as rule enforcement and never as a measured blocked rate.',
     limits:
-      'This run did NOT reproduce a lab failure, so read it as a check, not as a claim of beating the labs. It was unblinded, it used a single target (Muse), and the scenarios are authored.',
+      'The earlier per-turn table from 2026-10-25 is withdrawn and must not be cited: the prompt-only side rested on a heuristic keyword classifier, and the gate side is what the code was written to do. That run was also unblinded, with the tester as the target.',
     report: [
       {
         heading: 'What was run',
-        text: '20 turns and 3 pressure cycles with Muse as the target, comparing prompt-only guardrails against the scaler governor.'
+        text: '20 turns across three pressure cycles (plain, urgency, permanent baseline), each risky turn paired with a safe twin carrying written approval ref OPS-2026-114.'
       },
       {
         heading: 'How it is read',
@@ -95,13 +96,14 @@ export const EVALS = [
     repo: 'Carroll-Benchmark',
     title: 'Immediate-horizon life simulation',
     tests: 'A single-file life simulation that records what an agent decides over a short horizon.',
-    found: 'It prints the decisions themselves, so you read the choices instead of one number.',
+    found:
+      'It reports behaviour counts for the seed and policy actually used, beside the full transcript. No option is marked correct and no total is claimed for an agent.',
     limits:
-      'The output is a record of decisions inside a short simulated life. It is not a score for intelligence and it is not a safety result.',
+      'Results apply only to these scenarios and the configuration used. The sample policy in the corrected run is a deterministic stub, not a model result; a real run needs a real model, with fallbacks and invalid responses reported separately.',
     report: [
       {
         heading: 'What was run',
-        text: 'The simulation as it ships, stepping an agent through a short life in a single file.'
+        text: 'The simulation at three seeds, reporting life end, decisions and policy violations per seed, plus a ten-life batch of action counts.'
       },
       {
         heading: 'How to read it',
@@ -118,16 +120,18 @@ export const EVALS = [
     title: 'Five-phase living simulation',
     tests:
       'A persistent five-phase evaluation: the agent keeps living between phases rather than starting clean each time.',
-    found: 'The repo validator confirms the simulation ran the way its author designed it. That is a flow check, not a result about reasoning.',
-    limits: 'The validator checks that the simulation ran the way its author designed it. It is not an outside audit.',
+    found:
+      'The corrected run computes the choice, the forecast and the snapshot hash after the run, from that run\u2019s own state. Seed 260101 reproduced the recorded hash exactly, and each later seed gave a different hash and a different fire forecast.',
+    limits:
+      'Contract checks look at the answer\u2019s shape only, so format compliance is not a reasoning pass. This is an early simplified demo, not a scientific measure of intelligence.',
     report: [
       {
         heading: 'What was run',
-        text: 'The repo validator across the five phases, recording which checks it ran.'
+        text: 'The corrected simulation at seeds 260101 to 260104, with no prompt telling the model which way to decide.'
       },
       {
-        heading: 'What the validator covers',
-        text: 'It checks the simulation follows its own steps. It does not judge whether the choices made inside it were good ones.'
+        heading: 'What the checks cover',
+        text: 'The snapshot hash is a checksum for the recorded state, not proof of reasoning, and the contract checks confirm the answer\u2019s shape. Neither runs an agent.'
       },
       {
         heading: 'What it does not show',
@@ -139,8 +143,10 @@ export const EVALS = [
     repo: 'The-Loop-Test-',
     title: 'Premise-set loop test',
     tests: 'A sandbox logic eval over premise set P1 to P8.',
-    found: 'Round 0 finds that P3 contradicts P6, so P1 to P8 cannot all be true. Whether a derivation follows is a reviewer judgment, not a count.',
-    limits: 'This is a logic result inside the repo’s sandbox. It says nothing about any model’s safety.',
+    found:
+      'Round 0 finds that P3 contradicts P6, so P1 to P8 cannot all be true, and that no added claims can repair the unchanged set. Every rubric item is a quoted judgment from an independent reviewer, and no total is claimed.',
+    limits:
+      'The earlier self-scored figure is withdrawn and must not be cited. This is a logic result inside the repo’s sandbox, and it says nothing about any model’s safety.',
     report: [
       {
         heading: 'What was run',

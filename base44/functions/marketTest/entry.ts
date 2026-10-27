@@ -1,13 +1,22 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { screenInput } from '../../shared/guardPolicy.ts';
-import { EVAL_MODELS, findPuzzle, modelLabel } from '../../shared/evalPuzzles.ts';
+import {
+  EVAL_MODELS,
+  REVIEW_NOTE,
+  buildPrompt,
+  drawTurn,
+  findPuzzle,
+  modelLabel,
+  reviewFlags
+} from '../../shared/evalPuzzles.ts';
 import { spendCredit } from '../../shared/creditGuard.ts';
 
 // Two things the marketplace can test, both inside the account:
 //   kind 'harness' — one sample message screened by the rules the plug-in ships.
 //                   No model is called, so this costs nothing.
-//   kind 'puzzle'  — one authored puzzle run against the one model the caller
-//                   picked. One model call, counted against a daily ceiling.
+//   kind 'puzzle'  — one authored behaviour sent to the one model the caller
+//                   picked. One model call, counted against a daily ceiling, and
+//                   no verdict: the turn is a transcript waiting on a person.
 const SAMPLE_MAX = 600;
 const REPLY_MAX = 4000;
 
@@ -35,7 +44,7 @@ export default async function (req) {
       });
     }
 
-    // A puzzle run: the id picks the scenario, the caller only picks the model.
+    // A puzzle run: the id picks the behaviour, the caller only picks the model.
     const puzzle = findPuzzle(body.puzzle_id);
     if (!puzzle) return Response.json({ error: 'Unknown puzzle.' }, { status: 400 });
 
@@ -49,8 +58,13 @@ export default async function (req) {
       return Response.json({ error: 'You have run a lot of puzzles today. Try again tomorrow.' }, { status: 429 });
     }
 
+    // The seed is drawn here, so the message is never chosen by the caller and no
+    // run repeats the same table.
+    const seed = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const turn = drawTurn(puzzle, seed);
+
     const raw = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: puzzle.prompt,
+      prompt: buildPrompt(turn.message),
       ...(modelId === 'automatic' ? {} : { model: modelId })
     });
 
@@ -59,17 +73,25 @@ export default async function (req) {
       return Response.json({ error: 'The model returned nothing. Try the run again.' }, { status: 502 });
     }
 
-    const graded = puzzle.grade(reply);
-    console.log(`[marketTest] puzzle=${puzzle.id} model=${modelId} pass=${graded.pass}`);
+    // No judgment is made here at all: the turn goes back verbatim and waits for a
+    // person. The flags are words to look at, and they are never counted.
+    console.log(`[marketTest] puzzle=${puzzle.id} model=${modelId} arm=${turn.arm} seed=${seed}`);
 
     return Response.json({
       kind: 'puzzle',
-      puzzle: { id: puzzle.id, number: puzzle.number, title: puzzle.title },
+      puzzle: { id: puzzle.id, number: puzzle.number, title: puzzle.title, behavior: puzzle.tests },
       model: { id: modelId, label: modelLabel(modelId) },
-      verdict: graded.pass ? 'pass' : 'fail',
-      gate: puzzle.gate,
-      reason: graded.reason,
-      reply,
+      seed,
+      turn: {
+        arm: turn.arm,
+        authorisation: turn.authorisation,
+        payload_kind: turn.payload_kind,
+        message: turn.message,
+        reply,
+        status: 'review_pending',
+        keyword_flags: reviewFlags(reply)
+      },
+      note: REVIEW_NOTE,
       checked_at: new Date().toISOString()
     });
   } catch (error) {
