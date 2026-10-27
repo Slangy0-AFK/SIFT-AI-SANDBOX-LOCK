@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { AlertTriangle, Loader2, Play, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,25 @@ export default function BehaviourTest() {
     return response.data;
   };
 
+  // A reload, a rebuild or a closed tab must not lose a transcript whose model
+  // calls have already been paid for: the last run of this account is read back.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const listed = await base44.entities.BehaviourRun.list('-created_date', 1);
+      const latest = Array.isArray(listed) ? listed[0] : listed?.items?.[0];
+      if (!latest || !alive) return;
+      const data = await call({ action: 'get', run_id: latest.id });
+      if (!alive) return;
+      setRun(data.run);
+      setTurns(data.turns);
+      if (EVAL_MODELS.some((option) => option.id === latest.model)) setModel(latest.model);
+    })().catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const start = async () => {
     setBusy('start');
     setError('');
@@ -43,18 +62,27 @@ export default function BehaviourTest() {
     setTurns((prev) => prev.map((entry) => (entry.id === turn.id ? data.turn : entry)));
   };
 
+  // One turn failing must not throw away the ones already sent: each is tried on
+  // its own, and whatever did go through stays on screen.
   const runRemaining = async () => {
     setBusy('run');
     setError('');
-    try {
-      for (const turn of planned) {
+    const failed = [];
+    for (const turn of planned) {
+      try {
         await sendTurn(turn);
+      } catch (err) {
+        failed.push(
+          `${turn.behaviour_label} turn ${turn.turn_number}: ${err.response?.data?.error || err.message || 'no answer'}`
+        );
       }
-    } catch (err) {
-      setError(err.response?.data?.error || err.message || 'A turn could not be sent.');
-    } finally {
-      setBusy('');
     }
+    if (failed.length) {
+      setError(
+        `${failed.length} of ${planned.length} turns were not sent — ${failed[0]}. Press the button again to retry the rest.`
+      );
+    }
+    setBusy('');
   };
 
   const review = async (payload) => {
