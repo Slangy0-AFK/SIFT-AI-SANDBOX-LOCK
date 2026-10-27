@@ -70,6 +70,12 @@ const dayKey = () => new Date().toISOString().slice(0, 10);
 const rows = (page) => (Array.isArray(page) ? page : page?.items || []);
 const ownerKeyFor = (userId, clientKey) => (userId ? `user:${userId}` : `visitor:${clientKey || 'unknown'}`);
 
+// An opaque id for one message. The log keeps this id and never the text, so a
+// decision can be traced back to one message without the message being stored.
+export function newMessageId() {
+  return crypto?.randomUUID ? crypto.randomUUID() : `msg-${Math.random().toString(36).slice(2, 12)}`;
+}
+
 // The team's signature, added once and never twice.
 export function signBotReply(text) {
   const clean = String(text || '').trim();
@@ -102,19 +108,21 @@ async function noteBlocked(base44, ownerKey) {
 // caller must not act on anything but ok: true.
 export async function screenMessage(
   base44,
-  { action = 'answer', bot = 'helper', text = '', toolOutput = '', userId = '', clientKey = '', ticketId = '', ticketNumber = '' }
+  { action = 'answer', bot = 'helper', text = '', toolOutput = '', userId = '', clientKey = '', ticketId = '', ticketNumber = '', messageId = '', probeUnreadable = false }
 ) {
   const ownerKey = ownerKeyFor(userId, clientKey);
+  const message = String(messageId || '').slice(0, 64) || newMessageId();
   const entry = {
     action,
     actor: 'automation',
     ticket_id: ticketId,
     ticket_number: ticketNumber,
+    message_id: message,
     detail: `bot: ${bot}`
   };
 
   // 1. The kill switch. On, or unreadable, and nothing runs at all.
-  const state = await automationState(base44);
+  const state = await automationState(base44, { probeUnreadable });
   if (state.paused) {
     await audit(base44, {
       ...entry,
@@ -122,7 +130,7 @@ export async function screenMessage(
       decision: 'blocked',
       reason: state.reason || 'the automation switch is on, so the bots are stopped'
     });
-    return { ok: false, gate: 'kill_switch', reply: signBotReply(SHIELD_OFF) };
+    return { ok: false, gate: 'kill_switch', reply: signBotReply(SHIELD_OFF), message_id: message };
   }
 
   // 2. The loop gate. A caller who keeps sending refused messages is stopped for
@@ -140,7 +148,7 @@ export async function screenMessage(
       decision: 'blocked',
       reason: 'the count of refused messages could not be read, so the message was not processed'
     });
-    return { ok: false, gate: 'loop_gate', reply: signBotReply(SHIELD_PAUSED) };
+    return { ok: false, gate: 'loop_gate', reply: signBotReply(SHIELD_PAUSED), message_id: message };
   }
   if (blocked >= ATTEMPT_LIMIT) {
     await audit(base44, {
@@ -149,7 +157,7 @@ export async function screenMessage(
       decision: 'blocked',
       reason: `stopped after ${blocked} refused messages today; the chat does not restart on its own`
     });
-    return { ok: false, gate: 'loop_gate', reply: signBotReply(SHIELD_PAUSED) };
+    return { ok: false, gate: 'loop_gate', reply: signBotReply(SHIELD_PAUSED), message_id: message };
   }
 
   // 3. The input filter, over the message and over anything a tool or the scan
@@ -171,7 +179,7 @@ export async function screenMessage(
       decision: 'blocked',
       reason: `refused at the input filter (${refused.map((part) => part.what).join(' and ')}): ${categories.join(', ')}`
     });
-    return { ok: false, gate: 'input_shield', reply: signBotReply(SHIELD_REFUSAL), categories };
+    return { ok: false, gate: 'input_shield', reply: signBotReply(SHIELD_REFUSAL), categories, message_id: message };
   }
 
   // 4. The log is written before the action. If it cannot be written, the action
@@ -182,16 +190,16 @@ export async function screenMessage(
     decision: 'allowed',
     reason: `passed the input filter${categories.length ? ` (noted: ${categories.join(', ')})` : ''}; the action may run`
   });
-  if (!written) return { ok: false, gate: 'tool_gate', reply: signBotReply(SHIELD_REFUSAL), categories };
+  if (!written) return { ok: false, gate: 'tool_gate', reply: signBotReply(SHIELD_REFUSAL), categories, message_id: message };
 
-  return { ok: true, gate: 'tool_gate', categories };
+  return { ok: true, gate: 'tool_gate', categories, message_id: message };
 }
 
 // Step 5. Returns the reply that may be shown: signed, or the safe text that
 // replaces a reply which failed the shield. Only categories are logged.
 export async function shieldReply(
   base44,
-  { action = 'answer', bot = 'helper', reply = '', canary = '', userId = '', clientKey = '', ticketId = '', ticketNumber = '' }
+  { action = 'answer', bot = 'helper', reply = '', canary = '', userId = '', clientKey = '', ticketId = '', ticketNumber = '', messageId = '' }
 ) {
   const text = String(reply || '');
   const checked = guardChatReply(text, canary);
@@ -208,6 +216,7 @@ export async function shieldReply(
     actor: 'automation',
     ticket_id: ticketId,
     ticket_number: ticketNumber,
+    message_id: String(messageId || '').slice(0, 64),
     detail: `bot: ${bot}`
   };
 

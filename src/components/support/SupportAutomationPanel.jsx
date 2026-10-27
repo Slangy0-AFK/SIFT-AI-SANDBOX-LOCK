@@ -2,16 +2,18 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Loader2, PauseCircle, PlayCircle, RotateCcw } from 'lucide-react';
+import { Loader2, PauseCircle, PlayCircle, RotateCcw, FlaskConical } from 'lucide-react';
 
 // The owner's own control over the support automation: what it is doing, how to
-// stop it dead, and how to reopen a ticket a person has escalated. Visible to an
-// admin account only. The switch is read on the server before every automated
-// action, so pausing here stops the next action before it runs.
+// stop it dead, how to reopen a ticket a person has escalated, and how to re-run
+// the on / off / unreadable test of the switch. Visible to an admin account only.
+// The switch is read on the server before every automated action, so pausing here
+// stops the next action before it runs.
 export default function SupportAutomationPanel() {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
+  const [sequence, setSequence] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['current_user_role'],
@@ -29,8 +31,8 @@ export default function SupportAutomationPanel() {
     refetchInterval: 30000
   });
 
-  // The decisions the filter layer has written down: gate, decision and reason.
-  // A message is never stored, so none can be shown.
+  // The last decisions the gate wrote down: time, decision id, message id, gate
+  // and reason. A message is never stored, so none can be shown.
   const { data: shield } = useQuery({
     queryKey: ['chat_shield_status'],
     queryFn: async () => {
@@ -48,6 +50,25 @@ export default function SupportAutomationPanel() {
     setBusy(tag);
     try {
       await base44.functions.invoke('supportAutomation', payload);
+      await queryClient.invalidateQueries({ queryKey: ['support_automation_status'] });
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || 'That did not go through.');
+    } finally {
+      setBusy('');
+    }
+  };
+
+  // The on / off / unreadable sequence, re-runnable. The server flips the switch,
+  // reads the same harmless message under each reading, logs every step, and puts
+  // the switch back as it found it.
+  const runSequence = async () => {
+    setError('');
+    setBusy('sequence');
+    setSequence(null);
+    try {
+      const { data } = await base44.functions.invoke('supportAutomation', { action: 'killswitch_sequence' });
+      setSequence(data);
+      await queryClient.invalidateQueries({ queryKey: ['chat_shield_status'] });
       await queryClient.invalidateQueries({ queryKey: ['support_automation_status'] });
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'That did not go through.');
@@ -115,21 +136,44 @@ export default function SupportAutomationPanel() {
         </div>
       )}
 
-      {!!shield?.recent?.length && (
-        <div className="mt-4 space-y-2 border-t border-border pt-4">
+      <div className="mt-4 space-y-2 border-t border-border pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="font-mono text-[11px] text-muted-foreground">
             Last gate decisions, newest first. The reason is written down; a message never is.
           </p>
-          {shield.recent.slice(0, 5).map((row, index) => (
-            <div key={`${row.at}-${index}`} className="rounded-lg border border-border bg-secondary/10 p-2 font-mono text-[11px]">
+          <Button size="sm" variant="outline" className="gap-1.5 font-mono text-[11px]" onClick={runSequence} disabled={!!busy}>
+            {busy === 'sequence' ? <Loader2 className="h-3 w-3 animate-spin" /> : <FlaskConical className="h-3 w-3" />}
+            Run the switch sequence
+          </Button>
+        </div>
+
+        {!!sequence?.readings?.length && (
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-2 font-mono text-[11px] text-foreground">
+            {sequence.readings.map((reading) => (
+              <p key={reading.label}>
+                {reading.label}: {reading.stopped ? 'stopped' : 'ran'} · {reading.gate}
+              </p>
+            ))}
+            <p className="text-muted-foreground">
+              Switch afterwards: {sequence.restored?.paused ? 'on' : 'off'}
+              {sequence.restored?.readable ? ', readable' : ', still unreadable'}
+            </p>
+          </div>
+        )}
+
+        {!!shield?.recent?.length &&
+          shield.recent.slice(0, 5).map((row) => (
+            <div key={row.id} className="rounded-lg border border-border bg-secondary/10 p-2 font-mono text-[11px]">
               <p className="text-foreground">
-                {String(row.gate).replace(/_/g, ' ')} · {row.decision} · {new Date(row.at).toLocaleString()}
+                {new Date(row.at).toLocaleString()} · {row.decision} · {String(row.gate).replace(/_/g, ' ')}
               </p>
               <p className="mt-0.5 text-muted-foreground">{row.reason}</p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">
+                decision {String(row.id).slice(0, 8)} · message {row.message_id ? String(row.message_id).slice(0, 8) : '—'}
+              </p>
             </div>
           ))}
-        </div>
-      )}
+      </div>
     </section>
   );
 }

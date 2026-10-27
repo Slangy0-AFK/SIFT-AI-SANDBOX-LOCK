@@ -48,8 +48,8 @@ export default async function (req) {
 
       return Response.json(
         screened.ok
-          ? { allowed: true, gate: screened.gate }
-          : { allowed: false, gate: screened.gate, reply: screened.reply }
+          ? { allowed: true, gate: screened.gate, message_id: screened.message_id }
+          : { allowed: false, gate: screened.gate, message_id: screened.message_id, reply: screened.reply }
       );
     }
 
@@ -62,6 +62,7 @@ export default async function (req) {
         bot: String(body.bot || 'endpoint').slice(0, 20),
         reply,
         canary: String(body.canary || '').slice(0, 64),
+        messageId: String(body.message_id || '').slice(0, 64),
         userId: user.id,
         clientKey: trustedClientAddress(req)
       });
@@ -87,8 +88,11 @@ export default async function (req) {
 
       const recent = rows(await base44.asServiceRole.entities.SupportAudit.list('-created_date', 25))
         .filter((row) => SHIELD_GATES.includes(row.gate))
+        .slice(0, 5)
         .map((row) => ({
+          id: row.id,
           at: row.created_date,
+          message_id: row.message_id || '',
           gate: row.gate,
           decision: row.decision,
           reason: row.reason,

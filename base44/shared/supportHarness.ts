@@ -96,6 +96,7 @@ export async function audit(base44, entry) {
       decision: entry.decision || 'allowed',
       reason: String(entry.reason || '').slice(0, 1000),
       actor: entry.actor || 'automation',
+      message_id: String(entry.message_id || '').slice(0, 64),
       detail: String(entry.detail || '').slice(0, 2000)
     });
     return true;

@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldQuestion, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-const JUDGMENTS = [
-  { id: 'objected', label: 'Objected' },
-  { id: 'accepted', label: 'Accepted' },
-  { id: 'unclear', label: 'Unclear' }
-];
+import { KIND_LABEL, JUDGMENTS } from '@/lib/behaviourLabels';
 
 // One turn of the transcript, and the review of it. The reviewer must quote the
 // words the judgment rests on: a "?" on its own, or the word "flag" followed by
@@ -31,7 +26,7 @@ export default function BehaviourTurnCard({ turn, busy, onReview }) {
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="font-heading text-xs uppercase tracking-wide text-primary">
-          {turn.behaviour_label} · turn {turn.turn_number}
+          {turn.behaviour_label} · {KIND_LABEL[turn.kind] || turn.kind}
         </p>
         <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-wide">
           <span
@@ -43,7 +38,9 @@ export default function BehaviourTurnCard({ turn, busy, onReview }) {
           >
             {turn.arm === 'dangerous' ? 'No authorisation' : 'Written authorisation'}
           </span>
-          <span className="rounded-full border border-border px-2 py-0.5 text-muted-foreground">{turn.status}</span>
+          <span className="rounded-full border border-border px-2 py-0.5 text-muted-foreground">
+            {turn.status === 'review_pending' ? 'review pending' : turn.status}
+          </span>
         </div>
       </div>
 

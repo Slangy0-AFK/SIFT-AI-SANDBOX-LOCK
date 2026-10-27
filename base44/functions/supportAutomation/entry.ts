@@ -16,6 +16,7 @@ import {
   SWEEP_TICKET_CAP
 } from '../../shared/supportHarness.ts';
 import { openTicket } from '../../shared/supportIntake.ts';
+import { screenMessage } from '../../shared/chatBotShield.ts';
 import { ticketNumber, writeSupportMessage } from '../../shared/supportReply.ts';
 import { emailPlainValue } from '../../shared/emailSafe.ts';
 import { notifyTicketClosed } from '../../shared/ticketNotices.ts';
@@ -434,7 +435,7 @@ export default async function (req) {
     }
 
     // Everything below is the owner's or a workflow's, never a visitor's.
-    if (['sweep', 'respond', 'status', 'pause', 'resume', 'reopen', 'lifecycle_step', 'admin_reply', 'admin_close', 'killswitch_probe'].includes(action)) {
+    if (['sweep', 'respond', 'status', 'pause', 'resume', 'reopen', 'lifecycle_step', 'admin_reply', 'admin_close', 'killswitch_probe', 'killswitch_sequence'].includes(action)) {
       if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
       if (!isAdmin) return Response.json({ error: 'Forbidden' }, { status: 403 });
     } else {
@@ -494,6 +495,71 @@ export default async function (req) {
         stopped: !decided.ok,
         gate: decided.gate,
         reason: decided.reason
+      });
+    }
+
+    // The whole switch, re-runnable from the console in one press. Each reading is
+    // decided by the same code a real message passes through, and each writes its
+    // own log line: on (stops), off (passes), unreadable (stops). The switch is put
+    // back as it was found, and that is read afterwards rather than assumed.
+    if (action === 'killswitch_sequence') {
+      const probeMessage = 'Please confirm the ticket queue is still open.';
+      const before = await automationState(base44);
+      const readings = [];
+
+      const read = async (label, extra = {}) => {
+        const screened = await screenMessage(base44, {
+          action: 'status',
+          bot: 'killswitch_test',
+          text: probeMessage,
+          userId: user.id,
+          ...extra
+        });
+        readings.push({
+          label,
+          stopped: screened.ok !== true,
+          gate: screened.gate,
+          message_id: screened.message_id || ''
+        });
+      };
+
+      await setPaused(base44, true, 'live test: the switch was turned on from the console');
+      await audit(base44, {
+        action: 'killswitch_sequence',
+        gate: 'kill_switch',
+        decision: 'completed',
+        reason: 'live test step 1: the switch was turned on',
+        actor: 'owner'
+      });
+      await read('switch on');
+
+      await setPaused(base44, false, 'live test: the switch was turned back off');
+      await audit(base44, {
+        action: 'killswitch_sequence',
+        gate: 'kill_switch',
+        decision: 'completed',
+        reason: 'live test step 2: the switch was turned off',
+        actor: 'owner'
+      });
+      await read('switch off');
+
+      // Only the read is forced to fail here; the switch row itself is untouched.
+      await audit(base44, {
+        action: 'killswitch_sequence',
+        gate: 'kill_switch',
+        decision: 'blocked',
+        reason: 'live test step 3: the switch was made unreadable for one call',
+        actor: 'owner'
+      });
+      await read('switch unreadable', { probeUnreadable: true });
+
+      await setPaused(base44, before.paused === true, before.reason || 'restored after the live switch test');
+      const after = await automationState(base44);
+
+      return Response.json({
+        readings,
+        was_paused: before.paused === true,
+        restored: { paused: after.paused === true, readable: after.unreadable !== true }
       });
     }
 

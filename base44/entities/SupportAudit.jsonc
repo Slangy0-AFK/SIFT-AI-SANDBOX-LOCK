@@ -14,7 +14,7 @@
     },
     "gate": {
       "type": "string",
-      "description": "Which check decided it: tool_gate, kill_switch, loop_gate, admission, safety_check, credit_ceiling, outcome"
+      "description": "Which check decided it: tool_gate, kill_switch, loop_gate, admission, input_shield, output_shield, safety_check, credit_ceiling, outcome"
     },
     "decision": {
       "type": "string",
@@ -39,6 +39,11 @@
         "user"
       ],
       "default": "automation"
+    },
+    "message_id": {
+      "type": "string",
+      "maxLength": 64,
+      "description": "Opaque id for the message this decision was about, so a decision can be traced to one message without storing the message. Never the text."
     },
     "detail": {
       "type": "string",
