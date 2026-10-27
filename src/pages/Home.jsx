@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Gauge, ListChecks, Lock, Power, Puzzle, ScrollText, ShieldCheck, Workflow } from 'lucide-react';
+import { ArrowRight, Clock, Gauge, ListChecks, Lock, Power, Puzzle, ScrollText, ShieldCheck, Workflow } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LimitsNote from '@/components/kit/LimitsNote';
 import AgentGuarantees from '@/components/home/AgentGuarantees';
@@ -53,6 +53,15 @@ const STEPS = [
 export default function Home() {
   return (
     <div>
+      <div className="border-b border-primary/30 bg-primary/10">
+        <div className="mx-auto flex max-w-4xl items-center justify-center gap-2 px-4 py-2.5 text-center">
+          <Clock className="h-3.5 w-3.5 shrink-0 text-primary" />
+          <p className="font-mono text-[11px] tracking-wide text-foreground">
+            COMING SOON — SIFT AI is not open yet. Accounts, plans and the tools open at launch.
+          </p>
+        </div>
+      </div>
+
       <section className="border-b border-border bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background">
         <div className="mx-auto max-w-4xl px-4 py-20 text-center lg:py-24">
           <span className="font-mono text-xs tracking-[0.3em] text-primary">SIFT AI · AGENT CONTROL</span>
