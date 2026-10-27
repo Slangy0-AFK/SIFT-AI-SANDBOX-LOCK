@@ -8,8 +8,9 @@ import { stripeCredentials } from '../../shared/stripeConnect.ts';
 import { offerState } from '../../shared/foundingSeats.ts';
 
 // Starts a Stripe Checkout Session for one scanner tier.
-// Open to guests on purpose: paying must not require an account first. The tier
-// decides the price, never the caller.
+// Inside the account only: a purchase has to belong to someone, so the key, the
+// receipt and the plan always have an owner. The tier decides the price, never
+// the caller.
 export default async function (req) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -21,13 +22,19 @@ export default async function (req) {
     // still be confirmed; its features are in Device Check now.
     if (tier.purchasable === false) {
       return Response.json(
-        { error: 'That plan is no longer sold. Device Check at $49 includes everything it had.' },
+        { error: 'That plan is no longer sold. Agent Check at $49 includes everything it had.' },
         { status: 400 }
       );
     }
 
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
+
+    // Nothing is sold to a guest: create an account and log in first.
+    if (!user) {
+      console.log('[scannerCheckout] refused: no signed-in account');
+      return Response.json({ error: 'account_required' }, { status: 401 });
+    }
 
     // What this tier costs, from the server: the monthly figure from the catalog,
     // or the yearly figure worked out from the team's own discount. The amount is
@@ -83,12 +90,12 @@ export default async function (req) {
       ],
       success_url: `${appUrl}/receipt?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/plans?checkout=canceled`,
-      ...(user && user.email ? { customer_email: user.email } : {})
+      customer_email: user.email
     });
 
     await base44.asServiceRole.entities.ScannerPurchase.create({
-      user_id: (user && user.id) || '',
-      email: ((user && user.email) || '').toLowerCase(),
+      user_id: user.id,
+      email: String(user.email || '').toLowerCase(),
       tier: tier.id,
       stripe_session_id: session.id,
       status: 'pending',

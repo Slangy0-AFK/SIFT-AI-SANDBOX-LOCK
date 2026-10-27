@@ -4,8 +4,13 @@ export const SCANNER_PLANS = [
     name: 'Free',
     price: '$0',
     cadence: 'forever',
-    blurb: 'The everyday checks, at no cost.',
-    features: ["SIFT AI's own rogue-AI checklist", 'AlienVault OTX reputation checks', 'Your own scan history', 'My devices', 'Allowlist & blocklist'],
+    blurb: 'The killswitch and the puzzles, at no cost.',
+    features: [
+      'The killswitch demo, as often as you like',
+      'Eval puzzle summaries: what each one tests',
+      'Your own run history',
+      'Support tickets to the SIFT AI team'
+    ],
     cta: 'Start free'
   },
   {
@@ -13,24 +18,24 @@ export const SCANNER_PLANS = [
     name: 'Pro',
     price: '$7',
     cadence: 'per month',
-    blurb: 'For keeping an eye on your own devices over time.',
-    features: ['Reusable scan profiles', 'PDF reports', 'Priority support'],
+    blurb: 'For keeping an agent under watch over time.',
+    features: ['Full eval puzzle reports', 'Reusable agent profiles', 'PDF reports of what was stopped', 'Priority support'],
     cta: 'Get Pro',
     highlight: true
   },
   {
     id: 'device_check',
-    name: 'Device Check',
+    name: 'Agent Check',
     price: '$49',
     cadence: 'one time',
-    blurb: 'A careful look at one item or the whole device, written up.',
+    blurb: 'A careful written look at one agent and its tools.',
     features: [
-      'A flagged item, or the whole device',
-      'The app list and where the device connects',
-      'Every flagged item, with the evidence',
+      'One agent, its tools and its instruction surface',
+      'Every gate it reaches, with the evidence',
+      'The eval puzzles run against it',
       'A full written report and fix plan'
     ],
-    cta: 'Book a Device Check'
+    cta: 'Book an Agent Check'
   }
 ];
 
@@ -51,17 +56,17 @@ export const PRO_YEARLY = {
   cta: 'Get 1 year'
 };
 
-// The $99 Full Device Audit is retired as a buyable tier: everything it included
-// is now in Device Check at $49. This entry exists only so a purchase or receipt
-// from before the change still resolves to a name, and it is never offered as a
-// plan — the plans list above is what the pages render.
+// The $99 Full Audit is retired as a buyable tier: everything it included is now
+// in Agent Check at $49. This entry exists only so a purchase or receipt from
+// before the change still resolves to a name, and it is never offered as a plan —
+// the plans list above is what the pages render.
 export const FORMER_PLANS = {
   full_audit: {
     id: 'full_audit',
-    name: 'Full Device Audit (formerly $99, now included in Device Check)',
+    name: 'Full Agent Audit (formerly $99, now included in Agent Check)',
     price: '$99',
     cadence: 'formerly one time',
-    blurb: 'Retired as a buyable tier. Everything it included is in Device Check at $49.',
+    blurb: 'Retired as a buyable tier. Everything it included is in Agent Check at $49.',
     features: []
   }
 };
@@ -76,15 +81,15 @@ export function planById(tierId) {
 }
 
 export const NEXT_STEPS = {
-  pro: 'Pro is active on your account. Reusable scan profiles, PDF reports and priority support are unlocked. It renews monthly, and you can cancel any time.',
+  pro: 'Pro is active on your account. Full eval puzzle reports, reusable agent profiles, PDF reports and priority support are unlocked. It renews monthly, and you can cancel any time.',
   pro_annual:
     'Your year of Pro is active on your account, and your license key is issued to it. It runs for the twelve months you paid for, and there is nothing to renew or cancel.',
   device_check:
-    'Your Device Check is booked. Next: open the device scanner and submit the flagged item or the whole device — the app list, where it connects, anything else you know. You get a verdict, the evidence behind it, and a full written fix plan.',
+    'Your Agent Check is booked. Next: open the killswitch demo and describe the one agent you want looked at — the tools it can reach, what it will accept as an instruction, and what it has actually done. You get a verdict, the evidence behind it, and a full written fix plan.',
   // Kept so a purchase made before the change still shows sensible guidance.
   full_audit:
-    'Your Full Device Audit is handled as a Device Check: everything it included is in that plan. Next: open the device scanner and submit the device.'
+    'Your Full Audit is handled as an Agent Check: everything it included is in that plan. Next: open the killswitch demo and describe the agent you want looked at.'
 };
 
 export const HONEST_NOTE =
-  'No guaranteed detection and no guaranteed results. A scan is a check, not a certificate, and these plans are not a promise about anything on your device.';
+  'No guaranteed detection and no guaranteed results. A gate that passes a puzzle is a check, not a certificate, and these plans are not a promise about how your agent will behave.';

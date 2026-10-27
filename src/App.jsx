@@ -87,28 +87,12 @@ function AppRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
+        {/* Open to anyone, signed in or not: the home page and the about page. */}
         <Route element={<SiteLayout />}>
           <Route path="/" element={<PageTransition><Home /></PageTransition>} />
-          <Route path="/governor-demo" element={<PageTransition><GovernorDemo /></PageTransition>} />
-          <Route path="/evals" element={<PageTransition><Evals /></PageTransition>} />
-          <Route path="/sizing-calculator" element={<PageTransition><SizingCalculator /></PageTransition>} />
-          <Route path="/scaler" element={<PageTransition><Scaler /></PageTransition>} />
-          <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
           <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-          <Route path="/thank-you" element={<PageTransition><ThankYou /></PageTransition>} />
-          <Route path="/scan" element={<PageTransition><ScanNow /></PageTransition>} />
-          <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
-          <Route path="/plugin" element={<PageTransition><PluginDownload /></PageTransition>} />
-          <Route path="/stripe-connect" element={<PageTransition><StripeConnect /></PageTransition>} />
         </Route>
-        <Route path="/plans" element={<PageTransition><ScannerPlans /></PageTransition>} />
-        <Route path="/compliance" element={<PageTransition><Compliance /></PageTransition>} />
-        <Route path="/sources" element={<PageTransition><Sources /></PageTransition>} />
-        <Route path="/terms" element={<PageTransition><TermsOfService /></PageTransition>} />
-        <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
-        <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
         <Route path="/accept-invite/:token" element={<PageTransition><AcceptInvite /></PageTransition>} />
-        <Route path="/receipt" element={<PageTransition><Receipt /></PageTransition>} />
         <Route path="/verify-demo" element={<Navigate to="/governor-demo" replace />} />
         <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
         <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
@@ -116,6 +100,23 @@ function AppRoutes() {
         <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
           <Route element={<SiteLayout />}>
+            <Route path="/governor-demo" element={<PageTransition><GovernorDemo /></PageTransition>} />
+            <Route path="/evals" element={<PageTransition><Evals /></PageTransition>} />
+            <Route path="/sizing-calculator" element={<PageTransition><SizingCalculator /></PageTransition>} />
+            <Route path="/scaler" element={<PageTransition><Scaler /></PageTransition>} />
+            <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
+            <Route path="/plans" element={<PageTransition><ScannerPlans /></PageTransition>} />
+            <Route path="/thank-you" element={<PageTransition><ThankYou /></PageTransition>} />
+            <Route path="/receipt" element={<PageTransition><Receipt /></PageTransition>} />
+            <Route path="/scan" element={<PageTransition><ScanNow /></PageTransition>} />
+            <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
+            <Route path="/plugin" element={<PageTransition><PluginDownload /></PageTransition>} />
+            <Route path="/stripe-connect" element={<PageTransition><StripeConnect /></PageTransition>} />
+            <Route path="/compliance" element={<PageTransition><Compliance /></PageTransition>} />
+            <Route path="/sources" element={<PageTransition><Sources /></PageTransition>} />
+            <Route path="/terms" element={<PageTransition><TermsOfService /></PageTransition>} />
+            <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
+            <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
             <Route path="/dashboard" element={<PageTransition><MyRuns /></PageTransition>} />
             <Route path="/scanner" element={<PageTransition><ScannerTools /></PageTransition>} />
             <Route path="/devices" element={<PageTransition><MyDevices /></PageTransition>} />

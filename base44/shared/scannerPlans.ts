@@ -38,21 +38,21 @@ export const SCANNER_TIERS = {
   },
   device_check: {
     id: 'device_check',
-    name: 'Device Check',
-    label: 'SiftAI Device Check',
+    name: 'Agent Check',
+    label: 'SIFT AI Agent Check',
     mode: 'payment',
     interval: null,
     amount: 4900,
     currency: 'usd'
   },
-  // Not sold any more: everything it included is now in Device Check at $49.
+  // Not sold any more: everything it included is now in Agent Check at $49.
   // It stays in this catalog because a $99 payment made before the change must
   // still be confirmable by the webhook, and the amount below is the historical
   // one. 'purchasable: false' is what stops any new checkout for it.
   full_audit: {
     id: 'full_audit',
-    name: 'Full Device Audit (formerly $99, now included in Device Check)',
-    label: 'SiftAI Full Device Audit',
+    name: 'Full Agent Audit (formerly $99, now included in Agent Check)',
+    label: 'SIFT AI Full Agent Audit',
     mode: 'payment',
     interval: null,
     amount: 9900,

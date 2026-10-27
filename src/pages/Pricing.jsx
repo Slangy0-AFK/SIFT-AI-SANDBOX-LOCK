@@ -27,7 +27,7 @@ const money = (cents, currency) =>
 
 export default function Pricing() {
   const location = useLocation();
-  const { paid, signedIn, loading } = useKitAccess();
+  const { paid, loading } = useKitAccess();
   const [settings, setSettings] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -173,15 +173,9 @@ export default function Pricing() {
             Nothing on this site promises income, uptime, or a particular result. An audit is a review with findings you can act on,
             not a guarantee that an agent is safe afterwards.
           </LimitsNote>
-          {!signedIn && !loading && (
-            <div className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
-              Buying and booking both work better with an account, because that is how the Full Kit and your audit log stay attached
-              to you. Guests can still pay, and the purchase is held by the checkout id until you log in with the same email.{' '}
-              <Link to="/login" className="text-primary hover:underline">
-                Log in
-              </Link>
-            </div>
-          )}
+          <div className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
+            Buying and booking both happen inside your account: that is how the Full Kit and your audit log stay attached to you.
+          </div>
         </div>
       </div>
     </div>

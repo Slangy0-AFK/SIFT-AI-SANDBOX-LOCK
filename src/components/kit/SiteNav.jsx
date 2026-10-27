@@ -5,14 +5,18 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-const NAV = [
+// Two pages anyone can read. Everything else belongs to an account, so it only
+// appears once someone is signed in.
+const PUBLIC_NAV = [
   { label: 'Home', to: '/' },
-  { label: 'Device Scanner', to: '/scan' },
-  { label: 'My Devices', to: '/devices' },
-  { label: 'Allow & Block', to: '/allow-block' },
-  { label: 'History', to: '/history' },
+  { label: 'About', to: '/about' }
+];
+
+const APP_NAV = [
+  { label: 'Killswitch', to: '/governor-demo' },
+  { label: 'Harness', to: '/plugin' },
+  { label: 'Eval puzzles', to: '/evals' },
   { label: 'Plans', to: '/plans' },
-  { label: 'About', to: '/about' },
   { label: 'Support', to: '/support' }
 ];
 
@@ -36,6 +40,7 @@ export default function SiteNav() {
   }, []);
 
   const close = () => setOpen(false);
+  const nav = user ? [...PUBLIC_NAV, ...APP_NAV] : PUBLIC_NAV;
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
@@ -46,7 +51,7 @@ export default function SiteNav() {
         </Link>
 
         <nav className="hidden items-center gap-1 text-sm font-medium lg:flex">
-          {NAV.map((item) => (
+          {nav.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.to === '/'} className={desktopLink}>
               {item.label}
             </NavLink>
@@ -61,9 +66,6 @@ export default function SiteNav() {
                   Admin
                 </Link>
               )}
-              <Link to="/scanner" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-                My device tools
-              </Link>
               <Link to="/dashboard" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
                 My runs
               </Link>
@@ -96,7 +98,7 @@ export default function SiteNav() {
       {open && (
         <div className="border-t border-border bg-background lg:hidden">
           <nav className="mx-auto flex max-w-6xl flex-col px-4">
-            {NAV.map((item) => (
+            {nav.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -112,11 +114,6 @@ export default function SiteNav() {
             <div className="flex flex-col gap-2 py-4">
               {user ? (
                 <>
-                  <Link to="/scanner" onClick={close}>
-                    <Button variant="outline" className="w-full">
-                      My device tools
-                    </Button>
-                  </Link>
                   <Link to="/dashboard" onClick={close}>
                     <Button variant="outline" className="w-full">
                       My runs

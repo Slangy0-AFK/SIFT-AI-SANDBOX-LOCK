@@ -2,12 +2,18 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import Stripe from 'npm:stripe@14.0.0';
 import { stripeCredentials } from '../../shared/stripeConnect.ts';
 
-// Public on purpose: buyers do not need an account. The price always comes from
-// server-side settings, never from the caller.
+// Inside the account only: the Full Kit has to attach to someone. The price
+// always comes from server-side settings, never from the caller.
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
+
+    // Nothing is sold to a guest: create an account and log in first.
+    if (!user) {
+      console.log('[kitCheckout] refused: no signed-in account');
+      return Response.json({ error: 'account_required' }, { status: 401 });
+    }
 
     // Which Stripe account payments run on: the connected account once the owner
     // has connected one, otherwise the app's own account. The price still comes
@@ -49,20 +55,17 @@ export default async function (req) {
       ],
       success_url: `${appUrl}/thank-you?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/pricing?checkout=canceled`,
-      ...(user ? { customer_email: user.email } : {})
+      customer_email: user.email
     });
 
-    const purchase = {
+    await base44.asServiceRole.entities.KitPurchase.create({
       stripe_session_id: session.id,
       status: 'pending',
       price_cents: priceCents,
-      currency
-    };
-    if (user) {
-      purchase.email = String(user.email || '').toLowerCase();
-      purchase.user_id = user.id;
-    }
-    await base44.asServiceRole.entities.KitPurchase.create(purchase);
+      currency,
+      email: String(user.email || '').toLowerCase(),
+      user_id: user.id
+    });
 
     console.log(`[kitCheckout] Session ${session.id} created for ${priceCents} ${currency}`);
     return Response.json({ redirectUrl: session.url });
