@@ -3,14 +3,9 @@ import { admit, admitSpend, audit } from '../../shared/supportHarness.ts';
 import { HELP_ARTICLES } from '../../shared/supportHelp.ts';
 import { openTicket } from '../../shared/supportIntake.ts';
 import { isPaidSubscriber } from '../../shared/planAccess.ts';
-import {
-  GUARD_RULES,
-  INJECTION_REFUSAL,
-  frameUntrusted,
-  guardChatReply,
-  sanitize,
-  scanChatMessage
-} from '../../shared/chatGuard.ts';
+import { GUARD_RULES, frameUntrusted, sanitize } from '../../shared/chatGuard.ts';
+import { screenMessage, shieldReply } from '../../shared/chatBotShield.ts';
+import { trustedClientAddress } from '../../shared/clientAddress.ts';
 
 // The helper answers from the same articles the ticket automation, the help centre
 // and the support agent use: base44/shared/supportHelp.ts. There is no second copy.
@@ -40,6 +35,28 @@ export default async function (req) {
     const context = String(body.context || '').slice(0, 900);
 
     const user = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
+
+    // chatBotShield: the filter layer, ahead of everything the helper does — both
+    // answering a question and filing a ticket come through here first. The
+    // message and the on-screen result the bot would read are both filtered, the
+    // log entry is written before the action, and a refusal stops the action
+    // rather than letting it quietly go ahead.
+    if (action === 'ask' || action === 'open_ticket') {
+      const screened = await screenMessage(base44, {
+        action: action === 'ask' ? 'answer' : 'open_ticket',
+        bot: 'helper',
+        text: String((action === 'ask' ? body.question : body.message) || '').slice(0, 4000),
+        toolOutput: context,
+        userId: user?.id,
+        clientKey: trustedClientAddress(req)
+      });
+      if (!screened.ok) {
+        // One short plain refusal, and nothing about the pattern that caught it.
+        return action === 'ask'
+          ? Response.json({ reply: screened.reply, blocked: true, gate: screened.gate, can_open_ticket: true })
+          : Response.json({ error: screened.reply, blocked: true, gate: screened.gate }, { status: 400 });
+      }
+    }
 
     // The chat helper is part of the Pro subscription. A visitor with no account
     // can never be a subscriber, so the helper is not offered to guests either.
@@ -82,26 +99,8 @@ export default async function (req) {
         });
       }
 
-      // A message that is aimed at the helper instead of the app is refused here,
-      // before the harness and before any credit: nothing is called or spent. The
-      // detector is shared with the support assistant (base44/shared/chatGuard.ts).
-      const chatScan = scanChatMessage(question);
-      if (chatScan.verdict === 'block') {
-        await audit(base44, {
-          action: 'answer',
-          gate: 'safety_check',
-          decision: 'blocked',
-          reason: `the message tried to instruct the helper (${chatScan.categories.join(', ')}), so no model was called and nothing was spent`,
-          actor: 'agent'
-        });
-        return Response.json({
-          reply: INJECTION_REFUSAL,
-          blocked_injection: true,
-          can_open_ticket: true
-        });
-      }
-
-      // The harness decides before anything is said or spent: the tool gate, the
+      // chatBotShield has already refused anything aimed at the helper. The harness
+      // decides next, before anything is said or spent: the tool gate, the
       // owner's kill switch and the audit log. A refusal stops the answer instead
       // of quietly spending the credit, and the person is told what to do next.
       const answered = await admit(base44, {
@@ -160,30 +159,31 @@ ${frameUntrusted('untrusted_question', question, 700)}`,
         model: 'gemini_3_flash'
       });
 
-      // Nothing reaches the screen unchecked: a link, a download, a fake system
-      // tag or a leaked token replaces the whole reply with the safe one.
-      const checked = guardChatReply(reply, canary);
-      if (checked.replaced) {
-        await audit(base44, {
-          action: 'answer',
-          gate: 'safety_check',
-          decision: 'blocked',
-          reason: `the model reply was held back (${checked.reasons.join(', ')})`,
-          actor: 'agent'
-        });
-        return Response.json({ reply: checked.text, held_back: true, can_open_ticket: true });
-      }
+      // Nothing reaches the screen unchecked either (chatBotShield): a leaked
+      // instruction, an internal name, another person's address, a link, a download
+      // or the token from its own prompt replaces the reply with the safe one, and
+      // what passes is signed SIFT AI team.
+      const shielded = await shieldReply(base44, {
+        action: 'answer',
+        bot: 'helper',
+        reply,
+        canary,
+        userId: user?.id,
+        clientKey: trustedClientAddress(req)
+      });
 
       await audit(base44, {
         action: 'answer',
         gate: 'outcome',
         decision: 'completed',
-        reason: 'answered from the help articles and the on-screen context',
+        reason: shielded.held
+          ? 'the reply was held back by the output shield'
+          : 'answered from the help articles and the on-screen context',
         actor: 'agent',
         detail: `asked from ${page || 'the app'}`
       });
 
-      return Response.json({ reply: checked.text, can_open_ticket: true });
+      return Response.json({ reply: shielded.text, held_back: shielded.held, can_open_ticket: true });
     }
 
     if (action === 'open_ticket') {

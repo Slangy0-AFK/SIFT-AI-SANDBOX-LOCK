@@ -2,13 +2,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { admit, admitSpend, audit } from '../../shared/supportHarness.ts';
 import { HELP_ARTICLES, helpBlock, searchHelp } from '../../shared/supportHelp.ts';
 import { isPaidSubscriber } from '../../shared/planAccess.ts';
-import {
-  GUARD_RULES,
-  INJECTION_REFUSAL,
-  frameUntrusted,
-  guardChatReply,
-  scanChatMessage
-} from '../../shared/chatGuard.ts';
+import { GUARD_RULES, frameUntrusted } from '../../shared/chatGuard.ts';
+import { screenMessage, shieldReply } from '../../shared/chatBotShield.ts';
+import { trustedClientAddress } from '../../shared/clientAddress.ts';
 
 const esc = (s: string) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 
@@ -24,6 +20,18 @@ Deno.serve(async (req) => {
     if (action === 'support_chat') {
       const text = String(message || '').slice(0, 2000);
       if (!text.trim()) return Response.json({ error: 'Message required' }, { status: 400 });
+
+      // chatBotShield runs before the assistant does anything: the message is
+      // filtered, the log entry is written before the action, and a refusal stops
+      // the reply rather than letting it quietly go ahead.
+      const screened = await screenMessage(base44, {
+        action: 'support_chat',
+        bot: 'support',
+        text,
+        userId: user.id,
+        clientKey: trustedClientAddress(req)
+      });
+      if (!screened.ok) return Response.json({ reply: screened.reply, blocked: true, gate: screened.gate });
 
       // The chat assistant is part of the Pro subscription. Anyone else is
       // offered the ticket form instead, and nothing is spent on their behalf.
@@ -42,20 +50,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      // A message aimed at the assistant instead of the app is refused here,
-      // before the harness and before any credit. The detector is shared with the
-      // in-app helper (base44/shared/chatGuard.ts).
-      const chatScan = scanChatMessage(text);
-      if (chatScan.verdict === 'block') {
-        await audit(base44, {
-          action: 'support_chat',
-          gate: 'safety_check',
-          decision: 'blocked',
-          reason: `the message tried to instruct the assistant (${chatScan.categories.join(', ')}), so no model was called and nothing was spent`,
-          actor: 'agent'
-        });
-        return Response.json({ reply: INJECTION_REFUSAL, blocked_injection: true });
-      }
+      // chatBotShield has already refused anything aimed at the assistant.
 
       // A fresh secret token lives in this one prompt only. If it ever comes
       // back in the reply, the model was talked into repeating its instructions.
@@ -108,29 +103,30 @@ ${helpBlock(articles)}
 ${frameUntrusted('untrusted_question', text, 2000)}`,
       });
 
-      // Nothing reaches the screen unchecked: a link, a download, a fake system
-      // tag or a leaked token replaces the whole reply with the safe one.
-      const checked = guardChatReply(reply, canary);
-      if (checked.replaced) {
-        await audit(base44, {
-          action: 'support_chat',
-          gate: 'safety_check',
-          decision: 'blocked',
-          reason: `the model reply was held back (${checked.reasons.join(', ')})`,
-          actor: 'agent'
-        });
-        return Response.json({ reply: checked.text, held_back: true });
-      }
+      // Nothing reaches the screen unchecked either (chatBotShield): a leaked
+      // instruction, an internal name, another person's address, a link, a download
+      // or the token from its own prompt replaces the reply with the safe one, and
+      // what passes is signed SIFT AI team.
+      const shielded = await shieldReply(base44, {
+        action: 'support_chat',
+        bot: 'support',
+        reply,
+        canary,
+        userId: user.id,
+        clientKey: trustedClientAddress(req)
+      });
 
       await audit(base44, {
         action: 'support_chat',
         gate: 'outcome',
         decision: 'completed',
-        reason: 'answered from the help articles',
+        reason: shielded.held
+          ? 'the reply was held back by the output shield'
+          : 'answered from the help articles',
         actor: 'agent'
       });
 
-      return Response.json({ reply: checked.text });
+      return Response.json({ reply: shielded.text, held_back: shielded.held });
     }
 
     if (action === 'feedback') {
