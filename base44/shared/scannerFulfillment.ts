@@ -52,12 +52,16 @@ export async function confirmAndGrant(base44, stripe, session) {
   // Unlock first, mark the purchase paid after: a redelivered event then sees
   // "paid" and stops, instead of unlocking twice.
   if (liveSubscription) {
+    // The whole package renews a year at a time, the harness a month at a time, so
+    // the cycle and the renewal date follow the tier that was actually bought.
+    const yearly = tier.interval === 'year';
     const renewal = new Date();
-    renewal.setMonth(renewal.getMonth() + 1);
+    if (yearly) renewal.setFullYear(renewal.getFullYear() + 1);
+    else renewal.setMonth(renewal.getMonth() + 1);
     const fields = {
       plan: 'pro',
       status: 'active',
-      billing_cycle: 'monthly',
+      billing_cycle: yearly ? 'annual' : 'monthly',
       renewal_date: renewal.toISOString().split('T')[0],
       stripe_subscription_id: liveSubscription.id,
       stripe_customer_id:

@@ -11,8 +11,9 @@ function yearlyProEnded(purchase) {
   return Date.now() > ends.getTime();
 }
 
-// What this account can currently use. Pro comes from the plan record, the two
-// one-time tiers from their paid purchase records. Nothing here is trusted for
+// What this account can currently use. Pro comes from the plan record, the paid
+// tiers from their paid purchase records, and the whole package from a paid
+// purchase whose yearly subscription is still live. Nothing here is trusted for
 // money: it only decides what the interface offers.
 export default function useScannerUnlocks() {
   const { data, isLoading } = useQuery({
@@ -39,7 +40,22 @@ export default function useScannerUnlocks() {
   // counts once it is marked paid, and a plan record counts once a Stripe
   // subscription is actually attached to it. Older or leftover plan rows that
   // were never paid for unlock nothing.
-  const unlocked = new Set(data.purchases.filter((p) => p.status === 'paid').map((p) => p.tier));
+  //
+  // The whole package is a yearly subscription, so its paid record only counts
+  // while the subscription behind it is still live: a cancelled year, or a renewal
+  // that failed, ends the access it paid for.
+  const planBySession = new Map(
+    data.subs.filter((s) => s.checkout_session_id).map((s) => [s.checkout_session_id, s])
+  );
+  const unlocked = new Set();
+  for (const purchase of data.purchases) {
+    if (purchase.status !== 'paid') continue;
+    if (purchase.tier === 'device_check') {
+      const plan = planBySession.get(purchase.stripe_session_id);
+      if (plan && !['active', 'trial'].includes(plan.status)) continue;
+    }
+    unlocked.add(purchase.tier);
+  }
   const livePlan = data.subs.find(
     (s) => ['pro', 'enterprise'].includes(s.plan) && s.status === 'active' && s.stripe_subscription_id
   );
