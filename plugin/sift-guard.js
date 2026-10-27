@@ -1,18 +1,30 @@
 /* ============================================================================
- * SIFT AI guard plug-in — v1.0
+ * SIFT AI guard plug-in — v1.1
  * ----------------------------------------------------------------------------
  * A guardrail layer around your model — stops bad instructions reaching it and
  * bad outputs leaving it.
  *
+ * This file is thin on purpose. It carries no detection rules and no pattern
+ * library: those arrive from SIFT AI only while your key is valid and locked to
+ * your model. A copy of this file on its own does nothing.
+ *
  * It does NOT patch, fix, rewrite or retrain your model, and it never touches
- * model weights. It does not contain SIFT AI's pattern library, raw prompts or
- * any internal code: the rules below are a small starter set that belongs to
- * you, and you can add to them.
+ * model weights.
  *
  * It never asks for a password, another service's API key, an IMEI, a serial
  * number or payment details.
  *
- * No dependences. Node 18+ (or any runtime with fetch and crypto).
+ * It reads from your environment:
+ *   SIFT_LICENSE_KEY     your SIFT AI key. Required.
+ *   SIFT_MODEL_NAME      the ONE model this key is for. Required.
+ *   SIFT_DEPLOYMENT_ID   the deployment or domain it runs on. Required.
+ *   SIFT_KILL_SWITCH     optional: on, or unreadable, stops everything first.
+ *   SIFT_AUDIT_LOG       optional: where the audit entries are written.
+ *   SIFT_VALIDATE_URL    optional: the SIFT AI check endpoint.
+ *
+ * One key, one model, one use. The first model to activate the key is the only
+ * one it works with. Any other model is refused with:
+ *   "This key is already locked to another model."
  *
  * ---------------------------------------------------------------------------
  * HOW TO USE IT (details and a test checklist: https://sift-ai.net/plugin)
@@ -20,16 +32,12 @@
  *   const { createGuard } = require('./sift-guard.js');
  *
  *   const guard = createGuard({
- *     allowedTools: {
- *       lookup_order: { args: { order_id: { required: true, max: 40 } } }
- *     }
+ *     allowedTools: { lookup_order: { args: { order_id: { required: true, max: 40 } } } }
  *   });
  *
- *   // Once, at start-up.
  *   const state = await guard.ready();
  *   if (!state.active) console.warn('SIFT AI guardrails are off:', state.status);
  *
- *   // On every message, before your model sees it.
  *   guard.beginTurn();
  *   const check = await guard.guardMessage(userText);
  *   if (!check.allowed) return send(check.reply);
@@ -37,7 +45,6 @@
  *   const safe = await guard.filterReply(answer);
  *   return send(safe.clean ? answer : safe.reply);
  *
- *   // On every tool the model asks for, instead of calling it directly.
  *   const run = await guard.runTool({
  *     name: 'lookup_order',
  *     args: { order_id: id },
@@ -46,13 +53,13 @@
  *
  * ---------------------------------------------------------------------------
  * WHAT IT CHECKS, IN THIS ORDER
- *   1. the key, from SIFT_LICENSE_KEY
+ *   1. the key, and the one model it is bound to
  *   2. the kill switch — on, or unreadable, stops everything
- *   3. the key against SIFT AI, with a short cache
+ *   3. the key and binding against SIFT AI, with a short cache
  *   4. instruction attempts in a message, before your model sees it
  *   5. the tool gate, before any tool runs
  *   6. an audit entry, before the action — no entry, no action
- *   7. your action, then the reply is scanned before it goes out
+ *   7. your action, then the reply is shielded before it goes out
  *   8. a step ceiling per turn
  * ==========================================================================*/
 
@@ -71,51 +78,6 @@ var DEFAULTS = {
 var REFUSAL = 'That request cannot be run.';
 var HELD_REPLY = 'That reply cannot be shown.';
 var STOP_REPLY = 'This has been stopped.';
-
-// Tool names that are dangerous by default: allowShellTools: true turns this off.
-var SHELL_TOOLS = /^(shell|exec|execute|eval|system|terminal|bash|sh|cmd|subprocess|run_command|read_file|write_file|delete_file|fetch_url)$/i;
-
-var EMAIL = /[\w.+-]+@[\w-]+\.[\w.-]{2,}/g;
-var PHONE = /\+?\d[\d\s().-]{7,}\d/g;
-
-/* --- what counts as an instruction attempt, or as a reply that must not go out
- * These are starter rules. Your own rules go in extraRules. Message text is
- * never logged, only the category a rule belongs to. */
-var INPUT_RULES = [
-  {
-    category: 'instruction_override',
-    test: /\b(ignore|disregard|forget|override|bypass)\b[^.\n]{0,40}\b(previous|prior|earlier|above|all|any)\b[^.\n]{0,30}\b(instruction|instructions|rule|rules|prompt|direction|directions|setting|settings)\b/i
-  },
-  { category: 'instruction_override', test: /\b(new|updated|revised)\b[^.\n]{0,20}\binstructions?\b|\byou must now\b|\bfrom now on\b[^.\n]{0,20}\b(you|ignore|always)\b/i },
-  { category: 'instruction_override', test: /\b(prompt injection|hidden instruction|injected instruction|system message)\b/i },
-  {
-    category: 'system_prompt_request',
-    test: /\b(reveal|show|print|repeat|output|display|paste|give)\b[^.\n]{0,30}\b(your|the)\b[^.\n]{0,20}\b(system|developer|hidden|initial|original)\b[^.\n]{0,15}\b(prompt|message|instruction|instructions|rules)\b/i
-  },
-  {
-    category: 'role_switch',
-    test: /\byou are (now|no longer)\b|\bact as\b[^.\n]{0,30}\b(developer|admin|administrator|unrestricted|unfiltered|jailbroken)\b|\bdeveloper mode\b|\bjailbreak\b/i
-  },
-  {
-    category: 'secret_request',
-    test: /\b(give|send|share|tell|show|paste|enter|type|confirm|provide)\b[^.\n]{0,40}\b(password|passphrase|api[-_ ]?key|secret key|private key|one[-_ ]?time code|otp|verification code|card number|cvv|pin|imei|serial number)\b/i
-  },
-  { category: 'tool_override', test: /\b(run|execute|invoke|call)\b[^.\n]{0,20}\b(shell|terminal|command|subprocess|bash|powershell)\b/i }
-];
-
-var REPLY_RULES = [
-  {
-    category: 'leaked_instruction',
-    test: /\b(my|the)\b[^.\n]{0,20}\b(system|developer|hidden|initial|original)\b[^.\n]{0,15}\b(prompt|message|instructions|rules)\b|\bhere (is|are) (my|the) instructions\b|\bmy instructions (say|are)\b|\bI was told to\b/i
-  },
-  {
-    category: 'secret_request',
-    test: /\b(send|give|share|paste|enter|type|provide|confirm|tell me)\b[^.\n]{0,40}\b(password|passphrase|api[-_ ]?key|secret key|private key|one[-_ ]?time code|otp|verification code|card number|cvv|pin|imei|serial number|bank details|account number)\b/i
-  },
-  { category: 'internal_name', test: /\b(sk-[A-Za-z0-9]{16,}|pk_(live|test)_[A-Za-z0-9]{8,}|ghp_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{12,}|AIza[0-9A-Za-z_-]{20,})\b/ },
-  { category: 'internal_name', test: /\b[A-Z]{2,8}-[A-Z0-9]{3,4}(-[A-Z0-9]{3,4}){1,4}\b/ },
-  { category: 'internal_name', test: /\b[0-9a-f]{32,}\b/i }
-];
 
 function safeEnv(name) {
   try {
@@ -147,7 +109,8 @@ function readSwitch(config) {
 }
 
 // Whatever was pasted into SIFT_LICENSE_KEY, in the one shape SIFT AI matches:
-// uppercase, no spaces. The hash below is worked out from exactly this.
+// uppercase, no spaces. The hash below is worked out from exactly this, and the
+// key itself never leaves your product.
 function canonicalKey(raw) {
   var text = raw === undefined || raw === null ? '' : String(raw);
   var clean = text.toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -169,7 +132,6 @@ async function sha256Hex(text) {
   return '';
 }
 
-// Only the hash of the key is ever sent. The key itself stays in your config.
 async function postJson(url, payload, timeoutMs) {
   var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
   var timer = controller ? setTimeout(function () { controller.abort(); }, timeoutMs) : null;
@@ -193,9 +155,8 @@ async function postJson(url, payload, timeoutMs) {
   }
 }
 
-// The audit line is written the moment it is handed over, so the caller knows
-// it landed before the next step runs. Only categories, decisions and tool
-// names go in: never a message, never a prompt, never a key.
+// The audit line lands before the next step runs. Only categories, decisions and
+// tool names go in: never a message, never a prompt, never a key.
 function createSink(path) {
   var fs = null;
   try {
@@ -215,53 +176,41 @@ function createSink(path) {
   };
 }
 
-function scanInput(text, extraRules) {
-  var rules = INPUT_RULES.concat(extraRules || []);
+// The rules come from SIFT AI, already written, and are compiled here. Nothing
+// in this file decides what a bad instruction looks like.
+function compileRules(list) {
+  var rules = [];
+  var source = list || [];
+  for (var i = 0; i < source.length; i += 1) {
+    try {
+      rules.push({ category: String(source[i].category || 'none'), test: new RegExp(String(source[i].signature || ''), 'i') });
+    } catch (error) {
+      // A rule this runtime cannot compile is skipped, never guessed at.
+    }
+  }
+  return rules;
+}
+
+function firstHit(text, rules) {
   for (var i = 0; i < rules.length; i += 1) {
     var hit = text.match(rules[i].test);
-    if (hit) {
-      // The same words inside something the person pasted in are their own
-      // category: a document is not a person giving an order.
-      return { category: isPasted(text, hit.index) ? 'pasted_instruction' : rules[i].category };
-    }
+    if (hit) return { category: rules[i].category, index: hit.index };
   }
   return null;
 }
 
-function isPasted(text, index) {
+// The same words inside something the person pasted in are their own category: a
+// document is not a person giving an order.
+function insidePasted(text, index) {
   var before = text.slice(0, index);
-  var fences = before.split('```').length - 1;
-  if (fences % 2 === 1) return true;
+  // An odd number of fences before the match means it sits inside a pasted block.
+  if (before.split('```').length % 2 === 0) return true;
   var line = before.slice(before.lastIndexOf('\n') + 1);
   return /^\s*>/.test(line);
 }
 
-function scanReply(text, config) {
-  var rules = REPLY_RULES.concat((config && config.extraReplyRules) || []);
-  for (var i = 0; i < rules.length; i += 1) {
-    if (rules[i].test.test(text)) return { clean: false, category: rules[i].category };
-  }
-
-  var names = (config && config.internalNames) || [];
-  for (var n = 0; n < names.length; n += 1) {
-    if (String(names[n]) && text.toLowerCase().indexOf(String(names[n]).toLowerCase()) !== -1) {
-      return { clean: false, category: 'internal_name' };
-    }
-  }
-
-  var own = ((config && config.ownAddresses) || []).map(function (value) { return String(value).toLowerCase(); });
-  var mail = text.match(EMAIL) || [];
-  for (var e = 0; e < mail.length; e += 1) {
-    if (own.indexOf(mail[e].toLowerCase()) === -1) return { clean: false, category: 'foreign_address' };
-  }
-  var digits = own.map(function (value) { return value.replace(/[^\d]/g, ''); });
-  var phones = text.match(PHONE) || [];
-  for (var p = 0; p < phones.length; p += 1) {
-    if (digits.indexOf(phones[p].replace(/[^\d]/g, '')) === -1) return { clean: false, category: 'foreign_address' };
-  }
-
-  return { clean: true, category: 'none' };
-}
+var EMAIL = /[\w.+-]+@[\w-]+\.[\w.-]{2,}/g;
+var PHONE = /\+?\d[\d\s().-]{7,}\d/g;
 
 function createGuard(options) {
   var config = options || {};
@@ -272,21 +221,29 @@ function createGuard(options) {
   var timeoutMs = Number(config.timeoutMs || DEFAULTS.timeoutMs);
   var maxSteps = Number(config.maxSteps || safeEnv('SIFT_MAX_STEPS') || DEFAULTS.maxSteps);
   var sink = config.sink || createSink(auditPath);
-  var extraRules = config.extraRules || [];
-  var allowShellTools = config.allowShellTools === true;
   var allowedTools = config.allowedTools || {};
+  var allowShellTools = config.allowShellTools === true;
+  var ownAddresses = (config.ownAddresses || []).map(function (value) { return String(value).toLowerCase(); });
+  var internalNames = config.internalNames || [];
+
+  var key = canonicalKey(config.licenseKey !== undefined ? config.licenseKey : safeEnv('SIFT_LICENSE_KEY'));
+  var model = String(config.model || safeEnv('SIFT_MODEL_NAME') || '').trim();
+  var deployment = String(config.deploymentId || safeEnv('SIFT_DEPLOYMENT_ID') || '').trim();
 
   var state = {
-    key: canonicalKey(config.licenseKey !== undefined ? config.licenseKey : safeEnv('SIFT_LICENSE_KEY')),
     hash: '',
     status: 'Invalid',
     active: false,
+    lockedTo: '',
     expiresAt: null,
+    message: '',
     cachedAt: 0,
     stopped: false,
-    stopCategory: '',
+    category: 'none',
     steps: 0,
-    category: 'none'
+    inputRules: [],
+    replyRules: [],
+    deniedTools: []
   };
 
   function writeAudit(fields) {
@@ -307,7 +264,6 @@ function createGuard(options) {
 
   function latch(category) {
     state.stopped = true;
-    state.stopCategory = category;
     state.active = false;
     state.category = category;
     writeAudit({ category: category, gate: 'kill_switch', decision: 'blocked' });
@@ -315,19 +271,66 @@ function createGuard(options) {
   }
 
   function verdict() {
-    return { status: state.stopped ? 'Stopped' : state.status, active: state.active === true && !state.stopped, stopped: state.stopped, category: state.category, expiresAt: state.expiresAt };
+    return {
+      status: state.stopped ? 'Stopped' : state.status,
+      active: state.active === true && !state.stopped,
+      stopped: state.stopped,
+      category: state.category,
+      lockedTo: state.lockedTo,
+      expiresAt: state.expiresAt,
+      message: state.message
+    };
   }
 
   async function ask() {
-    if (!state.hash) return { fresh: true, status: 'Invalid', active: false, expiresAt: null };
-    var answer = await postJson(endpoint, { key_hash: state.hash }, timeoutMs);
-    if (answer.kind === 'refused') return { fresh: true, status: 'Invalid', active: false, expiresAt: null };
+    if (!state.hash) return { fresh: true, status: 'Invalid', active: false, message: 'No key was set.' };
+    if (!model || !deployment) {
+      return {
+        fresh: true,
+        status: 'Invalid',
+        active: false,
+        message: 'Set SIFT_MODEL_NAME to the one model this key is for, and SIFT_DEPLOYMENT_ID to the deployment it runs on.'
+      };
+    }
+
+    var answer = await postJson(
+      endpoint,
+      { action: 'check', key_hash: state.hash, model: model, deployment_id: deployment },
+      timeoutMs
+    );
+    if (answer.kind === 'refused') return { fresh: true, status: 'Invalid', active: false, message: answer.body.message || '' };
     if (answer.kind !== 'ok') return { fresh: false };
+
     var body = answer.body || {};
-    return { fresh: true, status: String(body.status || 'Invalid'), active: body.active === true, expiresAt: body.expires_at || null };
+    return {
+      fresh: true,
+      status: String(body.status || 'Invalid'),
+      active: body.active === true,
+      lockedTo: String(body.locked_to || ''),
+      expiresAt: body.expires_at || null,
+      message: String(body.message || '')
+    };
   }
 
-  // Steps the key, the kill switch and the cache, in that order, on every call.
+  // The rules for this key and this binding. Fetched once, held in memory, and
+  // only while the key is active and locked.
+  async function ensurePolicy() {
+    if (state.inputRules.length || state.replyRules.length) return true;
+    var answer = await postJson(
+      endpoint,
+      { action: 'policy', key_hash: state.hash, model: model, deployment_id: deployment },
+      timeoutMs
+    );
+    if (answer.kind !== 'ok') return false;
+    var body = answer.body || {};
+    state.inputRules = compileRules(body.input);
+    state.replyRules = compileRules(body.reply);
+    state.deniedTools = (body.denied_tools || []).map(String);
+    return state.inputRules.length > 0 || state.replyRules.length > 0;
+  }
+
+  // Steps the key, the kill switch, the cache and the rules, in that order, on
+  // every call.
   async function refresh() {
     if (state.stopped) return verdict();
 
@@ -335,33 +338,78 @@ function createGuard(options) {
     if (local.on) return latch(local.unreadable ? 'kill_switch_unreadable' : 'kill_switch_local');
     state.category = 'none';
 
-    if (!state.hash) state.hash = await sha256Hex(state.key);
-    if (!state.hash) return latch('no_key');
-
-    var now = Date.now();
-    if (state.cachedAt && now - state.cachedAt < cacheMs) return verdict();
-
-    var answer = await ask();
-    if (answer.fresh) {
-      // A Stopped answer is never cached and never softened.
-      if (answer.status === 'Stopped') return latch('kill_switch_remote');
-      state.cachedAt = now;
-      state.status = answer.status;
-      state.active = answer.active;
-      state.expiresAt = answer.expiresAt;
+    // No key at all: nothing to hash and nothing to send. The guardrails stay
+    // off, and your product carries on running as it normally would — this is
+    // not a stop, only an absence of protection.
+    if (!state.hash && key) state.hash = await sha256Hex(key);
+    if (!state.hash) {
+      state.status = 'Invalid';
+      state.active = false;
+      state.message = 'No key was set.';
       return verdict();
     }
 
-    // The check could not get through. The last good answer stands for the grace
-    // window, so a brief outage does not turn the guardrails off mid-day.
-    var withinGrace = state.active === true && state.cachedAt > 0 && now - state.cachedAt < graceMs;
-    writeAudit({ category: 'validation_outage', gate: 'license_check', decision: withinGrace ? 'allowed' : 'blocked' });
-    return withinGrace ? verdict() : { status: 'Outage', active: false, stopped: false, category: 'validation_outage', expiresAt: state.expiresAt };
+    var now = Date.now();
+    if (!state.cachedAt || now - state.cachedAt >= cacheMs) {
+      var answer = await ask();
+      if (answer.fresh) {
+        // A Stopped answer is never cached and never softened.
+        if (answer.status === 'Stopped') return latch('kill_switch_remote');
+        state.cachedAt = now;
+        state.status = answer.status;
+        state.active = answer.active;
+        state.lockedTo = answer.lockedTo || '';
+        state.expiresAt = answer.expiresAt || null;
+        state.message = answer.message || '';
+      } else {
+        // The check could not get through. The last good answer stands for the
+        // grace window, so a brief outage does not turn the guardrails off
+        // mid-day.
+        var withinGrace = state.active === true && state.cachedAt > 0 && now - state.cachedAt < graceMs;
+        writeAudit({ category: 'validation_outage', gate: 'license_check', decision: withinGrace ? 'allowed' : 'blocked' });
+        if (!withinGrace) {
+          state.status = 'Outage';
+          state.active = false;
+          return { status: 'Outage', active: false, stopped: false, category: 'validation_outage', lockedTo: state.lockedTo, expiresAt: state.expiresAt, message: 'The check could not be reached.' };
+        }
+      }
+    }
+
+    if (state.active) await ensurePolicy();
+    return verdict();
+  }
+
+  function scanInput(text) {
+    var hit = firstHit(text, state.inputRules);
+    if (!hit) return null;
+    return { category: insidePasted(text, hit.index) ? 'pasted_instruction' : hit.category };
+  }
+
+  function scanReply(text) {
+    var hit = firstHit(text, state.replyRules);
+    if (hit) return { clean: false, category: hit.category };
+
+    for (var i = 0; i < internalNames.length; i += 1) {
+      var name = String(internalNames[i] || '');
+      if (name && text.toLowerCase().indexOf(name.toLowerCase()) !== -1) return { clean: false, category: 'internal_name' };
+    }
+
+    var mail = text.match(EMAIL) || [];
+    for (var e = 0; e < mail.length; e += 1) {
+      if (ownAddresses.indexOf(mail[e].toLowerCase()) === -1) return { clean: false, category: 'foreign_address' };
+    }
+    var digits = ownAddresses.map(function (value) { return value.replace(/[^\d]/g, ''); });
+    var phones = text.match(PHONE) || [];
+    for (var p = 0; p < phones.length; p += 1) {
+      if (digits.indexOf(phones[p].replace(/[^\d]/g, '')) === -1) return { clean: false, category: 'foreign_address' };
+    }
+
+    return { clean: true, category: 'none' };
   }
 
   function checkTool(name, args) {
     if (!name) return { allowed: false, category: 'tool_not_allowed' };
-    if (!allowShellTools && SHELL_TOOLS.test(name)) return { allowed: false, category: 'tool_not_allowed' };
+    if (!allowShellTools && state.deniedTools.indexOf(name) !== -1) return { allowed: false, category: 'tool_not_allowed' };
     if (!Object.prototype.hasOwnProperty.call(allowedTools, name)) return { allowed: false, category: 'tool_not_allowed' };
 
     var rule = allowedTools[name] || {};
@@ -390,22 +438,32 @@ function createGuard(options) {
   }
 
   var guard = {
-    // Once, at start-up. Never throws: a bad key leaves the guardrails off.
+    // Once, at start-up. Never throws: a key that is not active and locked
+    // simply leaves the guardrails off.
     async ready() {
       return refresh();
     },
 
     state: function () {
-      return Object.assign({}, verdict(), { steps: state.steps, keyed: state.hash !== '' });
+      return Object.assign({}, verdict(), { steps: state.steps, keyed: state.hash !== '', model: model, deployment: deployment });
     },
 
-    // Step 1 to 4, and the audit entry, for every message.
+    // Steps 1 to 4, and the audit entry, for every message.
     async guardMessage(text) {
       var now = await refresh();
       if (now.stopped) return { allowed: false, guarded: false, reply: STOP_REPLY, category: now.category };
-      if (!now.active) return { allowed: true, guarded: false, reply: null, category: now.status === 'Outage' ? 'validation_outage' : 'not_active' };
+      if (!now.active) {
+        return {
+          allowed: true,
+          guarded: false,
+          reply: null,
+          category: now.status === 'Outage' ? 'validation_outage' : 'not_active',
+          message: now.message
+        };
+      }
+      if (!state.inputRules.length) return { allowed: true, guarded: false, reply: null, category: 'policy_unavailable' };
 
-      var hit = scanInput(String(text === undefined || text === null ? '' : text), extraRules);
+      var hit = scanInput(String(text === undefined || text === null ? '' : text));
       var written = writeAudit({ category: hit ? hit.category : 'none', gate: 'input_filter', decision: hit ? 'refused' : 'allowed' });
       if (!written) {
         latch('audit_unavailable');
@@ -415,7 +473,7 @@ function createGuard(options) {
       return { allowed: true, guarded: true, reply: null, category: 'none' };
     },
 
-    // Step 5 to 8, around one action of yours.
+    // Steps 5 to 8, around one action of yours.
     async runTool(input) {
       var asked = input || {};
       var name = String(asked.name || '');
@@ -440,8 +498,7 @@ function createGuard(options) {
 
       // The entry goes in before the action. If it cannot be written, the action
       // does not happen.
-      var logged = writeAudit({ category: 'tool_call', gate: 'audit', decision: 'allowed', tool: name, step: state.steps + 1 });
-      if (!logged) {
+      if (!writeAudit({ category: 'tool_call', gate: 'audit', decision: 'allowed', tool: name, step: state.steps + 1 })) {
         latch('audit_unavailable');
         return { ran: false, blocked: true, guarded: true, reply: STOP_REPLY, category: 'audit_unavailable' };
       }
@@ -454,9 +511,8 @@ function createGuard(options) {
       }
 
       var raw = handler ? await handler(args) : null;
-      var said = typeof raw === 'string' ? raw : '';
-      if (said) {
-        var held = scanReply(said, config);
+      if (typeof raw === 'string' && raw) {
+        var held = scanReply(raw);
         if (!held.clean) {
           writeAudit({ category: held.category, gate: 'reply_filter', decision: 'held', tool: name });
           return { ran: true, blocked: false, guarded: true, result: null, reply: HELD_REPLY, category: held.category };
@@ -471,7 +527,7 @@ function createGuard(options) {
       if (now.stopped) return { clean: false, guarded: false, reply: STOP_REPLY, category: now.category };
       if (!now.active) return { clean: true, guarded: false, reply: null, category: 'not_active' };
 
-      var held = scanReply(String(text === undefined || text === null ? '' : text), config);
+      var held = scanReply(String(text === undefined || text === null ? '' : text));
       writeAudit({ category: held.clean ? 'none' : held.category, gate: 'reply_filter', decision: held.clean ? 'allowed' : 'held' });
       if (held.clean) return { clean: true, guarded: true, reply: null, category: 'none' };
       return { clean: false, guarded: true, reply: HELD_REPLY, category: held.category };
@@ -487,7 +543,6 @@ function createGuard(options) {
     // Clears a latched stop and the cached answer. Only you call this.
     reset: function () {
       state.stopped = false;
-      state.stopCategory = '';
       state.cachedAt = 0;
       state.steps = 0;
       state.category = 'none';
