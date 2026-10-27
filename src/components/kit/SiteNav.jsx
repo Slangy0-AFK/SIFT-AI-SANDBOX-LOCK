@@ -12,6 +12,7 @@ const NAV = [
   { label: 'Allow & Block', to: '/allow-block' },
   { label: 'History', to: '/history' },
   { label: 'Plans', to: '/plans' },
+  { label: 'About', to: '/about' },
   { label: 'Support', to: '/support' }
 ];
 

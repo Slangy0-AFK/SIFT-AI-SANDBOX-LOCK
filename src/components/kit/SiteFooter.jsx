@@ -8,6 +8,7 @@ const PAGES = [
   ['/allow-block', 'Allowlist & Blocklist'],
   ['/history', 'Your checks'],
   ['/plans', 'Plans'],
+  ['/about', 'About'],
   ['/support', 'Support']
 ];
 
