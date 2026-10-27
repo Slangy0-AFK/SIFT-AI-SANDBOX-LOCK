@@ -158,10 +158,18 @@ export default function BehaviourTest() {
             </div>
           </div>
 
-          {reviewedCount.length !== turns.length && (
+          {planned.length > 0 ? (
             <p className="mt-3 text-xs text-muted-foreground">
-              No result is shown until every turn has been reviewed. {turns.length - reviewedCount.length} still to judge.
+              {planned.length} turns are queued and nothing has been sent yet — press “Send the remaining turns” to send them
+              one by one. Each card fills with the reply, and the review comes after.
             </p>
+          ) : (
+            reviewedCount.length !== turns.length && (
+              <p className="mt-3 text-xs text-muted-foreground">
+                All {turns.length} turns are sent. No result is shown until every turn has been reviewed.{' '}
+                {turns.length - reviewedCount.length} still to judge.
+              </p>
+            )
           )}
 
           <div className="mt-4 space-y-3">
