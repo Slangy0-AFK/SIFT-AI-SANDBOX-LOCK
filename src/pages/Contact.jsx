@@ -36,7 +36,7 @@ export default function Contact() {
           <div className="flex flex-col gap-6">
             <div className="flex items-center gap-3 text-muted-foreground justify-center">
               <Mail className="w-5 h-5 text-primary" />
-              <span className="text-sm font-medium">support@sift-ai.security</span>
+              <span className="text-sm font-medium">support@sift-ai.net</span>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">

@@ -13,7 +13,7 @@ export default function SavedProfiles() {
   return (
     <Card className="border-border/60">
       <CardHeader className="pb-3">
-        <CardTitle className="font-mono text-xs tracking-wider">SAVED DEVICE PROFILES</CardTitle>
+        <CardTitle className="font-mono text-xs tracking-wider">REUSABLE SCAN PROFILES</CardTitle>
       </CardHeader>
       <CardContent>
         <DeviceManager devices={devices} plan="pro" />

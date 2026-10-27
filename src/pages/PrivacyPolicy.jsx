@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const LAST_UPDATED = 'May 20, 2026';
 const APP_NAME = 'SIFT AI';
-const CONTACT_EMAIL = import.meta.env.VITE_PRIVACY_EMAIL || 'support@sift-ai-security.app';
+const CONTACT_EMAIL = import.meta.env.VITE_PRIVACY_EMAIL || 'support@sift-ai.net';
 
 export default function PrivacyPolicy() {
   return (
