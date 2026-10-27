@@ -21,6 +21,8 @@ export const CREDIT_CAPS = {
   text_analysis: { user: 40, guest: 0 },
   // One eval puzzle run against one model (signed-in only), per day.
   puzzle_run: { user: 40, guest: 0 },
+  // One turn of the behaviour test sent to one model (signed-in only), per day.
+  behaviour_turn: { user: 40, guest: 0 },
 };
 
 // The ceiling is a calendar day, held as its own field: counting by plain

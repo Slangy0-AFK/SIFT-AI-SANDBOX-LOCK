@@ -66,6 +66,7 @@ import AcceptInvite from '@/pages/AcceptInvite';
 import StripeConnect from '@/pages/StripeConnect';
 import License from '@/pages/License';
 import PluginDownload from '@/pages/PluginDownload';
+import BehaviourTest from '@/pages/BehaviourTest';
 // Add page imports here
 
 function AppRoutes() {
@@ -104,6 +105,7 @@ function AppRoutes() {
             <Route path="/marketplace" element={<PageTransition><Marketplace /></PageTransition>} />
             <Route path="/governor-demo" element={<PageTransition><GovernorDemo /></PageTransition>} />
             <Route path="/evals" element={<PageTransition><Evals /></PageTransition>} />
+            <Route path="/behaviour-test" element={<PageTransition><BehaviourTest /></PageTransition>} />
             <Route path="/sizing-calculator" element={<PageTransition><SizingCalculator /></PageTransition>} />
             <Route path="/scaler" element={<PageTransition><Scaler /></PageTransition>} />
             <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />

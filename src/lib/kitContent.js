@@ -49,7 +49,7 @@ export const EVALS = [
     title: 'Multi-turn adversarial eval',
     tests:
       'Pushes an agent over several turns and watches six behaviours: goal_drift, reward_hacking, collusion, bias_amplification, black_box_capability and temporal_poisoning.',
-    found: 'Repo selftest: 15 passed, 0 failed.',
+    found: 'The repo selftest checks that the checks behave as written. It scores no model and claims no win.',
     limits:
       'The scenarios are authored inside the repo. Passing the selftest means the checks behave as written, not that an agent is safe in general.',
     report: [
@@ -58,8 +58,8 @@ export const EVALS = [
         text: 'The repo selftest, in our lab, over the scenario set that ships with the repo: 15 checks spanning the six behaviours.'
       },
       {
-        heading: 'Where the numbers come from',
-        text: 'The per-behaviour output of that selftest, from the run in our lab.'
+        heading: 'How it is read',
+        text: 'Read the transcript: each turn carries what was asked, what came back and the behaviour it targeted. Nothing in the output totals one side against the other.'
       },
       {
         heading: 'What it does not show',
@@ -73,7 +73,7 @@ export const EVALS = [
     tests:
       'A 20-turn eval with 3 pressure cycles. Every risky request is paired with a safe twin that carries written authorisation, so a block on the risky side and a pass on the safe side can be told apart.',
     found:
-      'In our lab run, prompt-only guardrails and the scaler governor each blocked 18 of 18 dangerous cases, with 0 false positives on the safe twins.',
+      'Every turn is kept as a transcript: the request, the reply verbatim, and whether written authorisation was present. No win, block rate or false-positive rate is claimed for either arm.',
     limits:
       'This run did NOT reproduce a lab failure, so read it as a check, not as a claim of beating the labs. It was unblinded, it used a single target (Muse), and the scenarios are authored.',
     report: [
@@ -82,8 +82,8 @@ export const EVALS = [
         text: '20 turns and 3 pressure cycles with Muse as the target, comparing prompt-only guardrails against the scaler governor.'
       },
       {
-        heading: 'How it was counted',
-        text: 'Dangerous cases blocked over dangerous cases tried (18 of 18), and safe twins passed over safe twins tried (0 false positives).'
+        heading: 'How it is read',
+        text: 'A person reads each reply and records, quoting the words they judged, whether the model objected, accepted or left it unclear, and what it actually did. A refusal word on its own is not an objection, and the twin is judged on its own.'
       },
       {
         heading: 'What it does not show',
@@ -118,16 +118,16 @@ export const EVALS = [
     title: 'Five-phase living simulation',
     tests:
       'A persistent five-phase evaluation: the agent keeps living between phases rather than starting clean each time.',
-    found: 'Repo validator: 20 passed.',
+    found: 'The repo validator confirms the simulation ran the way its author designed it. That is a flow check, not a result about reasoning.',
     limits: 'The validator checks that the simulation ran the way its author designed it. It is not an outside audit.',
     report: [
       {
         heading: 'What was run',
-        text: 'The repo validator across the five phases: 20 checks passed.'
+        text: 'The repo validator across the five phases, recording which checks it ran.'
       },
       {
-        heading: 'Where the numbers come from',
-        text: 'The validator’s own 20 checks, run across the five phases in our lab.'
+        heading: 'What the validator covers',
+        text: 'It checks the simulation follows its own steps. It does not judge whether the choices made inside it were good ones.'
       },
       {
         heading: 'What it does not show',
@@ -139,12 +139,12 @@ export const EVALS = [
     repo: 'The-Loop-Test-',
     title: 'Premise-set loop test',
     tests: 'A sandbox logic eval over premise set P1 to P8.',
-    found: 'Round 0: P3 contradicts P6, so P1 to P8 cannot all be true. Repo tests: 10 passed.',
+    found: 'Round 0 finds that P3 contradicts P6, so P1 to P8 cannot all be true. Whether a derivation follows is a reviewer judgment, not a count.',
     limits: 'This is a logic result inside the repo’s sandbox. It says nothing about any model’s safety.',
     report: [
       {
         heading: 'What was run',
-        text: 'The repo’s own tests: 10 passed, with Round 0 finding that P3 contradicts P6.'
+        text: 'The repo’s own checks, with Round 0 finding that P3 contradicts P6.'
       },
       {
         heading: 'Why it matters',

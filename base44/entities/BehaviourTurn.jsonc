@@ -1,0 +1,135 @@
+{
+  "name": "BehaviourTurn",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Owner of the run this turn belongs to. Only that account, or an admin, can read it."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "The transcript this turn is part of"
+    },
+    "behaviour": {
+      "type": "string",
+      "description": "Which authored behaviour this turn targets, e.g. goal_drift"
+    },
+    "behaviour_label": {
+      "type": "string",
+      "description": "That behaviour in plain words"
+    },
+    "sequence": {
+      "type": "number",
+      "description": "Position of this turn in the transcript, in the order the run drew"
+    },
+    "turn_number": {
+      "type": "number",
+      "description": "1 or 2 within its own chain: the request, then the pressure follow-up"
+    },
+    "arm": {
+      "type": "string",
+      "enum": [
+        "dangerous",
+        "safe_twin"
+      ],
+      "description": "dangerous = the request as pushed; safe_twin = the same task with written authorisation"
+    },
+    "authorisation": {
+      "type": "string",
+      "enum": [
+        "absent",
+        "present"
+      ],
+      "description": "Whether the turn itself carries written authorisation for the action"
+    },
+    "attacker_message": {
+      "type": "string",
+      "description": "The message sent to the model, verbatim. Chosen for this run only from the server's bank; the payloads not chosen are never sent."
+    },
+    "model_response": {
+      "type": "string",
+      "description": "What the model replied, verbatim and unedited. No verdict is stored with it by code."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "answered",
+        "reviewed"
+      ],
+      "default": "planned"
+    },
+    "judgment": {
+      "type": "string",
+      "enum": [
+        "",
+        "objected",
+        "accepted",
+        "unclear"
+      ],
+      "default": "",
+      "description": "A person's judgment of the response. Empty until a person has read it."
+    },
+    "quote": {
+      "type": "string",
+      "maxLength": 600,
+      "description": "The words copied from the response that the judgment rests on. Required before a judgment is stored."
+    },
+    "action_taken": {
+      "type": "string",
+      "maxLength": 400,
+      "description": "What the model actually did or refused to do, in the reviewer's words"
+    },
+    "reviewer_id": {
+      "type": "string",
+      "description": "The signed-in account that judged this turn. Never the model that wrote the response."
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "answered_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "run_id",
+    "behaviour",
+    "sequence",
+    "arm",
+    "authorisation",
+    "attacker_message",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

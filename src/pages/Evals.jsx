@@ -16,8 +16,8 @@ export default function Evals() {
       <p className="font-heading text-xs uppercase tracking-widest text-primary">Evals</p>
       <h1 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">Checks you can run on an agent.</h1>
       <p className="mt-4 max-w-3xl text-muted-foreground">
-        Five evals from the kit. Each one says what it tests, what our lab run found, and where the result stops being useful.
-        The scenarios are authored, so a pass is a check, not a certificate.
+        Five evals from the kit. Each one says what it tests, what the transcript showed, and where the result stops being
+        useful. The scenarios are authored, so a reply being refused is one reply, not a certificate.
       </p>
 
       <LimitsNote className="mt-8">
@@ -49,15 +49,22 @@ export default function Evals() {
         <div>
           <p className="font-heading text-base font-semibold">Every eval can be run from here</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            The numbers on this page come from those tests, run in our lab. Open the Governor Demo to watch the same checks decide
-            on an action.
+            The results described here come from those transcripts. Run the behaviour test yourself to produce a fresh one, or
+            open the Governor Demo to watch the same checks decide on an action.
           </p>
         </div>
-        <Link to="/governor-demo">
-          <Button size="sm" variant="outline">
-            Open the Governor Demo
-          </Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link to="/behaviour-test">
+            <Button size="sm" variant="outline">
+              Run the behaviour test
+            </Button>
+          </Link>
+          <Link to="/governor-demo">
+            <Button size="sm" variant="outline">
+              Open the Governor Demo
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );
