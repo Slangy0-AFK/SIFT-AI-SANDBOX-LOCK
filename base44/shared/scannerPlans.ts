@@ -13,10 +13,11 @@ export const DEFAULT_ANNUAL_DISCOUNT_PERCENT = 16.67;
 export const MAX_ANNUAL_DISCOUNT_PERCENT = 90;
 
 export const SCANNER_TIERS = {
+  // The harness and its killswitch, sold a month at a time.
   pro: {
     id: 'pro',
-    name: 'Pro',
-    label: 'SiftAI Pro (monthly)',
+    name: 'Harness',
+    label: 'SIFT AI Harness (monthly)',
     mode: 'subscription',
     interval: 'month',
     amount: 700,
@@ -28,24 +29,27 @@ export const SCANNER_TIERS = {
   // checks. Nothing unlocks until Stripe confirms that exact amount.
   pro_annual: {
     id: 'pro_annual',
-    name: 'Pro (1 year)',
-    label: 'SIFT AI Pro (1 year, paid upfront)',
+    name: 'Harness (1 year)',
+    label: 'SIFT AI Harness (1 year, paid upfront)',
     mode: 'payment',
     interval: null,
     months: PRO_YEARLY_MONTHS,
     currency: 'usd',
     annual: true
   },
+  // The whole package, charged once. The id stays 'device_check' because existing
+  // purchases, licenses and receipts are filed under it; only what it is called
+  // and what it costs have changed.
   device_check: {
     id: 'device_check',
-    name: 'Agent Check',
-    label: 'SIFT AI Agent Check',
+    name: 'Whole package',
+    label: 'SIFT AI Whole Package',
     mode: 'payment',
     interval: null,
-    amount: 4900,
+    amount: 5000,
     currency: 'usd'
   },
-  // Not sold any more: everything it included is now in Agent Check at $49.
+  // Not sold any more: everything it included is now in the whole package at $50.
   // It stays in this catalog because a $99 payment made before the change must
   // still be confirmable by the webhook, and the amount below is the historical
   // one. 'purchasable: false' is what stops any new checkout for it.

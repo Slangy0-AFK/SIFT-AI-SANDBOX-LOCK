@@ -14,19 +14,19 @@ const TIERS = [
     icon: Upload,
     name: 'Free',
     price: '$0',
-    text: 'The everyday checks: a link, a domain, a hash or a message, plus your own history.'
+    text: 'The phone scan and the look-up: a link, a domain, a hash or a message, plus your own history.'
   },
   {
     icon: Shield,
-    name: 'Pro',
+    name: 'Harness',
     price: '$7 / month',
-    text: 'Reusable scan profiles, re-checks of flagged items, PDF reports and priority help.'
+    text: 'The harness and its killswitch in your own code, every decision logged, with reusable scan profiles and PDF reports.'
   },
   {
     icon: ShieldAlert,
-    name: 'Device Check',
-    price: '$49 once',
-    text: 'A careful second look at a flagged item or the whole device: the app list, where it connects, the evidence and a full written fix plan.'
+    name: 'Whole package',
+    price: '$50 once',
+    text: 'Everything the app makes: the harness, the killswitch, every look-up, the eval puzzles and a full written fix plan.'
   }
 ];
 

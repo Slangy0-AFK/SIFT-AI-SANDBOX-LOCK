@@ -290,7 +290,7 @@ export default function FreeScan({ isAuthed, onSignIn }) {
 
       {verdict?.level === 'flagged' && (
         <Link to="/plans" className="mt-4 inline-block font-mono text-xs text-primary hover:underline">
-          Want a person to look at this closely? See Device Check →
+          Want a person to look at this closely? See the whole package →
         </Link>
       )}
 

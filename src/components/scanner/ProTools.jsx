@@ -8,7 +8,7 @@ export default function ProTools({ unlocked }) {
   if (!unlocked) {
     return (
       <TierLocked
-        tier="Pro"
+        tier="Harness"
         price="$7 per month"
         includes={['Reusable scan profiles', 'Re-checks of flagged items', 'PDF reports', 'Priority support']}
       />

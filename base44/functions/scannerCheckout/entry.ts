@@ -22,7 +22,7 @@ export default async function (req) {
     // still be confirmed; its features are in Device Check now.
     if (tier.purchasable === false) {
       return Response.json(
-        { error: 'That plan is no longer sold. Agent Check at $49 includes everything it had.' },
+        { error: 'That plan is no longer sold. The whole package at $50 includes everything it had.' },
         { status: 400 }
       );
     }

@@ -64,7 +64,7 @@ export const HELP_ARTICLES = [
     fix_steps: [
       'If your account holds a founding place, the chat is open for you now.',
       'If it does not, use the ticket box on the support page: a person reads every one.',
-      'The plans page shows what Free, Pro and the Device Check each include.'
+      'The plans page shows what Free, the harness and the whole package each include.'
     ]
   },
   {
@@ -155,7 +155,7 @@ export function triagePriority({ topic = '', text = '' } = {}) {
 export function missingDetailFor({ priority = 'other', ticketText = '' } = {}) {
   const text = String(ticketText || '');
   if (/\b[\w.+-]+@[\w-]+\.[\w.]+\b/.test(text)) {
-    if (priority === 'payment_unlock') return 'the tier you paid for (Pro or Device Check)';
+    if (priority === 'payment_unlock') return 'the tier you paid for (the harness or the whole package)';
   }
   if (priority === 'payment_unlock') {
     return /\b[\w.+-]+@[\w-]+\.[\w.]+\b/.test(text)

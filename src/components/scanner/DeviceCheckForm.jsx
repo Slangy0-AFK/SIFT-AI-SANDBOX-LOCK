@@ -44,8 +44,8 @@ export default function DeviceCheckForm({ unlocked }) {
   if (!unlocked) {
     return (
       <TierLocked
-        tier="Device Check"
-        price="$49 one time"
+        tier="Whole package"
+        price="$50 one time"
         includes={[
           'A flagged item, or the whole device',
           'The app list and where the device connects',
@@ -121,7 +121,7 @@ export default function DeviceCheckForm({ unlocked }) {
             onClick={() => submit.mutate()}
           >
             {submit.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-            Submit for a Device Check
+            Submit for the whole package
           </Button>
         </div>
       </div>

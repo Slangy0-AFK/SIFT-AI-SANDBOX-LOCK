@@ -11,8 +11,8 @@ import HelperAgent from '@/components/scanner/HelperAgent';
 const LOGO = 'https://media.base44.com/images/public/6a0db3181169f42924052c0d/650b247a7_amazon.PNG';
 
 const TIERS = [
-  { id: 'pro', label: 'Pro' },
-  { id: 'device_check', label: 'Device Check' },
+  { id: 'pro', label: 'Harness' },
+  { id: 'device_check', label: 'Whole package' },
 ];
 
 export default function ScannerTools() {
@@ -63,7 +63,7 @@ export default function ScannerTools() {
 
         <section className="space-y-5">
           <div className="flex items-center gap-2">
-            <h2 className="font-mono text-sm font-bold tracking-widest text-foreground">PRO</h2>
+            <h2 className="font-mono text-sm font-bold tracking-widest text-foreground">HARNESS</h2>
             <span className="font-mono text-xs text-muted-foreground">$7 per month</span>
           </div>
           <ProTools unlocked={unlocked.has('pro')} />
@@ -71,8 +71,8 @@ export default function ScannerTools() {
 
         <section className="space-y-5">
           <div className="flex items-center gap-2">
-            <h2 className="font-mono text-sm font-bold tracking-widest text-foreground">DEVICE CHECK</h2>
-            <span className="font-mono text-xs text-muted-foreground">$49 one time</span>
+            <h2 className="font-mono text-sm font-bold tracking-widest text-foreground">WHOLE PACKAGE</h2>
+            <span className="font-mono text-xs text-muted-foreground">$50 one time</span>
           </div>
           <DeviceCheckForm unlocked={unlocked.has('device_check') || unlocked.has('full_audit')} />
         </section>

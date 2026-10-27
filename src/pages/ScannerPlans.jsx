@@ -141,9 +141,9 @@ export default function ScannerPlans() {
         <div className="max-w-2xl">
           <h1 className="font-mono text-2xl font-bold tracking-wide text-foreground sm:text-3xl">Pick your level of control</h1>
           <p className="mt-4 text-sm text-muted-foreground sm:text-base">
-            The killswitch and the puzzles are free. Pro keeps an agent under watch over time, and the one-time Agent Check is a
-            careful written look at one agent that already came up. Card payments are handled by Stripe, inside your account: that
-            is how the key, the receipt and the plan stay attached to you, so buying needs you logged in.
+            Three tiers. Free gives you the phone scan and the look-up. Seven dollars a month adds the harness with its
+            killswitch, in your own code. Fifty dollars once is the whole package. Card payments are handled by Stripe, inside
+            your account: that is how the key, the receipt and the plan stay attached to you, so buying needs you logged in.
           </p>
         </div>
 
@@ -151,8 +151,8 @@ export default function ScannerPlans() {
           <div className="mt-6 flex items-start gap-3 rounded-xl border border-primary/40 bg-primary/10 p-4">
             <Gift className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
             <p className="font-mono text-xs leading-relaxed text-primary">
-              Founding offer: everything the app sells is free for the first 50 accounts — Pro and the one-time Agent
-              Check. {foundingLeft === 1 ? 'One place is' : `${foundingLeft} places are`} left. Buying stays closed while
+              Founding offer: everything the app sells is free for the first 50 accounts — the harness and the whole
+              package. {foundingLeft === 1 ? 'One place is' : `${foundingLeft} places are`} left. Buying stays closed while
               the places last and opens by itself once they are gone{isAuthed ? '.' : ' — sign up to claim one.'}
             </p>
           </div>
@@ -162,8 +162,8 @@ export default function ScannerPlans() {
           <div className="mt-6 flex items-start gap-3 rounded-xl border border-primary/40 bg-secondary/20 p-4">
             <Shield className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
             <p className="font-mono text-xs leading-relaxed text-muted-foreground">
-              You hold one of the founding places: Pro and the Agent Check are unlocked on this account, free, for good.
-              Nothing to renew and nothing to cancel.
+              You hold one of the founding places: the harness and the whole package are unlocked on this account, free, for
+              good. Nothing to renew and nothing to cancel.
             </p>
           </div>
         )}
@@ -231,9 +231,8 @@ export default function ScannerPlans() {
         )}
 
         <p className="mt-6 font-mono text-xs text-muted-foreground">
-          Pro renews monthly and can be cancelled any time. A year of Pro is one payment for twelve months, with no
-          renewal to cancel. The one-time Agent Check is charged once, at checkout. Every purchase needs a signed-in
-          account.
+          The harness renews monthly and can be cancelled any time. A year of it is one payment for twelve months, with no
+          renewal to cancel. The whole package is charged once, at checkout. Every purchase needs a signed-in account.
         </p>
       </main>
     </div>
