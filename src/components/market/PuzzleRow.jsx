@@ -1,30 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { AlertTriangle, Loader2, Play } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { EVAL_MODELS } from '@/lib/evalPuzzles';
 
-// One puzzle, one model, one answer. The result is labelled with both, because a
-// verdict only means something when you know what ran and what it ran on.
-export default function PuzzleRow({ puzzle }) {
-  const [model, setModel] = useState(EVAL_MODELS[0].id);
-  const [result, setResult] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-
-  const run = async () => {
-    setBusy(true);
-    setError('');
-    setResult(null);
-    try {
-      const response = await base44.functions.invoke('marketTest', { kind: 'puzzle', puzzle_id: puzzle.id, model });
-      setResult(response.data);
-    } catch (err) {
-      setError(err.response?.data?.error || err.message || 'The test could not run.');
-    } finally {
-      setBusy(false);
-    }
-  };
+// One puzzle, one model, one answer. The result says what behaviour was tested
+// and what the answer showed: a strength when it passed, a weakness when it did
+// not, with the server's own reason underneath. The run itself is driven by the
+// bundle, so every result can feed the summary below.
+export default function PuzzleRow({ puzzle, model, onModelChange, result, busy, error, onRun }) {
+  const passed = result?.verdict === 'pass';
 
   return (
     <div className="rounded-xl border border-border bg-secondary/10 p-4">
@@ -32,13 +16,16 @@ export default function PuzzleRow({ puzzle }) {
         Puzzle {puzzle.number} · {puzzle.title}
       </p>
       <p className="mt-1.5 text-sm text-muted-foreground">{puzzle.what}</p>
+      <p className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+        Tests: {puzzle.behavior}
+      </p>
 
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
         <label className="flex-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
           Model tested
           <select
             value={model}
-            onChange={(event) => setModel(event.target.value)}
+            onChange={(event) => onModelChange(event.target.value)}
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-normal normal-case tracking-normal text-foreground"
           >
             {EVAL_MODELS.map((option) => (
@@ -49,7 +36,7 @@ export default function PuzzleRow({ puzzle }) {
           </select>
         </label>
 
-        <Button size="sm" className="mt-auto gap-2" onClick={run} disabled={busy}>
+        <Button size="sm" className="mt-auto gap-2" onClick={onRun} disabled={busy}>
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
           {busy ? 'Running' : 'Test'}
         </Button>
@@ -65,7 +52,7 @@ export default function PuzzleRow({ puzzle }) {
       {result && (
         <div
           className={`mt-3 rounded-lg border p-3 ${
-            result.verdict === 'pass' ? 'border-emerald-500/40 bg-emerald-500/10' : 'border-destructive/40 bg-destructive/10'
+            passed ? 'border-emerald-500/40 bg-emerald-500/10' : 'border-destructive/40 bg-destructive/10'
           }`}
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -73,9 +60,15 @@ export default function PuzzleRow({ puzzle }) {
               Puzzle {result.puzzle.number} · {result.puzzle.title}
             </p>
             <span className="font-mono text-[11px] uppercase text-foreground">
-              {result.verdict === 'pass' ? 'Passed' : 'Failed'} · {result.model.label}
+              {passed ? 'Passed' : 'Failed'} · {result.model.label}
             </span>
           </div>
+
+          <p className="mt-2 font-mono text-[11px] uppercase tracking-wide text-foreground">
+            {passed ? 'Strength' : 'Weakness'} · {puzzle.behavior}
+          </p>
+          <p className="mt-0.5 text-sm text-foreground">{passed ? puzzle.strength : puzzle.weakness}</p>
+
           <p className="mt-1.5 text-xs text-muted-foreground">
             <span className="font-medium text-foreground">{result.gate}.</span> {result.reason}
           </p>
