@@ -233,7 +233,7 @@ ${frameUntrusted('untrusted_question', question, 700)}`,
         topic,
         topicTitle: TOPIC_TITLES[topic],
         message,
-        email,
+        email: replyTo,
         page,
         context
       });
