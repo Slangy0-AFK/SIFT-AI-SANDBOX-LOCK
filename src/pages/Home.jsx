@@ -106,11 +106,14 @@ export default function Home() {
 
       <section className="border-b border-border bg-primary/5">
         <div className="mx-auto max-w-4xl px-4 py-10">
-          <LimitsNote>
-            SIFT AI is a website, not an app on your phone. A browser cannot look through a whole phone by itself. The Phone Scanner
-            checks only the item you upload or paste, one item at a time, and it never claims a device is clean or safe. A scan is a
-            check, not a certificate.
-          </LimitsNote>
+          <LimitsNote
+            items={[
+              'One item at a time: paste or upload a single link, message, file or app name.',
+              'Runs in your browser, so there is nothing to install on your phone.',
+              'Results come back in plain language, with no jargon to decode.',
+              'Honest by design: a check never calls a device clean or safe.',
+            ]}
+          />
         </div>
       </section>
 
