@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Shield, ToggleLeft, ToggleRight } from 'lucide-react';
 import { toast } from 'sonner';
 import PlanCard, { PLANS } from '@/components/subscription/PlanCard';
+import CancelProPanel from '@/components/subscription/CancelProPanel';
 import SupportCenter from '@/components/support/SupportCenter';
 
 export default function SubscriptionPage() {
@@ -87,6 +88,8 @@ export default function SubscriptionPage() {
           </div>
         </CardContent>
       </Card>
+
+      <CancelProPanel />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-bold">Choose a plan</h2>

@@ -373,6 +373,36 @@ export async function revokeLicense(base44: any, license: any, reason: any) {
   });
 }
 
+// The key that goes with a plan. A plan that ends takes its key with it at that
+// moment, whether the person cancelled it, Stripe ended it, or a renewal failed.
+// Nothing is refunded or credited on the way out: the month already paid for was
+// paid in full, so the key simply stops where the plan stops.
+//
+// Only the key bought with THAT plan is revoked, found through the purchase behind
+// the subscription's own checkout session, so a Device Check bought alongside it
+// keeps working. A founding key is tied to no plan and stands.
+export async function revokePlanKey(base44: any, userId: any, subscription: any = null, reason: any = 'plan_cancelled') {
+  if (!userId) return { revoked: 0 };
+
+  const mine = rows(await base44.asServiceRole.entities.License.filter({ user_id: userId }, { limit: 20 })).filter(
+    (license: any) => license.source !== 'founding' && effectiveStatus(license) === 'active'
+  );
+  if (!mine.length) return { revoked: 0 };
+
+  const sessionId = String((subscription && subscription.checkout_session_id) || '');
+  let doomed: any[] = [];
+  if (sessionId) {
+    const purchase = first(await base44.asServiceRole.entities.ScannerPurchase.filter({ stripe_session_id: sessionId }));
+    if (purchase) doomed = mine.filter((license: any) => license.purchase_id === purchase.id);
+  }
+  // No purchase to tie it to (an older payment, or a plan that issued no key of its
+  // own): the account's Pro key is the one this plan was keeping alive.
+  if (!doomed.length) doomed = mine.filter((license: any) => license.entitlement === 'pro');
+
+  for (const license of doomed) await revokeLicense(base44, license, reason);
+  return { revoked: doomed.length };
+}
+
 // A replacement key. The fingerprint is replaced, so the key it replaces stops
 // working at this moment, and activation starts again from nothing.
 export async function regenerateLicense(base44: any, license: any, { reason = '', notify = false } = {}) {

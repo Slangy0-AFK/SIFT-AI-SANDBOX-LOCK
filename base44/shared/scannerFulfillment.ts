@@ -1,5 +1,5 @@
 import { SCANNER_TIERS } from './scannerPlans.ts';
-import { issueLicense } from './license.ts';
+import { issueLicense, revokePlanKey } from './license.ts';
 
 export function firstRecord(result) {
   if (!result) return null;
@@ -154,6 +154,12 @@ export async function downgradeSubscription(base44, subscription, status) {
       plan: 'free',
       status: status || 'cancelled'
     });
+    // The plan has ended, so the key that came with it stops here too. This is the
+    // route a cancellation made in Stripe's own dashboard, and a renewal that
+    // failed, arrive by; a cancel made in the app revokes it at once and this
+    // finds the work already done.
+    const keys = await revokePlanKey(base44, row.user_id, row, `plan_${status || subscription.status}`);
+    if (keys.revoked) console.log(`[license] ${keys.revoked} key(s) revoked with the plan on ${row.id}`);
     return true;
   }
   return false;

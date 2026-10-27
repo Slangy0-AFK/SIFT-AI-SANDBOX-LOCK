@@ -100,10 +100,10 @@ export default function RefundPolicy() {
         <section className="space-y-2">
           <h2 className="font-mono text-xs font-bold text-foreground tracking-wider uppercase">7. Subscription Cancellations</h2>
           <p>
-            <span className="text-foreground font-semibold">Cancellation Method:</span> Cancel anytime through Google Play Store → Subscriptions → SIFT AI → Cancel.
+            <span className="text-foreground font-semibold">Cancellation Method:</span> Cancel anytime from the Plan page in the app, or through Google Play Store → Subscriptions → SIFT AI → Cancel.
           </p>
           <p>
-            <span className="text-foreground font-semibold">Effective Date:</span> Cancellations take effect at the end of your current billing period.
+            <span className="text-foreground font-semibold">Effective Date:</span> Cancelling stops the plan and the license key that came with it straight away. The month you are in was paid for in full and is not refunded.
           </p>
           <p>
             <span className="text-foreground font-semibold">No Partial Refunds:</span> We do not provide partial refunds for unused portions of a billing period.
