@@ -128,8 +128,8 @@ export default function ScanNow() {
         <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
           <MessageSquare className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
           <p className="text-sm text-muted-foreground">
-            Stuck on a result or a payment? Use the Help / Ask button in the corner. It answers from your own result and the app's
-            help pages, and it can open a support ticket for you in one click.
+            Stuck on a result or a payment? The button in the corner is the Pro chat helper, answering from your own result and the
+            app's help pages. On Free the same button opens a ticket box instead, which goes straight to the SIFT AI team.
           </p>
         </div>
 

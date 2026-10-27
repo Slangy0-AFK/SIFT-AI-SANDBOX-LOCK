@@ -6,6 +6,8 @@ import { MessageCircle, Send, ThumbsUp, ThumbsDown, Lightbulb, ChevronDown, Chev
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import TicketList from '@/components/support/TicketList';
+import SubmitTicketForm from '@/components/support/SubmitTicketForm';
+import useScannerUnlocks from '@/hooks/useScannerUnlocks';
 
 const FAQS = [
   { q: 'What is SIFT AI?', a: 'SIFT AI is a personal checker for rogue or unauthorised AI on the devices you own. Its main tool is the Phone Scanner, which checks the app, permission screen, link, hash or message you bring to it.' },
@@ -15,7 +17,11 @@ const FAQS = [
   { q: 'I paid and a tier is still locked', a: 'Submit a ticket with the payment topic using the form at the top of this page. A tier unlocks as soon as the payment is confirmed, so tell us the email you paid with and we will look it up.' },
 ];
 
-export default function SupportCenter() {
+export default function SupportCenter({ submitFormOnPage = false }) {
+  // The assistant is part of Pro. Everyone else is offered the ticket box in the
+  // same card, or a pointer to the form already on this page.
+  const { isPro } = useScannerUnlocks();
+  const chatLocked = !isPro;
   const [user, setUser] = useState(null);
   useEffect(() => { base44.auth.me().then(setUser).catch(() => {}); }, []);
   const [chatOpen, setChatOpen] = useState(false);
@@ -66,13 +72,33 @@ export default function SupportCenter() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="font-mono text-xs tracking-wider flex items-center gap-2">
-                <MessageCircle className="w-4 h-4 text-primary" /> AI SUPPORT ASSISTANT
+                <MessageCircle className="w-4 h-4 text-primary" /> {chatLocked ? 'MESSAGE THE SIFT AI TEAM' : 'AI SUPPORT ASSISTANT'}
               </CardTitle>
-              <Button size="sm" variant="outline" className="font-mono text-xs" onClick={() => setChatOpen(o => !o)}>
-                {chatOpen ? 'Minimize' : 'Open Chat'}
-              </Button>
+              {!chatLocked && (
+                <Button size="sm" variant="outline" className="font-mono text-xs" onClick={() => setChatOpen(o => !o)}>
+                  {chatOpen ? 'Minimize' : 'Open Chat'}
+                </Button>
+              )}
             </div>
           </CardHeader>
+          {chatLocked && (
+            <CardContent className="pt-0">
+              {submitFormOnPage ? (
+                <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+                  The AI assistant is part of the Pro subscription. The Submit a Support Ticket form above goes straight to the SIFT AI team,
+                  and a person reads every one.
+                </p>
+              ) : (
+                <>
+                  <p className="mb-3 font-mono text-xs leading-relaxed text-muted-foreground">
+                    The AI assistant is part of the Pro subscription. Leave your message here and it goes straight to the SIFT AI team, with
+                    the reply coming by email.
+                  </p>
+                  <SubmitTicketForm page="Support" compact />
+                </>
+              )}
+            </CardContent>
+          )}
           <AnimatePresence>
             {chatOpen && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}>

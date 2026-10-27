@@ -5,6 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, MessageCircle, Send, Ticket, X } from 'lucide-react';
 import HelperTicketForm from './HelperTicketForm';
 import GuestChallenge from '@/components/support/GuestChallenge';
+import SubmitTicketForm from '@/components/support/SubmitTicketForm';
+import useScannerUnlocks from '@/hooks/useScannerUnlocks';
 
 const QUICK = [
   'What does my verdict mean?',
@@ -17,6 +19,10 @@ const QUICK = [
 // app's help articles only. It never asks for passwords, codes or device
 // identifiers, and anything it cannot answer becomes a support ticket.
 export default function HelperAgent({ page, context = '' }) {
+  // The chat is part of Pro. Everyone else gets the ticket box in the same
+  // panel, which goes straight to the SIFT AI team.
+  const { isPro } = useScannerUnlocks();
+  const chatLocked = !isPro;
   const [open, setOpen] = useState(false);
   const [showTicket, setShowTicket] = useState(false);
   const [input, setInput] = useState('');
@@ -83,7 +89,7 @@ export default function HelperAgent({ page, context = '' }) {
           className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full border border-primary/40 bg-primary px-4 py-3 text-xs font-semibold text-primary-foreground shadow-lg"
         >
           <MessageCircle className="h-4 w-4" />
-          Help / Ask
+          {chatLocked ? 'Message support' : 'Help / Ask'}
         </button>
       )}
 
@@ -91,14 +97,28 @@ export default function HelperAgent({ page, context = '' }) {
         <div className="fixed bottom-5 right-5 z-40 flex h-[520px] w-[min(92vw,380px)] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <div>
-              <p className="font-mono text-xs font-bold tracking-wide">SIFT AI HELPER</p>
-              <p className="text-[11px] text-muted-foreground">Plain answers about your own result</p>
+              <p className="font-mono text-xs font-bold tracking-wide">
+                {chatLocked ? 'MESSAGE THE SIFT AI TEAM' : 'SIFT AI HELPER'}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                {chatLocked ? 'Goes to the team, with the reply by email' : 'Plain answers about your own result'}
+              </p>
             </div>
             <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>
               <X className="h-4 w-4" />
             </Button>
           </div>
 
+          {chatLocked ? (
+            <div className="flex-1 overflow-y-auto bg-secondary/20 p-3">
+              <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
+                The chat helper is part of the Pro subscription. Leave your message here and it goes straight to the SIFT AI team, with the
+                reply coming by email.
+              </p>
+              <SubmitTicketForm page={page} context={context} compact />
+            </div>
+          ) : (
+            <>
           <div className="flex-1 space-y-3 overflow-y-auto bg-secondary/20 p-3">
             {messages.map((message, index) => (
               <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -170,6 +190,8 @@ export default function HelperAgent({ page, context = '' }) {
                 </>
               )}
             </div>
+          )}
+            </>
           )}
         </div>
       )}

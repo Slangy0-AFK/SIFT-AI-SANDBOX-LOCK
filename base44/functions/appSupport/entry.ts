@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { admit, admitSpend, audit } from '../../shared/supportHarness.ts';
 import { HELP_ARTICLES, helpBlock, searchHelp } from '../../shared/supportHelp.ts';
+import { isPaidSubscriber } from '../../shared/planAccess.ts';
 
 const esc = (s: string) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 
@@ -16,6 +17,23 @@ Deno.serve(async (req) => {
     if (action === 'support_chat') {
       const text = String(message || '').slice(0, 2000);
       if (!text.trim()) return Response.json({ error: 'Message required' }, { status: 400 });
+
+      // The chat assistant is part of the Pro subscription. Anyone else is
+      // offered the ticket form instead, and nothing is spent on their behalf.
+      if (!(await isPaidSubscriber(base44, user.id))) {
+        await audit(base44, {
+          action: 'support_chat',
+          gate: 'admission',
+          decision: 'blocked',
+          reason: 'the support chat is for Pro subscribers, so no model was called and nothing was spent',
+          actor: 'agent'
+        });
+        return Response.json({
+          reply:
+            'The AI support assistant is part of the Pro subscription. Leave a message in the ticket box and it goes straight to the SIFT AI team.',
+          paid_only: true
+        });
+      }
 
       // The harness decides before anything is said or spent: the tool gate, the
       // owner's kill switch and the audit log. A refusal stops the reply and

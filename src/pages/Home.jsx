@@ -190,8 +190,8 @@ export default function Home() {
           <MessageCircle className="h-6 w-6 text-primary" />
           <h2 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">Not sure about something?</h2>
           <p className="max-w-2xl text-muted-foreground">
-            The helper inside the scanner answers plain questions about your own result. When you want a person, submit a support
-            ticket: it goes straight to the SIFT AI team, you get an automatic first reply, and a person reads every one.
+            The Pro helper inside the scanner answers plain questions about your own result, and on Free the same button opens a ticket
+            box that goes straight to the SIFT AI team. Either way you get an automatic first reply, and a person reads every one.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link to="/support#submit-ticket">

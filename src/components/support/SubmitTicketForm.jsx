@@ -10,7 +10,7 @@ import GuestChallenge from '@/components/support/GuestChallenge';
 
 // The main way a ticket is submitted. It goes to the server, which files it in
 // the app's ticket list and emails the SIFT AI team's own address.
-export default function SubmitTicketForm({ page = 'Support', context = '' }) {
+export default function SubmitTicketForm({ page = 'Support', context = '', compact = false }) {
   const queryClient = useQueryClient();
   const [topic, setTopic] = useState('other');
   const [message, setMessage] = useState('');
@@ -84,16 +84,20 @@ export default function SubmitTicketForm({ page = 'Support', context = '' }) {
 
   return (
     <div>
-      <div className="flex items-center gap-2">
-        <Ticket className="h-5 w-5 text-primary" />
-        <h2 className="font-heading text-xl font-bold tracking-tight sm:text-2xl">Submit a Support Ticket</h2>
-      </div>
-      <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-        Tell us what happened and it goes straight to the SIFT AI team. You get an automatic first reply on the spot, a person reads every
-        ticket, and if you are not signed in we reply to the email you leave here.
-      </p>
+      {!compact && (
+        <>
+          <div className="flex items-center gap-2">
+            <Ticket className="h-5 w-5 text-primary" />
+            <h2 className="font-heading text-xl font-bold tracking-tight sm:text-2xl">Submit a Support Ticket</h2>
+          </div>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Tell us what happened and it goes straight to the SIFT AI team. You get an automatic first reply on the spot, a person reads every
+            ticket, and if you are not signed in we reply to the email you leave here.
+          </p>
+        </>
+      )}
 
-      <div className="mt-5 space-y-2">
+      <div className={compact ? 'space-y-2' : 'mt-5 space-y-2'}>
         {TICKET_TOPICS.map((option) => (
           <button
             key={option.id}

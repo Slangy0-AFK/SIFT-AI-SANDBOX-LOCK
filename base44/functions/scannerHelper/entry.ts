@@ -3,6 +3,7 @@ import { admit, admitSpend, audit } from '../../shared/supportHarness.ts';
 import { HELP_ARTICLES } from '../../shared/supportHelp.ts';
 import { openTicket } from '../../shared/supportIntake.ts';
 import { verifyChallenge } from '../../shared/captcha.ts';
+import { isPaidSubscriber } from '../../shared/planAccess.ts';
 
 // The helper answers from the same articles the ticket automation, the help centre
 // and the support agent use: base44/shared/supportHelp.ts. There is no second copy.
@@ -33,12 +34,33 @@ export default async function (req) {
 
     const user = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
 
-    // A visitor with no account must show that a person is asking before the
-    // helper answers or a ticket is opened: both spend an integration credit, and
-    // a ticket also emails the team. The challenge is the app's own (the same one
-    // the subscription page uses), it is judged on the server, and one solved
-    // challenge pays for exactly one action. Nothing is written when it fails.
-    if (!user && (action === 'ask' || action === 'open_ticket')) {
+    // The chat helper is part of the Pro subscription. A visitor with no account
+    // can never be a subscriber, so the helper is not offered to guests either.
+    // The ticket form stays open to everyone, and that is where a free account is
+    // sent. Nothing is spent when this refuses.
+    if (action === 'ask' && !(await isPaidSubscriber(base44, user?.id))) {
+      await audit(base44, {
+        action: 'answer',
+        gate: 'admission',
+        decision: 'blocked',
+        reason: 'the chat helper is for Pro subscribers, so no model was called and nothing was spent',
+        actor: 'agent',
+        detail: `asked from ${page || 'the app'}`
+      });
+      return Response.json({
+        reply:
+          'The chat helper is part of the Pro subscription. Leave a message in the ticket box and it goes straight to the SIFT AI team.',
+        paid_only: true,
+        can_open_ticket: true
+      });
+    }
+
+    // A visitor with no account must show that a person is asking before a ticket
+    // is opened: it spends an integration credit and it emails the team. The
+    // challenge is the app's own (the same one the subscription page uses), it is
+    // judged on the server, and one solved challenge pays for exactly one action.
+    // Nothing is written when it fails.
+    if (!user && action === 'open_ticket') {
       const check = await verifyChallenge(base44, {
         challengeId: String(body.captcha_challenge_id || '').slice(0, 120),
         answer: body.captcha_answer
