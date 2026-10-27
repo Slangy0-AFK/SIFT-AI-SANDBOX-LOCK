@@ -24,7 +24,7 @@
   "categories": ["utilities", "security"],
   "shortcuts": [
     {
-      "name": "Phone Scanner",
+      "name": "Device Scanner",
       "short_name": "Scanner",
       "description": "Check an app, a permission list or a message",
       "url": "/scan",
