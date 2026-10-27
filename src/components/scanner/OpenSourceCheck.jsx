@@ -7,7 +7,6 @@ import { ArrowRight, Loader2, ScanLine } from 'lucide-react';
 import OpenSourceResults from '@/components/scanner/OpenSourceResults';
 import RogueAiChecklist from '@/components/scanner/RogueAiChecklist';
 import LocalScanChecklist from '@/components/scanner/LocalScanChecklist';
-import VirusTotalNotice from '@/components/scanner/VirusTotalNotice';
 import { applyList } from '@/lib/listVerdict';
 
 export default function OpenSourceCheck({ isAuthed, devices = [], deviceId = '' }) {
@@ -132,7 +131,6 @@ export default function OpenSourceCheck({ isAuthed, devices = [], deviceId = '' 
 
       <RogueAiChecklist onChange={setChecklist} />
       <LocalScanChecklist />
-      <VirusTotalNotice compact />
     </div>
   );
 }

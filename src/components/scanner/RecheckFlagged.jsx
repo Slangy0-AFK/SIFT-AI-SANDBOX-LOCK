@@ -4,7 +4,6 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatChicagoTime } from '@/lib/utils';
-import VirusTotalNotice from '@/components/scanner/VirusTotalNotice';
 import { scanTypeLabel } from '@/lib/scanLabels';
 
 // Re-checking a flagged item was a VirusTotal lookup, so it is switched off with
@@ -47,7 +46,6 @@ export default function RecheckFlagged() {
           </div>
         )}
 
-        <VirusTotalNotice compact />
         <p className="font-mono text-[11px] leading-relaxed text-muted-foreground">
           Re-checking an item was a VirusTotal look-up, so it is unavailable until a Premium VirusTotal licence is in place. This list
           is here so nothing of yours looks lost.

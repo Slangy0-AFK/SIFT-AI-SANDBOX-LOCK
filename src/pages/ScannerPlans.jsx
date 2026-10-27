@@ -6,7 +6,6 @@ import { Shield, AlertTriangle, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import PlanTierCard from '@/components/plans/PlanTierCard';
-import VirusTotalNotice from '@/components/scanner/VirusTotalNotice';
 import useScannerUnlocks from '@/hooks/useScannerUnlocks';
 import { SCANNER_PLANS, PAID_TIER_IDS, HONEST_NOTE } from '@/lib/scannerPlans';
 
@@ -83,7 +82,7 @@ export default function ScannerPlans() {
         <div className="max-w-2xl">
           <h1 className="font-mono text-2xl font-bold tracking-wide text-foreground sm:text-3xl">Pick your level of cover</h1>
           <p className="mt-4 text-sm text-muted-foreground sm:text-base">
-            The checks are free. Pro keeps an eye on your devices over time, and the two one-time tiers are a careful look at
+            The checks are free. Pro keeps an eye on your devices over time, and the one-time Device Check is a careful look at
             something that already came up. Card payments are handled by Stripe — you do not need an account to pay.
           </p>
         </div>
@@ -127,12 +126,8 @@ export default function ScannerPlans() {
           <p className="font-mono text-xs leading-relaxed text-muted-foreground">{HONEST_NOTE}</p>
         </div>
 
-        <div className="mt-4">
-          <VirusTotalNotice compact />
-        </div>
-
         <p className="mt-6 font-mono text-xs text-muted-foreground">
-          Pro renews monthly and can be cancelled any time. One-time tiers are charged once, at checkout.
+          Pro renews monthly and can be cancelled any time. The one-time Device Check is charged once, at checkout.
         </p>
       </main>
     </div>

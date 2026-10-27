@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, ScanLine } from 'lucide-react';
 import HelperAgent from '@/components/scanner/HelperAgent';
 import ScannerLegalNotice from '@/components/legal/ScannerLegalNotice';
-import VirusTotalNotice from '@/components/scanner/VirusTotalNotice';
 import OpenSourceResults from '@/components/scanner/OpenSourceResults';
 import { formatWhen, scanTypeLabel, VERDICTS, verdictOf } from '@/lib/scanLabels';
 
@@ -105,7 +104,6 @@ export default function CheckDetail() {
 
         {withdrawnVt && (
           <>
-            <VirusTotalNotice />
             <p className="font-mono text-xs leading-relaxed text-muted-foreground">
               This record is from before VirusTotal checks were switched off here, so it is shown for your records only. No VirusTotal
               result is kept for it any more.
