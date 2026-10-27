@@ -6,7 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, Loader2, Ticket } from 'lucide-react';
 import { SENSITIVE_TICKET_CONTENT, TICKET_TOPICS } from '@/lib/supportTopics';
-import GuestChallenge from '@/components/support/GuestChallenge';
 
 // The main way a ticket is submitted. It goes to the server, which files it in
 // the app's ticket list and emails the SIFT AI team's own address.
@@ -18,9 +17,8 @@ export default function SubmitTicketForm({ page = 'Support', context = '', compa
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [opened, setOpened] = useState(null);
-  const [challenge, setChallenge] = useState(null);
 
-  const submit = async (proof = null) => {
+  const submit = async () => {
     setError('');
     if (!message.trim()) {
       setError('Tell us what happened first.');
@@ -32,28 +30,16 @@ export default function SubmitTicketForm({ page = 'Support', context = '', compa
     }
     setBusy(true);
     try {
-      const payload = { action: 'open_ticket', topic, message, email, page, context };
-      if (proof) {
-        payload.captcha_challenge_id = proof.challenge_id;
-        payload.captcha_answer = proof.answer;
-      }
-      const { data } = await base44.functions.invoke('scannerHelper', payload);
+      const { data } = await base44.functions.invoke('scannerHelper', { action: 'open_ticket', topic, message, email, page, context });
       if (data?.error) {
         setError(data.error === 'email_required' ? 'We need an email address to reply to.' : data.error);
         return;
       }
-      setChallenge(null);
       setOpened(data);
       setMessage('');
       queryClient.invalidateQueries({ queryKey: ['support_tickets'] });
     } catch (err) {
-      const code = err.response?.data?.error;
-      if (code === 'captcha_required' || code === 'captcha_wrong') {
-        // No account: the message is held while the quick check is solved.
-        setChallenge({ wrong: code === 'captcha_wrong', at: Date.now() });
-        return;
-      }
-      setError(code || err.message || 'The ticket did not go through.');
+      setError(err.response?.data?.error || err.message || 'The ticket did not go through.');
     } finally {
       setBusy(false);
     }
@@ -125,15 +111,6 @@ export default function SubmitTicketForm({ page = 'Support', context = '', compa
         placeholder="Email for the reply (only if you are not signed in)"
         className="mt-3 text-sm"
       />
-
-      {challenge && (
-        <GuestChallenge
-          key={challenge.at}
-          wrong={challenge.wrong}
-          note="You are not signed in, so this quick check keeps the ticket queue for people. Your message is kept."
-          onSolved={submit}
-        />
-      )}
 
       {error && <p className="mt-3 text-xs text-destructive">{error}</p>}
 
