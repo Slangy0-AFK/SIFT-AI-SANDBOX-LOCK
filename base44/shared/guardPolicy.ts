@@ -82,6 +82,21 @@ export const GUARD_DENIED_TOOLS = [
   'fetch_url'
 ];
 
+// One message screened with the same input rules the plug-in receives, for the
+// marketplace's harness test. Category only, never the message itself.
+export function screenInput(text: string) {
+  const value = String(text || '');
+  const hit = INPUT_PATTERNS.find((rule) => rule.pattern.test(value));
+  return hit ? { decision: 'refuse', category: hit.category } : { decision: 'pass', category: 'none' };
+}
+
+// One reply screened on the way out, the same way the output shield screens it.
+export function screenReply(text: string) {
+  const value = String(text || '');
+  const hit = REPLY_PATTERNS.find((rule) => rule.pattern.test(value));
+  return hit ? { decision: 'block', category: hit.category } : { decision: 'pass', category: 'none' };
+}
+
 // The policy as the plug-in receives it: category names and rule shapes, with
 // no wording of ours, no prompts and no internal names beyond the categories.
 export function guardPolicy() {

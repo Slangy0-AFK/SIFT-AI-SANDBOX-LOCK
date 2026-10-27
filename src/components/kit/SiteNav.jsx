@@ -13,9 +13,7 @@ const PUBLIC_NAV = [
 ];
 
 const APP_NAV = [
-  { label: 'Killswitch', to: '/governor-demo' },
-  { label: 'Harness', to: '/plugin' },
-  { label: 'Eval puzzles', to: '/evals' },
+  { label: 'Marketplace', to: '/marketplace' },
   { label: 'Plans', to: '/plans' },
   { label: 'Support', to: '/support' }
 ];

@@ -36,6 +36,7 @@ import Developer from '@/pages/Developer';
 import Home from '@/pages/Home';
 import GovernorDemo from '@/pages/GovernorDemo';
 import Evals from '@/pages/Evals';
+import Marketplace from '@/pages/Marketplace';
 import SizingCalculator from '@/pages/SizingCalculator';
 import Scaler from '@/pages/Scaler';
 import Pricing from '@/pages/Pricing';
@@ -100,6 +101,7 @@ function AppRoutes() {
         <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
           <Route element={<SiteLayout />}>
+            <Route path="/marketplace" element={<PageTransition><Marketplace /></PageTransition>} />
             <Route path="/governor-demo" element={<PageTransition><GovernorDemo /></PageTransition>} />
             <Route path="/evals" element={<PageTransition><Evals /></PageTransition>} />
             <Route path="/sizing-calculator" element={<PageTransition><SizingCalculator /></PageTransition>} />

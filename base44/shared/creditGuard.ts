@@ -19,6 +19,8 @@ export const CREDIT_CAPS = {
   support_email: { user: 5, guest: 0 },
   // Message and email threat analysis (signed-in only), per day.
   text_analysis: { user: 40, guest: 0 },
+  // One eval puzzle run against one model (signed-in only), per day.
+  puzzle_run: { user: 40, guest: 0 },
 };
 
 // The ceiling is a calendar day, held as its own field: counting by plain
