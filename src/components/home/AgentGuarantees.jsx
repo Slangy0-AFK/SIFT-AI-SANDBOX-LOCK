@@ -31,6 +31,11 @@ export default function AgentGuarantees() {
         <p className="mt-2 max-w-2xl text-muted-foreground">
           The plug-in sits between your model and the world. Three things hold on every message, whether or not anything looks wrong.
         </p>
+        <p className="mt-3 max-w-2xl font-mono text-[11px] leading-relaxed text-muted-foreground">
+          Built to that spec. The same three readings — switch on, switch off, switch unreadable — were observed on this app's own
+          support gate on 27 October 2026, each with a log entry in the console. That run inside a buyer's own code is still
+          outstanding, so what is described here is the rule the plug-in is written to, not a certified result.
+        </p>
 
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {GUARANTEES.map((item) => (

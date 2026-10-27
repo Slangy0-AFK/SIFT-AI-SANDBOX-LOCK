@@ -434,7 +434,7 @@ export default async function (req) {
     }
 
     // Everything below is the owner's or a workflow's, never a visitor's.
-    if (['sweep', 'respond', 'status', 'pause', 'resume', 'reopen', 'lifecycle_step', 'admin_reply', 'admin_close'].includes(action)) {
+    if (['sweep', 'respond', 'status', 'pause', 'resume', 'reopen', 'lifecycle_step', 'admin_reply', 'admin_close', 'killswitch_probe'].includes(action)) {
       if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
       if (!isAdmin) return Response.json({ error: 'Forbidden' }, { status: 403 });
     } else {
@@ -475,6 +475,26 @@ export default async function (req) {
         actor: 'owner'
       });
       return Response.json({ paused: saved.paused, reason: saved.reason });
+    }
+
+    // The team's own live test of the fail-closed path. The switch is made
+    // unreadable for this one call and the same admission code decides, so a
+    // refusal and a log entry are the expected answer, exactly as in a real outage.
+    // Nothing about it can let an action through.
+    if (action === 'killswitch_probe') {
+      const probe = await automationState(base44, { probeUnreadable: true });
+      const decided = await admit(base44, {
+        action: 'status',
+        actor: 'owner',
+        detail: 'live test: the kill switch was made unreadable for this one call',
+        probeUnreadable: true
+      });
+      return Response.json({
+        unreadable: probe.unreadable === true,
+        stopped: !decided.ok,
+        gate: decided.gate,
+        reason: decided.reason
+      });
     }
 
     if (action === 'reopen') {

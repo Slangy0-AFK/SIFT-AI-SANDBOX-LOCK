@@ -29,6 +29,18 @@ export default function SupportAutomationPanel() {
     refetchInterval: 30000
   });
 
+  // The decisions the filter layer has written down: gate, decision and reason.
+  // A message is never stored, so none can be shown.
+  const { data: shield } = useQuery({
+    queryKey: ['chat_shield_status'],
+    queryFn: async () => {
+      const { data } = await base44.functions.invoke('chatBotShield', { action: 'status' });
+      return data;
+    },
+    enabled: isAdmin,
+    refetchInterval: 30000
+  });
+
   if (!isAdmin) return null;
 
   const call = async (payload, tag) => {
@@ -98,6 +110,22 @@ export default function SupportAutomationPanel() {
                 {busy === ticket.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <RotateCcw className="h-3 w-3" />}
                 Reopen
               </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!!shield?.recent?.length && (
+        <div className="mt-4 space-y-2 border-t border-border pt-4">
+          <p className="font-mono text-[11px] text-muted-foreground">
+            Last gate decisions, newest first. The reason is written down; a message never is.
+          </p>
+          {shield.recent.slice(0, 5).map((row, index) => (
+            <div key={`${row.at}-${index}`} className="rounded-lg border border-border bg-secondary/10 p-2 font-mono text-[11px]">
+              <p className="text-foreground">
+                {String(row.gate).replace(/_/g, ' ')} · {row.decision} · {new Date(row.at).toLocaleString()}
+              </p>
+              <p className="mt-0.5 text-muted-foreground">{row.reason}</p>
             </div>
           ))}
         </div>

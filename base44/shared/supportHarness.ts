@@ -55,8 +55,13 @@ const rows = (page) => (Array.isArray(page) ? page : page?.items || []);
 
 // The switch. A missing row means "never set", which is not a failure: the
 // default is running. A row that cannot be read is a failure, so it stops.
-export async function automationState(base44) {
+//
+// `probeUnreadable` exists for one purpose: the team's own live test of the
+// fail-closed path. It makes the read fail on purpose, so the catch below runs
+// exactly as it would in a real outage. It can only ever make the gate stricter.
+export async function automationState(base44, options: { probeUnreadable?: boolean } = {}) {
   try {
+    if (options.probeUnreadable) throw new Error('the switch was made unreadable for the live fail-closed test');
     const page = await base44.asServiceRole.entities.SupportAutomation.list('-created_date', 1);
     const row = rows(page)[0] || null;
     if (!row) return { paused: false, reason: '', missing: true };
@@ -109,13 +114,13 @@ async function messagesLeft(base44, ticketId, kind) {
 
 // The admission decision. It writes its own audit entry, so being admitted and
 // being logged are the same event.
-export async function admit(base44, { action, actor = 'automation', ticket = null, kind = null, detail = '' }) {
+export async function admit(base44, { action, actor = 'automation', ticket = null, kind = null, detail = '', probeUnreadable = false }) {
   if (!ALLOWED_ACTIONS.includes(action)) {
     await audit(base44, { action, gate: 'tool_gate', decision: 'blocked', reason: `"${action}" is not on the list of allowed actions`, actor, detail });
     return { ok: false, gate: 'tool_gate', reason: `"${action}" is not an allowed action` };
   }
 
-  const state = await automationState(base44);
+  const state = await automationState(base44, { probeUnreadable });
   if (state.paused) {
     await audit(base44, {
       action,

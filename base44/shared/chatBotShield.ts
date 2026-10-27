@@ -38,6 +38,8 @@ export const SHIELD_REFUSAL =
   'That message could not be processed safely, so I have not acted on it. Ask about your own check in your own words, or write to support@sift-ai.net and a person will go through it.';
 export const SHIELD_PAUSED =
   'This chat is stopped for the rest of today after several messages that could not be processed safely. Write to support@sift-ai.net and a person will go through it.';
+export const SHIELD_OFF =
+  'The automatic chat is switched off right now, so nothing was processed or sent. Write to support@sift-ai.net and a person will go through it.';
 export const SHIELD_HELD =
   'I could not check that reply safely, so I set it aside instead of passing it on. Ask again in your own words, or write to support@sift-ai.net.';
 
@@ -120,7 +122,7 @@ export async function screenMessage(
       decision: 'blocked',
       reason: state.reason || 'the automation switch is on, so the bots are stopped'
     });
-    return { ok: false, gate: 'kill_switch', reply: signBotReply(SHIELD_PAUSED) };
+    return { ok: false, gate: 'kill_switch', reply: signBotReply(SHIELD_OFF) };
   }
 
   // 2. The loop gate. A caller who keeps sending refused messages is stopped for
