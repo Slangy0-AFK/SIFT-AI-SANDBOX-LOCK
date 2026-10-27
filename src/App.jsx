@@ -69,11 +69,6 @@ import PluginDownload from '@/pages/PluginDownload';
 import BehaviourTest from '@/pages/BehaviourTest';
 // Add page imports here
 
-// Coming soon: the site is not open yet, so only the home page and the about page
-// are reachable. Sign-in, sign-up and every other page send the visitor back to
-// the home page. Set this to false to open the rest of the app again.
-const COMING_SOON = true;
-
 function AppRoutes() {
   useRealTimeSync();
   const location = useLocation();
@@ -89,18 +84,6 @@ function AppRoutes() {
 
   if (authError?.type === 'user_not_registered') {
     return <UserNotRegisteredError />;
-  }
-
-  if (COMING_SOON) {
-    return (
-      <Routes location={location} key={location.pathname}>
-        <Route element={<SiteLayout />}>
-          <Route path="/" element={<PageTransition><Home /></PageTransition>} />
-          <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-        </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    );
   }
 
   return (
