@@ -20,6 +20,11 @@
       "default": false,
       "description": "Checkout stays closed until the owner turns this on"
     },
+    "annual_discount_percent": {
+      "type": "number",
+      "default": 16.67,
+      "description": "The SIFT AI team's discount for paying for a year of Pro upfront. The yearly price is twelve monthly payments less this. The default is the yearly offer the app already advertises, two months free. Set 0 to sell the year with no discount. At most 90."
+    },
     "note": {
       "type": "string",
       "maxLength": 500

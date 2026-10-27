@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import Stripe from 'npm:stripe@14.0.0';
 import { getTier } from '../../shared/scannerPlans.ts';
+import { readProPricing } from '../../shared/pricing.ts';
 import { firstRecord } from '../../shared/scannerFulfillment.ts';
 import { appBaseUrl } from '../../shared/stripeEnv.ts';
 import { stripeCredentials } from '../../shared/stripeConnect.ts';
@@ -27,6 +28,12 @@ export default async function (req) {
 
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch((e) => (e.status === 401 ? null : Promise.reject(e)));
+
+    // What this tier costs, from the server: the monthly figure from the catalog,
+    // or the yearly figure worked out from the team's own discount. The amount is
+    // stored on the purchase below, and that is what the webhook checks, so a
+    // discount changed later cannot change what an open checkout costs.
+    const amount = tier.annual ? (await readProPricing(base44)).yearly_cents : tier.amount;
 
     // The founding offer runs first: while free places remain, buying is shut so
     // nobody pays for what is still being given away, and it opens by itself the
@@ -59,7 +66,7 @@ export default async function (req) {
           quantity: 1,
           price_data: {
             currency: tier.currency,
-            unit_amount: tier.amount,
+            unit_amount: amount,
             product_data: { name: tier.label },
             ...(tier.mode === 'subscription' ? { recurring: { interval: tier.interval } } : {})
           }
@@ -76,7 +83,7 @@ export default async function (req) {
       tier: tier.id,
       stripe_session_id: session.id,
       status: 'pending',
-      price_cents: tier.amount,
+      price_cents: amount,
       currency: tier.currency
     });
 

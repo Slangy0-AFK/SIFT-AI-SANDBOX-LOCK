@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -6,9 +6,10 @@ import { Shield, AlertTriangle, Info, Gift, Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import PlanTierCard from '@/components/plans/PlanTierCard';
+import PlanCycleToggle from '@/components/plans/PlanCycleToggle';
 import useScannerUnlocks from '@/hooks/useScannerUnlocks';
 import LicenseTerms from '@/components/license/LicenseTerms';
-import { SCANNER_PLANS, PAID_TIER_IDS, HONEST_NOTE } from '@/lib/scannerPlans';
+import { SCANNER_PLANS, PRO_YEARLY, HONEST_NOTE } from '@/lib/scannerPlans';
 
 const LOGO = 'https://media.base44.com/images/public/6a0db3181169f42924052c0d/650b247a7_amazon.PNG';
 
@@ -43,6 +44,31 @@ export default function ScannerPlans() {
     staleTime: Infinity,
     retry: false,
   });
+
+  // What Pro costs, from the server: the monthly figure and the yearly figure the
+  // SIFT AI team's own discount produces. The yearly choice only appears once the
+  // server has answered, so no price is ever invented on this page.
+  const { data: pricing } = useQuery({
+    queryKey: ['scanner-pricing'],
+    queryFn: async () => (await base44.functions.invoke('scannerPricing', {})).data,
+    staleTime: 60000,
+    retry: false,
+  });
+
+  const [cycle, setCycle] = useState('month');
+  const showYearly = cycle === 'year' && Boolean(pricing?.yearly_cents);
+
+  // Pro swaps between the monthly card and the yearly one. The free checks and
+  // the one-time Device Check are unaffected by the choice.
+  const plans = SCANNER_PLANS.map((plan) =>
+    plan.id === 'pro' && showYearly
+      ? {
+          ...PRO_YEARLY,
+          price: `$${(Number(pricing.yearly_cents) / 100).toFixed(2)}`,
+          highlight: plan.highlight
+        }
+      : plan
+  );
 
   const foundingOpen = founding?.open === true;
   const foundingLeft = founding ? Math.max(0, Number(founding.limit || 50) - Number(founding.claimed || 0)) : 0;
@@ -161,15 +187,17 @@ export default function ScannerPlans() {
           </div>
         )}
 
+        <PlanCycleToggle value={cycle} onChange={setCycle} pricing={pricing} />
+
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {SCANNER_PLANS.map((plan) => (
+          {plans.map((plan) => (
             <PlanTierCard
               key={plan.id}
               plan={plan}
               unlocked={plan.id === 'free' || unlocked.has(plan.id)}
               blockedReason={blockedReason}
               isAuthed={isAuthed}
-              loading={checkout.isPending && PAID_TIER_IDS.includes(plan.id)}
+              loading={checkout.isPending && plan.id !== 'free'}
               onSelect={handleSelect}
             />
           ))}
@@ -199,7 +227,8 @@ export default function ScannerPlans() {
         )}
 
         <p className="mt-6 font-mono text-xs text-muted-foreground">
-          Pro renews monthly and can be cancelled any time. The one-time Device Check is charged once, at checkout.
+          Pro renews monthly and can be cancelled any time. A year of Pro is one payment for twelve months, with no
+          renewal to cancel. The one-time Device Check is charged once, at checkout.
         </p>
       </main>
     </div>

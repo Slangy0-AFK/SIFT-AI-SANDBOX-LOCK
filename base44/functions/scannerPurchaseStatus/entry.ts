@@ -3,7 +3,7 @@ import Stripe from 'npm:stripe@14.0.0';
 import { SCANNER_TIERS } from '../../shared/scannerPlans.ts';
 import { confirmAndGrant, firstRecord } from '../../shared/scannerFulfillment.ts';
 import { stripeCredentials } from '../../shared/stripeConnect.ts';
-import { attachLicenseToAccount } from '../../shared/license.ts';
+import { attachLicenseToAccount, licenseStatusLabel } from '../../shared/license.ts';
 
 // Backs the receipt page. The Stripe session id is the lookup key and is long
 // and unguessable, so a guest can read their own receipt straight after paying.
@@ -40,7 +40,7 @@ export default async function (req) {
       // The key that came with this purchase moves to the account that has just
       // proved it owns the address the purchase was made under.
       await attachLicenseToAccount(base44, { purchaseId: purchase.id, userId: user.id, email: buyerEmail });
-      if (purchase.tier === 'pro') {
+      if (purchase.tier === 'pro' || purchase.tier === 'pro_annual') {
         const sub = firstRecord(
           await base44.asServiceRole.entities.Subscription.filter({ checkout_session_id: sessionId })
         );
@@ -51,6 +51,14 @@ export default async function (req) {
     }
 
     const tier = SCANNER_TIERS[purchase.tier];
+
+    // The key that came with this order, masked. A receipt can be opened by
+    // anyone holding the session link, so the full key stays on the buyer's own
+    // account and in their own copy — never here.
+    const license = firstRecord(
+      await base44.asServiceRole.entities.License.filter({ purchase_id: purchase.id })
+    );
+
     return Response.json({
       tier: purchase.tier,
       tier_name: tier ? tier.name : purchase.tier,
@@ -58,7 +66,15 @@ export default async function (req) {
       price_cents: purchase.price_cents,
       amount_cents: purchase.amount_total || purchase.price_cents,
       currency: purchase.currency || 'usd',
-      paid_at: purchase.paid_at || null
+      paid_at: purchase.paid_at || null,
+      license: license
+        ? {
+            masked_key: license.key_hint,
+            order_number: license.order_number || '',
+            status_label: licenseStatusLabel(license),
+            expires_at: license.expires_at || null
+          }
+        : null
     });
   } catch (error) {
     console.error('[scannerPurchaseStatus] Error:', error);

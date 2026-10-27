@@ -1,6 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
+// A year of Pro is paid once, so it counts for the twelve months it paid for and
+// not a day longer. The purchase record's own date is what it stands on.
+function yearlyProEnded(purchase) {
+  const start = purchase.paid_at || purchase.created_date;
+  if (!start) return true;
+  const ends = new Date(start);
+  ends.setMonth(ends.getMonth() + 12);
+  return Date.now() > ends.getTime();
+}
+
 // What this account can currently use. Pro comes from the plan record, the two
 // one-time tiers from their paid purchase records. Nothing here is trusted for
 // money: it only decides what the interface offers.
@@ -34,6 +44,13 @@ export default function useScannerUnlocks() {
     (s) => ['pro', 'enterprise'].includes(s.plan) && s.status === 'active' && s.stripe_subscription_id
   );
   if (livePlan) unlocked.add('pro');
+
+  // The yearly purchase is paid once and carried no Stripe subscription, so the
+  // paid record is what unlocks Pro, until the year it paid for is up.
+  const yearly = data.purchases.find(
+    (p) => p.status === 'paid' && p.tier === 'pro_annual' && !yearlyProEnded(p)
+  );
+  if (yearly) unlocked.add('pro');
 
   // A founding place unlocks everything the app sells, with no payment behind it:
   // the place was granted, not bought.

@@ -18,6 +18,7 @@ export function buildLicenseFile(license, key) {
     `Key:              ${key}`,
     `Status:           ${license.status_label}`,
     `Issued:           ${dayOnly(license.issued_at)}`,
+    ...(license.expires_at ? [`Works until:      ${dayOnly(license.expires_at)}`] : []),
     '',
     'What it unlocks',
     '---------------',

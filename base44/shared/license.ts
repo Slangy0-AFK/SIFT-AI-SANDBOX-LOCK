@@ -30,7 +30,7 @@ const KEY_LENGTH = 16;
 export const LICENSE_ENDPOINT = 'https://siftai.base44.app/functions/licenseKey';
 
 export const LICENSE_UNLOCKS =
-  'The SIFT AI governor and hardening filter, for testing in your own model and environment only.';
+  'The SIFT AI governor and hardening filter, for testing in your own model and environment only: it stops bad instructions from reaching your model, and bad outputs from leaving it. It does not change, patch or rewrite your model.';
 
 // Shown on the license page, in the confirmation email and in the downloaded
 // file. One copy, so all three always agree.
@@ -46,7 +46,8 @@ export const LICENSE_TERMS = [
 export const LICENSE_INSTRUCTIONS = [
   'Your key is already applied to your SIFT AI account. There is nothing to switch on here.',
   'In your own model or test setup, paste the key wherever it asks for a SIFT AI license key — the licensing field in your harness, or the environment variable your runner reads.',
-  'When your setup activates, it hands the key to SIFT AI once. A good key answers "active"; a key that is wrong, already used or revoked answers with a plain refusal.',
+  'When your setup activates, it hands the key to SIFT AI once. A good key answers "active"; a key that is wrong, already used, expired or revoked answers with a plain refusal.',
+  'An active answer turns the guardrails on, and anything else leaves them off. Your own product carries on running either way.',
   'Keep it out of shared logs, screenshots and public repositories.',
   'Rebuilt your setup, or need it in a second one? Regenerate the key on your license page.'
 ];
@@ -145,10 +146,23 @@ export async function openLicenseKey(blob: any) {
   }
 }
 
+// A key bought for a set term ends by date as well as by status: a year paid
+// upfront answers active for that year and expired afterwards, whether or not the
+// stored status has been tidied up yet.
+export function effectiveStatus(license: any) {
+  if (!license) return 'none';
+  if (license.status === 'revoked') return 'revoked';
+  if (license.status === 'expired') return 'expired';
+  const ends = license.expires_at ? new Date(license.expires_at).getTime() : 0;
+  if (ends && Date.now() > ends) return 'expired';
+  return license.status === 'active' ? 'active' : String(license.status || 'none');
+}
+
 export function licenseStatusLabel(license: any) {
   if (!license) return 'None';
-  if (license.status === 'revoked') return 'Revoked';
-  if (license.status === 'expired') return 'Expired';
+  const status = effectiveStatus(license);
+  if (status === 'revoked') return 'Revoked';
+  if (status === 'expired') return 'Expired';
   return license.source === 'founding' ? 'Founding (free)' : 'Active';
 }
 
@@ -183,7 +197,9 @@ async function mailLicense(base44: any, license: any, key: string, { reissued = 
         headline: reissued ? 'Here is your new license key.' : 'Your license key is ready.',
         note: reissued
           ? 'You asked for a replacement key. The key that came before it stopped working the moment this one was issued.'
-          : 'Thank you — your order is confirmed and your license key is below. Keep this email, or download the key from your account whenever you need it.',
+          : license.expires_at
+          ? `Thank you. Your order is confirmed and your license key is below. It works until ${chicagoDate(license.expires_at)}.`
+          : 'Thank you. Your order is confirmed and your license key is below. Keep this email, or download the key from your account whenever you need it.',
         order_number: license.order_number,
         plan_label: license.plan_label || 'SIFT AI',
         amount_line: license.source === 'founding' ? 'No charge — founding place' : money(license.amount_cents, license.currency),
@@ -239,6 +255,12 @@ export async function issueLicense(base44: any, input: any) {
     return { created: false, alreadyIssued: true, license: existing, key: await openLicenseKey(existing.key_encrypted) };
   }
 
+  // A plan bought for a set term carries the day it ends. A monthly plan runs
+  // while the plan runs, so its key has no end date of its own.
+  const months = Number(input?.termMonths || 0);
+  const ends = new Date();
+  if (months > 0) ends.setMonth(ends.getMonth() + months);
+
   const key = newLicenseKey();
   const license = await base44.asServiceRole.entities.License.create({
     user_id: userId,
@@ -254,6 +276,7 @@ export async function issueLicense(base44: any, input: any) {
     status: 'active',
     activations: 0,
     issued_at: new Date().toISOString(),
+    expires_at: months > 0 ? ends.toISOString() : null,
     amount_cents: Number(input?.amountCents || 0),
     currency: String(input?.currency || 'usd').toLowerCase(),
     paid_at: input?.paidAt || null
@@ -269,7 +292,7 @@ export async function issueLicense(base44: any, input: any) {
 export async function ownerLicenseRecord(base44: any, userId: any) {
   if (!userId) return null;
   const all = rows(await base44.asServiceRole.entities.License.filter({ user_id: userId }, { sort: '-created_date', limit: 20 }));
-  return all.find((license: any) => license.status === 'active') || all[0] || null;
+  return all.find((license: any) => effectiveStatus(license) === 'active') || all[0] || null;
 }
 
 // Everything the buyer's own page and Settings section show. The key is
@@ -289,19 +312,20 @@ export async function ownerLicense(base44: any, userId: any) {
     has_license: true,
     ...shared,
     id: license.id,
-    status: license.status,
+    status: effectiveStatus(license),
     status_label: licenseStatusLabel(license),
     source: license.source,
     entitlement: license.entitlement,
     plan_label: license.plan_label || '',
     masked_key: license.key_hint,
-    key: license.status === 'active' ? await openLicenseKey(license.key_encrypted) : '',
+    key: effectiveStatus(license) === 'active' ? await openLicenseKey(license.key_encrypted) : '',
     order_number: license.order_number || '',
     amount_cents: Number(license.amount_cents || 0),
     currency: String(license.currency || 'usd').toLowerCase(),
     issued_at: license.issued_at || license.created_date || null,
     paid_at: license.paid_at || null,
     activated_at: license.activated_at || null,
+    expires_at: license.expires_at || null,
     regenerated_at: license.regenerated_at || null,
     revoked_at: license.revoked_at || null,
     activations: Number(license.activations || 0)
@@ -319,8 +343,18 @@ export async function validateLicense(base44: any, rawKey: any) {
 
   const license = first(await base44.asServiceRole.entities.License.filter({ key_hash: hash }));
   if (!license) return { ok: false, reason: 'invalid' };
-  if (license.status === 'revoked') return { ok: false, reason: 'revoked' };
-  if (license.status === 'expired') return { ok: false, reason: 'expired' };
+  const status = effectiveStatus(license);
+  if (status === 'revoked') return { ok: false, reason: 'revoked' };
+  if (status === 'expired') {
+    // A key whose term has run out is recorded once, so the record and the
+    // answer agree from then on.
+    if (license.status !== 'expired') {
+      await base44.asServiceRole.entities.License
+        .update(license.id, { status: 'expired' })
+        .catch((error) => console.warn('[license] the end date could not be written back:', error && error.message));
+    }
+    return { ok: false, reason: 'expired' };
+  }
   if (Number(license.activations || 0) > 0) return { ok: false, reason: 'already_used' };
 
   await base44.asServiceRole.entities.License.update(license.id, {
@@ -382,7 +416,7 @@ export async function adminLicenseList(base44: any, limit = 100) {
   return all.map((license: any) => ({
     id: license.id,
     masked_key: license.key_hint,
-    status: license.status,
+    status: effectiveStatus(license),
     status_label: licenseStatusLabel(license),
     order_number: license.order_number || '',
     source: license.source,

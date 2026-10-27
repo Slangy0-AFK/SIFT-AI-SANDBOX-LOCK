@@ -3,6 +3,7 @@ import { Copy, Download, Eye, EyeOff, RefreshCw, Ban, Loader2 } from 'lucide-rea
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { downloadLicenseFile } from '@/lib/licenseFile';
+import { formatChicagoTime } from '@/lib/utils';
 
 // The buyer's key: masked until they ask to see it, copyable, downloadable, and
 // replaceable. The full key only ever comes from the server for this account.
@@ -47,6 +48,12 @@ export default function LicenseKeyCard({ license, onRevoke, onRegenerate, busy =
       <p className="mt-3 break-all font-mono text-sm font-bold text-foreground">
         {shown && usable ? key : license.masked_key}
       </p>
+
+      {usable && license.expires_at && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Works until {formatChicagoTime(license.expires_at)}.
+        </p>
+      )}
 
       {!usable && (
         <p className="mt-2 text-xs text-muted-foreground">

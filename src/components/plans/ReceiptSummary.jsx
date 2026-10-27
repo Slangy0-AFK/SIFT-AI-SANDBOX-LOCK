@@ -46,6 +46,20 @@ export default function ReceiptSummary({ plan, purchase }) {
         </div>
       </dl>
 
+      {purchase.license && (
+        <div className="mt-6 rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <p className="font-mono text-xs font-semibold text-foreground">Your license key</p>
+          <p className="mt-2 font-mono text-xs leading-relaxed text-muted-foreground">
+            Order {purchase.license.order_number} · {purchase.license.masked_key}
+            {purchase.license.expires_at
+              ? ` · works until ${formatChicagoTime(purchase.license.expires_at)}`
+              : ''}
+            . The full key is in your own account, and a copy has gone to the address you paid with. Reveal it, copy it
+            or download the license file from your license page.
+          </p>
+        </div>
+      )}
+
       <div className="mt-6 rounded-xl border border-border/60 bg-secondary/10 p-4">
         <p className="font-mono text-xs font-semibold text-foreground">What happens next</p>
         <p className="mt-2 font-mono text-xs leading-relaxed text-muted-foreground">

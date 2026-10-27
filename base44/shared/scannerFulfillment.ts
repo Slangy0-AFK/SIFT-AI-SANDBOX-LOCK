@@ -79,6 +79,32 @@ export async function confirmAndGrant(base44, stripe, session) {
     }
   }
 
+  // A year of Pro, paid once. It carries no Stripe subscription, so the plan
+  // record stands on its own end date: the app reads Pro until that day passes.
+  if (tier.id === 'pro_annual') {
+    const ends = new Date();
+    ends.setMonth(ends.getMonth() + (tier.months || 12));
+    const fields = {
+      plan: 'pro',
+      status: 'active',
+      billing_cycle: 'annual',
+      renewal_date: ends.toISOString().split('T')[0],
+      auto_pay: false
+    };
+    const existing = firstRecord(
+      await base44.asServiceRole.entities.Subscription.filter({ checkout_session_id: session.id })
+    );
+    if (existing) {
+      await base44.asServiceRole.entities.Subscription.update(existing.id, fields);
+    } else {
+      await base44.asServiceRole.entities.Subscription.create({
+        user_id: purchase.user_id || '',
+        checkout_session_id: session.id,
+        ...fields
+      });
+    }
+  }
+
   // The buyer's license: one key, issued once, applied to this account and sent
   // to them with the order confirmation. Issued before the purchase is marked
   // paid, so a key that could not be issued leaves the purchase retriable rather
@@ -90,6 +116,7 @@ export async function confirmAndGrant(base44, stripe, session) {
     entitlement: purchase.tier,
     purchaseId: purchase.id,
     planLabel: tier.label,
+    termMonths: tier.months || 0,
     amountCents: Number(session.amount_total),
     currency: String(session.currency || 'usd').toLowerCase(),
     paidAt

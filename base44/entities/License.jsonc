@@ -73,6 +73,11 @@
       "type": "string",
       "format": "date-time"
     },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The day the key stops working, for a plan bought for a set term. Empty for a key that runs while the plan runs."
+    },
     "regenerated_at": {
       "type": "string",
       "format": "date-time",

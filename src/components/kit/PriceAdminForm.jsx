@@ -11,6 +11,7 @@ export default function PriceAdminForm({ settings, onSaved }) {
   const [currency, setCurrency] = useState('usd');
   const [productName, setProductName] = useState('SIFT AI Full Kit');
   const [enabled, setEnabled] = useState(false);
+  const [discount, setDiscount] = useState('16.67');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -20,6 +21,11 @@ export default function PriceAdminForm({ settings, onSaved }) {
     setCurrency(settings.currency || 'usd');
     setProductName(settings.product_name || 'SIFT AI Full Kit');
     setEnabled(Boolean(settings.paid_tier_enabled));
+    setDiscount(
+      settings.annual_discount_percent === undefined || settings.annual_discount_percent === null
+        ? '16.67'
+        : String(settings.annual_discount_percent)
+    );
   }, [settings]);
 
   const save = async () => {
@@ -35,7 +41,8 @@ export default function PriceAdminForm({ settings, onSaved }) {
         price_cents: cents,
         currency: currency.trim().toLowerCase() || 'usd',
         product_name: productName.trim() || 'SIFT AI Full Kit',
-        paid_tier_enabled: enabled
+        paid_tier_enabled: enabled,
+        annual_discount_percent: Math.min(Math.max(Number(discount) || 0, 0), 90)
       };
       if (settings?.id) await base44.entities.KitSettings.update(settings.id, data);
       else await base44.entities.KitSettings.create(data);
@@ -63,6 +70,25 @@ export default function PriceAdminForm({ settings, onSaved }) {
           <Label htmlFor="product">Name on the receipt</Label>
           <Input id="product" value={productName} onChange={(e) => setProductName(e.target.value)} />
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="annual">Yearly discount for Pro (%)</Label>
+        <Input
+          id="annual"
+          type="number"
+          min="0"
+          max="90"
+          step="0.01"
+          value={discount}
+          onChange={(e) => setDiscount(e.target.value)}
+          className="max-w-[160px]"
+        />
+        <p className="max-w-2xl text-xs text-muted-foreground">
+          Pro's yearly price is twelve months at the current monthly price, less this discount, charged as one payment.
+          16.67 is two months free, the yearly offer the app already shows. Set 0 to sell the year with no discount.
+          At most 90.
+        </p>
       </div>
 
       <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-secondary/20 p-4">
