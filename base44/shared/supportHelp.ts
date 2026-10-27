@@ -58,6 +58,16 @@ export const HELP_ARTICLES = [
     ]
   },
   {
+    id: 'chat_access',
+    title: 'Who can use the chat bot',
+    text: 'The chat helper and the support assistant are part of Pro. The first fifty accounts get Pro free as founding members, so an account holding a founding place has the chat open already, and while places remain the paid checkout stays shut. On Free, the same button opens a ticket box instead, and a ticket goes to the SIFT AI team with an automatic first reply.',
+    fix_steps: [
+      'If your account holds a founding place, the chat is open for you now.',
+      'If it does not, use the ticket box on the support page: a person reads every one.',
+      'The plans page shows what Free, Pro and the Device Check each include.'
+    ]
+  },
+  {
     id: 'virustotal_unavailable',
     title: 'VirusTotal checks are not available here',
     text: VT_UNAVAILABLE,

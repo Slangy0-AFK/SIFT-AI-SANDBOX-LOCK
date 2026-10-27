@@ -97,8 +97,8 @@ export default function HelperAgent({ page, context = '' }) {
         <div className="fixed bottom-5 right-5 z-40 flex h-[520px] w-[min(92vw,380px)] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <div>
-              <p className="font-mono text-xs font-bold tracking-wide">
-                {chatLocked ? 'MESSAGE THE SIFT AI TEAM' : 'SIFT AI HELPER'}
+              <p className="text-sm font-semibold">
+                {chatLocked ? 'Message the SIFT AI team' : 'SIFT AI helper'}
               </p>
               <p className="text-[11px] text-muted-foreground">
                 {chatLocked ? 'Goes to the team, with the reply by email' : 'Plain answers about your own result'}
@@ -111,9 +111,9 @@ export default function HelperAgent({ page, context = '' }) {
 
           {chatLocked ? (
             <div className="flex-1 overflow-y-auto bg-secondary/20 p-3">
-              <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
-                The chat helper is part of the Pro subscription. Leave your message here and it goes straight to the SIFT AI team, with the
-                reply coming by email.
+              <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+                The chat helper is part of Pro. The first 50 accounts get Pro free as founding members. Leave your message here and it goes
+                straight to the SIFT AI team, with the reply coming by email.
               </p>
               <SubmitTicketForm page={page} context={context} compact />
             </div>

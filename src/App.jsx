@@ -51,6 +51,7 @@ import Receipt from '@/pages/Receipt';
 import ScannerTools from '@/pages/ScannerTools';
 import ScanNow from '@/pages/ScanNow';
 import Support from '@/pages/Support';
+import Chat from '@/pages/Chat';
 import MyDevices from '@/pages/MyDevices';
 import AllowBlock from '@/pages/AllowBlock';
 import HistoryPage from '@/pages/History';
@@ -123,6 +124,7 @@ function AppRoutes() {
           </Route>
           <Route element={<AppLayout />}>
             <Route path="/prompt-guard" element={<PageTransition><PromptGuard /></PageTransition>} />
+            <Route path="/chat" element={<PageTransition><Chat /></PageTransition>} />
             <Route path="/profile" element={<PageTransition><UserProfile /></PageTransition>} />
             <Route path="/subscription" element={<PageTransition><SubscriptionPage /></PageTransition>} />
             <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />

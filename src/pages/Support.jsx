@@ -22,7 +22,8 @@ export default function Support() {
           <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">Support</h1>
           <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
             Submit a ticket below and it goes straight to the SIFT AI team, with an automatic first reply on it right away. The chat
-            assistant in the corner is part of Pro; on Free the same button opens a ticket box instead.
+            assistant in the corner is part of Pro, and the first 50 accounts get Pro free as founding members; on Free the same button
+            opens a ticket box instead.
           </p>
         </div>
 
@@ -44,7 +45,7 @@ export default function Support() {
 
         <SupportCenter submitFormOnPage />
 
-        <Link to="/scan" className="inline-flex items-center gap-2 font-mono text-xs text-primary hover:underline">
+        <Link to="/scan" className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
           Back to the Phone Scanner <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </main>

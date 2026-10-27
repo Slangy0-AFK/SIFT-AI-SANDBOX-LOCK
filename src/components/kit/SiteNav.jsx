@@ -19,7 +19,10 @@ const NAV = [
 const LOGO = 'https://media.base44.com/images/public/6a0db3181169f42924052c0d/650b247a7_amazon.PNG';
 
 const desktopLink = ({ isActive }) =>
-  cn('transition-colors hover:text-foreground', isActive ? 'font-semibold text-foreground' : 'text-muted-foreground');
+  cn(
+    'rounded-full px-3 py-1.5 text-sm transition-colors',
+    isActive ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'
+  );
 
 export default function SiteNav() {
   const [open, setOpen] = useState(false);
@@ -42,7 +45,7 @@ export default function SiteNav() {
           <span className="font-heading text-sm font-bold tracking-tight sm:text-base">SIFT AI</span>
         </Link>
 
-        <nav className="hidden items-center gap-4 text-sm font-medium lg:flex">
+        <nav className="hidden items-center gap-1 text-sm font-medium lg:flex">
           {NAV.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.to === '/'} className={desktopLink}>
               {item.label}

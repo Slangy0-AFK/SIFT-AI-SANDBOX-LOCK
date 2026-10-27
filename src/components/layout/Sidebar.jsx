@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Shield, Activity, Bug, FileText, Settings, CreditCard, Radiation, Menu, X, User, ShieldAlert, Mail, ChevronLeft } from 'lucide-react';
+import { Shield, Activity, Bug, FileText, Settings, CreditCard, Radiation, Menu, X, User, ShieldAlert, Mail, ChevronLeft, MessageCircle } from 'lucide-react';
 import NotificationBell from '../notifications/NotificationBell';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -8,6 +8,7 @@ import { base44 } from '@/api/base44Client';
 import { ShieldCheck, Database, Code2 } from 'lucide-react';
 
 const allNavItems = [
+  { path: '/chat', icon: MessageCircle, label: 'Chat with SIFT AI' },
   { path: '/prompt-guard', icon: ShieldCheck, label: 'Check a Message' },
   { path: '/scanner', icon: Activity, label: 'Device Tools' },
   { path: '/developer', icon: Code2, label: 'Add to My App' },
@@ -65,12 +66,12 @@ export default function Sidebar() {
               <Link
                 key={path || label}
                 to={path}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-mono text-xs tracking-wide transition-all duration-200 ${
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 ${
                   isActive
-                    ? 'bg-primary/10 text-primary border border-primary/20'
+                    ? 'bg-primary/10 text-primary'
                     : highlight
-                    ? 'text-fuchsia-400 border border-fuchsia-400/20 hover:bg-fuchsia-400/10'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                    ? 'text-fuchsia-400 hover:bg-fuchsia-400/10'
+                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -84,7 +85,7 @@ export default function Sidebar() {
         <div className="p-4 border-t border-border">
           <div className="flex items-center gap-2 px-3 py-2">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="font-mono text-xs text-muted-foreground tracking-wider">SYSTEM ONLINE</span>
+            <span className="text-xs text-muted-foreground">System online</span>
           </div>
         </div>
       </aside>
@@ -132,7 +133,7 @@ export default function Sidebar() {
           {/* Drawer */}
           <div className="relative ml-auto w-80 h-full bg-card border-l border-border flex flex-col overflow-visible">
             <div className="p-4 border-b border-border flex items-center justify-between">
-              <span className="font-mono text-xs font-bold text-foreground tracking-wider">NAVIGATION</span>
+              <span className="text-sm font-semibold text-foreground">Navigation</span>
               <button onClick={() => setMobileMenuOpen(false)} className="p-1 rounded hover:bg-secondary">
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
@@ -146,12 +147,12 @@ export default function Sidebar() {
                     key={path || label}
                     to={path}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-3 rounded-lg font-mono text-xs tracking-wide transition-all duration-200 ${
+                    className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors duration-200 ${
                       isActive
-                        ? 'bg-primary/10 text-primary border border-primary/20'
+                        ? 'bg-primary/10 text-primary'
                         : highlight
-                        ? 'text-accent border border-accent/20 hover:bg-accent/10'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                        ? 'text-accent hover:bg-accent/10'
+                        : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -163,7 +164,7 @@ export default function Sidebar() {
             <div className="p-4 border-t border-border">
               <div className="flex items-center gap-2 px-3 py-2">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="font-mono text-xs text-muted-foreground tracking-wider">SYSTEM ONLINE</span>
+                <span className="text-xs text-muted-foreground">System online</span>
               </div>
             </div>
           </div>
@@ -187,7 +188,7 @@ export default function Sidebar() {
               }`}
             >
               <Icon className="w-4 h-4" />
-              <span className="font-mono text-xs tracking-wide">{label}</span>
+              <span className="text-[11px] font-medium">{label}</span>
             </Link>
           );
         })}

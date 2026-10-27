@@ -15,16 +15,7 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background relative">
-      <div 
-        className="fixed inset-0 z-0 opacity-10 pointer-events-none"
-        style={{
-          backgroundImage: 'url("https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&q=80&w=2034")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
-        }}
-      />
-      <div className="fixed inset-0 z-0 bg-background/90 pointer-events-none" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-primary/5 via-background to-background" />
       
       <div className="relative z-10">
         <AlertWatcher />

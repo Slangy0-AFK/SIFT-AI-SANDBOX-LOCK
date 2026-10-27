@@ -3,6 +3,7 @@ import { admit, admitSpend, audit } from '../../shared/supportHarness.ts';
 import { HELP_ARTICLES, helpBlock, searchHelp } from '../../shared/supportHelp.ts';
 import { isPaidSubscriber } from '../../shared/planAccess.ts';
 import { GUARD_RULES, frameUntrusted } from '../../shared/chatGuard.ts';
+import { CHATBOT_RULES } from '../../shared/chatbotRules.ts';
 import { screenMessage, shieldReply } from '../../shared/chatBotShield.ts';
 import { trustedClientAddress } from '../../shared/clientAddress.ts';
 
@@ -33,7 +34,7 @@ Deno.serve(async (req) => {
       });
       if (!screened.ok) return Response.json({ reply: screened.reply, blocked: true, gate: screened.gate });
 
-      // The chat assistant is part of the Pro subscription. Anyone else is
+      // The chat assistant is part of Pro, and a founding place is Pro granted free. Anyone else is
       // offered the ticket form instead, and nothing is spent on their behalf.
       if (!(await isPaidSubscriber(base44, user.id))) {
         await audit(base44, {
@@ -45,7 +46,7 @@ Deno.serve(async (req) => {
         });
         return Response.json({
           reply:
-            'The AI support assistant is part of the Pro subscription. Leave a message in the ticket box and it goes straight to the SIFT AI team.',
+            'The support assistant is part of Pro. The first 50 accounts get Pro free as founding members, so if your account holds a founding place the chat is already open. Otherwise leave a message in the ticket box and it goes straight to the SIFT AI team.',
           paid_only: true
         });
       }
@@ -86,14 +87,11 @@ Deno.serve(async (req) => {
       const reply = await core.InvokeLLM({
         prompt: `You are the SIFT AI support assistant, helping a non-technical person with SIFT AI, a browser-based checker for rogue or unauthorised AI.
 
-Rules you must follow:
-- Answer only from the help articles below. If they do not cover it, say so plainly and point the person at the ticket form on the support page.
-- Never state or imply that a device, app, link or message is clean, safe or guaranteed. A check is a check, not a certificate.
-- Never invent a threat-intelligence or scan result, a price, a refund or a payout date.
-- VirusTotal checks are not offered here: the free VirusTotal Public API must not be used in a commercial product, so never describe a VirusTotal check as something SIFT AI does or will do.
-- Never ask for a password, one-time code, API key, card or bank number, phone number, IMEI or serial number.
-- Never name any individual: you are the SIFT AI support team.
-- Keep it short, plain and calm, with no jargon.
+${CHATBOT_RULES}
+
+How you work here:
+- You are the support assistant, so answer from the help articles below. If they do not cover it, say so plainly and point the person at the ticket box on the support page.
+- VirusTotal checks are not offered here because the free VirusTotal Public API must not be used in a commercial product, so never describe a VirusTotal check as something SIFT AI does or will do.
 
 ${GUARD_RULES.replace('{{canary}}', canary)}
 
