@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { analyzeEmail } from '../../shared/emailThreat.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -75,35 +76,10 @@ Deno.serve(async (req) => {
       }
 
       // Use InvokeLLM to analyze for threats
-      const analysisPrompt = `Analyze this email for phishing, scams, or malicious content.
-      
-From: ${from}
-Subject: ${subject}
-Body: ${body.substring(0, 2000)}
-
-Return a JSON response with:
-{
-  "is_threat": boolean,
-  "threat_type": "phishing" | "scam" | "malware" | "spoofing" | "safe" | null,
-  "confidence": number (0-100),
-  "reason": string (brief explanation)
-}`;
-
-      const llmRes = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: analysisPrompt,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            is_threat: { type: "boolean" },
-            threat_type: { type: ["string", "null"] },
-            confidence: { type: "number" },
-            reason: { type: "string" }
-          },
-          required: ["is_threat", "threat_type", "confidence", "reason"]
-        }
-      });
-
-      const analysis = JSON.parse(llmRes);
+      // The sender, the subject and the body are written by whoever sent the
+      // email: the shared module fences them as data and reads the verdict back
+      // through an allow list, so a steered answer cannot clear a mail.
+      const analysis = await analyzeEmail(base44, { from, subject, body });
 
       if (analysis.is_threat) {
         // Create threat record
