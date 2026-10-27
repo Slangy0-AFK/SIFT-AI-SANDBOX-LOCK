@@ -23,6 +23,25 @@ const STEPS = [
 
 const VERDICTS = ['Approved', 'Unknown', 'Flagged'];
 
+const BENEFITS = [
+  {
+    title: 'An answer you can act on',
+    text: 'Approved, Unknown or Flagged, with a record of exactly what was checked — so you are deciding on evidence rather than a feeling.'
+  },
+  {
+    title: 'Your own lists',
+    text: 'Keep the items you have decided to trust, and block the ones you have not, so the same thing is not a question again.'
+  },
+  {
+    title: 'A history you can look back on',
+    text: 'Every check is kept on your own account, with the device it was filed against and the result it came back with.'
+  },
+  {
+    title: 'A person when you need one',
+    text: 'Help articles answer the common questions, and a support ticket goes to the SIFT AI team — with a reply, not a wait.'
+  }
+];
+
 const NOT_THIS = [
   'Not a replacement for antivirus.',
   'Not a full device scan.',
@@ -41,6 +60,11 @@ export default function About() {
         <p className="mt-4 text-muted-foreground">
           SIFT AI is a personal checker for rogue and unauthorised AI on the devices you already own. It is built for normal people
           who want to check something suspicious before they trust it.
+        </p>
+        <p className="mt-3 text-muted-foreground">
+          What you walk away with each time: a clear result on the app, permission, link or message in front of you, a plain record
+          of what was actually checked, and a place to keep the things you have decided to trust and the ones you have decided to
+          block.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Link to="/scan">
@@ -95,6 +119,40 @@ export default function About() {
             <li>It does not watch a device in real time.</li>
             <li>It does not guarantee that a device is clean. “No hits in the checks run” means no hits in those checks, not a guarantee.</li>
           </ul>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-4xl px-4 py-12 sm:py-14">
+        <h2 className="font-heading text-2xl font-bold tracking-tight">What you get out of it</h2>
+        <p className="mt-3 text-muted-foreground">
+          The checks are free to run, and what you run stays on your own account: your history, your devices, and your own lists.
+          There is nothing to install and nothing to learn first.
+        </p>
+
+        <div className="mt-8 grid gap-5 sm:grid-cols-2">
+          {BENEFITS.map((benefit) => (
+            <div key={benefit.title} className="rounded-2xl border border-border bg-card p-6">
+              <h3 className="font-semibold">{benefit.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{benefit.text}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-border bg-card p-6">
+          <h3 className="font-heading text-base font-bold">If one check is not enough</h3>
+          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+            <li>
+              Pro keeps an eye on your own devices over time: reusable scan profiles, PDF reports of your checks, and priority
+              support.
+            </li>
+            <li>
+              The one-time Device Check is a careful look at a flagged item, or at a whole device — the app list, where it connects,
+              every flagged item with the evidence, and a full written fix plan.
+            </li>
+          </ul>
+          <Link to="/plans" className="mt-4 inline-block text-sm font-medium text-primary hover:underline">
+            See what each level covers
+          </Link>
         </div>
       </section>
 
