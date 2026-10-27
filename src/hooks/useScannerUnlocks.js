@@ -35,11 +35,23 @@ export default function useScannerUnlocks() {
     retry: false
   });
 
+  // A recurring purchase unlocks only while the subscription it was filed with is
+  // live, so a cancelled or failed year stops unlocking at that moment. A one-time
+  // purchase carries no subscription id and stands on its own record.
+  const liveStripeIds = new Set(
+    data.subs.filter((s) => s.status === 'active' && s.stripe_subscription_id).map((s) => s.stripe_subscription_id)
+  );
+
   // Only a payment the payment provider confirmed unlocks anything: a purchase
   // counts once it is marked paid, and a plan record counts once a Stripe
   // subscription is actually attached to it. Older or leftover plan rows that
   // were never paid for unlock nothing.
-  const unlocked = new Set(data.purchases.filter((p) => p.status === 'paid').map((p) => p.tier));
+  const unlocked = new Set(
+    data.purchases
+      .filter((p) => p.status === 'paid')
+      .filter((p) => !p.stripe_subscription_id || liveStripeIds.has(p.stripe_subscription_id))
+      .map((p) => p.tier)
+  );
   const livePlan = data.subs.find(
     (s) => ['pro', 'enterprise'].includes(s.plan) && s.status === 'active' && s.stripe_subscription_id
   );

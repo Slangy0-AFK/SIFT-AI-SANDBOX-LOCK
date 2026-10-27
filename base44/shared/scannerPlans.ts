@@ -37,19 +37,20 @@ export const SCANNER_TIERS = {
     currency: 'usd',
     annual: true
   },
-  // The whole package, charged once. The id stays 'device_check' because existing
-  // purchases, licenses and receipts are filed under it; only what it is called
-  // and what it costs have changed.
+  // The whole package, sold as a year that renews: $100 charged once a year and
+  // renewed yearly until it is cancelled. The id stays 'device_check' because
+  // existing purchases, licenses and receipts are filed under it; only what it is
+  // called, how it is charged and what it costs have changed.
   device_check: {
     id: 'device_check',
     name: 'Whole package',
-    label: 'SIFT AI Whole Package',
-    mode: 'payment',
-    interval: null,
-    amount: 5000,
+    label: 'SIFT AI Whole Package (per year)',
+    mode: 'subscription',
+    interval: 'year',
+    amount: 10000,
     currency: 'usd'
   },
-  // Not sold any more: everything it included is now in the whole package at $50.
+  // Not sold any more: everything it included is now in the whole package at $100 a year.
   // It stays in this catalog because a $99 payment made before the change must
   // still be confirmable by the webhook, and the amount below is the historical
   // one. 'purchasable: false' is what stops any new checkout for it.

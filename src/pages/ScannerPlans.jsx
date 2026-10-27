@@ -142,8 +142,9 @@ export default function ScannerPlans() {
           <h1 className="font-mono text-2xl font-bold tracking-wide text-foreground sm:text-3xl">Pick your level of control</h1>
           <p className="mt-4 text-sm text-muted-foreground sm:text-base">
             Three tiers. Free gives you the phone scan and the look-up. Seven dollars a month adds the harness with its
-            killswitch, in your own code. Fifty dollars once is the whole package. Card payments are handled by Stripe, inside
-            your account: that is how the key, the receipt and the plan stay attached to you, so buying needs you logged in.
+            killswitch, in your own code. A hundred dollars a year is the whole package, renewed yearly. Card payments are
+            handled by Stripe, inside your account: that is how the key, the receipt and the plan stay attached to you, so
+            buying needs you logged in.
           </p>
         </div>
 
@@ -232,7 +233,8 @@ export default function ScannerPlans() {
 
         <p className="mt-6 font-mono text-xs text-muted-foreground">
           The harness renews monthly and can be cancelled any time. A year of it is one payment for twelve months, with no
-          renewal to cancel. The whole package is charged once, at checkout. Every purchase needs a signed-in account.
+          renewal to cancel. The whole package renews yearly at $100 and can be cancelled any time, and cancelling stops the
+          next year's charge. Every purchase needs a signed-in account.
         </p>
       </main>
     </div>

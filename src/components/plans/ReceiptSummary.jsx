@@ -36,7 +36,7 @@ export default function ReceiptSummary({ plan, purchase }) {
           <dt className="font-mono text-xs text-muted-foreground">Amount</dt>
           <dd className="font-mono text-xs font-semibold text-foreground">
             {money(purchase.amount_cents, purchase.currency)}
-            {plan && plan.cadence === 'per month' ? ' per month' : ''}
+            {plan && ['per month', 'per year'].includes(plan.cadence) ? ` ${plan.cadence}` : ''}
           </dd>
         </div>
         <div className="flex items-center justify-between gap-4">

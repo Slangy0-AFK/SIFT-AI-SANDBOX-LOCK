@@ -22,6 +22,10 @@
       "type": "string",
       "description": "Stripe Checkout Session id \u2014 the only link from a payment back to the buyer"
     },
+    "stripe_subscription_id": {
+      "type": "string",
+      "description": "Set when the tier is sold as a renewal. What this purchase unlocks then lasts only while that subscription is live; a one-time purchase leaves it empty and stands on its own record."
+    },
     "status": {
       "type": "string",
       "enum": [

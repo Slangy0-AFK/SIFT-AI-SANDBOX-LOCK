@@ -144,7 +144,7 @@ export default function Compliance() {
             <Link to="/plans" className="text-primary hover:underline">
               Plans page
             </Link>
-            : Free at $0, the harness at $7 per month, and the whole package at $50 one time, which includes the Full Device Audit that used to be $99. Prices are shown in
+            : Free at $0, the harness at $7 per month, and the whole package at $100 a year, which includes the Full Device Audit that used to be $99. Prices are shown in
             US dollars.
           </p>
           <p>

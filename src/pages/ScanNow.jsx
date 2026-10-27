@@ -25,7 +25,7 @@ const TIERS = [
   {
     icon: ShieldAlert,
     name: 'Whole package',
-    price: '$50 once',
+    price: '$100 a year',
     text: 'Everything the app makes: the harness, the killswitch, every look-up, the eval puzzles and a full written fix plan.'
   }
 ];
