@@ -18,13 +18,15 @@ import {
 import { openTicket } from '../../shared/supportIntake.ts';
 import { ticketNumber, writeSupportMessage } from '../../shared/supportReply.ts';
 import { emailPlainValue } from '../../shared/emailSafe.ts';
+import { notifyTicketClosed } from '../../shared/ticketNotices.ts';
 
 // The support automation. Every action here is admitted, gated, audited and
 // reversible, and nothing is ever sent that the safety gate refused.
 //
 // Actions an app user may call: search (the help centre), my_tickets, open_ticket.
 // Actions only the owner or a workflow may call: sweep, respond, status, pause,
-// resume, reopen, lifecycle_step.
+// resume, reopen, lifecycle_step, and the two the admin console uses,
+// admin_reply and admin_close.
 
 const DAY_HOURS = 24;
 const CLOSE_AFTER_HOURS = 7 * DAY_HOURS;
@@ -135,7 +137,13 @@ async function applyAction(base44, ticket, decision) {
   const number = ticket.ticket_number || ticketNumber(ticket.id);
   const body = decision.kind === 'escalation' ? (await escalateTicket(base44, ticket, decision.body)).body : decision.body;
 
-  const written = await writeSupportMessage(base44, { ticket, kind: decision.kind, body });
+  const written = await writeSupportMessage(base44, {
+    ticket,
+    kind: decision.kind,
+    body,
+    author: decision.author,
+    automated: decision.automated
+  });
   if (!written.sent) {
     await audit(base44, {
       action: decision.kind,
@@ -157,6 +165,23 @@ async function applyAction(base44, ticket, decision) {
     update.closed_at = new Date().toISOString();
   }
   await base44.asServiceRole.entities.SupportTicket.update(ticket.id, update);
+
+  // Closing a ticket is the one moment the person is told, at the address the
+  // ticket carries. A notice that cannot be sent never undoes the close, and the
+  // outcome is written down either way.
+  if (decision.reason) {
+    const notice = await notifyTicketClosed(base44, { ...ticket, ...update }, { reason: decision.reason, resolution: body });
+    await audit(base44, {
+      action: 'close_notice',
+      gate: 'outcome',
+      decision: notice.notified ? 'completed' : 'failed',
+      reason: notice.notified
+        ? `the closing notice for ${number} went to the address on the ticket`
+        : `the closing notice for ${number} was not sent: ${notice.reason}`,
+      ticket_id: ticket.id,
+      ticket_number: number
+    });
+  }
 
   await audit(base44, {
     action: decision.kind,
@@ -409,7 +434,7 @@ export default async function (req) {
     }
 
     // Everything below is the owner's or a workflow's, never a visitor's.
-    if (['sweep', 'respond', 'status', 'pause', 'resume', 'reopen', 'lifecycle_step'].includes(action)) {
+    if (['sweep', 'respond', 'status', 'pause', 'resume', 'reopen', 'lifecycle_step', 'admin_reply', 'admin_close'].includes(action)) {
       if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
       if (!isAdmin) return Response.json({ error: 'Forbidden' }, { status: 403 });
     } else {
@@ -469,6 +494,83 @@ export default async function (req) {
       });
       await base44.asServiceRole.entities.SupportTicket.update(ticket.id, { closed_reason: '', closed_at: null, escalated: false });
       return Response.json({ reopened: result.acted });
+    }
+
+    // A reply typed by a person in the admin console. It passes the same safety
+    // gate as every other message on a ticket: a reply that asks for a secret,
+    // promises a result or links off the app is held back, and the reason comes
+    // back so the console can say why.
+    if (action === 'admin_reply') {
+      const ticket = await base44.asServiceRole.entities.SupportTicket
+        .get(String(body.ticket_id || ''))
+        .catch((e) => (e.status === 404 ? null : Promise.reject(e)));
+      if (!ticket) return Response.json({ error: 'Ticket not found' }, { status: 404 });
+
+      const message = String(body.message || '').slice(0, 4000).trim();
+      if (!message) return Response.json({ error: 'Write the reply first' }, { status: 400 });
+
+      const allowed = await admit(base44, {
+        action: 'admin_reply',
+        actor: 'owner',
+        ticket,
+        kind: 'owner_reply',
+        detail: 'a reply typed by a person in the admin console'
+      });
+      if (!allowed.ok) return Response.json({ error: allowed.reason, gate: allowed.gate }, { status: 409 });
+
+      const wasClosed = ticket.status === 'closed' || ticket.status === 'resolved';
+      const result = await applyAction(base44, ticket, {
+        kind: 'owner_reply',
+        status: 'waiting_on_user',
+        reason: '',
+        body: message,
+        author: 'support',
+        automated: false,
+        note: 'a person on the SIFT AI team replied by hand'
+      });
+      if (!result.acted) return Response.json({ replied: false, error: result.reason || 'the reply was held back' }, { status: 409 });
+
+      // A reply on a closed ticket opens it again, the same way the person's own
+      // reply does.
+      if (wasClosed) {
+        await base44.asServiceRole.entities.SupportTicket.update(ticket.id, { closed_reason: '', closed_at: null });
+      }
+      return Response.json({ replied: true, status: 'waiting_on_user' });
+    }
+
+    // Closing a ticket by hand. The message is filed as a closing, so the
+    // automation sees the ticket is done and never closes it twice. The loop cap
+    // on closings is the automation's own limit, so a person closing a ticket
+    // that was reopened is not refused by it.
+    if (action === 'admin_close') {
+      const ticket = await base44.asServiceRole.entities.SupportTicket
+        .get(String(body.ticket_id || ''))
+        .catch((e) => (e.status === 404 ? null : Promise.reject(e)));
+      if (!ticket) return Response.json({ error: 'Ticket not found' }, { status: 404 });
+
+      const resolution = String(body.resolution || '').slice(0, 4000).trim();
+      if (!resolution) return Response.json({ error: 'Write what was done before closing' }, { status: 400 });
+
+      const allowed = await admit(base44, {
+        action: 'admin_close',
+        actor: 'owner',
+        ticket,
+        kind: 'owner_reply',
+        detail: 'closed by hand from the admin console'
+      });
+      if (!allowed.ok) return Response.json({ error: allowed.reason, gate: allowed.gate }, { status: 409 });
+
+      const result = await applyAction(base44, ticket, {
+        kind: 'closing',
+        status: 'resolved',
+        reason: 'resolved_by_team',
+        body: resolution,
+        author: 'support',
+        automated: false,
+        note: 'closed by the team from the admin console'
+      });
+      if (!result.acted) return Response.json({ closed: false, error: result.reason || 'the closing note was held back' }, { status: 409 });
+      return Response.json({ closed: true, status: 'resolved' });
     }
 
     if (action === 'respond') {

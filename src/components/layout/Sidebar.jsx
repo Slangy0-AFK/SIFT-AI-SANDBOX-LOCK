@@ -14,6 +14,7 @@ const allNavItems = [
   { path: '/profile', icon: User, label: 'Profile' },
   { path: '/subscription', icon: CreditCard, label: 'Subscription' },
   { path: '/settings', icon: Settings, label: 'Settings' },
+  { path: '/admin/tickets', icon: Mail, label: 'Support Tickets', adminOnly: true },
 ];
 
 const mobileBottomNav = [

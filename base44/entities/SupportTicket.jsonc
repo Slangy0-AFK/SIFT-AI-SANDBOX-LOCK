@@ -31,6 +31,10 @@
       "type": "string",
       "description": "Signed-in owner; empty for a ticket sent from the public form with no account"
     },
+    "requester_email": {
+      "type": "string",
+      "description": "Where the reply and the closing notice go: the account email for a signed-in person, or the address a guest left on the form"
+    },
     "priority": {
       "type": "string",
       "enum": [
@@ -62,7 +66,7 @@
     },
     "closed_reason": {
       "type": "string",
-      "description": "confirmed = the person said it was fixed; no_reply_7d = closed after seven days of silence"
+      "description": "confirmed = the person said it was fixed; resolved_by_team = closed by hand from the admin console; no_reply_7d = closed after seven days of silence"
     },
     "closed_at": {
       "type": "string",

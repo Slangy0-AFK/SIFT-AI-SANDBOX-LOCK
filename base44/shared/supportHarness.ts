@@ -27,6 +27,10 @@ export const ALLOWED_ACTIONS = [
   'answer',
   'support_chat',
   'auto_reply',
+  // A reply typed by a person in the admin console, and closing one by hand
+  // from there.
+  'admin_reply',
+  'admin_close',
   // One named step of a ticket's own lifecycle, asked for by its workflow.
   'lifecycle_step'
 ];

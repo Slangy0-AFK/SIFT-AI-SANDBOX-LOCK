@@ -37,7 +37,16 @@ export async function openTicket(base44, { user, topic, topicTitle, message, ema
     : await base44.asServiceRole.entities.SupportTicket.create({ title, description });
 
   const number = ticketNumber(ticket.id);
-  const triaged = { ticket_number: number, priority, status: 'open', user_id: (user && user.id) || '', last_activity_at: new Date().toISOString() };
+  const triaged = {
+    ticket_number: number,
+    priority,
+    status: 'open',
+    user_id: (user && user.id) || '',
+    // Where the reply and the closing notice go: the account email for a
+    // signed-in person, or the address a guest left on the form.
+    requester_email: replyTo,
+    last_activity_at: new Date().toISOString()
+  };
   await base44.asServiceRole.entities.SupportTicket.update(ticket.id, triaged);
 
   await audit(base44, {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
-import { Loader2, ShieldAlert } from 'lucide-react';
+import { Inbox, Loader2, ShieldAlert } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,6 +67,14 @@ export default function AdminDashboard() {
     <div className="mx-auto max-w-5xl px-4 py-14">
       <p className="font-heading text-xs uppercase tracking-widest text-primary">Admin</p>
       <h1 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">Signups and paid status.</h1>
+
+      <div className="mt-5 flex flex-wrap gap-2">
+        <Link to="/admin/tickets">
+          <Button className="gap-2 font-mono text-xs">
+            <Inbox className="h-3.5 w-3.5" /> Field support tickets
+          </Button>
+        </Link>
+      </div>
 
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-border bg-card p-4">

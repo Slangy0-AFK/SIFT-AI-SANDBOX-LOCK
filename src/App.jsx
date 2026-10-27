@@ -43,6 +43,7 @@ import About from '@/pages/About';
 import ThankYou from '@/pages/ThankYou';
 import MyRuns from '@/pages/MyRuns';
 import AdminDashboard from '@/pages/AdminDashboard';
+import AdminTickets from '@/pages/AdminTickets';
 import SiteLayout from '@/components/kit/SiteLayout';
 import PromptGuard from '@/pages/PromptGuard';
 import ScannerPlans from '@/pages/ScannerPlans';
@@ -118,6 +119,7 @@ function AppRoutes() {
             <Route path="/history" element={<PageTransition><HistoryPage /></PageTransition>} />
             <Route path="/check/:id" element={<PageTransition><CheckDetail /></PageTransition>} />
             <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
+            <Route path="/admin/tickets" element={<PageTransition><AdminTickets /></PageTransition>} />
           </Route>
           <Route element={<AppLayout />}>
             <Route path="/prompt-guard" element={<PageTransition><PromptGuard /></PageTransition>} />
