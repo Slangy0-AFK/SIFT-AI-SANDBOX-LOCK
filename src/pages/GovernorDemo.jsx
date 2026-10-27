@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from '@/components/ui/card';
 import GovernorForm from '@/components/kit/GovernorForm';
 import GovernorResult from '@/components/kit/GovernorResult';
+import GateTestSection from '@/components/kit/GateTestSection';
 import LimitsNote from '@/components/kit/LimitsNote';
 
 const STEPS = [
@@ -61,7 +62,11 @@ export default function GovernorDemo() {
         is touched.
       </p>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-5">
+      <div className="mt-8">
+        <GateTestSection sessionId={sessionId} />
+      </div>
+
+      <div className="mt-10 grid gap-6 lg:grid-cols-5">
         <Card className="lg:col-span-3">
           <CardContent className="pt-6">
             <GovernorForm onSubmit={handleSubmit} busy={busy} />

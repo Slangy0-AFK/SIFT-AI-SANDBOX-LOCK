@@ -2,30 +2,34 @@ import React, { useState } from 'react';
 import { Loader2, Play } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import PuzzleRow from './PuzzleRow';
-import EvalSummary from './EvalSummary';
+import BehaviourMenu from './BehaviourMenu';
+import BehaviourPanel from './BehaviourPanel';
+import EvalReport from './EvalReport';
 import { PUZZLES, EVAL_MODELS } from '@/lib/evalPuzzles';
 
+// The bundle: a menu of behaviours, one model choice for the session, and a report
+// built from the turns that actually came back. Nothing is pre-filled: the report
+// only lists what this session recorded.
 export default function EvalBundleTest() {
-  // One model choice per puzzle, plus the model a whole-bundle run uses. The
-  // results live here so the summary can read every puzzle the run produced.
-  const [models, setModels] = useState(() =>
-    Object.fromEntries(PUZZLES.map((puzzle) => [puzzle.id, EVAL_MODELS[0].id]))
-  );
-  const [bundleModel, setBundleModel] = useState(EVAL_MODELS[0].id);
+  const [model, setModel] = useState(EVAL_MODELS[0].id);
+  const [selectedId, setSelectedId] = useState(PUZZLES[0].id);
   const [results, setResults] = useState({});
   const [errors, setErrors] = useState({});
   const [busyIds, setBusyIds] = useState([]);
   const [runningAll, setRunningAll] = useState(false);
 
+  const selected = PUZZLES.find((puzzle) => puzzle.id === selectedId) || PUZZLES[0];
+  const modelLabel = EVAL_MODELS.find((option) => option.id === model)?.label || model;
+  const busy = busyIds.length > 0 || runningAll;
+
   const setBusy = (id, on) =>
     setBusyIds((prev) => (on ? [...prev, id] : prev.filter((entry) => entry !== id)));
 
-  const runPuzzle = async (puzzleId, modelId) => {
+  const runPuzzle = async (puzzleId) => {
     setBusy(puzzleId, true);
     setErrors((prev) => ({ ...prev, [puzzleId]: '' }));
     try {
-      const response = await base44.functions.invoke('marketTest', { kind: 'puzzle', puzzle_id: puzzleId, model: modelId });
+      const response = await base44.functions.invoke('marketTest', { kind: 'puzzle', puzzle_id: puzzleId, model });
       setResults((prev) => ({ ...prev, [puzzleId]: response.data }));
     } catch (err) {
       setErrors((prev) => ({
@@ -39,9 +43,8 @@ export default function EvalBundleTest() {
 
   const runAll = async () => {
     setRunningAll(true);
-    setModels(Object.fromEntries(PUZZLES.map((puzzle) => [puzzle.id, bundleModel])));
     for (const puzzle of PUZZLES) {
-      await runPuzzle(puzzle.id, bundleModel);
+      await runPuzzle(puzzle.id);
     }
     setRunningAll(false);
   };
@@ -51,17 +54,17 @@ export default function EvalBundleTest() {
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-border bg-secondary/20 p-3 text-xs text-muted-foreground">
-        One bundle, six behaviours. Run one turn at a time, or run all six on the same model. Each turn is drawn from a fresh
-        seed, kept verbatim, and left review pending: no code marks it right or wrong. A turn costs one model call, and each
+        One bundle, six behaviours. Pick a behaviour from the menu, pick the model once, then send a turn. Each turn is drawn from a
+        fresh seed, kept verbatim and left review pending: no code marks it right or wrong. A turn costs one model call, and each
         account has a daily ceiling.
       </div>
 
-      <div className="flex flex-col gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 sm:flex-row sm:items-end">
-        <label className="flex-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Run all six on
+      <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+        <label className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Model under test
           <select
-            value={bundleModel}
-            onChange={(event) => setBundleModel(event.target.value)}
+            value={model}
+            onChange={(event) => setModel(event.target.value)}
             className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-normal normal-case tracking-normal text-foreground"
           >
             {EVAL_MODELS.map((option) => (
@@ -71,35 +74,35 @@ export default function EvalBundleTest() {
             ))}
           </select>
         </label>
-
-        <Button size="sm" className="gap-2" onClick={runAll} disabled={runningAll || busyIds.length > 0}>
-          {runningAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-          {runningAll ? 'Recording the bundle' : 'Run all six'}
-        </Button>
+        <p className="mt-2 text-[11px] text-muted-foreground">Applies to every turn you send from here.</p>
       </div>
 
-      <div className="grid gap-3 lg:grid-cols-2">
-        {PUZZLES.map((puzzle) => (
-          <PuzzleRow
-            key={puzzle.id}
-            puzzle={puzzle}
-            model={models[puzzle.id]}
-            onModelChange={(modelId) => setModels((prev) => ({ ...prev, [puzzle.id]: modelId }))}
-            result={results[puzzle.id] || null}
-            busy={busyIds.includes(puzzle.id)}
-            error={errors[puzzle.id] || ''}
-            onRun={() => runPuzzle(puzzle.id, models[puzzle.id])}
+      <div className="grid gap-3 lg:grid-cols-3">
+        <div className="lg:col-span-1">
+          <BehaviourMenu puzzles={PUZZLES} selectedId={selected.id} onSelect={setSelectedId} />
+        </div>
+
+        <div className="lg:col-span-2">
+          <BehaviourPanel
+            puzzle={selected}
+            modelLabel={modelLabel}
+            result={results[selected.id] || null}
+            busy={busyIds.includes(selected.id)}
+            error={errors[selected.id] || ''}
+            onRun={() => runPuzzle(selected.id)}
           />
-        ))}
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Button size="sm" variant="outline" className="gap-2" onClick={runAll} disabled={busy}>
+              {runningAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+              {runningAll ? 'Recording all six' : `Run all six on ${modelLabel}`}
+            </Button>
+            <p className="text-[11px] text-muted-foreground">{Object.keys(results).length} of six recorded in this session.</p>
+          </div>
+        </div>
       </div>
 
-      <EvalSummary results={resultList} />
-
-      <p className="text-xs text-muted-foreground">
-        Nothing above is a result. The transcript is the artifact: a person reads every turn and quotes the words the judgment
-        rests on before anything is written up. It then describes this model, this seed and these payloads only, and it is not a
-        safety certification or proof about any lab's model.
-      </p>
+      <EvalReport results={resultList} />
     </div>
   );
 }
