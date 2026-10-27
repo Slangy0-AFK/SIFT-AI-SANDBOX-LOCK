@@ -39,8 +39,8 @@ export default function AdminLicenseList() {
       if (res.data?.error) throw new Error(res.data.error);
       toast.success(
         action === 'admin_revoke'
-          ? `${license.order_number} is revoked and no longer works.`
-          : `A new key for ${license.order_number} was issued and emailed to the buyer.`
+          ? `${license.order_number} is revoked for good: the key is dead and is never bound to another model.`
+          : `A new key for ${license.order_number} was issued for the same model and emailed to the buyer.`
       );
       await load();
     } catch (error) {
@@ -60,7 +60,8 @@ export default function AdminLicenseList() {
       <CardContent>
         <p className="mb-4 text-sm text-muted-foreground">
           Status and order numbers for the license keys issued with purchases and founding places. A key is never shown in
-          full here, and the buyer is the only person who can read their own.
+          full here, and the buyer is the only person who can read their own. Reissue replaces a lost key and keeps its model
+          binding; revoking is final, so a revoked key is never replaced or re-bound.
         </p>
 
         {loading ? (
@@ -101,37 +102,41 @@ export default function AdminLicenseList() {
                   {license.issued_at ? moment(license.issued_at).format('MMM D, YYYY') : 'not recorded'}
                 </span>
 
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-xs"
-                    disabled={busyId === license.id}
-                    onClick={() => act(license, 'admin_reissue')}
-                  >
-                    {busyId === license.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Reissue'}
-                  </Button>
+                <div className="flex flex-wrap items-center gap-2">
                   {license.status === 'revoked' ? (
-                    <span className="text-xs text-muted-foreground">revoked</span>
-                  ) : confirmId === license.id ? (
+                    <span className="text-xs text-muted-foreground">revoked for good: never re-activated, re-bound or reissued</span>
+                  ) : (
                     <>
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-destructive/40 text-xs text-destructive"
+                        className="text-xs"
                         disabled={busyId === license.id}
-                        onClick={() => act(license, 'admin_revoke')}
+                        onClick={() => act(license, 'admin_reissue')}
                       >
-                        Confirm revoke
+                        {busyId === license.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Reissue'}
                       </Button>
-                      <Button size="sm" variant="ghost" className="text-xs" onClick={() => setConfirmId('')}>
-                        Cancel
-                      </Button>
+                      {confirmId === license.id ? (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-destructive/40 text-xs text-destructive"
+                            disabled={busyId === license.id}
+                            onClick={() => act(license, 'admin_revoke')}
+                          >
+                            Confirm revoke
+                          </Button>
+                          <Button size="sm" variant="ghost" className="text-xs" onClick={() => setConfirmId('')}>
+                            Cancel
+                          </Button>
+                        </>
+                      ) : (
+                        <Button size="sm" variant="ghost" className="text-xs" onClick={() => setConfirmId(license.id)}>
+                          Revoke
+                        </Button>
+                      )}
                     </>
-                  ) : (
-                    <Button size="sm" variant="ghost" className="text-xs" onClick={() => setConfirmId(license.id)}>
-                      Revoke
-                    </Button>
                   )}
                 </div>
               </li>

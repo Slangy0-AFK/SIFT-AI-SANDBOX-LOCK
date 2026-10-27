@@ -63,7 +63,9 @@ export default function LicenseKeyCard({ license, onRevoke, onRegenerate, busy =
 
       {!usable && (
         <p className="mt-2 text-xs text-muted-foreground">
-          This key no longer works. Issue a new one and the old key stays dead.
+          {license.status === 'revoked'
+            ? 'Revoked for good. This key never works again and is never bound to another model.'
+            : 'This key no longer works. A replacement keeps the same model binding, and the key it replaces stays dead.'}
         </p>
       )}
 
@@ -85,20 +87,27 @@ export default function LicenseKeyCard({ license, onRevoke, onRegenerate, busy =
         <Button size="sm" variant="outline" className="gap-2 text-xs" onClick={download} disabled={!usable}>
           <Download className="h-3.5 w-3.5" /> Download
         </Button>
-        {onRegenerate && (
+        {onRegenerate && license.status !== 'revoked' && (
           <Button size="sm" variant="outline" className="gap-2 text-xs" onClick={onRegenerate} disabled={busy}>
             {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-            Issue a new key
+            Replace a lost key
           </Button>
         )}
       </div>
+
+      {onRegenerate && license.status !== 'revoked' && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          A replacement is for a lost key only. The old key stops working, and the new one stays locked to the same model
+          {license.model_name ? ` (${license.model_name})` : ''}. It can never be moved to another one.
+        </p>
+      )}
 
       {onRevoke && usable && (
         <div className="mt-3 border-t border-border pt-3">
           {confirming ? (
             <div className="flex flex-wrap items-center gap-3">
               <p className="text-xs text-muted-foreground">
-                Revoke this key? It stops working immediately, everywhere.
+                Revoking ends this key forever. It cannot be moved to another model.
               </p>
               <Button
                 size="sm"
@@ -122,7 +131,7 @@ export default function LicenseKeyCard({ license, onRevoke, onRegenerate, busy =
               onClick={() => setConfirming(true)}
               className="flex items-center gap-2 text-xs text-muted-foreground underline underline-offset-4 hover:text-destructive"
             >
-              <Ban className="h-3.5 w-3.5" /> Lost or shared the key? Revoke it
+              <Ban className="h-3.5 w-3.5" /> Revoke this key permanently
             </button>
           )}
         </div>

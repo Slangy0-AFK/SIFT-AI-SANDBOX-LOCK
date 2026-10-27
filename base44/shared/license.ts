@@ -39,8 +39,8 @@ export const LICENSE_TERMS = [
   'It is a use licence, not ownership of anything: it does not give you the SIFT AI code, the model, the pattern library, anything the app runs internally, or anyone else\'s data.',
   'Non-exclusive and non-transferable. Do not share it, publish it, resell it or pass it on, and do not copy the key or the integration code to a second model.',
   'Do not publish the code or the key. A key that turns up anywhere but your own locked setup is revoked, and it stops working for you too.',
-  'The first model to activate the key is the only one it works with. A second, different model is refused: "This key is already locked to another model."',
-  'To move it to another model, the old binding is revoked first, then a new key is issued and locks to the new model. No two live copies, ever.',
+  'Strict no-transfer. The key can never be moved to another model, deployment, owner or product, not by you and not by the SIFT AI team. Retiring the model it was locked to does not free it: a different model needs a new key from a new purchase.',
+  'Revoking is terminal. A revoked key is dead for good and is never re-bound to another model. A replacement key is for a lost key only, and it keeps the same model binding: the old key stops working and the new one is locked to the same model.',
   'We never ask for a password, an API key for another service, an IMEI, a serial number or payment details to use a key.'
 ];
 
@@ -50,7 +50,7 @@ export const LICENSE_INSTRUCTIONS = [
   'Call the SIFT AI plug-in before your model sees a message, and around every tool your model asks for. It hands SIFT AI the key hash and the binding, and gets back one word: active, expired, revoked or invalid.',
   'The first binding to arrive is the one that sticks. Any other binding for the same key is refused, and the key is flagged for the SIFT AI team.',
   'An active answer turns the guardrails on, and anything else leaves them off. Your own product carries on running either way.',
-  'Keep the key out of shared logs, screenshots and public repositories. Need it on a different model? Revoke it, then issue a new key.'
+  'Keep the key out of shared logs, screenshots and public repositories. It stays on the one model it locked to and is never moved: a different model needs a new key from a new purchase.'
 ];
 
 // The plain answer a refused activation gets. Nothing about the pattern that
@@ -415,9 +415,9 @@ const sameText = (a: any, b: any) => String(a || '').trim().toLowerCase() === St
 // The first binding to arrive is the one that sticks. Every check after that
 // only reads; this is the single write a check can make. A second, different
 // binding is refused with a plain answer and the key is flagged for the team,
-// who can revoke it from the console. A customer cannot move a key themselves:
-// moving means revoking it and issuing a new one, so there are never two live
-// copies of one key.
+// who can revoke it from the console. Nothing moves a key to another model:
+// not the customer, not the team. A different model needs a new key from a new
+// purchase, revoking is final, and a replacement key keeps the same binding.
 export async function lockBinding(base44: any, license: any, { model = '', deploymentId = '' }: any = {}) {
   const wanted = {
     model: String(model || '').trim().slice(0, 120),
@@ -581,25 +581,34 @@ export async function revokePlanKey(base44: any, userId: any, subscription: any 
   return { revoked: doomed.length };
 }
 
-// A replacement key. The fingerprint is replaced, so the key it replaces stops
-// working at this moment, and activation starts again from nothing.
+// A replacement key, for a lost key only. The fingerprint is replaced, so the
+// key it replaces stops working at this moment, and the binding is carried over
+// untouched: the new key is locked to the same model and deployment as the old
+// one, and nothing here can point it anywhere else.
+//
+// Revoking is terminal, so a revoked key is never replaced at all: the only way
+// to a working key after that is a new key from a new purchase.
 export async function regenerateLicense(base44: any, license: any, { reason = '', notify = false } = {}) {
+  if (effectiveStatus(license) === 'revoked') {
+    return { license, key: '', mailed: { sent: false }, refused: 'revoked' };
+  }
+
   const key = newLicenseKey();
+  const locked = Boolean(license.binding_locked_at || license.deployment_id);
   const updated = await base44.asServiceRole.entities.License.update(license.id, {
     key_hash: await fingerprint(key),
     key_encrypted: await sealKey(key),
     key_hint: maskLicenseKey(key),
     status: 'active',
-    activations: 0,
-    activated_at: null,
-    revoked_at: null,
     revoked_reason: String(reason || '').slice(0, 200),
     regenerated_at: new Date().toISOString(),
-    // A replacement key starts unlocked: it locks to the first model that uses
-    // it, and the model the old key was on is not carried across.
-    model_name: '',
-    deployment_id: '',
-    binding_locked_at: null,
+    // The binding is never cleared and never rewritten: the replacement is for
+    // the same one model, and there is no path from here to another.
+    model_name: locked ? license.model_name : '',
+    deployment_id: locked ? license.deployment_id : '',
+    binding_locked_at: locked ? license.binding_locked_at : null,
+    activations: locked ? 1 : 0,
+    activated_at: locked ? license.activated_at || license.binding_locked_at : null,
     binding_conflicts: 0,
     last_conflict_at: null,
     last_conflict_binding: '',

@@ -29,8 +29,9 @@ export default function LicenseHowTo({ instructions = [], endpoint }) {
  "deployment_id": "the deployment it runs on"}`}
           </pre>
           <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-            The first activation is the lock: the key works with that one model from then on. A second, different model is refused
-            with &ldquo;This key is already locked to another model.&rdquo;
+            The first activation is the lock: the key works with that one model from then on and is never moved to another. A second,
+            different model is refused with &ldquo;This key is already locked to another model.&rdquo; A different model needs a new key
+            from a new purchase.
           </p>
         </div>
       )}

@@ -24,7 +24,8 @@ import { trustedClientAddress } from '../../shared/clientAddress.ts';
 //   mine          the buyer's own license: status, masked key, the key itself
 //                 for their copy button, order number, terms and instructions.
 //   revoke        the buyer stopping their own key.
-//   regenerate    a replacement key for the buyer, which retires the old one.
+//   regenerate    a replacement key for the buyer's lost key: the old key dies
+//                 and the new one stays locked to the same model.
 //   admin_*       the team: statuses and order numbers, revoke and reissue on
 //                 someone's behalf. The team never sees a key in full.
 //
@@ -121,7 +122,14 @@ export default async function (req) {
       if (!license) return Response.json({ error: 'There is no key on this account.' }, { status: 404 });
 
       const replaced = await regenerateLicense(base44, license, { reason: 'replaced by the key holder', notify: true });
-      console.log(`[licenseKey] ${license.order_number} was replaced, so the key before it no longer works`);
+      if (replaced.refused) {
+        console.warn(`[licenseKey] ${license.order_number} is revoked, so it was not replaced`);
+        return Response.json(
+          { error: 'That key was revoked, and revoking is final. A new key comes with a new purchase.' },
+          { status: 409 }
+        );
+      }
+      console.log(`[licenseKey] ${license.order_number} was replaced for the same model, so the key before it no longer works`);
       return Response.json({ ok: true, masked_key: replaced.license.key_hint, mailed: replaced.mailed.sent === true });
     }
 
@@ -147,7 +155,14 @@ export default async function (req) {
       }
 
       const replaced = await regenerateLicense(base44, license, { reason: 'reissued by the SIFT AI team', notify: true });
-      console.log(`[licenseKey] ${license.order_number} reissued by the team`);
+      if (replaced.refused) {
+        console.warn(`[licenseKey] ${license.order_number} is revoked, so the team could not reissue it`);
+        return Response.json(
+          { error: 'That key was revoked, and revoking is final: it is never re-bound or replaced.' },
+          { status: 409 }
+        );
+      }
+      console.log(`[licenseKey] ${license.order_number} reissued by the team for the same model`);
       return Response.json({ ok: true, masked_key: replaced.license.key_hint, mailed: replaced.mailed.sent === true });
     }
 
