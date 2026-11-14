@@ -4,6 +4,7 @@ import type { Request, Response, NextFunction } from 'express';
 import type pg from 'pg';
 import type { AuthConfig } from '../app.js';
 import { hashPassword, verifyPassword } from '../security/password.js';
+import type { RecoveryMailer } from '../integrations/email.js';
 
 interface User {
   id: string;
@@ -30,15 +31,22 @@ function readCookie(req: Request, name: string) {
   return /^[a-f0-9]{64}$/.test(token) ? token : '';
 }
 
+function validEmail(email: unknown): email is string {
+  return typeof email === 'string' && email.trim().length <= 254 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
+function validPassword(password: unknown): password is string {
+  return typeof password === 'string' && password.length >= 12 && Buffer.byteLength(password) <= 256;
+}
+
 function validCredentials(body: unknown): body is { email: string; password: string } {
   if (typeof body !== 'object' || body === null || !('email' in body) || !('password' in body)) return false;
   const { email, password } = body;
-  return typeof email === 'string' && email.trim().length <= 254 &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) &&
-    typeof password === 'string' && password.length >= 12 && Buffer.byteLength(password) <= 256;
+  return validEmail(email) && validPassword(password);
 }
 
-export function authRouter(database: pg.Pool, config: AuthConfig) {
+export function authRouter(database: pg.Pool, config: AuthConfig, mailer: RecoveryMailer | null) {
   const router = Router();
   router.use((_req, res, next) => {
     res.set('Cache-Control', 'no-store');
@@ -150,8 +158,102 @@ export function authRouter(database: pg.Pool, config: AuthConfig) {
       return;
     }
     const user: User = { id: row.id, email: row.email, role: row.role };
-    const token = await createSession(user, database);
+    const client = await database.connect();
+    let token: string;
+    try {
+      await client.query('BEGIN');
+      const current = await client.query<{ password_hash: string }>(
+        'SELECT password_hash FROM auth_users WHERE id = $1 FOR UPDATE', [user.id]
+      );
+      if (!current.rows[0] || current.rows[0].password_hash !== row.password_hash) {
+        await client.query('ROLLBACK');
+        res.status(401).json({ error: 'Invalid credentials' });
+        return;
+      }
+      token = await createSession(user, client);
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
     sendSession(user, token, res);
+  });
+
+  router.post('/forgot-password', requireOrigin, throttle, async (req, res) => {
+    if (!validEmail(req.body?.email)) {
+      res.status(400).json({ error: 'Valid email required' });
+      return;
+    }
+    if (!mailer) {
+      res.status(503).json({ error: 'Password recovery is not configured' });
+      return;
+    }
+    const email = req.body.email.trim().toLowerCase();
+    const found = await database.query<{ id: string }>('SELECT id FROM auth_users WHERE email = $1', [email]);
+    if (found.rows[0]) {
+      const token = randomBytes(32).toString('hex');
+      const tokenHash = digest(token);
+      await database.query(
+        "INSERT INTO password_resets (token_hash, user_id, expires_at) VALUES ($1, $2, now() + interval '30 minutes')",
+        [tokenHash, found.rows[0].id]
+      );
+      const url = new URL('/reset-password', config.origin);
+      url.hash = `token=${token}`;
+      try {
+        await mailer.sendPasswordReset(email, url.toString());
+      } catch {
+        await database.query('DELETE FROM password_resets WHERE token_hash = $1', [tokenHash]);
+        console.error('Password recovery email delivery failed');
+        res.status(503).json({ error: 'Password recovery is unavailable' });
+        return;
+      }
+    }
+    res.status(202).json({ message: 'If the account exists, a recovery email will be sent.' });
+  });
+
+  router.post('/reset-password', requireOrigin, throttle, async (req, res) => {
+    const { token, password } = req.body || {};
+    if (typeof token !== 'string' || !/^[a-f0-9]{64}$/.test(token) || !validPassword(password)) {
+      res.status(400).json({ error: 'Valid token and password required' });
+      return;
+    }
+    const hash = await hashPassword(password);
+    const client = await database.connect();
+    try {
+      await client.query('BEGIN');
+      const candidate = await client.query<{ user_id: string }>(
+        'SELECT user_id FROM password_resets WHERE token_hash = $1', [digest(token)]
+      );
+      if (!candidate.rows[0]) {
+        await client.query('ROLLBACK');
+        res.status(400).json({ error: 'Invalid or expired recovery token' });
+        return;
+      }
+      await client.query('SELECT id FROM auth_users WHERE id = $1 FOR UPDATE', [candidate.rows[0].user_id]);
+      const reset = await client.query<{ user_id: string }>(`
+        UPDATE password_resets SET used_at = now()
+        WHERE token_hash = $1 AND used_at IS NULL AND expires_at > now()
+        RETURNING user_id
+      `, [digest(token)]);
+      if (!reset.rows[0]) {
+        await client.query('ROLLBACK');
+        res.status(400).json({ error: 'Invalid or expired recovery token' });
+        return;
+      }
+      const userId = reset.rows[0].user_id;
+      await client.query('UPDATE auth_users SET password_hash = $1 WHERE id = $2', [hash, userId]);
+      await client.query('DELETE FROM auth_sessions WHERE user_id = $1', [userId]);
+      await client.query('UPDATE password_resets SET used_at = now() WHERE user_id = $1 AND used_at IS NULL', [userId]);
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+    res.json({ message: 'Password reset complete' });
   });
 
   router.get('/session', async (req, res) => {

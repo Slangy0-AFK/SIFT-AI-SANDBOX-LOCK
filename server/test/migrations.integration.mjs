@@ -28,7 +28,7 @@ test('migrations are repeatable and reject altered or missing history', async ()
     await client.connect();
     try {
       const applied = await client.query('SELECT name, checksum FROM schema_migrations ORDER BY name');
-      assert.equal(applied.rowCount, 2);
+      assert.equal(applied.rowCount, 3);
       assert.equal(applied.rows[0].name, '0001_audit_log.sql');
       await client.query("UPDATE schema_migrations SET checksum = 'changed' WHERE name = $1", [applied.rows[0].name]);
       const changed = run();

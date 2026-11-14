@@ -27,5 +27,14 @@ export function readConfig(env: NodeJS.ProcessEnv) {
   if (!sessionSecret || Buffer.byteLength(sessionSecret) < 32) {
     throw new Error('SESSION_SECRET must contain at least 32 bytes');
   }
-  return { databaseUrl, port, origin, sessionSecret, production };
+  const smtpValues = [env.SMTP_HOST, env.SMTP_PORT, env.SMTP_USER, env.SMTP_PASSWORD, env.SMTP_FROM];
+  let smtp: { host: string; port: number; user: string; password: string; from: string } | undefined;
+  if (smtpValues.some(Boolean)) {
+    const [host, smtpPort, user, password, from] = smtpValues;
+    if (!host || !smtpPort || !user || !password || !from) throw new Error('All SMTP settings are required');
+    const portNumber = Number(smtpPort);
+    if (!Number.isInteger(portNumber) || portNumber < 1 || portNumber > 65535) throw new Error('SMTP_PORT is invalid');
+    smtp = { host, port: portNumber, user, password, from };
+  }
+  return { databaseUrl, port, origin, sessionSecret, production, smtp };
 }

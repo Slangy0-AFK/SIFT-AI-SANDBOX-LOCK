@@ -1,6 +1,7 @@
 import express from 'express';
 import type pg from 'pg';
 import { authRouter } from './routes/auth.js';
+import type { RecoveryMailer } from './integrations/email.js';
 
 export interface AuthConfig {
   origin: string;
@@ -8,7 +9,7 @@ export interface AuthConfig {
   production: boolean;
 }
 
-export function createApp(database: pg.Pool, config: AuthConfig) {
+export function createApp(database: pg.Pool, config: AuthConfig, mailer: RecoveryMailer | null = null) {
   const app = express();
   app.disable('x-powered-by');
   app.use((req, res, next) => {
@@ -38,7 +39,7 @@ export function createApp(database: pg.Pool, config: AuthConfig) {
       res.status(503).json({ status: 'unavailable' });
     }
   });
-  app.use('/api/auth', express.json({ limit: '4kb' }), authRouter(database, config));
+  app.use('/api/auth', express.json({ limit: '4kb' }), authRouter(database, config, mailer));
   app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     if (error instanceof SyntaxError && 'status' in error && error.status === 400) {
       res.status(400).json({ error: 'Invalid JSON' });

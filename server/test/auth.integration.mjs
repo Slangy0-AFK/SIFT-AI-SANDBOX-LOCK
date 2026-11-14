@@ -5,6 +5,7 @@ import { once } from 'node:events';
 import { test } from 'node:test';
 import pg from 'pg';
 import { createApp } from '../dist/app.js';
+import { hashPassword } from '../dist/security/password.js';
 
 test('accounts, sessions, CSRF, revocation and throttling use PostgreSQL', async () => {
   const url = process.env.TEST_DATABASE_URL;
@@ -23,9 +24,17 @@ test('accounts, sessions, CSRF, revocation and throttling use PostgreSQL', async
     assert.equal(migration.status, 0, migration.stderr);
     const pool = new pg.Pool({ connectionString: databaseUrl });
     const origin = 'https://frontend.example';
+    const deliveries = [];
+    let deliveryFails = false;
+    const mailer = {
+      async sendPasswordReset(email, url) {
+        if (deliveryFails) throw new Error('test delivery failure');
+        deliveries.push({ email, url });
+      }
+    };
     const app = createApp(pool, {
       origin, sessionSecret: 'example-test-secret-0123456789012345', production: true
-    });
+    }, mailer);
     const server = app.listen(0);
     await once(server, 'listening');
     const base = `http://127.0.0.1:${server.address().port}/api/auth`;
@@ -91,6 +100,65 @@ test('accounts, sessions, CSRF, revocation and throttling use PostgreSQL', async
       const loginCookie = login.headers.get('set-cookie').split(';')[0];
       await pool.query("UPDATE auth_sessions SET expires_at = now() - interval '1 second' WHERE user_id = $1", [account.user.id]);
       assert.equal((await fetch(base + '/session', { headers: { Cookie: loginCookie } })).status, 401);
+
+      await pool.query('DELETE FROM auth_rate_limits');
+      const activeLogin = await post('/login', { email: 'a@example.com', password: 'a-strong-password' });
+      const activeCookie = activeLogin.headers.get('set-cookie').split(';')[0];
+      assert.equal((await post('/forgot-password', { email: 'unknown@example.com' })).status, 202);
+      assert.equal(deliveries.length, 0);
+      assert.equal((await post('/forgot-password', { email: 'a@example.com' })).status, 202);
+      assert.equal(deliveries[0].email, 'a@example.com');
+      const resetUrl = new URL(deliveries[0].url);
+      assert.equal(resetUrl.search, '');
+      const expiredToken = new URLSearchParams(resetUrl.hash.slice(1)).get('token');
+      const saved = await pool.query('SELECT token_hash FROM password_resets');
+      assert.notEqual(saved.rows[0].token_hash, expiredToken);
+      await pool.query("UPDATE password_resets SET expires_at = now() - interval '1 second'");
+      assert.equal((await post('/reset-password', { token: expiredToken, password: 'replacement-password' })).status, 400);
+      assert.equal((await post('/forgot-password', { email: 'a@example.com' })).status, 202);
+      const token = new URLSearchParams(new URL(deliveries[1].url).hash.slice(1)).get('token');
+      assert.equal((await post('/reset-password', { token, password: 'replacement-password' })).status, 200);
+      assert.equal((await fetch(base + '/session', { headers: { Cookie: activeCookie } })).status, 401);
+      assert.equal((await fetch(base + '/session', { headers: { Cookie: secondCookie } })).status, 200);
+      assert.equal((await post('/reset-password', { token, password: 'replacement-password' })).status, 400);
+      assert.equal((await post('/login', { email: 'a@example.com', password: 'a-strong-password' })).status, 401);
+      assert.equal((await post('/login', { email: 'a@example.com', password: 'replacement-password' })).status, 200);
+      await pool.query('DELETE FROM auth_rate_limits');
+      const before = await pool.query('SELECT count(*) FROM password_resets');
+      deliveryFails = true;
+      assert.equal((await post('/forgot-password', { email: 'a@example.com' })).status, 503);
+      const after = await pool.query('SELECT count(*) FROM password_resets');
+      assert.equal(after.rows[0].count, before.rows[0].count);
+
+      await pool.query('DELETE FROM auth_rate_limits');
+      const newHash = await hashPassword('a-newer-password');
+      const lock = await pool.connect();
+      let committed = false;
+      try {
+        await lock.query('BEGIN');
+        await lock.query('SELECT id FROM auth_users WHERE id = $1 FOR UPDATE', [account.user.id]);
+        const racingLogin = post('/login', { email: 'a@example.com', password: 'replacement-password' });
+        let blocked = false;
+        for (let i = 0; i < 100; i++) {
+          const waiting = await pool.query(
+            "SELECT count(*) FROM pg_stat_activity WHERE wait_event_type = 'Lock' AND query = $1",
+            ['SELECT password_hash FROM auth_users WHERE id = $1 FOR UPDATE']
+          );
+          if (Number(waiting.rows[0].count) > 0) {
+            blocked = true;
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        assert.ok(blocked, 'login should wait on the account lock');
+        await lock.query('UPDATE auth_users SET password_hash = $1 WHERE id = $2', [newHash, account.user.id]);
+        await lock.query('COMMIT');
+        committed = true;
+        assert.equal((await racingLogin).status, 401);
+      } finally {
+        if (!committed) await lock.query('ROLLBACK');
+        lock.release();
+      }
 
       await pool.query('DELETE FROM auth_rate_limits');
       for (let i = 0; i < 10; i++) {
