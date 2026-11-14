@@ -1,6 +1,6 @@
 # Test report
 
-This file must reflect the latest commands run against the current worktree. A skipped live integration test is not a successful connectivity test.
+This file reflects checks run against the current worktree. A skipped live integration test is not a successful connectivity test.
 
 ## Local checks
 
@@ -15,13 +15,13 @@ This file must reflect the latest commands run against the current worktree. A s
 | API unit tests and build | `npm --prefix server test` | Passed: 9 tests; TypeScript build succeeded |
 | PostgreSQL migration/session tests | `npm --prefix server run test:migrations` | Passed: 2 tests against disposable PostgreSQL |
 | API dependency audit | `npm --prefix server audit --audit-level=high` | Passed: 0 vulnerabilities |
-| Container build and smoke test | Docker Compose local stack | Passed: web/API health, all 6 migrations, and QRNG fail-closed behavior |
+| Container build and integration test | Docker Compose local stack | Passed: web/API health, all 6 migrations, live LfD sample, and provenance |
 
 ## External integration
 
 | Check | Requirement | Result |
 |---|---|---|
-| ANU QRNG connectivity | `ANU_QRNG_API_KEY` and network access; run `npm --prefix server run test:qrng:integration` | Skipped: provider key is not configured; live connectivity not verified |
+| LfD QRNG connectivity | `RUN_LFD_QRNG_INTEGRATION=1 npm --prefix server run test:qrng:integration` | Passed: live 32-bit HTTPS request and response validation |
 | Production deployment | Configured host, TLS, secrets, database, and monitoring | Not performed |
 | Backup recovery | Encrypted backup and isolated restore test | Not performed |
 

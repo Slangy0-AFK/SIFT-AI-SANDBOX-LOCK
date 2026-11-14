@@ -10,7 +10,7 @@ Requirements: Docker Engine and the Docker Compose plugin.
    cp .env.example .env
    ```
 
-2. Replace the session placeholder with a cryptographically random secret of at least 32 bytes. Set the database password and connection URL consistently. Set `ANU_QRNG_API_KEY` only if a real provider key is available. Do not commit `.env`.
+2. Replace the session placeholder with a cryptographically random secret of at least 32 bytes. Set the database password and connection URL consistently. Do not commit `.env`.
 3. Start the database and build the services:
 
    ```sh
@@ -30,7 +30,7 @@ See `.env.example` for the variable names. Important settings include:
 
 - `DATABASE_URL` and `SESSION_SECRET` for the API.
 - `NODE_ENV=development` for the supplied local HTTP Compose setup; set `NODE_ENV=production` with an HTTPS `FRONTEND_ORIGIN` for production.
-- `ANU_QRNG_API_KEY` for the external QRNG service.
+- No provider key is required for the LfD QRNG endpoint; external connectivity is tested when a sample is requested.
 - `FRONTEND_ORIGIN` for the exact trusted browser origin.
 - `TRUST_PROXY_HOPS` for the deployment's controlled reverse proxy topology.
 - Email provider settings for account verification and recovery workflows.
@@ -44,7 +44,7 @@ Keep all secrets on the server side and rotate them through the hosting platform
 - Keep the API and PostgreSQL on private networks; expose only the edge.
 - Configure the exact public frontend origin and proxy hop count.
 - Set `NODE_ENV=production`; the API rejects a non-HTTPS frontend origin in production.
-- Provision the ANU key and verify an actual provider request in the deployment environment.
+- Verify an actual LfD provider request in the deployment environment and monitor for upstream availability failures.
 - Configure email delivery if account endpoints are exposed.
 - Run all migrations against a backed-up production database during a reviewed maintenance procedure.
 - Verify health checks, alerts, structured logs, and incident response without logging credentials or user content.

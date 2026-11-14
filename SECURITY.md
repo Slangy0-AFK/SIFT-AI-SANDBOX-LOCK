@@ -23,7 +23,7 @@
 
 ## Remaining risks and non-goals
 
-- No live production deployment, external penetration test, backup restore, or ANU provider connectivity test has been completed.
+- No live production deployment, external penetration test, or backup restore has been completed. LfD connectivity passed in this development environment but has not been verified from a production deployment.
 - The QRNG route is not tied to an authenticated user account. Its PostgreSQL-backed per-client rate limit is an abuse control, not authorization. Public deployment requires a reviewed ingress/rate-limit policy.
 - Correct IP-based limits depend on exact proxy configuration.
 - The app does not claim that its basic statistical checks prove entropy quality or quantum origin.

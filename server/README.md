@@ -13,7 +13,7 @@ npm run migrate --prefix server
 npm start --prefix server
 ```
 
-`DATABASE_URL`, `FRONTEND_ORIGIN`, and a `SESSION_SECRET` of at least 32 bytes are required. The QRNG is disabled without `ANU_QRNG_API_KEY`. Account email workflows require all five `SMTP_*` settings; missing SMTP configuration returns an explicit unavailable response.
+`DATABASE_URL`, `FRONTEND_ORIGIN`, and a `SESSION_SECRET` of at least 32 bytes are required. The LfD QRNG endpoint requires no API key; generation fails explicitly when the external service is unreachable. Account email workflows require all five `SMTP_*` settings; missing SMTP configuration returns an explicit unavailable response.
 
 ## Tests
 
@@ -23,7 +23,7 @@ npm run test:migrations --prefix server
 npm run test:qrng:integration --prefix server
 ```
 
-Migration tests require `TEST_DATABASE_URL` pointed at a disposable PostgreSQL database whose role can create and drop schemas. The live QRNG integration test contacts ANU only when `ANU_QRNG_API_KEY` is set; otherwise it is skipped. Unit tests use fake provider responses only to verify validation and failure handling.
+Migration tests require `TEST_DATABASE_URL` pointed at a disposable PostgreSQL database whose role can create and drop schemas. To contact the live provider, run `RUN_LFD_QRNG_INTEGRATION=1 npm run test:qrng:integration`. Unit tests use fake provider responses only to verify validation and failure handling.
 
 ## Operational notes
 

@@ -8,7 +8,6 @@ export interface AuthConfig {
   origin: string;
   sessionSecret: string;
   production: boolean;
-  anuQrngApiKey: string | null;
   trustProxyHops: number;
 }
 

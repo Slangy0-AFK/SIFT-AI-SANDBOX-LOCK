@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fetchAnuQrng } from '../dist/integrations/anuQrng.js';
+import { fetchLfdQrng } from '../dist/integrations/lfdQrng.js';
 
-const apiKey = process.env.ANU_QRNG_API_KEY?.trim();
+const runLiveTest = process.env.RUN_LFD_QRNG_INTEGRATION === '1';
 
-test('ANU QRNG is reachable with the configured credential', {
-  skip: apiKey ? false : 'ANU_QRNG_API_KEY is not configured'
+test('LfD QRNG is reachable over HTTPS and returns validated entropy', {
+  skip: runLiveTest ? false : 'Set RUN_LFD_QRNG_INTEGRATION=1 to contact the live provider'
 }, async () => {
-  const sample = await fetchAnuQrng(32, apiKey);
+  const sample = await fetchLfdQrng(32);
 
   assert.equal(sample.bits, 32);
   assert.match(sample.entropyHex, /^[0-9a-f]{8}$/);
-  assert.ok(sample.entropyHex);
+  assert.equal(sample.entropyHex.length, 8);
 });

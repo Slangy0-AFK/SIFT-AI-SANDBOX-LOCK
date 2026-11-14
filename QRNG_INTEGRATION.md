@@ -1,32 +1,41 @@
 # QRNG integration
 
-## Provider and authentication
+## Provider and source
 
-The replaceable server-side adapter currently targets the Australian National University's Quantum Numbers API:
+The replaceable server-side adapter uses the Laboratory for Digitalisation (LfD) QRNG service:
 
-- Provider documentation: <https://quantumnumbers.anu.edu.au/>
-- API endpoint: `https://api.quantumnumbers.anu.edu.au/`
-- Authentication: `x-api-key` request header
-- Requested representation: `uint8`; the adapter converts validated returned bytes to bits.
+- Provider documentation: <https://lfdr.de/QRNG/>
+- API endpoint: `https://lfdr.de/qrng_api/qrng`
+- Transport: HTTPS
+- Authentication: no API key is required by the documented endpoint
+- Documented hardware source: an ID Quantique QRNG PCIe, accessed through the Quantis PCI driver
 
-The `ANU_QRNG_API_KEY` is read only by the API process. It must not be added to a `VITE_` variable, source file, image, or browser request. Configure it through a production secret manager. The repository's `.env.example` contains placeholders only.
+The endpoint is configurable only in server code; no provider secret is needed or exposed to the browser.
 
 ## Request and validation
 
-The client selects a byte-aligned count of random bits. The API enforces the supported size, request schema, request-body limit, origin policy, timeout, and per-client rate limit before querying ANU. The adapter caps provider JSON responses at 16 KiB, then validates the success flag, declared type, declared length, payload length, and that every byte is an integer in the unsigned 8-bit range.
+The client selects a byte-aligned count of random bits. The API converts this to the requested byte count and sends `GET /qrng?length=<bytes>&format=HEX` over HTTPS. The API enforces the supported size, request schema, request-body limit, origin policy, timeout, and per-client rate limit before querying LfD.
 
-Valid bits are returned with the source name, endpoint, server retrieval timestamp, server-generated request ID, and provider request ID when the provider supplies one. No entropy sample or secret is written to application logs. Provider errors, timeouts, malformed responses, missing configuration, and rate limits remain errors; there is no pseudorandom fallback.
+The adapter caps provider JSON responses at 16 KiB, then validates the `qrn` field, exact hexadecimal length, and declared byte count. Provider errors, timeouts, malformed responses, and rate limits fail closed; there is no pseudorandom fallback.
+
+Valid bits are returned with the source name, endpoint, server retrieval timestamp, server-generated request ID, and provider request ID when the provider supplies one. No entropy sample is written to application logs. Since the documented LfD endpoint does not require credentials, there is no API key to configure.
 
 ## Availability and verification
 
-Without `ANU_QRNG_API_KEY`, the status endpoint reports unavailable and generation returns a service-unavailable error. A production setup must obtain an ANU key, configure it securely, and run the live integration test against the real service.
+The status endpoint indicates that the LfD endpoint is configured; it does not claim that the external service is currently reachable. A real request checks upstream connectivity and reports failure explicitly.
 
-`npm --prefix server run test:qrng:integration` exercises the adapter against ANU when the key is configured; without it, the network test is reported as skipped. Unit tests use controlled responses only to test response handling and failure behavior. They are not evidence of live provider connectivity.
+Run the opt-in live connectivity test with network access:
+
+```sh
+RUN_LFD_QRNG_INTEGRATION=1 npm --prefix server run test:qrng:integration
+```
+
+By default, the network test is skipped so ordinary unit tests and CI do not depend on external provider availability. Unit tests use controlled responses only to verify validation and failure behavior; they are not evidence of live connectivity.
 
 ## Statistical health checks
 
-The client offers monobit-frequency and runs diagnostics as basic screening for the returned bitstream when the sample is large enough. These checks are not a certification of randomness, do not establish a quantum origin, and cannot verify provider operation or provenance. Use the provider's operational documentation and independently reviewed statistical test suites for any assurance beyond basic screening. Statistical-test background: [NIST SP 800-22 Rev. 1a](https://csrc.nist.gov/pubs/sp/800/22/r1/upd1/final).
+The client offers monobit-frequency and runs diagnostics as basic screening for the returned bitstream when the sample is large enough. These checks are not a certification of randomness, do not establish a quantum origin, and cannot verify provider operation or provenance. Use independently reviewed statistical test suites for any assurance beyond basic screening. Statistical-test background: [NIST SP 800-22 Rev. 1a](https://csrc.nist.gov/pubs/sp/800/22/r1/upd1/final).
 
 ## Known limitations
 
-Provider TLS and API-key authentication protect the request in transit and authorize access; they are not a cryptographic proof that a particular response was generated by a quantum process. Provenance metadata is an application record, not a provider-signed attestation. ANU account availability, key limits, current API behavior, and live response have not been verified in this environment.
+HTTPS protects the request in transit, but the provider does not document a cryptographic signature or attestation for each sample. Provenance metadata is an application record, not provider-signed proof. Provider uptime and hardware operations are outside this repository's control. Statistical tests alone cannot establish that a source is genuinely quantum.

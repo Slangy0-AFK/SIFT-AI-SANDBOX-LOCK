@@ -1,24 +1,22 @@
-export interface AnuQrngSample {
+export interface LfdQrngSample {
   entropyHex: string;
   bits: number;
   providerRequestId: string | null;
 }
 
-export class AnuQrngError extends Error {
+export class LfdQrngError extends Error {
   constructor(
-    public readonly kind: 'configuration' | 'timeout' | 'rate_limited' | 'unavailable' | 'invalid_response',
+    public readonly kind: 'timeout' | 'rate_limited' | 'unavailable' | 'invalid_response',
     message: string
   ) {
     super(message);
-    this.name = 'AnuQrngError';
+    this.name = 'LfdQrngError';
   }
 }
 
-interface AnuResponse {
-  success: unknown;
-  type: unknown;
+interface LfdResponse {
+  qrn: unknown;
   length: unknown;
-  data: unknown;
 }
 
 const MAX_RESPONSE_BYTES = 16 * 1024;
@@ -26,10 +24,10 @@ const MAX_RESPONSE_BYTES = 16 * 1024;
 async function readProviderJson(response: Response): Promise<unknown> {
   const declaredLength = Number(response.headers.get('content-length'));
   if (Number.isFinite(declaredLength) && declaredLength > MAX_RESPONSE_BYTES) {
-    throw new AnuQrngError('invalid_response', 'Quantum entropy provider response is too large.');
+    throw new LfdQrngError('invalid_response', 'Quantum entropy provider response is too large.');
   }
   if (!response.body) {
-    throw new AnuQrngError('invalid_response', 'Quantum entropy provider returned an empty response.');
+    throw new LfdQrngError('invalid_response', 'Quantum entropy provider returned an empty response.');
   }
 
   const reader = response.body.getReader();
@@ -47,7 +45,7 @@ async function readProviderJson(response: Response): Promise<unknown> {
       chunks.push(value);
     }
   } catch {
-    throw new AnuQrngError('invalid_response', 'Quantum entropy provider response could not be read safely.');
+    throw new LfdQrngError('invalid_response', 'Quantum entropy provider response could not be read safely.');
   }
 
   const body = new Uint8Array(totalBytes);
@@ -60,68 +58,61 @@ async function readProviderJson(response: Response): Promise<unknown> {
   try {
     return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(body)) as unknown;
   } catch {
-    throw new AnuQrngError('invalid_response', 'Quantum entropy provider returned invalid JSON.');
+    throw new LfdQrngError('invalid_response', 'Quantum entropy provider returned invalid JSON.');
   }
 }
 
-export async function fetchAnuQrng(
+export async function fetchLfdQrng(
   bits: number,
-  apiKey: string | null | undefined,
   fetchImpl: typeof fetch = fetch
-): Promise<AnuQrngSample> {
+): Promise<LfdQrngSample> {
   if (!Number.isInteger(bits) || bits < 8 || bits > 8192 || bits % 8 !== 0) {
     throw new RangeError('Bits must be a multiple of 8 between 8 and 8192.');
   }
-  if (!apiKey?.trim()) {
-    throw new AnuQrngError('configuration', 'Quantum entropy is not configured.');
-  }
 
   const bytes = bits / 8;
-  const url = new URL('https://api.quantumnumbers.anu.edu.au/');
+  const url = new URL('https://lfdr.de/qrng_api/qrng');
   url.searchParams.set('length', String(bytes));
-  url.searchParams.set('type', 'uint8');
+  url.searchParams.set('format', 'HEX');
 
   let response: Response;
   try {
     response = await fetchImpl(url, {
       method: 'GET',
-      headers: { 'x-api-key': apiKey, accept: 'application/json' },
+      headers: { accept: 'application/json' },
+      redirect: 'error',
       signal: AbortSignal.timeout(8000)
     });
   } catch (error) {
     if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
-      throw new AnuQrngError('timeout', 'Quantum entropy provider timed out.');
+      throw new LfdQrngError('timeout', 'Quantum entropy provider timed out.');
     }
-    throw new AnuQrngError('unavailable', 'Quantum entropy provider could not be reached.');
+    throw new LfdQrngError('unavailable', 'Quantum entropy provider could not be reached.');
   }
 
   if (response.status === 429) {
-    throw new AnuQrngError('rate_limited', 'Quantum entropy provider rate limit reached.');
+    throw new LfdQrngError('rate_limited', 'Quantum entropy provider rate limit reached.');
   }
   if (!response.ok) {
-    throw new AnuQrngError('unavailable', 'Quantum entropy provider returned an unavailable status.');
+    throw new LfdQrngError('unavailable', 'Quantum entropy provider returned an unavailable status.');
   }
 
   const json = await readProviderJson(response);
   if (!json || typeof json !== 'object' || Array.isArray(json)) {
-    throw new AnuQrngError('invalid_response', 'Quantum entropy provider response failed validation.');
+    throw new LfdQrngError('invalid_response', 'Quantum entropy provider response failed validation.');
   }
-  const payload = json as AnuResponse;
+  const payload = json as LfdResponse;
 
   if (
-    payload.success !== true ||
-    payload.type !== 'uint8' ||
     payload.length !== bytes ||
-    !Array.isArray(payload.data) ||
-    payload.data.length !== bytes ||
-    payload.data.some((value) => !Number.isInteger(value) || value < 0 || value > 255)
+    typeof payload.qrn !== 'string' ||
+    payload.qrn.length !== bytes * 2 ||
+    !/^[0-9a-f]+$/i.test(payload.qrn)
   ) {
-    throw new AnuQrngError('invalid_response', 'Quantum entropy provider response failed validation.');
+    throw new LfdQrngError('invalid_response', 'Quantum entropy provider response failed validation.');
   }
 
-  const entropyHex = (payload.data as number[])
-    .map((value) => value.toString(16).padStart(2, '0'))
-    .join('');
+  const entropyHex = payload.qrn.toLowerCase();
   return {
     entropyHex,
     bits,

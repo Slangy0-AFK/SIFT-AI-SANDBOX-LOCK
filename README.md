@@ -7,7 +7,7 @@ A standalone web application for exact number-base conversion, user-led explorat
 - Exact conversions among bases 2, 10, 12, and 60, including arbitrary-precision integers and rational values.
 - Inspectable conversion steps, round-trip verification, and repeating-fraction notation.
 - A private paradox workspace: the user's original wording remains in the browser and is not sent to a server or interpreted as fact.
-- An optional server-side ANU QRNG integration. If the provider is not configured or available, the app reports that quantum entropy is unavailable; it never substitutes pseudorandom data.
+- A server-side QRNG integration with the Laboratory for Digitalisation (LfD). The provider is checked when entropy is requested; outages are explicit and never result in pseudorandom fallback.
 - A separate Express/PostgreSQL API for account and verification workflows. The current math interface does not require or use those account workflows.
 
 ## Run locally
@@ -21,9 +21,9 @@ npm run dev
 
 For the API, QRNG, and complete containerized stack:
 
-1. Copy `.env.example` to `.env` and set a unique `SESSION_SECRET`. Set the database password and connection URL consistently. Set `ANU_QRNG_API_KEY` only if you have an ANU API key. Keep `.env` private.
+1. Copy `.env.example` to `.env` and set a unique `SESSION_SECRET`. Set the database password and connection URL consistently. Keep `.env` private.
 2. Follow [DEPLOYMENT.md](./DEPLOYMENT.md) to start PostgreSQL, apply migrations, and launch the services.
-3. Open `http://localhost:8080`. Without the ANU key, the QRNG status is explicitly unavailable.
+3. Open `http://localhost:8080`. The LfD endpoint is configured by default; live connectivity is verified when you request entropy.
 
 ## Verify
 
@@ -41,10 +41,10 @@ npm --prefix server run test:migrations
 npm --prefix server audit --audit-level=high
 ```
 
-The migration test requires a disposable PostgreSQL database through `TEST_DATABASE_URL`. A live QRNG integration test requires `ANU_QRNG_API_KEY` and network access:
+The migration test requires a disposable PostgreSQL database through `TEST_DATABASE_URL`. The live QRNG integration test makes a small request to LfD and requires network access. Set `RUN_LFD_QRNG_INTEGRATION=1` to enable it:
 
 ```sh
-npm --prefix server run test:qrng:integration
+RUN_LFD_QRNG_INTEGRATION=1 npm --prefix server run test:qrng:integration
 ```
 
 See [TEST_REPORT.md](./TEST_REPORT.md) for what has and has not been verified.
@@ -60,4 +60,4 @@ See [TEST_REPORT.md](./TEST_REPORT.md) for what has and has not been verified.
 - [PRODUCTION_READINESS_REPORT.md](./PRODUCTION_READINESS_REPORT.md) — release blockers and status
 - [TEST_REPORT.md](./TEST_REPORT.md) — automated checks and unverified integrations
 
-This repository is not declared production-ready. A real ANU credential, deployment-specific security configuration, and live-environment verification are required before release.
+This repository is not declared production-ready. Deployment-specific security configuration and live-environment verification are required before release.

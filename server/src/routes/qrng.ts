@@ -2,13 +2,13 @@ import { createHash, randomUUID } from 'node:crypto';
 import { Router } from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import type pg from 'pg';
-import { AnuQrngError, fetchAnuQrng } from '../integrations/anuQrng.js';
+import { LfdQrngError, fetchLfdQrng } from '../integrations/lfdQrng.js';
 
-const SOURCE = 'Australian National University QRNG';
+const SOURCE = 'Laboratory for Digitalisation (LfD) QRNG';
+const PROVIDER_ENDPOINT = 'https://lfdr.de/qrng_api/qrng';
 
 export interface QrngConfig {
   origin: string;
-  anuQrngApiKey?: string | null;
 }
 
 function requireOrigin(req: Request, res: Response, next: NextFunction, origin: string) {
@@ -32,7 +32,7 @@ export function qrngRouter(
   router.get('/status', (_req, res) => {
     res.set('Cache-Control', 'no-store');
     res.json({
-      configured: Boolean(config.anuQrngApiKey?.trim()),
+      configured: true,
       source: SOURCE
     });
   });
@@ -43,11 +43,6 @@ export function qrngRouter(
       res.status(400).json({ error: 'bits must be a multiple of 8 between 8 and 8192' });
       return;
     }
-    if (!config.anuQrngApiKey?.trim()) {
-      res.status(503).json({ error: 'Quantum entropy is unavailable because the provider is not configured.' });
-      return;
-    }
-
     const requestId = randomUUID();
     const address = req.ip || req.socket.remoteAddress || 'unknown';
     const keyHash = createHash('sha256').update(address).digest('hex');
@@ -80,17 +75,17 @@ export function qrngRouter(
     }
 
     try {
-      const sample = await fetchAnuQrng(bits, config.anuQrngApiKey, fetchImpl);
+      const sample = await fetchLfdQrng(bits, fetchImpl);
       res.set('Cache-Control', 'no-store');
       res.json({
         ...sample,
         source: SOURCE,
-        providerEndpoint: 'https://api.quantumnumbers.anu.edu.au/',
+        providerEndpoint: PROVIDER_ENDPOINT,
         retrievedAt: new Date().toISOString(),
         requestId
       });
     } catch (error) {
-      if (error instanceof AnuQrngError) {
+      if (error instanceof LfdQrngError) {
         console.warn('[qrng] provider request failed', { kind: error.kind, requestId });
         const status = error.kind === 'timeout' ? 504
           : error.kind === 'invalid_response' ? 502

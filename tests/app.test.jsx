@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../src/App.jsx';
 
 const originalFetch = globalThis.fetch;
-let qrngConfigured = false;
+let qrngAvailable = true;
 
 function jsonResponse(body, status = 200) {
   return {
@@ -14,21 +14,24 @@ function jsonResponse(body, status = 200) {
 }
 
 beforeEach(() => {
-  qrngConfigured = false;
+  qrngAvailable = true;
   globalThis.fetch = vi.fn(async (url, options = {}) => {
     if (url === '/health') return jsonResponse({ status: 'ok' });
     if (url === '/api/qrng/status') {
       return jsonResponse({
-        configured: qrngConfigured,
-        source: 'Australian National University QRNG'
+        configured: true,
+        source: 'Laboratory for Digitalisation (LfD) QRNG'
       });
     }
     if (url === '/api/qrng' && options.method === 'POST') {
+      if (!qrngAvailable) {
+        return jsonResponse({ error: 'Quantum entropy is unavailable; no fallback source was used.' }, 502);
+      }
       return jsonResponse({
         entropyHex: '0003',
         bits: 16,
         providerRequestId: 'provider-test-id',
-        source: 'Australian National University QRNG',
+        source: 'Laboratory for Digitalisation (LfD) QRNG',
         retrievedAt: '2026-01-01T00:00:00.000Z',
         requestId: 'server-test-id'
       });
@@ -83,19 +86,23 @@ describe('application interactions', () => {
     expect(screen.getByText(/do not establish the truth of philosophical or theological claims/)).toBeTruthy();
   });
 
-  it('does not enable QRNG generation when the real provider is unconfigured', async () => {
+  it('reports an upstream QRNG outage without presenting a substitute sample', async () => {
+    qrngAvailable = false;
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: 'Quantum entropy' }));
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Request quantum bits' }).disabled).toBe(true);
+      expect(screen.getByText('Provider configured')).toBeTruthy();
     });
-    expect(screen.getByText(/server has no ANU QRNG credential configured/)).toBeTruthy();
-    expect(globalThis.fetch).not.toHaveBeenCalledWith('/api/qrng', expect.anything());
+    fireEvent.click(screen.getByRole('button', { name: 'Request quantum bits' }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/no fallback source was used/)).toBeTruthy();
+    });
+    expect(document.querySelector('.bit-output')).toBeNull();
   });
 
   it('displays and converts a validated QRNG API response', async () => {
-    qrngConfigured = true;
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: 'Quantum entropy' }));
     await waitFor(() => expect(screen.getByText('Provider configured')).toBeTruthy());

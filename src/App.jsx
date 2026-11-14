@@ -288,8 +288,8 @@ function QuantumPanel() {
         if (active) setProviderStatus({
           state: data.configured ? 'configured' : 'unavailable',
           message: data.configured
-            ? 'ANU QRNG provider is configured; live connectivity is checked when entropy is requested.'
-            : 'Quantum entropy is unavailable: the server has no ANU QRNG credential configured.'
+            ? 'LfD QRNG endpoint is configured; live connectivity is checked when entropy is requested.'
+            : 'Quantum entropy is unavailable: the provider endpoint is not configured.'
         });
       })
       .catch(() => {
@@ -342,8 +342,8 @@ function QuantumPanel() {
         <span className="eyebrow">QUANTUM ENTROPY · SERVER-SIDE PROVIDER</span>
         <h2 id="qrng-title">Generate a QRNG sample</h2>
         <p>
-          Requests are made by the server to the Australian National University
-          Quantum Random Number Generator. Provider credentials never enter the browser.
+          Requests are made by the server to the Laboratory for Digitalisation QRNG.
+          Its documentation identifies an ID Quantique QRNG PCIe as the entropy source.
         </p>
       </div>
       <div className={`status-banner status-${providerStatus.state}`} role="status">
@@ -391,9 +391,9 @@ function QuantumPanel() {
         </div>
       )}
       <p className="source-note">
-        Provider: <a href="https://quantumnumbers.anu.edu.au/documentation" target="_blank" rel="noreferrer">
-          ANU QRNG API documentation
-        </a>. If the provider is not configured, unavailable, or returns malformed
+        Provider: <a href="https://lfdr.de/QRNG/" target="_blank" rel="noreferrer">
+          LfD QRNG API documentation
+        </a>. If the provider is unavailable or returns malformed
         data, this feature reports an error and does not substitute other randomness.
       </p>
     </section>
