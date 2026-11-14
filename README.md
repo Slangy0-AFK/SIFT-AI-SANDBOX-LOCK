@@ -50,6 +50,17 @@ RUN_LFD_QRNG_INTEGRATION=1 npm --prefix server run test:qrng:integration
 
 See [TEST_REPORT.md](./TEST_REPORT.md) for what has and has not been verified.
 
+## Release gates
+
+| Gate | Required result | Current status |
+|---|---|---|
+| Mathematical correctness | All conversions and exact arithmetic tests pass | Passed locally; rerun against the release candidate |
+| QRNG verification | A real provider request succeeds from staging | Direct live request passed from the development environment; staging verification is pending |
+| Security | Independent review, access controls, backups, and recovery pass | Not complete; independent review and production backup/recovery verification remain |
+| Production | HTTPS deployment, monitoring, database, and rollback are verified | Not complete; no production deployment has been verified |
+
+Keep the migration branch separate until its changes, including file deletions, have been reviewed. Deploy to staging and verify the live QRNG there; merge to `main` only after all four gates pass. See [PRODUCTION_READINESS_REPORT.md](./PRODUCTION_READINESS_REPORT.md) for the remaining release blockers.
+
 ## Documentation
 
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — application boundaries and data flow
