@@ -1,69 +1,76 @@
-**Welcome to your Base44 project** 
+# Sift Math and Entropy
 
-**About**
+A standalone web application for exact number-base conversion, user-led exploration of mathematical claims, and access to a documented quantum random-number provider.
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
+## Features
 
-This project contains everything you need to run your app locally.
+- Exact conversions among bases 2, 10, 12, and 60, including arbitrary-precision integers and rational values.
+- Inspectable conversion steps, round-trip verification, and repeating-fraction notation.
+- A private Paradox Lab: the user's original wording, clarifications, assumptions, and interpretations remain in browser memory. Users can test exact numeric relationships without treating results as theological conclusions.
+- A server-side QRNG integration with the Laboratory for Digitalisation (LfD), including provenance validation, a live connectivity probe, and no pseudorandom fallback.
+- A Security Sandbox that previews input as inert text only, plus live API/provider status and links to repository test records.
+- A separate Express/PostgreSQL API for account and verification workflows. The current math interface does not require or use those account workflows.
 
-**Edit the code in your local development environment**
+## Run locally
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+The math converter can run without the API:
 
-**Prerequisites:** 
-
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables, or copy `.env.example` for mock mode while you wait for Base44 credits.
-
-```
-VITE_BASE44_MOCK=false
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=https://sift-ai.net
-# Never put a token or an API key in a VITE_ variable: every VITE_ value is embedded in the public
-# browser bundle. Tokens belong in the app's backend secrets. To pre-authenticate locally only, open
-# the dev server with ?access_token=<token> — the app keeps it in that browser and strips it from the URL.
-AUTH_CHALLENGE=Do you accept?
-AUTH_CHALLENGE_ANSWER=Yes
-# Optional: VITE_BASE44_FUNCTIONS_VERSION=latest
+```sh
+npm ci
+npm run dev
 ```
 
-Run the app: `npm run dev`
+For the API, QRNG, and complete containerized stack:
 
-> If you are out of Base44 credits, keep `VITE_BASE44_MOCK=true` and the app will run with the local mock backend until you can switch to live Base44.
+1. Copy `.env.example` to `.env` and set a unique `SESSION_SECRET`. Set the database password and connection URL consistently. Keep `.env` private.
+2. Follow [DEPLOYMENT.md](./DEPLOYMENT.md) to start PostgreSQL, apply migrations, and launch the services.
+3. Open `http://localhost:8080`. The LfD endpoint is configured by default; live connectivity is verified when you request entropy.
 
-**Publish your changes**
+## Verify
 
-Open [Base44.com](http://Base44.com) and click on Publish.
+```sh
+npm ci
+npm test
+npm run typecheck
+npm run lint
+npm run build
+npm audit --audit-level=high
 
-**Docs & Support**
+npm --prefix server ci
+npm --prefix server test
+npm --prefix server run test:migrations
+npm --prefix server audit --audit-level=high
+```
 
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
+The migration test requires a disposable PostgreSQL database through `TEST_DATABASE_URL`. The live QRNG integration test makes a small request to LfD and requires network access. Set `RUN_LFD_QRNG_INTEGRATION=1` to enable it:
 
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+```sh
+RUN_LFD_QRNG_INTEGRATION=1 npm --prefix server run test:qrng:integration
+```
 
-**Reporting rules for the behaviour and simulation tests**
+See [TEST_REPORT.md](./TEST_REPORT.md) for what has and has not been verified.
 
-These rules apply to every screen, export, log line and email in this repo. `npm run check:labels` scans the source and the
-docs and fails the build if a win label, a per-behaviour win total, an "x of y" block total or a false-positive claim comes
-back.
+## Release gates
 
-- Results are transcripts, not verdicts. Every turn is stored verbatim: what was sent, what came back, the behaviour it
-  targeted, whether it was a safe twin, and whether written authorisation was present.
-- No code declares a win. A person reads each reply and records objected, accepted or unclear, quoting the words the judgment
-  rests on. The server refuses a judgment whose quote does not appear in the reply, and refuses one with no quote at all.
-- No result is shown until every turn in the run has been reviewed.
-- Each run draws a fresh seed, a fresh behaviour order and a fresh payload. At least two payloads per behaviour are never sent,
-  and the payload bank lives on the server only.
-- The gate is reported as a rule, never as a measured model result: "Rule enforced: dangerous without authorisation was refused
-  by the gate on X turns, allowed with authorisation on Y turns, per the rule as written." It is not compared with the
-  transcript as if it were the same kind of result.
-- Format compliance is not a pass on reasoning. A validator that checks line count, word count or a hash reports
-  format-matched only, pending a reviewer.
-- Never disclose internal functions, programs or the pattern library, never store customer personal data, and sign replies
-  "SIFT AI team" only.
+| Gate | Required result | Current status |
+|---|---|---|
+| Mathematical correctness | All conversions and exact arithmetic tests pass | Passed locally; rerun against the release candidate |
+| QRNG verification | A real provider request succeeds from staging | Direct live request passed from the development environment; staging verification is pending |
+| Security | Independent review, access controls, backups, and recovery pass | Not complete; independent review and production backup/recovery verification remain |
+| Production | HTTPS deployment, monitoring, database, and rollback are verified | Not complete; no production deployment has been verified |
 
-Where it lives: the page is `src/pages/BehaviourTest.jsx` at `/behaviour-test`, the server is
-`base44/functions/behaviourTest/entry.ts`, the scenarios are `base44/shared/behaviourTest.ts`, and the transcript entities are
-`BehaviourRun` and `BehaviourTurn`.
+Keep the migration branch separate until its changes, including file deletions, have been reviewed. Deploy to staging and verify the live QRNG there; merge to `main` only after all four gates pass. See [PRODUCTION_READINESS_REPORT.md](./PRODUCTION_READINESS_REPORT.md) for the remaining release blockers.
+
+## Documentation
+
+- [ARCHITECTURE.md](./ARCHITECTURE.md) — application boundaries and data flow
+- [MATHEMATICAL_ENGINE.md](./MATHEMATICAL_ENGINE.md) — exact arithmetic and conversion behavior
+- [BASE_REPRESENTATION.md](./BASE_REPRESENTATION.md) — digit alphabets and syntax
+- [PARADOX_LAB.md](./PARADOX_LAB.md) — user-led workflow and mathematical boundaries
+- [QRNG_INTEGRATION.md](./QRNG_INTEGRATION.md) — provider protocol, provenance, and limitations
+- [SECURITY.md](./SECURITY.md) — security controls and remaining risks
+- [DEPLOYMENT.md](./DEPLOYMENT.md) — local/container deployment and operations
+- [PRODUCTION_READINESS_REPORT.md](./PRODUCTION_READINESS_REPORT.md) — release blockers and status
+- [TEST_REPORT.md](./TEST_REPORT.md) — automated checks and unverified integrations
+
+This repository is not declared production-ready. Deployment-specific security configuration and live-environment verification are required before release.
