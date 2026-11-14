@@ -9,10 +9,12 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
+/** @param {{ onClose?: () => void }} props */
 export default function PasswordReset({ onClose }) {
   const [email, setEmail] = useState('');
 
   const requestResetMutation = useMutation({
+    /** @param {string} email */
     mutationFn: async (email) => {
       await base44.auth.resetPasswordRequest(email);
       return true;

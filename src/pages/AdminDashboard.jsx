@@ -23,7 +23,7 @@ export default function AdminDashboard() {
       setUser(me);
       if (me?.role === 'admin') {
         const accountList = await base44.entities.User.list();
-        setAccounts(Array.isArray(accountList) ? accountList : accountList.items || []);
+        setAccounts(accountList);
         const purchasePage = await base44.entities.KitPurchase.filter({}, { sort: '-created_date', limit: 100 });
         setPurchases(purchasePage.items || []);
         const settingsPage = await base44.entities.KitSettings.list({ limit: 1 });

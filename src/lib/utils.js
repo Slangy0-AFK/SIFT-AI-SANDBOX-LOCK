@@ -30,7 +30,7 @@ export function getRealisticDate(dateInput) {
   if (isNaN(d.getTime())) return new Date();
   
   const now = new Date();
-  if (now - d > 24 * 60 * 60 * 1000) {
+  if (now.getTime() - d.getTime() > 24 * 60 * 60 * 1000) {
     d.setFullYear(now.getFullYear(), now.getMonth(), now.getDate());
     if (d > now) {
       d.setDate(d.getDate() - 1);

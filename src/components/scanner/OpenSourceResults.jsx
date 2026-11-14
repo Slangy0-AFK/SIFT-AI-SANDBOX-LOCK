@@ -25,6 +25,14 @@ function statusOf(source) {
 
 // Every source shown on its own, then the combined rule. Used by the scanner and
 // by a saved check, so a stored check reads exactly like a fresh one.
+/**
+ * @param {{
+ *   sources?: Array<{ id?: string, name: string, status?: string, family?: string, threat?: string, note?: string, reason?: string, first_seen?: string, tags?: string[], detail_url?: string, operator?: string }>,
+ *   verdict?: { level?: string, headline?: string, lines?: string[], next?: string },
+ *   value?: string,
+ *   showVerdict?: boolean
+ * }} props
+ */
 export default function OpenSourceResults({ sources = [], verdict, value, showVerdict = true }) {
   const level = LEVELS[verdict?.level] || LEVELS.unknown;
   return (

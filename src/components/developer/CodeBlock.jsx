@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
+/** @param {{ code: string, label?: string }} props */
 export default function CodeBlock({ code, label }) {
   return (
     <div className="space-y-1">

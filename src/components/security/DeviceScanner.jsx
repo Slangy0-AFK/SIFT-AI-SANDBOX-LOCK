@@ -39,6 +39,11 @@ const SEVERITY_BG = {
   info: 'bg-secondary border-border',
 };
 
+/** @param {RenderingContext | null} context @returns {context is WebGLRenderingContext} */
+function isWebGLContext(context) {
+  return context !== null && 'getExtension' in context && 'getParameter' in context;
+}
+
 // Request deep browser permissions for a full device scan
 // This MUST be called directly from a user gesture (button click) to trigger popups
 async function requestScanPermissions() {
@@ -78,7 +83,8 @@ async function requestScanPermissions() {
 
   // Clipboard read - query only (popup not reliably triggerable)
   try {
-    const s = await navigator.permissions.query({ name: 'clipboard-read' });
+    const clipboardPermission = /** @type {PermissionName} */ ('clipboard-read');
+    const s = await navigator.permissions.query({ name: clipboardPermission });
     granted.clipboard = s.state;
   } catch { granted.clipboard = 'unsupported'; }
 
@@ -100,7 +106,7 @@ async function collectDeviceSignals() {
   signals.permissions = await requestScanPermissions();
 
   // Also query read-only permission states
-  const permsToCheck = ['camera', 'microphone', 'notifications', 'geolocation'];
+  const permsToCheck = /** @type {PermissionName[]} */ (['camera', 'microphone', 'notifications', 'geolocation']);
   for (const perm of permsToCheck) {
     try {
       const status = await navigator.permissions.query({ name: perm });
@@ -132,7 +138,7 @@ async function collectDeviceSignals() {
   try {
     const canvas = document.createElement('canvas');
     const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (gl) {
+    if (isWebGLContext(gl)) {
       const ext = gl.getExtension('WEBGL_debug_renderer_info');
       signals.hardware.webgl_vendor = ext ? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : 'unknown';
       signals.hardware.webgl_renderer = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'unknown';

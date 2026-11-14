@@ -9,6 +9,7 @@ const STYLES = {
 
 const LABELS = { pass: 'Pass', hold: 'Hold', block: 'Block' };
 
+/** @param {{ verdict: string, size?: 'md' | 'lg', className?: string }} props */
 export default function VerdictBadge({ verdict, size = 'md', className }) {
   const key = String(verdict || '').toLowerCase();
   return (

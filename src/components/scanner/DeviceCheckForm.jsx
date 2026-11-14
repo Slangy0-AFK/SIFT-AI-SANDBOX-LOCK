@@ -9,6 +9,7 @@ import { Loader2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import TierLocked from '@/components/scanner/TierLocked';
 import SubmissionList from '@/components/scanner/SubmissionList';
+import { getApiErrorMessage } from '@/lib/errorMessage';
 
 const EMPTY = { device_name: '', flagged_item: '', app_list: '', network_destinations: '', notes: '' };
 
@@ -38,7 +39,7 @@ export default function DeviceCheckForm({ unlocked }) {
       setForm(EMPTY);
       toast.success('Submitted. You will get a verdict, the evidence, and a full written fix plan.');
     },
-    onError: (error) => toast.error(error.response?.data?.error || error.message),
+    onError: (error) => toast.error(getApiErrorMessage(error)),
   });
 
   if (!unlocked) {

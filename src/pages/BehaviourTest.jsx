@@ -36,7 +36,7 @@ export default function BehaviourTest() {
     let alive = true;
     (async () => {
       const listed = await base44.entities.BehaviourRun.list('-created_date', 1);
-      const latest = Array.isArray(listed) ? listed[0] : listed?.items?.[0];
+      const latest = listed[0];
       if (!latest || !alive) return;
       const data = await call({ action: 'get', run_id: latest.id });
       if (!alive) return;

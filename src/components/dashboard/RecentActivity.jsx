@@ -27,7 +27,7 @@ export default function RecentActivity({ scanSessions = [], emailThreats = [], t
       title: `TEXT · ${(t.scam_type || 'scam').toUpperCase()}`,
       detail: t.phone_number || 'unknown number', status: t.status,
     })),
-  ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 25),
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 25),
   [scanSessions, emailThreats, textThreats]);
 
   return (

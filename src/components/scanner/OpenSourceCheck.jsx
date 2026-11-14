@@ -117,7 +117,7 @@ export default function OpenSourceCheck({ isAuthed, devices = [], deviceId = '' 
 
       {result && (
         <div className="space-y-3">
-          <OpenSourceResults kind={result.kind} value={result.value} sources={result.sources} verdict={result.verdict} />
+          <OpenSourceResults value={result.value} sources={result.sources} verdict={result.verdict} />
           {savedId && (
             <Link
               to={`/check/${savedId}`}

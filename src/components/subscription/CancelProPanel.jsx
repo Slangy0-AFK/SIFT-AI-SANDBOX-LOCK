@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { CalendarOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getApiErrorMessage } from '@/lib/errorMessage';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,7 +39,7 @@ export default function CancelProPanel() {
       queryClient.invalidateQueries({ queryKey: ['my-license'] });
     },
     onError: (error) => {
-      const code = error.response?.data?.error;
+      const code = getApiErrorMessage(error, '');
       toast.error(
         code === 'nothing_to_cancel'
           ? 'There is no renewing plan on this account to cancel.'
@@ -49,7 +50,7 @@ export default function CancelProPanel() {
     }
   });
 
-  const renewing = (Array.isArray(rows) ? rows : rows?.items || []).find(
+  const renewing = rows.find(
     (row) => row.status === 'active' && String(row.stripe_subscription_id || '')
   );
   if (!renewing) return null;

@@ -2,6 +2,7 @@ import React from 'react';
 import { Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+/** @param {{ children?: import('react').ReactNode, items?: string[], className?: string }} props */
 export default function LimitsNote({ children, items, className }) {
   return (
     <div className={cn('flex gap-3 rounded-lg border border-border bg-secondary/20 p-4', className)}>

@@ -9,6 +9,8 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 
+/** @typedef {{ success?: boolean, error?: string }} AdminClaimResult */
+
 export default function AdminKeyClaim() {
   const [adminKey, setAdminKey] = useState('');
   const [showKeyInput, setShowKeyInput] = useState(false);
@@ -21,14 +23,17 @@ export default function AdminKeyClaim() {
 
   const queryClient = useQueryClient();
 
+  /** @param {string} key @returns {Promise<AdminClaimResult>} */
+  const claimAdmin = async (key) => {
+    const response = await base44.functions.invoke('claimAdminAccess', {
+      adminKey: key,
+      action: 'claim'
+    });
+    return response.data;
+  };
+
   const claimMutation = useMutation({
-    mutationFn: async (key) => {
-      const response = await base44.functions.invoke('claimAdminAccess', {
-        adminKey: key,
-        action: 'claim'
-      });
-      return response.data;
-    },
+    mutationFn: claimAdmin,
     onSuccess: (data) => {
       if (data.success) {
         toast.success('Admin access granted! Refreshing...');

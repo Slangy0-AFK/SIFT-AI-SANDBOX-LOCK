@@ -7,7 +7,9 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
 import { cn } from "@/lib/utils"
 
-const SelectContext = React.createContext({ 
+/** @typedef {{ isMobile: boolean, open: boolean, setOpen: (open: boolean) => void, value: string | undefined, onValueChange: (value: string) => void, items: Record<string, React.ReactNode>, registerItem: (value: string, label: React.ReactNode) => void }} SelectContextValue */
+/** @type {React.Context<SelectContextValue>} */
+const SelectContext = React.createContext(/** @type {SelectContextValue} */ ({
   isMobile: false, 
   open: false, 
   setOpen: () => {}, 
@@ -15,15 +17,16 @@ const SelectContext = React.createContext({
   onValueChange: () => {},
   items: {},
   registerItem: () => {}
-})
+}))
 
+/** @type {(props: React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root>) => React.ReactElement} */
 const Select = ({ children, onValueChange, value, defaultValue, open: controlledOpen, onOpenChange, ...props }) => {
   const isMobile = useIsMobile();
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false);
   const open = controlledOpen !== undefined ? controlledOpen : uncontrolledOpen;
   const setOpen = onOpenChange || setUncontrolledOpen;
   const [internalValue, setInternalValue] = React.useState(value || defaultValue);
-  const [items, setItems] = React.useState({});
+  const [items, setItems] = React.useState(/** @type {Record<string, React.ReactNode>} */ ({}));
 
   const handleValueChange = (v) => {
     setInternalValue(v);
@@ -69,7 +72,8 @@ const Select = ({ children, onValueChange, value, defaultValue, open: controlled
 
 const SelectGroup = SelectPrimitive.Group
 
-const SelectValue = React.forwardRef(({ className, children, placeholder, ...props }, ref) => {
+/** @type {React.ForwardRefRenderFunction<React.ElementRef<typeof SelectPrimitive.Value>, React.ComponentPropsWithoutRef<typeof SelectPrimitive.Value>>} */
+const SelectValueRender = ({ className, children, placeholder, ...props }, ref) => {
   const { isMobile, value, items } = React.useContext(SelectContext);
   
   if (isMobile) {
@@ -77,10 +81,12 @@ const SelectValue = React.forwardRef(({ className, children, placeholder, ...pro
     return <span ref={ref} className={cn("truncate", className)} {...props}>{displayValue}</span>
   }
   return <SelectPrimitive.Value ref={ref} className={className} placeholder={placeholder} {...props}>{children}</SelectPrimitive.Value>
-})
+}
+const SelectValue = React.forwardRef(SelectValueRender)
 SelectValue.displayName = "SelectValue"
 
-const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) => {
+/** @type {React.ForwardRefRenderFunction<React.ElementRef<typeof SelectPrimitive.Trigger>, React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>>} */
+const SelectTriggerRender = ({ className, children, ...props }, ref) => {
   const { isMobile } = React.useContext(SelectContext)
   
   if (isMobile) {
@@ -114,10 +120,12 @@ const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) 
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
-})
+}
+const SelectTrigger = React.forwardRef(SelectTriggerRender)
 SelectTrigger.displayName = "SelectTrigger"
 
-const SelectContent = React.forwardRef(({ className, children, position = "popper", ...props }, ref) => {
+/** @type {React.ForwardRefRenderFunction<React.ElementRef<typeof SelectPrimitive.Content>, React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>>} */
+const SelectContentRender = ({ className, children, position = "popper", ...props }, ref) => {
   const { isMobile } = React.useContext(SelectContext)
 
   if (isMobile) {
@@ -152,20 +160,33 @@ const SelectContent = React.forwardRef(({ className, children, position = "poppe
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
   )
-})
+}
+const SelectContent = React.forwardRef(SelectContentRender)
 SelectContent.displayName = "SelectContent"
 
-const SelectLabel = React.forwardRef(({ className, ...props }, ref) => {
+/** @type {React.ForwardRefRenderFunction<React.ElementRef<typeof SelectPrimitive.Label>, React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>>} */
+const SelectLabelRender = ({ className, ...props }, ref) => {
   const { isMobile } = React.useContext(SelectContext)
   if (isMobile) {
     return <div ref={ref} className={cn("px-2 py-2 text-sm font-semibold", className)} {...props} />
   }
   return <SelectPrimitive.Label ref={ref} className={cn("px-2 py-1.5 text-sm font-semibold", className)} {...props} />
-})
+}
+const SelectLabel = React.forwardRef(SelectLabelRender)
 SelectLabel.displayName = "SelectLabel"
 
-const SelectItem = React.forwardRef(({ className, children, value, ...props }, ref) => {
+/** @typedef {Omit<React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>, keyof React.DOMAttributes<HTMLDivElement>> & React.DOMAttributes<HTMLElement> & { onClick?: React.MouseEventHandler<HTMLElement> }} SelectItemProps */
+/** @type {React.ForwardRefRenderFunction<HTMLElement, SelectItemProps>} */
+const SelectItemRender = ({ className, children, value, onClick, ...props }, ref) => {
   const { isMobile, value: selectedValue, onValueChange, registerItem } = React.useContext(SelectContext)
+  const setForwardedRef = React.useCallback(
+    /** @param {HTMLElement | null} node */
+    (node) => {
+      if (typeof ref === 'function') ref(node);
+      else if (ref) ref.current = node;
+    },
+    [ref]
+  );
 
   React.useEffect(() => {
     if (value !== undefined) {
@@ -177,8 +198,11 @@ const SelectItem = React.forwardRef(({ className, children, value, ...props }, r
     const isSelected = selectedValue === value
     return (
       <button
-        ref={ref}
-        onClick={() => onValueChange(value)}
+        ref={setForwardedRef}
+        onClick={(event) => {
+          onClick?.(event);
+          onValueChange(value);
+        }}
         className={cn(
           "relative flex min-h-[44px] w-full cursor-pointer select-none items-center rounded-sm py-3 pl-2 pr-8 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           isSelected && "bg-accent text-accent-foreground",
@@ -195,8 +219,9 @@ const SelectItem = React.forwardRef(({ className, children, value, ...props }, r
 
   return (
     <SelectPrimitive.Item
-      ref={ref}
+      ref={setForwardedRef}
       value={value}
+      onClick={onClick}
       className={cn(
         "relative flex min-h-[44px] w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className
@@ -210,36 +235,43 @@ const SelectItem = React.forwardRef(({ className, children, value, ...props }, r
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   )
-})
+}
+const SelectItem = React.forwardRef(SelectItemRender)
 SelectItem.displayName = "SelectItem"
 
-const SelectSeparator = React.forwardRef(({ className, ...props }, ref) => {
+/** @type {React.ForwardRefRenderFunction<React.ElementRef<typeof SelectPrimitive.Separator>, React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>>} */
+const SelectSeparatorRender = ({ className, ...props }, ref) => {
   const { isMobile } = React.useContext(SelectContext)
   if (isMobile) {
     return <div ref={ref} className={cn("-mx-1 my-1 h-px bg-muted", className)} {...props} />
   }
   return <SelectPrimitive.Separator ref={ref} className={cn("-mx-1 my-1 h-px bg-muted", className)} {...props} />
-})
+}
+const SelectSeparator = React.forwardRef(SelectSeparatorRender)
 SelectSeparator.displayName = "SelectSeparator"
 
-const SelectScrollUpButton = React.forwardRef(({ className, ...props }, ref) => (
+/** @type {React.ForwardRefRenderFunction<React.ElementRef<typeof SelectPrimitive.ScrollUpButton>, React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>>} */
+const SelectScrollUpButtonRender = ({ className, ...props }, ref) => (
   <SelectPrimitive.ScrollUpButton
     ref={ref}
     className={cn("flex cursor-default items-center justify-center py-1", className)}
     {...props}>
     <ChevronUp className="h-4 w-4" />
   </SelectPrimitive.ScrollUpButton>
-))
+)
+const SelectScrollUpButton = React.forwardRef(SelectScrollUpButtonRender)
 SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName
 
-const SelectScrollDownButton = React.forwardRef(({ className, ...props }, ref) => (
+/** @type {React.ForwardRefRenderFunction<React.ElementRef<typeof SelectPrimitive.ScrollDownButton>, React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>>} */
+const SelectScrollDownButtonRender = ({ className, ...props }, ref) => (
   <SelectPrimitive.ScrollDownButton
     ref={ref}
     className={cn("flex cursor-default items-center justify-center py-1", className)}
     {...props}>
     <ChevronDown className="h-4 w-4" />
   </SelectPrimitive.ScrollDownButton>
-))
+)
+const SelectScrollDownButton = React.forwardRef(SelectScrollDownButtonRender)
 SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName
 
 export {

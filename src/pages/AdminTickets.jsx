@@ -23,7 +23,7 @@ export default function AdminTickets() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('waiting_on_team');
   const [tickets, setTickets] = useState([]);
-  const [counts, setCounts] = useState({});
+  const [counts, setCounts] = useState({ open: 0, onTeam: 0, onUser: 0 });
   const [selected, setSelected] = useState(null);
   const [busy, setBusy] = useState(false);
 

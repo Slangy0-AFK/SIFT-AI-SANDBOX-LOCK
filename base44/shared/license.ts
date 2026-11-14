@@ -15,6 +15,7 @@
 //     stops working the moment a replacement exists.
 
 import { readSecret } from './runtimeSecrets.ts';
+import { createBindingUpdate, modelBindingMatches } from './licenseBinding.js';
 
 const rows = (page: any) => (Array.isArray(page) ? page : page?.items || []);
 const first = (page: any) => rows(page)[0] || null;
@@ -433,6 +434,11 @@ export async function lockBinding(base44: any, license: any, { model = '', deplo
   const matches = (record: any) =>
     sameText(record?.model_name, wanted.model) && sameText(record?.deployment_id, wanted.deployment);
 
+  if (!modelBindingMatches(license.model_name, wanted.model)) {
+    const flagged = await recordBindingConflict(base44, license, wanted);
+    return { ok: false, reason: 'wrong_model', message: BINDING_MESSAGES.wrong_model, license: flagged, conflict: true };
+  }
+
   if (license.binding_locked_at || license.deployment_id) {
     if (matches(license)) return { ok: true, license, newlyLocked: false };
     // A key named for one model at purchase cannot be pointed at another.
@@ -447,6 +453,11 @@ export async function lockBinding(base44: any, license: any, { model = '', deplo
     .get(license.id)
     .catch((error: any) => (error.status === 404 ? license : Promise.reject(error)));
 
+  if (!modelBindingMatches(fresh.model_name, wanted.model)) {
+    const flagged = await recordBindingConflict(base44, fresh, wanted);
+    return { ok: false, reason: 'wrong_model', message: BINDING_MESSAGES.wrong_model, license: flagged, conflict: true };
+  }
+
   if (fresh.binding_locked_at || fresh.deployment_id) {
     if (matches(fresh)) return { ok: true, license: fresh, newlyLocked: false };
     const flagged = await recordBindingConflict(base44, fresh, wanted);
@@ -454,13 +465,12 @@ export async function lockBinding(base44: any, license: any, { model = '', deplo
   }
 
   const stamp = new Date().toISOString();
-  const updated = await base44.asServiceRole.entities.License.update(license.id, {
-    model_name: wanted.model,
-    deployment_id: wanted.deployment,
-    binding_locked_at: stamp,
-    activations: 1,
-    activated_at: stamp
-  });
+  const bindingUpdate = createBindingUpdate(fresh, wanted, stamp);
+  if (!bindingUpdate) {
+    const flagged = await recordBindingConflict(base44, fresh, wanted);
+    return { ok: false, reason: 'wrong_model', message: BINDING_MESSAGES.wrong_model, license: flagged, conflict: true };
+  }
+  const updated = await base44.asServiceRole.entities.License.update(license.id, bindingUpdate);
 
   // Whichever binding is stored is the one that stands. It is read back rather
   // than trusted from this write: if another arrival won the same moment, or

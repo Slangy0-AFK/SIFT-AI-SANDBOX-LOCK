@@ -46,7 +46,7 @@ export default function CheckDetail() {
     meta.name = 'prerender-status-code';
     meta.content = '404';
     document.head.appendChild(meta);
-    return () => document.head.removeChild(meta);
+    return () => meta.remove();
   }, [loading, check]);
 
   if (loading) {

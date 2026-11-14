@@ -10,6 +10,7 @@ import PlanCycleToggle from '@/components/plans/PlanCycleToggle';
 import useScannerUnlocks from '@/hooks/useScannerUnlocks';
 import LicenseTerms from '@/components/license/LicenseTerms';
 import { SCANNER_PLANS, PRO_YEARLY, HONEST_NOTE } from '@/lib/scannerPlans';
+import { getApiErrorMessage } from '@/lib/errorMessage';
 
 const LOGO = 'https://media.base44.com/images/public/6a0db3181169f42924052c0d/650b247a7_amazon.PNG';
 
@@ -99,7 +100,7 @@ export default function ScannerPlans() {
       throw new Error(res.data?.error || "We couldn't start checkout. Please try again.");
     },
     onError: (error) => {
-      const code = error.response?.data?.error;
+      const code = getApiErrorMessage(error, '');
       toast.error(
         code === 'founding_places_open'
           ? 'Free founding places are still open, so nothing is for sale yet.'

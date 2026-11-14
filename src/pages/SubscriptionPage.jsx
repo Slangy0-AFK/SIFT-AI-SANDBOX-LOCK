@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import PlanCard, { PLANS } from '@/components/subscription/PlanCard';
 import CancelProPanel from '@/components/subscription/CancelProPanel';
 import SupportCenter from '@/components/support/SupportCenter';
+import { getApiErrorMessage } from '@/lib/errorMessage';
 
 export default function SubscriptionPage() {
   const [billingCycle, setBillingCycle] = useState('monthly');
@@ -33,13 +34,14 @@ export default function SubscriptionPage() {
   const currentPlan = PLANS[rawPlan] ? rawPlan : (rawPlan === 'enterprise' ? 'pro' : 'free');
 
   const checkoutMutation = useMutation({
+    /** @param {{ planKey: string, billingCycle: string }} variables */
     mutationFn: async ({ planKey, billingCycle }) => {
       const res = await base44.functions.invoke('stripeCheckout', { planKey, billingCycle });
       if (res.data?.redirectUrl) window.location.href = res.data.redirectUrl;
       else throw new Error(res.data?.error || "We couldn't start checkout. Please try again.");
     },
     onError: (error) => {
-      const code = error.response?.data?.error || error.message;
+      const code = getApiErrorMessage(error);
       toast.error(
         code === 'founding_places_open'
           ? 'Free founding places are still open, so nothing is for sale yet.'

@@ -30,7 +30,7 @@ export default function useScannerUnlocks() {
         // place was granted; this only reads what it decided.
         base44.entities.FoundingPlace.filter({ user_id: me.id, honored: true })
       ]);
-      return { authed: true, subs: subs || [], purchases: purchases.items || [], places: places.items || [] };
+      return { authed: true, subs: subs || [], purchases: purchases.items || [], places: places || [] };
     },
     initialData: { authed: false, subs: [], purchases: [], places: [] },
     retry: false

@@ -7,11 +7,15 @@ import { Key, Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import ApiKeyRow from './ApiKeyRow';
 import NewKeyDialog from './NewKeyDialog';
+import { getApiErrorMessage } from '@/lib/errorMessage';
+
+/** @typedef {{ name: string, allowed_domains: string }} CreateKeyInput */
+/** @typedef {{ site_key: string, secret: string }} CreatedApiKey */
 
 export default function ApiKeyManager() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [created, setCreated] = useState(null);
+  const [created, setCreated] = useState(/** @type {CreatedApiKey | null} */ (null));
 
   const { data: keys = [], isLoading } = useQuery({
     queryKey: ['apiKeys'],
@@ -19,12 +23,14 @@ export default function ApiKeyManager() {
   });
 
   const createKey = useMutation({
+    /** @param {CreateKeyInput} payload */
     mutationFn: async (payload) => (await base44.functions.invoke('createApiKey', payload)).data,
     onSuccess: (data) => { setCreated(data); qc.invalidateQueries({ queryKey: ['apiKeys'] }); },
-    onError: (e) => toast.error(e?.response?.data?.error || 'Failed to create key'),
+    onError: (e) => toast.error(getApiErrorMessage(e, 'Failed to create key')),
   });
 
   const revokeKey = useMutation({
+    /** @param {string} id */
     mutationFn: (id) => base44.entities.ApiKey.update(id, { status: 'revoked' }),
     onSuccess: () => { toast.success('Key revoked'); qc.invalidateQueries({ queryKey: ['apiKeys'] }); },
   });

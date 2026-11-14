@@ -1,6 +1,7 @@
 // One place for the plain words SIFT AI uses about checks, so the scanner, the
 // history page and a saved check never describe the same thing differently.
 
+/** @type {Record<string, { label: string, badge: 'default' | 'destructive' | 'outline' | 'secondary', tone: string }>} */
 export const VERDICTS = {
   flagged: { label: 'Flagged', badge: 'destructive', tone: 'text-destructive' },
   unknown: { label: 'Unknown', badge: 'secondary', tone: 'text-amber-400' },

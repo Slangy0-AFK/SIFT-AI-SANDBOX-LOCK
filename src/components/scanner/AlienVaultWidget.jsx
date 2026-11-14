@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Shield, ShieldAlert, Loader2, Network } from 'lucide-react';
 import { toast } from 'sonner';
 
+/** @param {{ onThreatDetected?: (indicator: string, result: unknown) => void }} props */
 export default function AlienVaultWidget({ onThreatDetected }) {
   const [indicator, setIndicator] = useState('');
   const [type, setType] = useState('ip');

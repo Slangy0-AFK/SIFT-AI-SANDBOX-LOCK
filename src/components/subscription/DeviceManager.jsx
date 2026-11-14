@@ -9,10 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { Smartphone, Monitor, Tablet, Plus, Trash2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { PLANS } from './PlanCard';
+import { getApiErrorMessage } from '@/lib/errorMessage';
 
 const deviceIcons = { android: Smartphone, ios: Smartphone, desktop: Monitor, tablet: Tablet, other: Smartphone };
 
-export default function DeviceManager({ devices = [], plan = 'free', userId }) {
+/** @param {{ devices?: any[], plan?: string }} props */
+export default function DeviceManager({ devices = [], plan = 'free' }) {
   const [adding, setAdding] = useState(false);
   const [newDevice, setNewDevice] = useState({ device_name: '', device_type: 'android' });
   const queryClient = useQueryClient();
@@ -21,12 +23,13 @@ export default function DeviceManager({ devices = [], plan = 'free', userId }) {
   const atLimit = activeDevices.length >= maxDevices;
 
   const addMutation = useMutation({
+    /** @param {{ device_name: string, device_type: string }} data */
     mutationFn: async (data) => {
       const res = await base44.functions.invoke('manageDevice', { action: 'add', ...data });
       if (res.data?.error) throw new Error(res.data.error);
       return res.data;
     },
-    onError: (e) => toast.error(e.response?.data?.error || e.message),
+    onError: (e) => toast.error(getApiErrorMessage(e)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['devices'] });
       setAdding(false);
@@ -36,6 +39,7 @@ export default function DeviceManager({ devices = [], plan = 'free', userId }) {
   });
 
   const removeMutation = useMutation({
+    /** @param {string} id */
     mutationFn: (id) => base44.functions.invoke('manageDevice', { action: 'remove', device_id: id }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['devices'] });

@@ -11,6 +11,8 @@ import { User, Mail, Shield, Key, CheckCircle, AlertTriangle, Loader2 } from 'lu
 import { toast } from 'sonner';
 import PasswordReset from '../components/security/PasswordReset';
 
+/** @typedef {{ full_name?: string, password?: string }} ProfileUpdate */
+
 export default function UserProfile() {
   const queryClient = useQueryClient();
   const [showPasswordReset, setShowPasswordReset] = useState(false);
@@ -30,10 +32,11 @@ export default function UserProfile() {
     initialData: [],
   });
 
+  /** @param {ProfileUpdate} data */
+  const updateProfile = (data) => base44.auth.updateMe(data);
+
   const updateProfileMutation = useMutation({
-    mutationFn: async (data) => {
-      return base44.auth.updateMe(data);
-    },
+    mutationFn: updateProfile,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['me'] });
       toast.success('Profile updated successfully');

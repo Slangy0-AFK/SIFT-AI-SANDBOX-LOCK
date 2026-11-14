@@ -125,7 +125,7 @@ export default function TermsAcceptanceModal({ onComplete }) {
                 <Checkbox
                   id="accept-terms"
                   checked={accepted}
-                  onCheckedChange={setAccepted}
+                  onCheckedChange={(checked) => setAccepted(checked === true)}
                   className="mt-0.5"
                 />
                 <label

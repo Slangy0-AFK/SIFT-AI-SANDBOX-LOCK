@@ -20,6 +20,7 @@ const EXAMPLES = {
   ],
 };
 
+/** @param {{ allowDeep?: boolean, onScanned?: () => void }} props */
 export default function GuardPlayground({ allowDeep = false, onScanned }) {
   const [text, setText] = useState(EXAMPLES.input[0][1]);
   const [direction, setDirection] = useState('input');

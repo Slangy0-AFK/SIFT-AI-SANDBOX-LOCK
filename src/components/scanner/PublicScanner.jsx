@@ -14,6 +14,11 @@ export const SCAN_STEPS = [
   { id: 'verify', label: 'Extension Inspection', detail: 'Looking for installed AI, developer & password extensions...' },
 ];
 
+/** @param {RenderingContext | null} context @returns {context is WebGLRenderingContext} */
+function isWebGLContext(context) {
+  return context !== null && 'getExtension' in context && 'getParameter' in context;
+}
+
 export default function PublicScanner() {
   const [scanning, setScanning] = useState(false);
   const [stepIndex, setStepIndex] = useState(-1);
@@ -56,7 +61,7 @@ export default function PublicScanner() {
     try {
       const canvas = document.createElement('canvas');
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-      if (gl) {
+      if (isWebGLContext(gl)) {
         const ext = gl.getExtension('WEBGL_debug_renderer_info');
         const renderer = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)?.toLowerCase() : '';
         if (renderer.includes('swiftshader') || renderer.includes('llvmpipe')) {

@@ -22,6 +22,10 @@ const VERDICT_STYLES = {
   approved: { icon: ShieldCheck, tone: 'text-emerald-400 border-emerald-400/40', label: 'Approved' }
 };
 
+/** @typedef {{ kind: 'allow' | 'block', value: string }} ListMatch */
+/** @typedef {{ level: 'flagged' | 'unknown' | 'approved', headline: string, lines: string[], next: string, list?: ListMatch }} TextVerdict */
+/** @typedef {{ is_scam?: boolean, scam_type?: string, confidence?: number | string, red_flags?: string[], recommendation?: string }} ThreatAnalysis */
+/** @param {ThreatAnalysis | null | undefined} analysis @returns {TextVerdict} */
 function textVerdict(analysis) {
   if (!analysis || analysis.is_scam === undefined) {
     return {
@@ -47,7 +51,8 @@ function textVerdict(analysis) {
   };
 }
 
-export default function FreeScan({ isAuthed, onSignIn }) {
+/** @param {{ isAuthed: boolean }} props */
+export default function FreeScan({ isAuthed }) {
   const [mode, setMode] = useState('item');
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
@@ -93,6 +98,7 @@ export default function FreeScan({ isAuthed, onSignIn }) {
       // analysis is SIFT AI's own and nothing is sent to VirusTotal.
       const { data } = await base44.functions.invoke('analyzeTextThreat', { text });
       if (data?.error) throw new Error(data.error);
+      /** @type {TextVerdict & { item: string }} */
       let next = { ...textVerdict(data), item: text.slice(0, 120) };
       const scanType = 'message';
       const listPayload = { action: 'list_check', item_type: 'message', text };
