@@ -25,11 +25,16 @@ test('accounts, sessions, CSRF, revocation and throttling use PostgreSQL', async
     const pool = new pg.Pool({ connectionString: databaseUrl });
     const origin = 'https://frontend.example';
     const deliveries = [];
+    const verifications = [];
     let deliveryFails = false;
     const mailer = {
       async sendPasswordReset(email, url) {
         if (deliveryFails) throw new Error('test delivery failure');
         deliveries.push({ email, url });
+      },
+      async sendVerification(email, url) {
+        if (deliveryFails) throw new Error('test delivery failure');
+        verifications.push({ email, url });
       }
     };
     const app = createApp(pool, {
@@ -51,30 +56,52 @@ test('accounts, sessions, CSRF, revocation and throttling use PostgreSQL', async
       const register = await post('/register', {
         email: 'A@example.com', password: 'a-strong-password', role: 'admin'
       });
-      assert.equal(register.status, 200);
-      const cookieHeader = register.headers.get('set-cookie');
+      assert.equal(register.status, 202);
+      assert.equal((await post('/login', { email: 'a@example.com', password: 'a-strong-password' })).status, 401);
+      const expiredVerification = new URLSearchParams(new URL(verifications[0].url).hash.slice(1)).get('token');
+      await pool.query("UPDATE email_verifications SET expires_at = now() - interval '1 second'");
+      assert.equal((await post('/verify-email', { token: expiredVerification })).status, 400);
+      assert.equal((await post('/resend-verification', { email: 'a@example.com' })).status, 202);
+      const verification = new URLSearchParams(new URL(verifications[1].url).hash.slice(1)).get('token');
+      assert.equal((await post('/verify-email', { token: verification })).status, 200);
+      assert.equal((await post('/verify-email', { token: verification })).status, 400);
+      const firstLogin = await post('/login', { email: 'a@example.com', password: 'a-strong-password' });
+      assert.equal(firstLogin.status, 200);
+      const cookieHeader = firstLogin.headers.get('set-cookie');
       assert.match(cookieHeader, /HttpOnly/);
       assert.match(cookieHeader, /Secure/);
       assert.match(cookieHeader, /SameSite=None/);
       const cookie = cookieHeader.split(';')[0];
-      const account = await register.json();
+      const account = await firstLogin.json();
       assert.equal(account.user.email, 'a@example.com');
       assert.equal(account.user.role, 'user');
       const stored = await pool.query('SELECT password_hash FROM auth_users WHERE email = $1', ['a@example.com']);
       assert.match(stored.rows[0].password_hash, /^scrypt-v1\$/);
       assert.ok(!stored.rows[0].password_hash.includes('a-strong-password'));
 
+      await pool.query('DELETE FROM auth_rate_limits');
       const second = await post('/register', { email: 'b@example.com', password: 'another-strong-password' });
-      const secondCookie = second.headers.get('set-cookie').split(';')[0];
-      const secondAccount = await second.json();
+      assert.equal(second.status, 202);
+      const secondVerification = new URLSearchParams(new URL(verifications[2].url).hash.slice(1)).get('token');
+      assert.equal((await post('/verify-email', { token: secondVerification })).status, 200);
+      const secondLogin = await post('/login', { email: 'b@example.com', password: 'another-strong-password' });
+      const secondCookie = secondLogin.headers.get('set-cookie').split(';')[0];
+      const secondAccount = await secondLogin.json();
       assert.equal((await post('/register', { email: 'A@example.com', password: 'a-strong-password' })).status, 409);
-      await pool.query('ALTER TABLE auth_sessions ADD CONSTRAINT reject_new_sessions CHECK (false) NOT VALID');
+      await pool.query('ALTER TABLE email_verifications ADD CONSTRAINT reject_new_verifications CHECK (false) NOT VALID');
       try {
         assert.equal((await post('/register', { email: 'rollback@example.com', password: 'a-strong-password' })).status, 500);
         const rolledBack = await pool.query('SELECT id FROM auth_users WHERE email = $1', ['rollback@example.com']);
         assert.equal(rolledBack.rowCount, 0);
       } finally {
-        await pool.query('ALTER TABLE auth_sessions DROP CONSTRAINT reject_new_sessions');
+        await pool.query('ALTER TABLE email_verifications DROP CONSTRAINT reject_new_verifications');
+      }
+      await pool.query('ALTER TABLE audit_log ADD CONSTRAINT reject_audit CHECK (false) NOT VALID');
+      try {
+        assert.equal((await post('/register', { email: 'audit-rollback@example.com', password: 'a-strong-password' })).status, 500);
+        assert.equal((await pool.query('SELECT id FROM auth_users WHERE email = $1', ['audit-rollback@example.com'])).rowCount, 0);
+      } finally {
+        await pool.query('ALTER TABLE audit_log DROP CONSTRAINT reject_audit');
       }
       const restored = await fetch(base + '/session', { headers: { Cookie: cookie } });
       assert.deepEqual((await restored.json()).user, account.user);
@@ -129,6 +156,15 @@ test('accounts, sessions, CSRF, revocation and throttling use PostgreSQL', async
       assert.equal((await post('/forgot-password', { email: 'a@example.com' })).status, 503);
       const after = await pool.query('SELECT count(*) FROM password_resets');
       assert.equal(after.rows[0].count, before.rows[0].count);
+      assert.equal((await post('/register', { email: 'failed@example.com', password: 'a-strong-password' })).status, 503);
+      assert.equal((await pool.query('SELECT id FROM auth_users WHERE email = $1', ['failed@example.com'])).rowCount, 0);
+      const audit = await pool.query('SELECT action, actor_id, resource_id, details FROM audit_log');
+      const actions = new Set(audit.rows.map((row) => row.action));
+      for (const action of ['account.registration.started', 'account.email.verified', 'account.login.succeeded', 'account.login.failed', 'account.logout', 'account.password.reset']) {
+        assert.ok(actions.has(action), `missing audit event ${action}`);
+      }
+      assert.ok(!JSON.stringify(audit.rows).includes('replacement-password'));
+      assert.ok(!JSON.stringify(audit.rows).includes(token));
 
       await pool.query('DELETE FROM auth_rate_limits');
       const newHash = await hashPassword('a-newer-password');
@@ -142,7 +178,7 @@ test('accounts, sessions, CSRF, revocation and throttling use PostgreSQL', async
         for (let i = 0; i < 100; i++) {
           const waiting = await pool.query(
             "SELECT count(*) FROM pg_stat_activity WHERE wait_event_type = 'Lock' AND query = $1",
-            ['SELECT password_hash FROM auth_users WHERE id = $1 FOR UPDATE']
+            ['SELECT password_hash, email_verified_at FROM auth_users WHERE id = $1 FOR UPDATE']
           );
           if (Number(waiting.rows[0].count) > 0) {
             blocked = true;

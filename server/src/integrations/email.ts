@@ -1,12 +1,13 @@
 import nodemailer from 'nodemailer';
 
-export interface RecoveryMailer {
+export interface AccountMailer {
   sendPasswordReset(email: string, url: string): Promise<void>;
+  sendVerification(email: string, url: string): Promise<void>;
 }
 
-export function createRecoveryMailer(settings: {
+export function createAccountMailer(settings: {
   host: string; port: number; user: string; password: string; from: string;
-} | undefined): RecoveryMailer | null {
+} | undefined): AccountMailer | null {
   if (!settings) return null;
   const secure = settings.port === 465;
   const transport = nodemailer.createTransport({
@@ -29,6 +30,15 @@ export function createRecoveryMailer(settings: {
         text: `Use this link within 30 minutes to reset your password:\n\n${url}\n\nIf you did not request this, ignore this email.`
       });
       if (result.accepted.length !== 1) throw new Error('Recovery message was not accepted');
+    },
+    async sendVerification(email, url) {
+      const result = await transport.sendMail({
+        from: settings.from,
+        to: email,
+        subject: 'Verify your SIFT AI email address',
+        text: `Use this link within 24 hours to verify your email address:\n\n${url}\n\nIf you did not request this account, ignore this email.`
+      });
+      if (result.accepted.length !== 1) throw new Error('Verification message was not accepted');
     }
   };
 }

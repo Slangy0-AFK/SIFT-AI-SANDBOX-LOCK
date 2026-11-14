@@ -1,11 +1,11 @@
 import pg from 'pg';
 import { createApp } from './app.js';
 import { readConfig } from './config.js';
-import { createRecoveryMailer } from './integrations/email.js';
+import { createAccountMailer } from './integrations/email.js';
 
 const config = readConfig(process.env);
 const database = new pg.Pool({ connectionString: config.databaseUrl });
-const server = createApp(database, config, createRecoveryMailer(config.smtp)).listen(config.port, () => {
+const server = createApp(database, config, createAccountMailer(config.smtp)).listen(config.port, () => {
   console.log(`Server listening on port ${config.port}`);
 });
 

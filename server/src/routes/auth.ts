@@ -4,7 +4,7 @@ import type { Request, Response, NextFunction } from 'express';
 import type pg from 'pg';
 import type { AuthConfig } from '../app.js';
 import { hashPassword, verifyPassword } from '../security/password.js';
-import type { RecoveryMailer } from '../integrations/email.js';
+import type { AccountMailer } from '../integrations/email.js';
 
 interface User {
   id: string;
@@ -46,7 +46,7 @@ function validCredentials(body: unknown): body is { email: string; password: str
   return validEmail(email) && validPassword(password);
 }
 
-export function authRouter(database: pg.Pool, config: AuthConfig, mailer: RecoveryMailer | null) {
+export function authRouter(database: pg.Pool, config: AuthConfig, mailer: AccountMailer | null) {
   const router = Router();
   router.use((_req, res, next) => {
     res.set('Cache-Control', 'no-store');
@@ -93,6 +93,13 @@ export function authRouter(database: pg.Pool, config: AuthConfig, mailer: Recove
     return token;
   }
 
+  async function audit(connection: pg.Pool | pg.PoolClient, action: string, userId: string | null) {
+    await connection.query(
+      'INSERT INTO audit_log (actor_id, action, resource_type, resource_id) VALUES ($1, $2, $3, $1)',
+      [userId, action, 'account']
+    );
+  }
+
   function sendSession(user: User, token: string, res: Response) {
     res.cookie(cookieName(config), token, { ...cookieOptions(config), maxAge: 12 * 60 * 60 * 1000 });
     res.json({ user, csrfToken: csrfToken(token, config.sessionSecret) });
@@ -104,7 +111,7 @@ export function authRouter(database: pg.Pool, config: AuthConfig, mailer: Recove
     const result = await database.query<User>(`
       SELECT u.id, u.email, u.role FROM auth_sessions s
       JOIN auth_users u ON u.id = s.user_id
-      WHERE s.token_hash = $1 AND s.expires_at > now()
+      WHERE s.token_hash = $1 AND s.expires_at > now() AND u.email_verified_at IS NOT NULL
     `, [digest(token)]);
     if (!result.rows[0]) return null;
     return { token, user: result.rows[0] };
@@ -115,10 +122,14 @@ export function authRouter(database: pg.Pool, config: AuthConfig, mailer: Recove
       res.status(400).json({ error: 'Valid email and password of at least 12 characters required' });
       return;
     }
+    if (!mailer) {
+      res.status(503).json({ error: 'Registration email is not configured' });
+      return;
+    }
     const email = req.body.email.trim().toLowerCase();
     const hash = await hashPassword(req.body.password);
     let user: User;
-    let token: string;
+    const token = randomBytes(32).toString('hex');
     const client = await database.connect();
     try {
       await client.query('BEGIN');
@@ -127,7 +138,11 @@ export function authRouter(database: pg.Pool, config: AuthConfig, mailer: Recove
         [randomUUID(), email, hash]
       );
       user = result.rows[0];
-      token = await createSession(user, client);
+      await client.query(
+        "INSERT INTO email_verifications (token_hash, user_id, expires_at) VALUES ($1, $2, now() + interval '24 hours')",
+        [digest(token), user.id]
+      );
+      await audit(client, 'account.registration.started', user.id);
       await client.query('COMMIT');
     } catch (error) {
       await client.query('ROLLBACK');
@@ -139,7 +154,17 @@ export function authRouter(database: pg.Pool, config: AuthConfig, mailer: Recove
     } finally {
       client.release();
     }
-    sendSession(user, token, res);
+    const url = new URL('/verify-email', config.origin);
+    url.hash = `token=${token}`;
+    try {
+      await mailer.sendVerification(email, url.toString());
+    } catch {
+      await database.query('DELETE FROM auth_users WHERE id = $1 AND email_verified_at IS NULL', [user.id]);
+      console.error('Verification email delivery failed');
+      res.status(503).json({ error: 'Registration email is unavailable' });
+      return;
+    }
+    res.status(202).json({ message: 'Check your email to verify your account.' });
   });
 
   router.post('/login', requireOrigin, throttle, async (req, res) => {
@@ -147,13 +172,14 @@ export function authRouter(database: pg.Pool, config: AuthConfig, mailer: Recove
       res.status(400).json({ error: 'Valid email and password required' });
       return;
     }
-    const result = await database.query<User & { password_hash: string }>(
-      'SELECT id, email, role, password_hash FROM auth_users WHERE email = $1',
+    const result = await database.query<User & { password_hash: string; email_verified_at: Date | null }>(
+      'SELECT id, email, role, password_hash, email_verified_at FROM auth_users WHERE email = $1',
       [req.body.email.trim().toLowerCase()]
     );
     const row = result.rows[0];
     const valid = await verifyPassword(req.body.password, row?.password_hash ?? null);
-    if (!row || !valid) {
+    if (!row || !valid || !row.email_verified_at) {
+      await audit(database, 'account.login.failed', null);
       res.status(401).json({ error: 'Invalid credentials' });
       return;
     }
@@ -162,15 +188,16 @@ export function authRouter(database: pg.Pool, config: AuthConfig, mailer: Recove
     let token: string;
     try {
       await client.query('BEGIN');
-      const current = await client.query<{ password_hash: string }>(
-        'SELECT password_hash FROM auth_users WHERE id = $1 FOR UPDATE', [user.id]
+      const current = await client.query<{ password_hash: string; email_verified_at: Date | null }>(
+        'SELECT password_hash, email_verified_at FROM auth_users WHERE id = $1 FOR UPDATE', [user.id]
       );
-      if (!current.rows[0] || current.rows[0].password_hash !== row.password_hash) {
+      if (!current.rows[0] || current.rows[0].password_hash !== row.password_hash || !current.rows[0].email_verified_at) {
         await client.query('ROLLBACK');
         res.status(401).json({ error: 'Invalid credentials' });
         return;
       }
       token = await createSession(user, client);
+      await audit(client, 'account.login.succeeded', user.id);
       await client.query('COMMIT');
     } catch (error) {
       await client.query('ROLLBACK');
@@ -179,6 +206,82 @@ export function authRouter(database: pg.Pool, config: AuthConfig, mailer: Recove
       client.release();
     }
     sendSession(user, token, res);
+  });
+
+  router.post('/verify-email', requireOrigin, throttle, async (req, res) => {
+    const token = req.body?.token;
+    if (typeof token !== 'string' || !/^[a-f0-9]{64}$/.test(token)) {
+      res.status(400).json({ error: 'Valid verification token required' });
+      return;
+    }
+    const client = await database.connect();
+    try {
+      await client.query('BEGIN');
+      const candidate = await client.query<{ user_id: string }>(
+        'SELECT user_id FROM email_verifications WHERE token_hash = $1', [digest(token)]
+      );
+      if (!candidate.rows[0]) {
+        await client.query('ROLLBACK');
+        res.status(400).json({ error: 'Invalid or expired verification token' });
+        return;
+      }
+      const userId = candidate.rows[0].user_id;
+      await client.query('SELECT id FROM auth_users WHERE id = $1 FOR UPDATE', [userId]);
+      const verified = await client.query(`
+        UPDATE email_verifications SET used_at = now()
+        WHERE token_hash = $1 AND used_at IS NULL AND expires_at > now()
+        RETURNING user_id
+      `, [digest(token)]);
+      if (!verified.rows[0]) {
+        await client.query('ROLLBACK');
+        res.status(400).json({ error: 'Invalid or expired verification token' });
+        return;
+      }
+      await client.query('UPDATE auth_users SET email_verified_at = now() WHERE id = $1', [userId]);
+      await client.query('UPDATE email_verifications SET used_at = now() WHERE user_id = $1 AND used_at IS NULL', [userId]);
+      await audit(client, 'account.email.verified', userId);
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+    res.json({ message: 'Email verified' });
+  });
+
+  router.post('/resend-verification', requireOrigin, throttle, async (req, res) => {
+    if (!validEmail(req.body?.email)) {
+      res.status(400).json({ error: 'Valid email required' });
+      return;
+    }
+    if (!mailer) {
+      res.status(503).json({ error: 'Registration email is not configured' });
+      return;
+    }
+    const email = req.body.email.trim().toLowerCase();
+    const result = await database.query<{ id: string }>(
+      'SELECT id FROM auth_users WHERE email = $1 AND email_verified_at IS NULL', [email]
+    );
+    if (result.rows[0]) {
+      const token = randomBytes(32).toString('hex');
+      const tokenHash = digest(token);
+      await database.query(
+        "INSERT INTO email_verifications (token_hash, user_id, expires_at) VALUES ($1, $2, now() + interval '24 hours')",
+        [tokenHash, result.rows[0].id]
+      );
+      const url = new URL('/verify-email', config.origin);
+      url.hash = `token=${token}`;
+      try {
+        await mailer.sendVerification(email, url.toString());
+      } catch {
+        await database.query('DELETE FROM email_verifications WHERE token_hash = $1', [tokenHash]);
+        console.error('Verification email delivery failed');
+        res.status(503).json({ error: 'Registration email is unavailable' });
+        return;
+      }
+    }
+    res.status(202).json({ message: 'If the account needs verification, an email will be sent.' });
   });
 
   router.post('/forgot-password', requireOrigin, throttle, async (req, res) => {
@@ -191,7 +294,9 @@ export function authRouter(database: pg.Pool, config: AuthConfig, mailer: Recove
       return;
     }
     const email = req.body.email.trim().toLowerCase();
-    const found = await database.query<{ id: string }>('SELECT id FROM auth_users WHERE email = $1', [email]);
+    const found = await database.query<{ id: string }>(
+      'SELECT id FROM auth_users WHERE email = $1 AND email_verified_at IS NOT NULL', [email]
+    );
     if (found.rows[0]) {
       const token = randomBytes(32).toString('hex');
       const tokenHash = digest(token);
@@ -246,6 +351,7 @@ export function authRouter(database: pg.Pool, config: AuthConfig, mailer: Recove
       await client.query('UPDATE auth_users SET password_hash = $1 WHERE id = $2', [hash, userId]);
       await client.query('DELETE FROM auth_sessions WHERE user_id = $1', [userId]);
       await client.query('UPDATE password_resets SET used_at = now() WHERE user_id = $1 AND used_at IS NULL', [userId]);
+      await audit(client, 'account.password.reset', userId);
       await client.query('COMMIT');
     } catch (error) {
       await client.query('ROLLBACK');
@@ -278,7 +384,18 @@ export function authRouter(database: pg.Pool, config: AuthConfig, mailer: Recove
       res.status(403).json({ error: 'Invalid CSRF token' });
       return;
     }
-    await database.query('DELETE FROM auth_sessions WHERE token_hash = $1', [digest(session.token)]);
+    const result = await database.query(`
+      WITH removed AS (
+        DELETE FROM auth_sessions WHERE token_hash = $1 RETURNING user_id
+      )
+      INSERT INTO audit_log (actor_id, action, resource_type, resource_id)
+      SELECT user_id::text, 'account.logout', 'account', user_id::text FROM removed
+      RETURNING id
+    `, [digest(session.token)]);
+    if (!result.rowCount) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
     res.clearCookie(cookieName(config), cookieOptions(config));
     res.status(204).end();
   });

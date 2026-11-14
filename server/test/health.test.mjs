@@ -32,6 +32,12 @@ test('password recovery reports missing email configuration', async () => {
     });
     assert.equal(response.status, 503);
     assert.deepEqual(await response.json(), { error: 'Password recovery is not configured' });
+    const registration = await fetch(`http://127.0.0.1:${server.address().port}/api/auth/register`, {
+      method: 'POST',
+      headers: { Origin: 'http://localhost:5173', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'account@example.com', password: 'a-strong-password' })
+    });
+    assert.equal(registration.status, 503);
   } finally {
     server.close();
     await once(server, 'close');

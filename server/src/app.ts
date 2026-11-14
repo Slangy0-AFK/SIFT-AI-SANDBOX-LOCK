@@ -1,7 +1,7 @@
 import express from 'express';
 import type pg from 'pg';
 import { authRouter } from './routes/auth.js';
-import type { RecoveryMailer } from './integrations/email.js';
+import type { AccountMailer } from './integrations/email.js';
 
 export interface AuthConfig {
   origin: string;
@@ -9,7 +9,7 @@ export interface AuthConfig {
   production: boolean;
 }
 
-export function createApp(database: pg.Pool, config: AuthConfig, mailer: RecoveryMailer | null = null) {
+export function createApp(database: pg.Pool, config: AuthConfig, mailer: AccountMailer | null = null) {
   const app = express();
   app.disable('x-powered-by');
   app.use((req, res, next) => {
