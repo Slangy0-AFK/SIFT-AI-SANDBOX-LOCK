@@ -4,9 +4,11 @@
 
 - The browser receives no database credentials or QRNG provider key.
 - The paradox workspace preserves the exact user text locally. It is not submitted to an AI service, interpreted as fact, or stored remotely.
+- Paradox assumptions, propositions, clarifications, and reformulations are user-authored. Exact comparisons apply only to the entered numeric operands and do not resolve theological or philosophical claims.
 - Mathematical input is processed locally with strict syntax checks and an input-size limit; arbitrary code execution is not provided.
+- The Security Sandbox renders input as inert text with normal React escaping; it does not scan devices, networks, or prove system security.
 - QRNG requests are schema-validated, bounded, origin-checked, rate-limited in PostgreSQL, and subject to an upstream timeout.
-- The QRNG adapter validates provider response structure and byte values and never falls back to pseudorandom output.
+- The QRNG adapter validates provider response structure and byte values, performs at most one retry for transient network, timeout, or provider-server failures, and never falls back to pseudorandom output. Rate limits and malformed responses are not retried.
 - Application logs avoid request bodies, entropy samples, and credentials.
 - Nginx supplies response security headers and a content security policy for the static web client.
 - The API's existing account/session workflows use server-side configuration and PostgreSQL. Review their production settings separately before enabling those workflows.

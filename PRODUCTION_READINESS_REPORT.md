@@ -6,8 +6,9 @@
 
 - Independent React/Vite web client and Express API, with Docker Compose and Nginx configuration.
 - Exact arbitrary-precision rational conversion among bases 2, 10, 12, and 60, with documented alphabets, repeating expansions, validation, and round-trip checking.
-- User-controlled paradox text entry and local exploration. Original wording is preserved and not sent to a remote interpreter.
-- Server-side LfD QRNG adapter with HTTPS transport, response validation, provenance fields, timeouts, rate limiting, and fail-closed behavior.
+- User-controlled Paradox Lab with original-wording preservation, user-authored claim notes, exact numeric comparisons, and optional QRNG sample handoff.
+- Inert Security Sandbox text preview and System Status view with a real QRNG connectivity probe and links to repository test records.
+- Server-side LfD QRNG adapter with HTTPS transport, response/provenance validation, bounded transient retries, timeouts, rate limiting, and fail-closed behavior.
 - Focused math and QRNG unit tests, API/database migration tests, and CI configuration.
 
 ## Removed legacy platform integration
@@ -24,10 +25,10 @@ The former hosted-platform SDK, imports, authentication/database bindings, funct
 
 ## Verification summary
 
-- Frontend tests: **15 passed** (11 math/entropy tests and 4 UI interaction tests); typecheck, lint, production build, and dependency audit (**0 vulnerabilities**) passed.
-- API tests: **9 passed**; PostgreSQL migration/session integration tests: **2 passed**; API dependency audit: **0 vulnerabilities**.
-- Containerized web/API/database build and smoke test passed; all 6 migrations applied, health endpoint responded, and a live LfD response passed validation with provenance.
-- Live LfD QRNG provider connectivity: **verified** with a 32-bit HTTPS request using `RUN_LFD_QRNG_INTEGRATION=1`. Repeat this check from the production deployment environment.
+- Frontend tests: **20 passed** (12 math/entropy and 8 UI tests); typecheck, lint, and production build passed. Previous frontend and API dependency audits reported **0 vulnerabilities**; dependency manifests did not change.
+- API tests: **11 passed**; PostgreSQL migration/session integration tests: **2 passed in prior validation** (not rerun for this follow-up).
+- Docker Compose web/API/database smoke test passed in prior validation; not rerun for this follow-up because local Compose environment variables are not configured.
+- Live LfD QRNG provider connectivity: **verified in this follow-up** with a 32-bit HTTPS request using `RUN_LFD_QRNG_INTEGRATION=1`. Repeat this check from the production deployment environment.
 - Production deployment, TLS, backups/restore, monitoring, and external security testing: **not performed**.
 
 See [TEST_REPORT.md](./TEST_REPORT.md) for command-level results.

@@ -6,8 +6,9 @@ export interface LfdQrngSample {
 
 export class LfdQrngError extends Error {
   constructor(
-    public readonly kind: 'timeout' | 'rate_limited' | 'unavailable' | 'invalid_response',
-    message: string
+    public readonly kind: 'timeout' | 'rate_limited' | 'unavailable' | 'server_error' | 'invalid_response',
+    message: string,
+    public readonly retryable = false
   ) {
     super(message);
     this.name = 'LfdQrngError';
@@ -20,6 +21,8 @@ interface LfdResponse {
 }
 
 const MAX_RESPONSE_BYTES = 16 * 1024;
+const MAX_ATTEMPTS = 2;
+const RETRY_DELAY_MS = 100;
 
 async function readProviderJson(response: Response): Promise<unknown> {
   const declaredLength = Number(response.headers.get('content-length'));
@@ -62,14 +65,7 @@ async function readProviderJson(response: Response): Promise<unknown> {
   }
 }
 
-export async function fetchLfdQrng(
-  bits: number,
-  fetchImpl: typeof fetch = fetch
-): Promise<LfdQrngSample> {
-  if (!Number.isInteger(bits) || bits < 8 || bits > 8192 || bits % 8 !== 0) {
-    throw new RangeError('Bits must be a multiple of 8 between 8 and 8192.');
-  }
-
+async function fetchLfdQrngOnce(bits: number, fetchImpl: typeof fetch): Promise<LfdQrngSample> {
   const bytes = bits / 8;
   const url = new URL('https://lfdr.de/qrng_api/qrng');
   url.searchParams.set('length', String(bytes));
@@ -85,13 +81,16 @@ export async function fetchLfdQrng(
     });
   } catch (error) {
     if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
-      throw new LfdQrngError('timeout', 'Quantum entropy provider timed out.');
+      throw new LfdQrngError('timeout', 'Quantum entropy provider timed out.', true);
     }
-    throw new LfdQrngError('unavailable', 'Quantum entropy provider could not be reached.');
+    throw new LfdQrngError('unavailable', 'Quantum entropy provider could not be reached.', true);
   }
 
   if (response.status === 429) {
     throw new LfdQrngError('rate_limited', 'Quantum entropy provider rate limit reached.');
+  }
+  if (response.status >= 500) {
+    throw new LfdQrngError('server_error', 'Quantum entropy provider returned a server error.', true);
   }
   if (!response.ok) {
     throw new LfdQrngError('unavailable', 'Quantum entropy provider returned an unavailable status.');
@@ -118,4 +117,26 @@ export async function fetchLfdQrng(
     bits,
     providerRequestId: response.headers.get('x-request-id') || response.headers.get('request-id')
   };
+}
+
+export async function fetchLfdQrng(
+  bits: number,
+  fetchImpl: typeof fetch = fetch
+): Promise<LfdQrngSample> {
+  if (!Number.isInteger(bits) || bits < 8 || bits > 8192 || bits % 8 !== 0) {
+    throw new RangeError('Bits must be a multiple of 8 between 8 and 8192.');
+  }
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    try {
+      return await fetchLfdQrngOnce(bits, fetchImpl);
+    } catch (error) {
+      if (!(error instanceof LfdQrngError) || !error.retryable || attempt === MAX_ATTEMPTS) {
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+    }
+  }
+
+  throw new LfdQrngError('unavailable', 'Quantum entropy provider could not be reached.');
 }

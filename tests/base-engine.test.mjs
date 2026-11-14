@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import {
   BASES,
   BaseInputError,
+  compareRationalValues,
   convertRational,
   convertToAllBases,
   parseBaseNumber
@@ -61,6 +62,13 @@ test('rational inputs remain exact and repeating expansions are marked', () => {
   assert.equal(sexagesimal.expansion, '[00] . [20]');
   assert.equal(binary.repeating, true);
   assert.equal(sexagesimal.terminating, true);
+});
+
+test('rational comparisons use exact cross multiplication, including negatives', () => {
+  assert.equal(compareRationalValues({ numerator: 1n, denominator: 3n }, { numerator: 2n, denominator: 6n }), 0);
+  assert.equal(compareRationalValues({ numerator: -1n, denominator: 3n }, { numerator: 1n, denominator: 3n }), -1);
+  assert.equal(compareRationalValues({ numerator: 5n, denominator: 2n }, { numerator: 2n, denominator: 1n }), 1);
+  assert.throws(() => compareRationalValues({ numerator: 1n, denominator: 0n }, { numerator: 1n, denominator: 2n }), BaseInputError);
 });
 
 test('finite radix fractions and base-60 radix points are parsed exactly', () => {

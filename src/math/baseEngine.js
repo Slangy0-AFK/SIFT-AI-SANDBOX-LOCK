@@ -34,6 +34,13 @@ function reduce(numerator, denominator) {
   return { numerator: numerator / divisor, denominator: denominator / divisor };
 }
 
+export function compareRationalValues(left, right) {
+  const first = reduce(left.numerator, left.denominator);
+  const second = reduce(right.numerator, right.denominator);
+  const difference = first.numerator * second.denominator - second.numerator * first.denominator;
+  return difference < 0n ? -1 : difference > 0n ? 1 : 0;
+}
+
 function tokensFromText(text, base) {
   if (!text) throw new BaseInputError('Enter a number.');
   if (base === 60) {

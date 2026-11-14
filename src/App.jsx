@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { BASES, BaseInputError, convertToAllBases } from './math/baseEngine.js';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { BASES, BaseInputError, compareRationalValues, convertToAllBases, parseBaseNumber } from './math/baseEngine.js';
 import { entropyHexToBitString } from './math/entropy.js';
 import { inspectBitSample } from './math/entropyStats.js';
 
@@ -152,17 +152,21 @@ function Converter() {
   );
 }
 
-function ParadoxExplorer() {
+function ParadoxExplorer({ qrngSample }) {
   const [draft, setDraft] = useState('');
   const [submission, setSubmission] = useState(null);
   const [claimKind, setClaimKind] = useState('mixed');
   const [clarification, setClarification] = useState('');
+  const [reformulation, setReformulation] = useState('');
   const [assumptions, setAssumptions] = useState('');
   const [propositions, setPropositions] = useState('');
-  const [mathInput, setMathInput] = useState('');
+  const [hypothesis, setHypothesis] = useState('');
+  const [leftValue, setLeftValue] = useState('');
+  const [rightValue, setRightValue] = useState('');
+  const [relation, setRelation] = useState('equal');
   const [mathBase, setMathBase] = useState(10);
-  const [mathResult, setMathResult] = useState(null);
-  const [mathError, setMathError] = useState('');
+  const [hypothesisResult, setHypothesisResult] = useState(null);
+  const [hypothesisError, setHypothesisError] = useState('');
   const [submissionError, setSubmissionError] = useState('');
 
   const submitParadox = (event) => {
@@ -173,19 +177,42 @@ function ParadoxExplorer() {
     }
     setSubmissionError('');
     setSubmission({ original: draft, submittedAt: new Date().toISOString() });
-    setMathResult(null);
   };
 
-  const exploreMath = (event) => {
+  const testHypothesis = (event) => {
     event.preventDefault();
-    setMathError('');
+    setHypothesisError('');
+    setHypothesisResult(null);
     try {
-      setMathResult(convertToAllBases(mathInput, mathBase));
+      if (!hypothesis.trim()) throw new BaseInputError('Write the mathematical hypothesis you want to test.');
+      const left = parseBaseNumber(leftValue, mathBase);
+      const right = parseBaseNumber(rightValue, mathBase);
+      const comparison = compareRationalValues(left, right);
+      const holds = relation === 'equal' ? comparison === 0
+        : relation === 'less' ? comparison < 0
+          : comparison > 0;
+      setHypothesisResult({
+        hypothesis,
+        holds,
+        relation,
+        leftValue,
+        rightValue,
+        base: mathBase,
+        leftConversions: convertToAllBases(leftValue, mathBase).conversions,
+        rightConversions: convertToAllBases(rightValue, mathBase).conversions
+      });
     } catch (caught) {
-      setMathResult(null);
-      setMathError(caught instanceof BaseInputError ? caught.message : 'The calculation could not be completed.');
+      setHypothesisError(caught instanceof BaseInputError ? caught.message : 'The calculation could not be completed.');
     }
   };
+
+  const useQrngSample = () => {
+    if (!qrngSample) return;
+    setLeftValue(qrngSample.bitString);
+    setMathBase(2);
+  };
+
+  const relationSymbols = { equal: '=', less: '<', greater: '>' };
 
   return (
     <section className="panel" aria-labelledby="paradox-title">
@@ -214,8 +241,8 @@ function ParadoxExplorer() {
           </div>
 
           <p className="clarifying-prompt">
-            Clarifying question: which terms or conditions should be understood in
-            your intended sense? If the meaning is not ambiguous, you can say so.
+            Clarifying question: which terms or conditions are ambiguous to you,
+            and what do you intend them to mean? If none are ambiguous, note that.
           </p>
           <label className="field">
             <span>Your clarification (optional)</span>
@@ -232,36 +259,92 @@ function ParadoxExplorer() {
           </label>
           <div className="two-column-fields">
             <label className="field">
-              <span>Assumptions you want to examine</span>
+              <span>Assumptions you identify</span>
               <textarea value={assumptions} onChange={(event) => setAssumptions(event.target.value)} rows={4} />
             </label>
             <label className="field">
-              <span>Propositions in your wording</span>
+              <span>Propositions you identify in your wording</span>
               <textarea value={propositions} onChange={(event) => setPropositions(event.target.value)} rows={4} />
             </label>
           </div>
+          <label className="field">
+            <span>Your reformulation (optional; original remains unchanged)</span>
+            <textarea value={reformulation} onChange={(event) => setReformulation(event.target.value)} rows={3} />
+          </label>
+          <label className="field">
+            <span>Testable mathematical hypothesis (your wording)</span>
+            <input
+              value={hypothesis}
+              onChange={(event) => setHypothesis(event.target.value)}
+              maxLength={2000}
+              placeholder="For example: these two quantities have equal value"
+            />
+          </label>
           <p className="subtle">
-            These are your classifications and notes, not an automated interpretation.
-            Mathematical, philosophical, and theological claims are kept distinct at your direction.
+            Assumptions, propositions, reformulations, and hypotheses are supplied by you;
+            the app does not extract claims or assign beliefs. Mathematical output is
+            kept separate from philosophical and theological interpretation.
           </p>
 
-          <form className="stack-form math-question" onSubmit={exploreMath}>
-            <h3>Explore a numeric relationship</h3>
+          <form className="stack-form math-question" onSubmit={testHypothesis}>
+            <h3>Test a numeric relationship exactly</h3>
             <p>
-              Enter one exact rational number or finite base expression that you
-              want to examine. This calculator does not translate the rest of the
-              paradox into mathematics.
+              The comparison tests only these exact values in the selected base. It
+              does not translate or validate the rest of the paradox.
             </p>
             <div className="converter-form">
               <label className="field input-field">
-                <span>Numeric expression</span>
-                <input value={mathInput} onChange={(event) => setMathInput(event.target.value)} maxLength={10000} />
+                <span>First exact value</span>
+                <input value={leftValue} onChange={(event) => setLeftValue(event.target.value)} maxLength={10000} />
               </label>
-              <BasePicker value={mathBase} onChange={setMathBase} label="Expression base" />
-              <button className="button secondary-button" type="submit">Calculate exact conversions</button>
+              <label className="field">
+                <span>Relationship</span>
+                <select value={relation} onChange={(event) => setRelation(event.target.value)}>
+                  <option value="equal">is equal to (=)</option>
+                  <option value="less">is less than (&lt;)</option>
+                  <option value="greater">is greater than (&gt;)</option>
+                </select>
+              </label>
+              <label className="field input-field">
+                <span>Second exact value</span>
+                <input value={rightValue} onChange={(event) => setRightValue(event.target.value)} maxLength={10000} />
+              </label>
+              <BasePicker value={mathBase} onChange={setMathBase} label="Operand base" />
+              <button className="button secondary-button" type="submit">Test exact hypothesis</button>
             </div>
-            {mathError && <p className="error-message" role="alert">{mathError}</p>}
-            {mathResult && <ConversionCards conversions={mathResult.conversions} />}
+            <div className="sample-handoff">
+              <button className="button secondary-button" type="button" disabled={!qrngSample} onClick={useQrngSample}>
+                Use latest QRNG sample as first value
+              </button>
+              <span>
+                {qrngSample
+                  ? `Available sample: ${qrngSample.bits} bits from ${qrngSample.source}.`
+                  : 'No QRNG sample has been requested in this browser session.'}
+              </span>
+            </div>
+            {hypothesisError && <p className="error-message" role="alert">{hypothesisError}</p>}
+            {hypothesisResult && (
+              <div className="hypothesis-result" role="status">
+                <h4>Exact comparison</h4>
+                <p><strong>Your hypothesis:</strong> {hypothesisResult.hypothesis}</p>
+                <p>
+                  {hypothesisResult.leftValue} {relationSymbols[hypothesisResult.relation]} {hypothesisResult.rightValue}
+                  {' '}in base {hypothesisResult.base} is {hypothesisResult.holds ? 'true' : 'false'}
+                  {' '}for these numeric inputs.
+                </p>
+                <p className="subtle">
+                  The entered values are interpreted using the selected base and exact rational syntax.
+                  This result does not prove or disprove a philosophical or theological claim.
+                </p>
+                <details>
+                  <summary>Compare both values in all four bases</summary>
+                  <h4>First value</h4>
+                  <ConversionCards conversions={hypothesisResult.leftConversions} />
+                  <h4>Second value</h4>
+                  <ConversionCards conversions={hypothesisResult.rightConversions} />
+                </details>
+              </div>
+            )}
           </form>
         </div>
       )}
@@ -269,7 +352,28 @@ function ParadoxExplorer() {
   );
 }
 
-function QuantumPanel() {
+const LFD_SOURCE = 'Laboratory for Digitalisation (LfD) QRNG';
+const LFD_ENDPOINT = 'https://lfdr.de/qrng_api/qrng';
+
+function validateQrngResponse(data, expectedBits) {
+  if (
+    !data ||
+    typeof data !== 'object' ||
+    data.bits !== expectedBits ||
+    data.source !== LFD_SOURCE ||
+    data.providerEndpoint !== LFD_ENDPOINT ||
+    typeof data.requestId !== 'string' ||
+    !data.requestId ||
+    typeof data.retrievedAt !== 'string' ||
+    !Number.isFinite(Date.parse(data.retrievedAt)) ||
+    (data.providerRequestId !== null && typeof data.providerRequestId !== 'string')
+  ) {
+    throw new Error('The provider response failed local provenance validation. No sample was accepted.');
+  }
+  return { ...data, bitString: entropyHexToBitString(data.entropyHex, expectedBits) };
+}
+
+function QuantumPanel({ onSample, providerConnection, onProviderConnection }) {
   const [bits, setBits] = useState(256);
   const [providerStatus, setProviderStatus] = useState({ state: 'checking', message: 'Checking provider configuration…' });
   const [loading, setLoading] = useState(false);
@@ -288,14 +392,14 @@ function QuantumPanel() {
         if (active) setProviderStatus({
           state: data.configured ? 'configured' : 'unavailable',
           message: data.configured
-            ? 'LfD QRNG endpoint is configured; live connectivity is checked when entropy is requested.'
-            : 'Quantum entropy is unavailable: the provider endpoint is not configured.'
+            ? 'LfD QRNG endpoint is configured; live connectivity is reported separately.'
+            : 'The provider endpoint is not configured.'
         });
       })
       .catch(() => {
         if (active) setProviderStatus({
           state: 'unavailable',
-          message: 'Quantum entropy is unavailable: the application API could not be reached.'
+          message: 'Quantum entropy source not connected. The application API could not be reached.'
         });
       });
     return () => { active = false; };
@@ -305,6 +409,8 @@ function QuantumPanel() {
     event.preventDefault();
     setError('');
     setSample(null);
+    onSample(null);
+    onProviderConnection({ state: 'checking', message: 'Checking LfD QRNG connectivity…' });
     setLoading(true);
     try {
       const response = await fetch('/api/qrng', {
@@ -314,17 +420,21 @@ function QuantumPanel() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Quantum entropy request failed.');
-      if (data.bits !== bits) {
-        throw new Error('The provider response failed local validation. No sample was accepted.');
-      }
-      const bitString = entropyHexToBitString(data.entropyHex, bits);
-      setSample({ ...data, bitString });
+      const validatedSample = validateQrngResponse(data, bits);
+      setSample(validatedSample);
+      onSample(validatedSample);
+      onProviderConnection({
+        state: 'connected',
+        source: validatedSample.source,
+        retrievedAt: validatedSample.retrievedAt,
+        requestId: validatedSample.requestId
+      });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Quantum entropy request failed.');
-      setProviderStatus((previous) => ({
-        ...previous,
-        message: 'The provider could not supply a validated sample. No pseudorandom fallback was used.'
-      }));
+      onProviderConnection({
+        state: 'unavailable',
+        message: 'Quantum entropy source not connected. No pseudorandom fallback was used.'
+      });
     } finally {
       setLoading(false);
     }
@@ -349,6 +459,14 @@ function QuantumPanel() {
       <div className={`status-banner status-${providerStatus.state}`} role="status">
         <strong>{providerStatus.state === 'configured' ? 'Provider configured' : 'Provider status'}</strong>
         <span>{providerStatus.message}</span>
+      </div>
+      <div className={`status-banner status-${providerConnection.state}`} role="status">
+        <strong>Quantum entropy source</strong>
+        <span>
+          {providerConnection.state === 'connected'
+            ? `Connected to ${providerConnection.source}; last verified ${providerConnection.retrievedAt}.`
+            : providerConnection.message || 'Quantum entropy source not connected.'}
+        </span>
       </div>
       <form className="converter-form qrng-form" onSubmit={generate}>
         <label className="field">
@@ -400,9 +518,173 @@ function QuantumPanel() {
   );
 }
 
+function SystemStatus({ active, providerConnection, setProviderConnection }) {
+  const [apiState, setApiState] = useState('checking');
+  const [providerConfigured, setProviderConfigured] = useState('checking');
+  const [refreshing, setRefreshing] = useState(false);
+  const [probing, setProbing] = useState(false);
+  const [probeError, setProbeError] = useState('');
+
+  const refresh = useCallback(async () => {
+    setRefreshing(true);
+    const [healthResult, providerResult] = await Promise.allSettled([
+      fetch('/health').then(async (response) => {
+        if (!response.ok) throw new Error('API health check failed.');
+        return response.json();
+      }),
+      fetch('/api/qrng/status').then(async (response) => {
+        if (!response.ok) throw new Error('QRNG configuration status check failed.');
+        return response.json();
+      })
+    ]);
+
+    setApiState(healthResult.status === 'fulfilled' && healthResult.value.status === 'ok' ? 'online' : 'unavailable');
+    setProviderConfigured(
+      providerResult.status === 'fulfilled' && providerResult.value.configured ? 'configured' : 'unavailable'
+    );
+    setRefreshing(false);
+  }, []);
+
+  useEffect(() => {
+    if (active) void refresh();
+  }, [active, refresh]);
+
+  const probeProvider = async () => {
+    setProbing(true);
+    setProbeError('');
+    setProviderConnection({ state: 'checking', message: 'Checking LfD QRNG connectivity…' });
+    try {
+      const response = await fetch('/api/qrng', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bits: 8 })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'QRNG connectivity check failed.');
+      const sample = validateQrngResponse(data, 8);
+      setProviderConnection({
+        state: 'connected',
+        source: sample.source,
+        retrievedAt: sample.retrievedAt,
+        requestId: sample.requestId
+      });
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : 'QRNG connectivity check failed.';
+      setProbeError(message);
+      setProviderConnection({
+        state: 'unavailable',
+        message: 'Quantum entropy source not connected. No pseudorandom fallback was used.'
+      });
+    } finally {
+      setProbing(false);
+    }
+  };
+
+  const connectionMessage = providerConnection.state === 'connected'
+    ? `Connected to ${providerConnection.source}; last verified ${providerConnection.retrievedAt}.`
+    : providerConnection.message || 'Quantum entropy source not connected.';
+
+  return (
+    <section className="panel" aria-labelledby="status-title">
+      <div className="section-intro">
+        <span className="eyebrow">LIVE CHECKS · HONEST STATUS</span>
+        <h2 id="status-title">System status &amp; test results</h2>
+        <p>These checks report the current app instance. A passing health check is not a security certification.</p>
+      </div>
+      <div className="status-grid">
+        <article className="status-card">
+          <span className="eyebrow">APPLICATION API</span>
+          <strong>{apiState === 'online' ? 'Online' : apiState === 'checking' ? 'Checking' : 'Unavailable'}</strong>
+          <span>{apiState === 'online' ? 'The /health endpoint returned a healthy status.' : 'The API health endpoint has not reported healthy.'}</span>
+        </article>
+        <article className="status-card">
+          <span className="eyebrow">QRNG API CONFIGURATION</span>
+          <strong>{providerConfigured === 'configured' ? 'Configured' : providerConfigured === 'checking' ? 'Checking' : 'Unavailable'}</strong>
+          <span>Configuration does not verify that the external entropy provider is reachable.</span>
+        </article>
+      </div>
+      <div className={`status-banner status-${providerConnection.state}`} role="status">
+        <strong>Quantum entropy source</strong>
+        <span>{connectionMessage}</span>
+      </div>
+      <div className="status-actions">
+        <button className="button secondary-button" type="button" onClick={() => void refresh()} disabled={refreshing}>
+          {refreshing ? 'Refreshing…' : 'Refresh service status'}
+        </button>
+        <button className="button primary-button" type="button" onClick={probeProvider} disabled={probing}>
+          {probing ? 'Checking QRNG…' : 'Check live QRNG (consume 8 bits)'}
+        </button>
+      </div>
+      <p className="subtle">
+        The QRNG check makes a real provider request and discards the returned 8 bits.
+        It uses the same server-side rate limit as sample generation.
+      </p>
+      {probeError && <p className="error-message" role="alert">{probeError}</p>}
+
+      <div className="test-results-card">
+        <h3>Automated test results</h3>
+        <p>
+          Repository CI results are separate from this deployment’s live service status.
+          Tests must be run against the current revision before release.
+        </p>
+        <ul>
+          <li><a href="https://github.com/dougleslie00-afk/siftai/actions" target="_blank" rel="noreferrer">View repository CI runs</a></li>
+          <li><a href="https://github.com/dougleslie00-afk/siftai/blob/main/TEST_REPORT.md" target="_blank" rel="noreferrer">Read the recorded test report</a></li>
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function SecuritySandbox() {
+  const [input, setInput] = useState('');
+  const [preview, setPreview] = useState(null);
+
+  const submit = (event) => {
+    event.preventDefault();
+    setPreview(input);
+  };
+
+  return (
+    <section className="panel" aria-labelledby="sandbox-title">
+      <div className="section-intro">
+        <span className="eyebrow">INERT INPUT SANDBOX · NO CODE EXECUTION</span>
+        <h2 id="sandbox-title">Security sandbox</h2>
+        <p>
+          This is a safe text preview only. It does not execute user input, scan devices,
+          test a network, or establish that your system is secure.
+        </p>
+      </div>
+      <form className="stack-form" onSubmit={submit}>
+        <label className="field">
+          <span>Text to preview (kept in this browser)</span>
+          <textarea value={input} onChange={(event) => setInput(event.target.value)} rows={6} maxLength={10000} />
+        </label>
+        <button className="button primary-button" type="submit">Render as inert text</button>
+      </form>
+      {preview !== null && (
+        <div className="sandbox-preview" role="status">
+          <h3>Inert text preview</h3>
+          <pre>{preview || '(empty input)'}</pre>
+        </div>
+      )}
+      <ul className="security-boundaries">
+        <li>No arbitrary code execution or prompt-driven tool access.</li>
+        <li>Preview output is rendered as text, not interpreted as HTML.</li>
+        <li>The app makes no device-scanning or threat-detection claims.</li>
+      </ul>
+    </section>
+  );
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('convert');
   const [apiStatus, setApiStatus] = useState('checking');
+  const [qrngSample, setQrngSample] = useState(null);
+  const [providerConnection, setProviderConnection] = useState({
+    state: 'not-connected',
+    message: 'Quantum entropy source not connected.'
+  });
 
   useEffect(() => {
     let active = true;
@@ -442,8 +724,10 @@ export default function App() {
       <nav className="tab-list" aria-label="Application sections">
         {[
           ['convert', 'Base converter'],
-          ['paradox', 'Theological paradox'],
-          ['qrng', 'Quantum entropy']
+          ['paradox', 'Paradox Lab'],
+          ['qrng', 'QRNG'],
+          ['sandbox', 'Security Sandbox'],
+          ['status', 'System Status & Test Results']
         ].map(([tab, label]) => (
           <button
             className={activeTab === tab ? 'tab active-tab' : 'tab'}
@@ -457,9 +741,23 @@ export default function App() {
         ))}
       </nav>
 
-      {activeTab === 'convert' && <Converter />}
-      {activeTab === 'paradox' && <ParadoxExplorer />}
-      {activeTab === 'qrng' && <QuantumPanel />}
+      <div hidden={activeTab !== 'convert'}><Converter /></div>
+      <div hidden={activeTab !== 'paradox'}><ParadoxExplorer qrngSample={qrngSample} /></div>
+      <div hidden={activeTab !== 'qrng'}>
+        <QuantumPanel
+          onSample={setQrngSample}
+          providerConnection={providerConnection}
+          onProviderConnection={setProviderConnection}
+        />
+      </div>
+      <div hidden={activeTab !== 'sandbox'}><SecuritySandbox /></div>
+      <div hidden={activeTab !== 'status'}>
+        <SystemStatus
+          active={activeTab === 'status'}
+          providerConnection={providerConnection}
+          setProviderConnection={setProviderConnection}
+        />
+      </div>
 
       <footer className="app-footer">
         <p>

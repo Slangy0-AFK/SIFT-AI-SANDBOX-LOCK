@@ -16,13 +16,15 @@ The endpoint is configurable only in server code; no provider secret is needed o
 
 The client selects a byte-aligned count of random bits. The API converts this to the requested byte count and sends `GET /qrng?length=<bytes>&format=HEX` over HTTPS. The API enforces the supported size, request schema, request-body limit, origin policy, timeout, and per-client rate limit before querying LfD.
 
-The adapter caps provider JSON responses at 16 KiB, then validates the `qrn` field, exact hexadecimal length, and declared byte count. Provider errors, timeouts, malformed responses, and rate limits fail closed; there is no pseudorandom fallback.
+The adapter caps provider JSON responses at 16 KiB, then validates the `qrn` field, exact hexadecimal length, and declared byte count. It makes at most one retry after a transient network failure, timeout, or provider 5xx response. Rate limits, other non-success statuses, and malformed responses are not retried. All failures fail closed; there is no pseudorandom fallback.
 
 Valid bits are returned with the source name, endpoint, server retrieval timestamp, server-generated request ID, and provider request ID when the provider supplies one. No entropy sample is written to application logs. Since the documented LfD endpoint does not require credentials, there is no API key to configure.
 
 ## Availability and verification
 
 The status endpoint indicates that the LfD endpoint is configured; it does not claim that the external service is currently reachable. A real request checks upstream connectivity and reports failure explicitly.
+
+The System Status view has an explicit live-probe button. It requests and discards 8 real bits, so it consumes the same API rate-limit allowance as a normal request. A successful response is checked for its bit count and source/provenance metadata before the UI reports the provider connected.
 
 Run the opt-in live connectivity test with network access:
 

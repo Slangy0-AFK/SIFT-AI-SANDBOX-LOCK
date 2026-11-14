@@ -54,6 +54,39 @@ test('LfD adapter fails closed on timeout, rate limit, oversized, or malformed r
   );
 });
 
+test('LfD adapter retries a transient provider server error once and does not retry rate limits', async () => {
+  let transientCalls = 0;
+  const recovered = await fetchLfdQrng(8, async () => {
+    transientCalls += 1;
+    if (transientCalls === 1) return new Response('', { status: 503 });
+    return new Response(JSON.stringify({ qrn: 'a5', length: 1 }));
+  });
+  assert.equal(recovered.entropyHex, 'a5');
+  assert.equal(transientCalls, 2);
+
+  let rateLimitedCalls = 0;
+  await assert.rejects(
+    () => fetchLfdQrng(8, async () => {
+      rateLimitedCalls += 1;
+      return new Response('', { status: 429 });
+    }),
+    (error) => error instanceof LfdQrngError && error.kind === 'rate_limited'
+  );
+  assert.equal(rateLimitedCalls, 1);
+});
+
+test('LfD adapter bounds retries when the provider remains unavailable', async () => {
+  let calls = 0;
+  await assert.rejects(
+    () => fetchLfdQrng(8, async () => {
+      calls += 1;
+      return new Response('', { status: 503 });
+    }),
+    (error) => error instanceof LfdQrngError && error.kind === 'server_error'
+  );
+  assert.equal(calls, 2);
+});
+
 test('QRNG API rejects unauthorized origins and invalid sizes before provider access', async () => {
   let providerCalls = 0;
   let databaseCalls = 0;
@@ -161,7 +194,7 @@ test('QRNG API reports provider outages and never calls a fallback', async () =>
       body: JSON.stringify({ bits: 8 })
     });
     assert.equal(response.status, 502);
-    assert.equal(providerCalls, 1);
+    assert.equal(providerCalls, 2);
     assert.equal((await response.text()).includes('entropyHex'), false);
   } finally {
     app.close();

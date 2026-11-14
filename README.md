@@ -6,8 +6,9 @@ A standalone web application for exact number-base conversion, user-led explorat
 
 - Exact conversions among bases 2, 10, 12, and 60, including arbitrary-precision integers and rational values.
 - Inspectable conversion steps, round-trip verification, and repeating-fraction notation.
-- A private paradox workspace: the user's original wording remains in the browser and is not sent to a server or interpreted as fact.
-- A server-side QRNG integration with the Laboratory for Digitalisation (LfD). The provider is checked when entropy is requested; outages are explicit and never result in pseudorandom fallback.
+- A private Paradox Lab: the user's original wording, clarifications, assumptions, and interpretations remain in browser memory. Users can test exact numeric relationships without treating results as theological conclusions.
+- A server-side QRNG integration with the Laboratory for Digitalisation (LfD), including provenance validation, a live connectivity probe, and no pseudorandom fallback.
+- A Security Sandbox that previews input as inert text only, plus live API/provider status and links to repository test records.
 - A separate Express/PostgreSQL API for account and verification workflows. The current math interface does not require or use those account workflows.
 
 ## Run locally
@@ -54,6 +55,7 @@ See [TEST_REPORT.md](./TEST_REPORT.md) for what has and has not been verified.
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — application boundaries and data flow
 - [MATHEMATICAL_ENGINE.md](./MATHEMATICAL_ENGINE.md) — exact arithmetic and conversion behavior
 - [BASE_REPRESENTATION.md](./BASE_REPRESENTATION.md) — digit alphabets and syntax
+- [PARADOX_LAB.md](./PARADOX_LAB.md) — user-led workflow and mathematical boundaries
 - [QRNG_INTEGRATION.md](./QRNG_INTEGRATION.md) — provider protocol, provenance, and limitations
 - [SECURITY.md](./SECURITY.md) — security controls and remaining risks
 - [DEPLOYMENT.md](./DEPLOYMENT.md) — local/container deployment and operations
