@@ -15,17 +15,18 @@ services:
   api:
     build: ./server
     environment:
+      NODE_ENV: ${NODE_ENV:-development}
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:?Set FRONTEND_ORIGIN}
       SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET}
+      ANU_QRNG_API_KEY: ${ANU_QRNG_API_KEY:-}
+      TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-1}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM: ${SMTP_FROM:-}
       PORT: "3000"
-    ports:
-      - "127.0.0.1:3000:3000"
     depends_on:
       db:
         condition: service_healthy
@@ -34,6 +35,15 @@ services:
       interval: 15s
       timeout: 5s
       retries: 3
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
 
 volumes:
   postgres_data:

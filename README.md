@@ -1,67 +1,63 @@
-# SIFT AI
+# Sift Math and Entropy
 
-SIFT AI is a React/Vite application with an independently deployable Node.js
-and PostgreSQL backend. The backend currently provides health checks and
-account registration, email verification, login, session restoration, logout,
-and password recovery.
+A standalone web application for exact number-base conversion, user-led exploration of mathematical claims, and access to a documented quantum random-number provider.
 
-## Development
+## Features
 
-Requirements: Node.js 22+ and PostgreSQL 16+.
+- Exact conversions among bases 2, 10, 12, and 60, including arbitrary-precision integers and rational values.
+- Inspectable conversion steps, round-trip verification, and repeating-fraction notation.
+- A private paradox workspace: the user's original wording remains in the browser and is not sent to a server or interpreted as fact.
+- An optional server-side ANU QRNG integration. If the provider is not configured or available, the app reports that quantum entropy is unavailable; it never substitutes pseudorandom data.
+- A separate Express/PostgreSQL API for account and verification workflows. The current math interface does not require or use those account workflows.
 
-1. Install frontend dependencies with `npm ci`.
-2. Copy `.env.example` to `.env` and replace every placeholder.
-3. Start PostgreSQL with `docker compose up -d db`.
-4. Build the API with `docker compose build api`, then apply migrations with
-   `docker compose run --rm --no-deps api node dist/database/migrate.js`.
-5. Start the API with `docker compose up -d api`.
-6. Start the frontend with `npm run dev`.
+## Run locally
 
-The development frontend uses `http://localhost:3000/api` by default. To use
-another API origin, set `VITE_API_BASE_URL` to the API URL ending in `/api`.
-Set `FRONTEND_ORIGIN` to the exact browser origin. SMTP settings are required
-for email verification and password recovery; without them these operations
-return an explicit configuration error.
+The math converter can run without the API:
 
-See [README_DEPLOY.md](./README_DEPLOY.md) for deployment steps and
-[server/README.md](./server/README.md) for backend configuration and database
-operations.
+```sh
+npm ci
+npm run dev
+```
 
-## Migration status
+For the API, QRNG, and complete containerized stack:
 
-The independent backend is a work in progress, not a production replacement
-for every application feature. Many existing screens and integrations still
-depend on services that have not yet been migrated. Do not direct production
-traffic to this backend as a complete application until the function/entity
-inventory, authorization checks, integration adapters, isolation controls,
-and required test coverage are complete.
+1. Copy `.env.example` to `.env` and set a unique `SESSION_SECRET`. Set the database password and connection URL consistently. Set `ANU_QRNG_API_KEY` only if you have an ANU API key. Keep `.env` private.
+2. Follow [DEPLOYMENT.md](./DEPLOYMENT.md) to start PostgreSQL, apply migrations, and launch the services.
+3. Open `http://localhost:8080`. Without the ANU key, the QRNG status is explicitly unavailable.
 
-No customer data is represented as migrated. Import only an authorized data
-export after a reviewed migration utility and rollback procedure are available.
+## Verify
 
-## Behaviour and simulation reporting
+```sh
+npm ci
+npm test
+npm run typecheck
+npm run lint
+npm run build
+npm audit --audit-level=high
 
-These rules apply to every screen, export, log line and email in this repo.
-`npm run check:labels` scans the source and docs and fails the build if a win
-label, per-behaviour win total, "x of y" block total, or false-positive claim
-returns.
+npm --prefix server ci
+npm --prefix server test
+npm --prefix server run test:migrations
+npm --prefix server audit --audit-level=high
+```
 
-- Results are transcripts, not verdicts. Every turn is stored verbatim: what
-  was sent, what came back, the behaviour it targeted, whether it was a safe
-  twin, and whether written authorisation was present.
-- No code declares a win. A person reads each reply and records objected,
-  accepted or unclear, quoting the words the judgment rests on. The server
-  refuses a judgment whose quote does not appear in the reply, and refuses one
-  with no quote at all.
-- No result is shown until every turn in the run has been reviewed.
-- Each run draws a fresh seed, behaviour order, and payload. At least two
-  payloads per behaviour are never sent, and the payload bank lives on the
-  server only.
-- Report the gate as a rule, never as a measured model result. Format
-  compliance is not a pass on reasoning.
-- Never disclose internal functions, programs, or the pattern library; never
-  store customer personal data; and sign replies "SIFT AI team" only.
+The migration test requires a disposable PostgreSQL database through `TEST_DATABASE_URL`. A live QRNG integration test requires `ANU_QRNG_API_KEY` and network access:
 
-The behaviour test page is `src/pages/BehaviourTest.jsx` at
-`/behaviour-test`. Its scenario engine and transcript persistence have not yet
-been ported to the independent backend.
+```sh
+npm --prefix server run test:qrng:integration
+```
+
+See [TEST_REPORT.md](./TEST_REPORT.md) for what has and has not been verified.
+
+## Documentation
+
+- [ARCHITECTURE.md](./ARCHITECTURE.md) — application boundaries and data flow
+- [MATHEMATICAL_ENGINE.md](./MATHEMATICAL_ENGINE.md) — exact arithmetic and conversion behavior
+- [BASE_REPRESENTATION.md](./BASE_REPRESENTATION.md) — digit alphabets and syntax
+- [QRNG_INTEGRATION.md](./QRNG_INTEGRATION.md) — provider protocol, provenance, and limitations
+- [SECURITY.md](./SECURITY.md) — security controls and remaining risks
+- [DEPLOYMENT.md](./DEPLOYMENT.md) — local/container deployment and operations
+- [PRODUCTION_READINESS_REPORT.md](./PRODUCTION_READINESS_REPORT.md) — release blockers and status
+- [TEST_REPORT.md](./TEST_REPORT.md) — automated checks and unverified integrations
+
+This repository is not declared production-ready. A real ANU credential, deployment-specific security configuration, and live-environment verification are required before release.

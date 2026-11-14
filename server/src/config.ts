@@ -22,11 +22,16 @@ export function readConfig(env: NodeJS.ProcessEnv) {
     throw new Error('FRONTEND_ORIGIN must be an HTTP(S) origin without a path');
   }
   const production = env.NODE_ENV === 'production';
+  const trustProxyHops = Number(env.TRUST_PROXY_HOPS ?? '0');
+  if (!Number.isInteger(trustProxyHops) || trustProxyHops < 0 || trustProxyHops > 5) {
+    throw new Error('TRUST_PROXY_HOPS must be an integer between 0 and 5');
+  }
   if (production && url.protocol !== 'https:') throw new Error('FRONTEND_ORIGIN must use HTTPS in production');
   const sessionSecret = env.SESSION_SECRET;
   if (!sessionSecret || Buffer.byteLength(sessionSecret) < 32) {
     throw new Error('SESSION_SECRET must contain at least 32 bytes');
   }
+  const anuQrngApiKey = env.ANU_QRNG_API_KEY?.trim() || null;
   const smtpValues = [env.SMTP_HOST, env.SMTP_PORT, env.SMTP_USER, env.SMTP_PASSWORD, env.SMTP_FROM];
   let smtp: { host: string; port: number; user: string; password: string; from: string } | undefined;
   if (smtpValues.some(Boolean)) {
@@ -36,5 +41,5 @@ export function readConfig(env: NodeJS.ProcessEnv) {
     if (!Number.isInteger(portNumber) || portNumber < 1 || portNumber > 65535) throw new Error('SMTP_PORT is invalid');
     smtp = { host, port: portNumber, user, password, from };
   }
-  return { databaseUrl, port, origin, sessionSecret, production, smtp };
+  return { databaseUrl, port, origin, sessionSecret, production, smtp, anuQrngApiKey, trustProxyHops };
 }

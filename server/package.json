@@ -11,7 +11,8 @@
     "start": "node dist/server.js",
     "migrate": "node dist/database/migrate.js",
     "test": "npm run build && node --test test/*.test.mjs",
-    "test:migrations": "npm run build && node --test test/*.integration.mjs"
+    "test:migrations": "npm run build && node --test test/auth.integration.mjs test/migrations.integration.mjs",
+    "test:qrng:integration": "npm run build && node --test test/qrng.integration.mjs"
   },
   "dependencies": {
     "express": "^5.3.0",

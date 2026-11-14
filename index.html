@@ -2,33 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="https://media.base44.com/images/public/6a0db3181169f42924052c0d/650b247a7_amazon.PNG" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#00d4ff" />
-    <meta name="description" content="SIFT AI checks the apps, permissions, links and messages you are unsure about, and tells you in plain language what it can see. Start free in your browser." />
-    <meta property="og:title" content="SIFT AI - find rogue AI on the devices you own" />
-    <meta property="og:description" content="Upload or paste the app, permission screen or message you are worried about. SIFT AI gives you a plain-language verdict and the next step." />
+    <meta name="theme-color" content="#0c111b" />
+    <meta name="description" content="Explore exact conversions among binary, decimal, duodecimal, and sexagesimal numbers." />
+    <meta property="og:title" content="Exact Number Lab" />
+    <meta property="og:description" content="Exact arithmetic across bases 2, 10, 12, and 60, with user-led paradox exploration and an explicitly sourced QRNG adapter." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="SIFT AI" />
-    <meta name="twitter:description" content="A personal device checker for rogue and unauthorised AI, in your browser." />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="apple-touch-icon" href="/icon-192.png" />
-    <title>SIFT AI | Find rogue AI on your devices</title>
+    <meta name="twitter:title" content="Exact Number Lab" />
+    <meta name="twitter:description" content="Exact arithmetic across four number bases." />
+    <title>Exact Number Lab | Mathematics and QRNG</title>
   </head>
   <body>
     <div id="root"></div>
-    <script>
-      // Always unregister stale service workers and clear caches before loading the app
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-          registrations.forEach(r => r.unregister());
-        });
-        if (window.caches) {
-          caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
-        }
-      }
-    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

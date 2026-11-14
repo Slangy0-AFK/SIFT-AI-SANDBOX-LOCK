@@ -1,17 +1,26 @@
 import express from 'express';
 import type pg from 'pg';
 import { authRouter } from './routes/auth.js';
+import { qrngRouter } from './routes/qrng.js';
 import type { AccountMailer } from './integrations/email.js';
 
 export interface AuthConfig {
   origin: string;
   sessionSecret: string;
   production: boolean;
+  anuQrngApiKey: string | null;
+  trustProxyHops: number;
 }
 
-export function createApp(database: pg.Pool, config: AuthConfig, mailer: AccountMailer | null = null) {
+export function createApp(
+  database: pg.Pool,
+  config: AuthConfig,
+  mailer: AccountMailer | null = null,
+  qrngFetch: typeof fetch = fetch
+) {
   const app = express();
   app.disable('x-powered-by');
+  app.set('trust proxy', config.trustProxyHops ?? 0);
   app.use((req, res, next) => {
     res.vary('Origin');
     if (req.get('Origin') === config.origin) {
@@ -40,6 +49,7 @@ export function createApp(database: pg.Pool, config: AuthConfig, mailer: Account
     }
   });
   app.use('/api/auth', express.json({ limit: '4kb' }), authRouter(database, config, mailer));
+  app.use('/api/qrng', express.json({ limit: '2kb' }), qrngRouter(database, config, qrngFetch));
   app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     if (error instanceof SyntaxError && 'status' in error && error.status === 400) {
       res.status(400).json({ error: 'Invalid JSON' });
