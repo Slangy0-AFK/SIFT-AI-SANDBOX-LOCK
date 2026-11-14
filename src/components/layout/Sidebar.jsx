@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Shield, Activity, Bug, FileText, Settings, CreditCard, Radiation, Menu, X, User, ShieldAlert, Mail, ChevronLeft, MessageCircle, Key } from 'lucide-react';
+import { Activity, Settings, CreditCard, Menu, X, User, Mail, ChevronLeft, MessageCircle, Key } from 'lucide-react';
 import NotificationBell from '../notifications/NotificationBell';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-import { ShieldCheck, Database, Code2 } from 'lucide-react';
+import { ShieldCheck, Code2 } from 'lucide-react';
 
 const allNavItems = [
   { path: '/chat', icon: MessageCircle, label: 'Chat with SIFT AI' },

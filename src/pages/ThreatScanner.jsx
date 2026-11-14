@@ -6,11 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import AlienVaultWidget from '@/components/scanner/AlienVaultWidget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DeviceScanner from '@/components/security/DeviceScanner';
-import { Shield, ShieldAlert, ShieldCheck, Activity, ScanLine, Zap, AlertTriangle, CheckCircle, Loader2, ShieldBan } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, Activity, ScanLine, Zap, Loader2, ShieldBan } from 'lucide-react';
 import { toast } from 'sonner';
-import { sendSlackNotification } from '@/lib/slack';
 import { formatChicagoTime } from '@/lib/utils';
-import confetti from 'canvas-confetti';
 
 export default function ThreatScanner() {
   const [selectedThreat, setSelectedThreat] = useState(null);
