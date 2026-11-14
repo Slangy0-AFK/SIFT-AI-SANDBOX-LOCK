@@ -10,8 +10,11 @@ interface User {
   id: string;
   email: string;
   role: 'user' | 'admin';
+  terms_version: string | null;
+  terms_accepted_at: Date | null;
 }
 
+const TERMS_VERSION = '2026-05-21';
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
 const cookieName = (config: AuthConfig) => config.production ? '__Host-sift_session' : 'sift_session';
 const cookieOptions = (config: AuthConfig) => ({
@@ -44,6 +47,13 @@ function validCredentials(body: unknown): body is { email: string; password: str
   if (typeof body !== 'object' || body === null || !('email' in body) || !('password' in body)) return false;
   const { email, password } = body;
   return validEmail(email) && validPassword(password);
+}
+
+function validCsrf(req: Request, token: string, secret: string) {
+  const supplied = req.get('X-CSRF-Token') || '';
+  const expected = csrfToken(token, secret);
+  return /^[a-f0-9]{64}$/.test(supplied) &&
+    timingSafeEqual(Buffer.from(supplied, 'hex'), Buffer.from(expected, 'hex'));
 }
 
 export function authRouter(database: pg.Pool, config: AuthConfig, mailer: AccountMailer | null) {
@@ -109,7 +119,7 @@ export function authRouter(database: pg.Pool, config: AuthConfig, mailer: Accoun
     const token = readCookie(req, cookieName(config));
     if (!token) return null;
     const result = await database.query<User>(`
-      SELECT u.id, u.email, u.role FROM auth_sessions s
+      SELECT u.id, u.email, u.role, u.terms_version, u.terms_accepted_at FROM auth_sessions s
       JOIN auth_users u ON u.id = s.user_id
       WHERE s.token_hash = $1 AND s.expires_at > now() AND u.email_verified_at IS NOT NULL
     `, [digest(token)]);
@@ -173,7 +183,7 @@ export function authRouter(database: pg.Pool, config: AuthConfig, mailer: Accoun
       return;
     }
     const result = await database.query<User & { password_hash: string; email_verified_at: Date | null }>(
-      'SELECT id, email, role, password_hash, email_verified_at FROM auth_users WHERE email = $1',
+      'SELECT id, email, role, terms_version, terms_accepted_at, password_hash, email_verified_at FROM auth_users WHERE email = $1',
       [req.body.email.trim().toLowerCase()]
     );
     const row = result.rows[0];
@@ -183,7 +193,13 @@ export function authRouter(database: pg.Pool, config: AuthConfig, mailer: Accoun
       res.status(401).json({ error: 'Invalid credentials' });
       return;
     }
-    const user: User = { id: row.id, email: row.email, role: row.role };
+    const user: User = {
+      id: row.id,
+      email: row.email,
+      role: row.role,
+      terms_version: row.terms_version,
+      terms_accepted_at: row.terms_accepted_at,
+    };
     const client = await database.connect();
     let token: string;
     try {
@@ -371,16 +387,59 @@ export function authRouter(database: pg.Pool, config: AuthConfig, mailer: Accoun
     res.json({ user: session.user, csrfToken: csrfToken(session.token, config.sessionSecret) });
   });
 
+  router.post('/terms', requireOrigin, async (req, res) => {
+    const session = await getSession(req);
+    if (!session) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+    if (!validCsrf(req, session.token, config.sessionSecret)) {
+      res.status(403).json({ error: 'Invalid CSRF token' });
+      return;
+    }
+    if (req.body?.version !== TERMS_VERSION) {
+      res.status(400).json({ error: 'Unsupported terms version' });
+      return;
+    }
+
+    const client = await database.connect();
+    let accepted: { terms_version: string; terms_accepted_at: Date };
+    try {
+      await client.query('BEGIN');
+      const updated = await client.query<{ terms_version: string; terms_accepted_at: Date }>(
+        `UPDATE auth_users SET terms_version = $1, terms_accepted_at = now()
+         WHERE id = $2 AND terms_version IS DISTINCT FROM $1
+         RETURNING terms_version, terms_accepted_at`,
+        [TERMS_VERSION, session.user.id],
+      );
+      if (updated.rows[0]) {
+        accepted = updated.rows[0];
+        await audit(client, 'account.terms.accepted', session.user.id);
+      } else {
+        const existing = await client.query<{ terms_version: string; terms_accepted_at: Date }>(
+          'SELECT terms_version, terms_accepted_at FROM auth_users WHERE id = $1',
+          [session.user.id],
+        );
+        if (!existing.rows[0]?.terms_accepted_at) throw new Error('Terms acceptance record missing');
+        accepted = existing.rows[0];
+      }
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+    res.json(accepted);
+  });
+
   router.post('/logout', requireOrigin, async (req, res) => {
     const session = await getSession(req);
     if (!session) {
       res.status(401).json({ error: 'Authentication required' });
       return;
     }
-    const supplied = req.get('X-CSRF-Token') || '';
-    const expected = csrfToken(session.token, config.sessionSecret);
-    if (!/^[a-f0-9]{64}$/.test(supplied) ||
-        !timingSafeEqual(Buffer.from(supplied, 'hex'), Buffer.from(expected, 'hex'))) {
+    if (!validCsrf(req, session.token, config.sessionSecret)) {
       res.status(403).json({ error: 'Invalid CSRF token' });
       return;
     }

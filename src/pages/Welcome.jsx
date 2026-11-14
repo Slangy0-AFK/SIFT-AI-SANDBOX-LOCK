@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { authClient } from '@/api/authClient';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,9 +10,9 @@ import DeviceScanner from '@/components/security/DeviceScanner';
 import TermsAcceptanceModal from '@/components/legal/TermsAcceptanceModal';
 
 const features = [
-  { icon: Shield, title: 'Base Chain Pipeline', desc: '6-step quantum verification', color: 'text-primary' },
-  { icon: Lock, title: 'Paradox Lock', desc: 'Human vs AI detection', color: 'text-accent' },
-  { icon: Zap, title: 'QRNG Cycles', desc: 'True random destruction', color: 'text-amber-400' },
+  { icon: Shield, title: 'Sandbox Challenge', desc: 'Server-enforced challenge sequence is not yet available', color: 'text-primary' },
+  { icon: Lock, title: 'Paradox Lock', desc: 'Interaction challenge; not an identity proof', color: 'text-accent' },
+  { icon: Zap, title: 'Quantum Entropy', desc: 'Unavailable until a verified source is configured', color: 'text-amber-400' },
   { icon: Bug, title: 'Honeypots', desc: 'Attacker intelligence', color: 'text-green-400' },
   { icon: Mail, title: 'Email & SMS Scanner', desc: 'Real-time threat detection', color: 'text-blue-400' },
 ];
@@ -34,12 +34,11 @@ export default function Welcome() {
   useEffect(() => {
     const checkAuthAndTerms = async () => {
       try {
-        const currentUser = await base44.auth.me();
+        const { user: currentUser } = await authClient.session();
         setUser(currentUser);
         
         // Check if user needs to accept terms (only for app users, not web)
-        const isAppUser = !currentUser.terms_accepted;
-        const needsTerms = isAppUser && (!currentUser.terms_accepted || currentUser.terms_version !== '2026-05-21');
+        const needsTerms = currentUser.terms_version !== '2026-05-21';
         
         if (needsTerms) {
           setShowTermsModal(true);

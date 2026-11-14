@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { authClient } from '@/api/authClient';
 import { motion } from 'framer-motion';
 import { Shield, CheckCircle, Lock, Wifi, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,8 +19,8 @@ export default function Logout() {
         // Stop background services
         window.dispatchEvent(new CustomEvent('before-logout'));
         
-        // Use SDK logout which handles token cleanup
-        await base44.auth.logout('/');
+        await authClient.logout();
+        navigate('/');
       } catch (error) {
         console.error('Logout error:', error);
         // Force redirect even if SDK logout fails

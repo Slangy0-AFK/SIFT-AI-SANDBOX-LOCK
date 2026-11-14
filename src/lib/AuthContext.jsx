@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { authClient } from '@/api/authClient';
 
 const AuthContext = createContext();
 
@@ -20,17 +20,14 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoadingAuth(true);
       setAuthError(null);
-      const isAuthed = await base44.auth.isAuthenticated();
-      if (isAuthed) {
-        await checkUserAuth();
-      } else {
-        setIsAuthenticated(false);
-        setIsLoadingAuth(false);
-        setAuthChecked(true);
-      }
+      await checkUserAuth();
     } catch (error) {
-      console.error('App state check failed:', error);
-      setAuthError({ type: 'unknown', message: error.message || 'Failed to load app' });
+      if (error.status !== 401) {
+        console.error('Session check failed:', error);
+        setAuthError({ type: 'unknown', message: error.message || 'Failed to load app' });
+      }
+      setUser(null);
+      setIsAuthenticated(false);
       setIsLoadingAuth(false);
       setAuthChecked(true);
     }
@@ -39,17 +36,16 @@ export const AuthProvider = ({ children }) => {
   const checkUserAuth = async () => {
     try {
       setIsLoadingAuth(true);
-      const currentUser = await base44.auth.me();
+      const { user: currentUser } = await authClient.session();
       setUser(currentUser);
       setIsAuthenticated(true);
       setAuthChecked(true);
     } catch (error) {
-      console.error('User auth check failed:', error);
+      if (error.status !== 401) console.error('User auth check failed:', error);
+      setUser(null);
       setIsAuthenticated(false);
       setAuthChecked(true);
-      if (error.status === 403) {
-        setAuthError({ type: 'user_not_registered', message: 'User not registered for this app' });
-      }
+      if (error.status !== 401) setAuthError({ type: 'unknown', message: error.message });
     } finally {
       setIsLoadingAuth(false);
     }
@@ -62,14 +58,14 @@ export const AuthProvider = ({ children }) => {
     setAuthError(null);
     window.dispatchEvent(new CustomEvent('before-logout'));
     try {
-      await base44.auth.logout(redirectUrl);
+      await authClient.logout();
     } catch {
-      window.location.href = redirectUrl;
+      window.location.assign(redirectUrl);
     }
   };
 
   const navigateToLogin = () => {
-    base44.auth.redirectToLogin(window.location.href);
+    window.location.assign('/login');
   };
 
   return (

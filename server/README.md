@@ -45,11 +45,13 @@ proxy. State-changing authentication requests require the configured Origin;
 logout also requires the `csrfToken` returned by login or session lookup as an
 `X-CSRF-Token` header. Login and registration have a database-backed IP limit.
 The service does not trust forwarded IP headers, so a reverse proxy currently
-causes clients behind it to share a limit. The frontend verification and
-recovery flows must be implemented before these endpoints are used in
-production. Registration initiation, successful verification, login, logout,
-and password reset, and failed login attempts generate audit records without
-passwords or tokens.
+causes clients behind it to share a limit. The frontend now submits registration and recovery requests to these
+endpoints, handles email-verification and reset links, and restores sessions
+from the HttpOnly cookie. These flows still require a configured SMTP provider
+and end-to-end testing against the production frontend/API origins before
+production use. Registration initiation, successful verification, login,
+logout, and password reset, and failed login attempts generate audit records
+without passwords or tokens.
 
 Registration and password recovery require all of `SMTP_HOST`, `SMTP_PORT`,
 `SMTP_USER`, `SMTP_PASSWORD`, and `SMTP_FROM`. Missing configuration returns an

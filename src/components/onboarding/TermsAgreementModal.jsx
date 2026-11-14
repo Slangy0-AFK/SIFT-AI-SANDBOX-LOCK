@@ -3,27 +3,25 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, FileText, CheckCircle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { authClient } from '@/api/authClient';
 
-const STORAGE_KEY = 'sift-ai_terms_accepted';
+const TERMS_VERSION = '2026-05-21';
 
-export default function TermsAgreementModal() {
+export default function TermsAgreementModal({ onAccepted }) {
   const [visible, setVisible] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const checkAcceptance = async () => {
-      const localAccepted = localStorage.getItem(STORAGE_KEY);
-      if (localAccepted) return;
       try {
-        const { base44 } = await import('@/api/base44Client');
-        const user = await base44.auth.me();
-        if (user?.terms_accepted) {
-          localStorage.setItem(STORAGE_KEY, user.terms_accepted_date || new Date().toISOString());
-          return;
+        const { user } = await authClient.session();
+        setVisible(user.terms_version !== TERMS_VERSION);
+      } catch (requestError) {
+        if (requestError.status !== 401) {
+          setError(requestError.message || 'Unable to load account terms status');
+          setVisible(true);
         }
-        setVisible(true);
-      } catch (err) {
-        setVisible(true);
       }
     };
     checkAcceptance();
@@ -31,20 +29,13 @@ export default function TermsAgreementModal() {
 
   const handleAccept = async () => {
     if (!agreed) return;
-    localStorage.setItem(STORAGE_KEY, new Date().toISOString());
-    setVisible(false);
+    setError('');
     try {
-      const { base44 } = await import('@/api/base44Client');
-      const user = await base44.auth.me();
-      if (user) {
-        await base44.auth.updateMe({
-          ...user,
-          terms_accepted: true,
-          terms_accepted_date: new Date().toISOString()
-        });
-      }
-    } catch (e) {
-      // ignore
+      await authClient.acceptTerms(TERMS_VERSION);
+      setVisible(false);
+      onAccepted?.();
+    } catch (requestError) {
+      setError(requestError.message || 'Unable to record terms acceptance');
     }
   };
 
@@ -125,6 +116,7 @@ export default function TermsAgreementModal() {
 
             {/* Footer */}
             <div className="px-6 pb-6">
+              {error && <p role="alert" className="mb-3 text-sm text-destructive">{error}</p>}
               <Button
                 className="w-full font-mono text-xs"
                 disabled={!agreed}

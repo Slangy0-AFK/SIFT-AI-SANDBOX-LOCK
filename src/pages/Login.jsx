@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { authClient } from "@/api/authClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LogIn, Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
-import TermsAgreementModal from "@/components/onboarding/TermsAgreementModal";
-
-const TERMS_STORAGE_KEY = 'sift-ai_terms_accepted';
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -18,26 +15,17 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
-  const [showTerms, setShowTerms] = useState(false);
-  const [show2Step, setShow2Step] = useState(false);
 
   useEffect(() => {
-    const checkTerms = async () => {
+    const checkSession = async () => {
       try {
-        const user = await base44.auth.me();
-        if (user) {
-          const accepted = localStorage.getItem(TERMS_STORAGE_KEY);
-          if (!accepted) {
-            setShowTerms(true);
-          } else {
-            window.location.href = "/dashboard";
-          }
-        }
-      } catch {
-        // Not logged in
+        await authClient.session();
+        window.location.href = "/dashboard";
+      } catch (error) {
+        if (error.status !== 401) setError(error.message || "Unable to check your session");
       }
     };
-    checkTerms();
+    checkSession();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -47,14 +35,9 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await base44.auth.loginViaEmailPassword(email, password);
+      await authClient.login(email, password);
       setLoggedIn(true);
-      const accepted = localStorage.getItem(TERMS_STORAGE_KEY);
-      if (!accepted) {
-        setShowTerms(true);
-      } else {
-        window.location.href = "/dashboard";
-      }
+      window.location.href = "/dashboard";
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -63,20 +46,10 @@ export default function Login() {
   };
 
   const handleGoogle = async () => {
-    try {
-      // Google login will redirect, but we'll check terms on return
-      base44.auth.loginWithProvider("google", "/dashboard");
-    } catch (err) {
-      setError(err.message || "Google login failed");
-    }
+    setError("Google sign-in is not configured on this server.");
   };
 
-  const handleTermsAccepted = () => {
-    setShowTerms(false);
-    window.location.href = "/dashboard";
-  };
-
-  if (loggedIn && !showTerms) {
+  if (loggedIn) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -179,9 +152,6 @@ export default function Login() {
         </form>
       </AuthLayout>
 
-      {showTerms && (
-        <TermsAgreementModal onAccepted={handleTermsAccepted} />
-      )}
     </>
   );
 }

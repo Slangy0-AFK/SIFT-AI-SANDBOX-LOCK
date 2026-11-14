@@ -1,41 +1,47 @@
-AEGIS — Deploy & Test Guide
-===========================
+# SIFT AI deployment and testing
 
-This guide covers two paths:
-- Production deploy (GitHub Pages + Base44 functions)
-- Local testing without Base44 credits (mock + ngrok)
+The frontend and API are deployed separately. The API currently supports
+account authentication and health checks only; it is not yet a production
+replacement for all application features. Do not route production traffic to
+it as a complete service.
 
-1) GitHub Pages (frontend) + Base44 (functions)
-- Ensure you have Base44 credits and the Base44 project configured.
-- Set these repository secrets in GitHub: `VITE_BASE44_APP_ID`, `VIRUSTOTAL_API_KEY`, `AUTH_CHALLENGE`, `AUTH_CHALLENGE_ANSWER`, other secrets (GMAIL_CLIENT_ID/SECRET).
-- The workflow `.github/workflows/deploy-gh-pages.yml` builds and publishes `dist/` to GitHub Pages on push to `main`.
-- Deploy Base44 functions: follow Base44's CLI / console to upload `base44/functions/*` (not automated here). Set function env vars in the Base44 console.
+## Local API and database
 
-2) Local testing without Base44 credits (mocked backend)
-- We included a lightweight in-memory mock of the Base44 client at `src/api/base44Mock.js`.
-- Enable mock by setting `VITE_BASE44_MOCK=true`.
-- If you are out of Base44 credits, use the mock path until tokens are available again. This gives you the full UI and threat workflow experience without live Base44 execution.
-- Start dev server bound to all interfaces (for tunneling):
-```bash
-npm install
-VITE_BASE44_MOCK=true npm run start:public
-```
-- Use ngrok to expose your local server (`ngrok` must be installed):
-```bash
-npm run tunnel
-# or
-ngrok http 5173 --host-header=localhost:5173
-```
-- The mock will auto-advance threats through QRNG cycles and create sample events/zero-day anomalies.
+1. Copy `.env.example` to `.env` and replace all placeholder values.
+2. Start PostgreSQL: `docker compose up -d db`.
+3. Build the API: `docker compose build api`.
+4. Apply migrations:
+   `docker compose run --rm --no-deps api node dist/database/migrate.js`.
+5. Start the API: `docker compose up -d api`.
+6. Confirm database connectivity at `http://localhost:3000/health`.
+7. Start the frontend with `npm ci && npm run dev`.
 
-3) Switching to real Base44
-- Set `VITE_BASE44_MOCK=false` and set `VITE_BASE44_APP_ID` in env or GitHub secrets.
-- Set `VITE_BASE44_APP_BASE_URL=https://sift-ai.net` to point the frontend at your live Sift AI deployment.
-- To pre-authenticate locally only, open the dev server with the token as a URL parameter: `http://localhost:5173/?access_token=<token>`. The app reads it, keeps it in that one browser, and strips it from the URL.
-- Never put a token in a `VITE_` variable, and never commit one: every `VITE_` value is baked into the public browser bundle, where anyone can read it. Tokens belong in the app's backend secrets, or in the URL parameter above for a local session.
-- Set `AUTH_CHALLENGE=Do you accept?` and `AUTH_CHALLENGE_ANSWER=Yes` in the Base44 function runtime env.
-- Deploy Base44 functions and ensure runtime env vars are set in Base44.
+Set `FRONTEND_ORIGIN` to the exact frontend origin. Set
+`VITE_API_BASE_URL` to the API origin ending in `/api` when the API is not
+available at the frontend's same-origin `/api` path. Use HTTPS for production.
+Registration and password recovery require all SMTP settings in `.env`.
 
-Notes & Limitations
-- The mock is for UI and flow testing only — it does not perform VirusTotal or Gmail OAuth calls.
-- For real VirusTotal/Gmail features, deploy backend functions to Base44 and provide API keys and OAuth credentials.
+The Compose database uses a persistent volume. Back up PostgreSQL before
+migrations and verify restoration from a backup before production use. See
+[server/README.md](./server/README.md) for migration and recovery details.
+
+## Frontend hosting
+
+The static frontend can be built with `npm ci && npm run build` and published
+to a static host. Configure `VITE_API_BASE_URL` as a build-time public URL; it
+must not contain credentials or API keys. For cross-origin deployment, the API
+must allow the exact frontend origin and use secure cookies over HTTPS.
+Browsers that block third-party cookies may require a same-site reverse proxy.
+
+## Production readiness
+
+The independent API does not yet implement all application functions,
+entities, integrations, or sandbox enforcement. There is no verified QRNG
+source configured. The lock/challenge sequence must not be described as a
+production security boundary until its server-side enforcement, actual
+isolation mechanism, and entropy source are implemented and tested.
+
+The repository's test commands are `npm run build`, `npm run lint`,
+`npm run typecheck`, `npm --prefix server test`, and
+`npm --prefix server run test:migrations` (the last requires a disposable
+PostgreSQL database through `TEST_DATABASE_URL`).

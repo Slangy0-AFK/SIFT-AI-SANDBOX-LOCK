@@ -4,10 +4,11 @@ import { FileText, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { base44 } from '@/api/base44Client';
+import { authClient } from '@/api/authClient';
 import { toast } from 'sonner';
 
 const APP_NAME = 'SIFT AI';
+const TERMS_VERSION = '2026-05-21';
 
 export default function TermsAcceptanceModal({ onComplete }) {
   const [accepted, setAccepted] = useState(false);
@@ -21,15 +22,7 @@ export default function TermsAcceptanceModal({ onComplete }) {
 
     setLoading(true);
     try {
-      // Record acceptance in user's profile metadata
-      const user = await base44.auth.me();
-      await base44.auth.updateMe({
-        ...user,
-        terms_accepted: true,
-        terms_accepted_date: new Date().toISOString(),
-        terms_version: '2026-05-21'
-      });
-
+      await authClient.acceptTerms(TERMS_VERSION);
       toast.success('Terms accepted. Welcome to SIFT AI!');
       onComplete?.();
     } catch (err) {

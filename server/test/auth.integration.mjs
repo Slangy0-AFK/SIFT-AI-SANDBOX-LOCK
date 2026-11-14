@@ -75,9 +75,27 @@ test('accounts, sessions, CSRF, revocation and throttling use PostgreSQL', async
       const account = await firstLogin.json();
       assert.equal(account.user.email, 'a@example.com');
       assert.equal(account.user.role, 'user');
+      assert.equal(account.user.terms_version, null);
       const stored = await pool.query('SELECT password_hash FROM auth_users WHERE email = $1', ['a@example.com']);
       assert.match(stored.rows[0].password_hash, /^scrypt-v1\$/);
       assert.ok(!stored.rows[0].password_hash.includes('a-strong-password'));
+
+      assert.equal((await post('/terms', { version: '2026-05-21' }, { Cookie: cookie })).status, 403);
+      assert.equal((await post('/terms', { version: 'unsupported' }, {
+        Cookie: cookie, 'X-CSRF-Token': account.csrfToken
+      })).status, 400);
+      const terms = await post('/terms', {
+        version: '2026-05-21', user_id: 'another-account'
+      }, { Cookie: cookie, 'X-CSRF-Token': account.csrfToken });
+      assert.equal(terms.status, 200);
+      const acceptedTerms = await terms.json();
+      assert.equal(acceptedTerms.terms_version, '2026-05-21');
+      account.user.terms_version = acceptedTerms.terms_version;
+      account.user.terms_accepted_at = acceptedTerms.terms_accepted_at;
+      const repeatedTerms = await post('/terms', { version: '2026-05-21' }, {
+        Cookie: cookie, 'X-CSRF-Token': account.csrfToken
+      });
+      assert.deepEqual(await repeatedTerms.json(), acceptedTerms);
 
       await pool.query('DELETE FROM auth_rate_limits');
       const second = await post('/register', { email: 'b@example.com', password: 'another-strong-password' });
