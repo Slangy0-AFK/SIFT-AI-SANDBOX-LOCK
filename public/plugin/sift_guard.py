@@ -21,6 +21,9 @@ It reads from your environment:
     SIFT_AUDIT_LOG       optional: where the audit entries are written.
     SIFT_VALIDATE_URL    optional: the SIFT AI check endpoint.
 
+Grace-period settings are ignored: a failed validation blocks actions.
+Custom audit sinks must synchronously persist the entry and return True.
+
 One key, one model, one use. The first model to activate the key is the only one
 it works with. Any other model is refused with:
     "This key is already locked to another model."
@@ -63,17 +66,20 @@ WHAT IT CHECKS, IN THIS ORDER
 """
 
 import hashlib
+import datetime
 import json
+import math
 import os
 import re
+import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 DEFAULTS = {
     "endpoint": "https://siftai.base44.app/functions/validateLicense",
     "cache_seconds": 600,  # a good answer stands this long before it is checked again
-    "grace_hours": 12,     # a check that cannot get through keeps guardrails on this long
     "timeout_seconds": 5,
     "max_steps": 12,
     "audit_log": "./sift-guard-audit.log",
@@ -86,6 +92,10 @@ STOP_REPLY = "This has been stopped."
 
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]{2,}")
 PHONE = re.compile(r"\+?\d[\d\s().-]{7,}\d")
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
 
 
 def canonical_key(raw):
@@ -104,12 +114,15 @@ def compile_rules(rules):
     """The rules come from SIFT AI, already written, and are compiled here.
     Nothing in this file decides what a bad instruction looks like."""
     compiled = []
-    for rule in rules or []:
+    if not isinstance(rules, list) or not rules:
+        return []
+    for rule in rules:
+        if not isinstance(rule, dict) or not isinstance(rule.get("signature"), str) or not rule["signature"]:
+            return []
         try:
-            compiled.append((str(rule.get("category") or "none"), re.compile(str(rule.get("signature") or ""), re.IGNORECASE)))
-        except Exception:
-            # A rule this runtime cannot compile is skipped, never guessed at.
-            continue
+            compiled.append((str(rule.get("category") or "none"), re.compile(rule["signature"], re.IGNORECASE)))
+        except re.error:
+            return []
     return compiled
 
 
@@ -137,8 +150,10 @@ class SiftGuard:
                  own_addresses=None, internal_names=None, allow_shell_tools=False, sink=None):
         self.endpoint = endpoint or os.environ.get("SIFT_VALIDATE_URL") or DEFAULTS["endpoint"]
         self.audit_log = audit_log or os.environ.get("SIFT_AUDIT_LOG") or DEFAULTS["audit_log"]
-        self.cache_seconds = float(cache_seconds or os.environ.get("SIFT_CACHE_SECONDS") or DEFAULTS["cache_seconds"])
-        self.grace_seconds = float(grace_hours or os.environ.get("SIFT_GRACE_HOURS") or DEFAULTS["grace_hours"]) * 3600
+        cache_value = cache_seconds if cache_seconds is not None else os.environ.get("SIFT_CACHE_SECONDS") or DEFAULTS["cache_seconds"]
+        self.cache_seconds = float(cache_value)
+        if not math.isfinite(self.cache_seconds) or not 0 <= self.cache_seconds <= 600:
+            raise ValueError("SIFT_CACHE_SECONDS must be between 0 and 600")
         self.timeout_seconds = float(timeout_seconds or DEFAULTS["timeout_seconds"])
         self.max_steps = int(max_steps or os.environ.get("SIFT_MAX_STEPS") or DEFAULTS["max_steps"])
         self.allowed_tools = allowed_tools or {}
@@ -156,8 +171,7 @@ class SiftGuard:
         self.model = str(model if model is not None else os.environ.get("SIFT_MODEL_NAME") or "").strip()
         self.deployment = str(deployment_id if deployment_id is not None else os.environ.get("SIFT_DEPLOYMENT_ID") or "").strip()
 
-        # A kill switch given here wins; otherwise the environment is read on
-        # every check, so flipping it stops the very next action.
+        # Both configured and environment switches are read on every check.
         self.kill_switch = kill_switch
         self.status = "Invalid"
         self.active = False
@@ -171,6 +185,7 @@ class SiftGuard:
         self.input_rules = []
         self.reply_rules = []
         self.denied_tools = []
+        self._refresh_lock = threading.Lock()
 
     # ------------------------------------------------------------------ audit
 
@@ -193,7 +208,7 @@ class SiftGuard:
         if fields.get("step") is not None:
             entry["step"] = int(fields["step"])
         try:
-            return self.sink(json.dumps(entry)) is not False
+            return self.sink(json.dumps(entry)) is True
         except Exception:
             return False
 
@@ -202,24 +217,33 @@ class SiftGuard:
     def read_switch(self):
         """The kill switch is read before anything else. A switch that cannot be
         read is a stop, not a pass."""
-        if self.kill_switch is not None:
-            return {"on": bool(self.kill_switch), "unreadable": False}
         try:
-            raw = os.environ.get("SIFT_KILL_SWITCH")
+            values = [self.kill_switch, os.environ.get("SIFT_KILL_SWITCH")]
+            for raw in values:
+                if raw is None or str(raw).strip() == "":
+                    continue
+                value = str(raw).strip().lower()
+                if value in ("0", "false", "off", "no"):
+                    continue
+                if value in ("1", "true", "on", "yes", "stop", "stopped"):
+                    return {"on": True, "unreadable": False}
+                return {"on": True, "unreadable": True}
         except Exception:
             return {"on": True, "unreadable": True}
-        if raw is None or str(raw).strip() == "":
-            return {"on": False, "unreadable": False}
-        return {"on": str(raw).strip().lower() in ("1", "true", "on", "yes", "stop", "stopped"), "unreadable": False}
+        return {"on": False, "unreadable": False}
 
     def _post(self, payload):
         try:
+            target = urllib.parse.urlsplit(self.endpoint)
+            if target.scheme != "https" or not target.hostname or target.username or target.password or target.fragment:
+                return {"kind": "unavailable", "body": {}}
             body = json.dumps(payload).encode("utf-8")
             request = urllib.request.Request(
                 self.endpoint, data=body, headers={"content-type": "application/json"}, method="POST"
             )
-            with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:
-                return {"kind": "ok", "body": json.loads(response.read().decode("utf-8"))}
+            with urllib.request.build_opener(_NoRedirect()).open(request, timeout=self.timeout_seconds) as response:
+                body = json.loads(response.read().decode("utf-8"))
+                return {"kind": "ok", "body": body} if isinstance(body, dict) else {"kind": "unavailable", "body": {}}
         except urllib.error.HTTPError as error:
             if error.code in (400, 403):
                 return {"kind": "refused", "body": {}}
@@ -245,10 +269,16 @@ class SiftGuard:
             return {"fresh": False}
 
         body = answer["body"] or {}
+        if body.get("kill_switch") is True:
+            return {"fresh": True, "status": "Stopped", "active": False}
+        active = body.get("active") is True
+        if active and (body.get("status") != "Active" or not isinstance(body.get("locked_to"), str) or
+                       body["locked_to"].strip().lower() != self.model.lower()):
+            return {"fresh": True, "status": "Invalid", "active": False, "message": "Invalid validation response."}
         return {
             "fresh": True,
             "status": str(body.get("status") or "Invalid"),
-            "active": body.get("active") is True,
+            "active": active,
             "locked_to": str(body.get("locked_to") or ""),
             "expires_at": body.get("expires_at"),
             "message": str(body.get("message") or ""),
@@ -263,10 +293,19 @@ class SiftGuard:
         if answer["kind"] != "ok":
             return False
         body = answer["body"] or {}
-        self.input_rules = compile_rules(body.get("input"))
-        self.reply_rules = compile_rules(body.get("reply"))
-        self.denied_tools = [str(name) for name in (body.get("denied_tools") or [])]
-        return bool(self.input_rules or self.reply_rules)
+        if (body.get("kill_switch") is True or not isinstance(body.get("locked_to"), str) or
+                body["locked_to"].strip().lower() != self.model.lower() or
+                not isinstance(body.get("denied_tools"), list) or not body["denied_tools"] or
+                not all(isinstance(name, str) and name for name in body["denied_tools"])):
+            return False
+        input_rules = compile_rules(body.get("input"))
+        reply_rules = compile_rules(body.get("reply"))
+        if not input_rules or not reply_rules:
+            return False
+        self.input_rules = input_rules
+        self.reply_rules = reply_rules
+        self.denied_tools = body["denied_tools"]
+        return True
 
     def _latch(self, category):
         self.stopped = True
@@ -289,6 +328,15 @@ class SiftGuard:
     def refresh(self):
         """Steps the key, the kill switch, the cache and the rules, in that
         order, on every call."""
+        with self._refresh_lock:
+            result = self._refresh_locked()
+            if not self.stopped:
+                local = self.read_switch()
+                if local["on"]:
+                    return self._latch("kill_switch_unreadable" if local["unreadable"] else "kill_switch_local")
+            return result
+
+    def _refresh_locked(self):
         if self.stopped:
             return self.verdict()
 
@@ -297,9 +345,6 @@ class SiftGuard:
             return self._latch("kill_switch_unreadable" if local["unreadable"] else "kill_switch_local")
         self.category = "none"
 
-        # No key at all: nothing to hash and nothing to send. The guardrails stay
-        # off, and your product carries on running as it normally would — this is
-        # not a stop, only an absence of protection.
         if not self.hash:
             self.status = "Invalid"
             self.active = False
@@ -307,7 +352,7 @@ class SiftGuard:
             return self.verdict()
 
         now = time.time()
-        if not self.cached_at or now - self.cached_at >= self.cache_seconds:
+        if not self.cached_at or now < self.cached_at or now - self.cached_at >= self.cache_seconds:
             answer = self._ask()
             if answer["fresh"]:
                 # A Stopped answer is never cached and never softened.
@@ -319,22 +364,31 @@ class SiftGuard:
                 self.locked_to = answer.get("locked_to") or ""
                 self.expires_at = answer.get("expires_at")
                 self.message = answer.get("message") or ""
+                self.input_rules = []
+                self.reply_rules = []
+                self.denied_tools = []
             else:
-                # The check could not get through. The last good answer stands for
-                # the grace window, so a brief outage does not turn the guardrails
-                # off mid-day.
-                within_grace = self.active is True and self.cached_at > 0 and now - self.cached_at < self.grace_seconds
                 self.write_audit(category="validation_outage", gate="license_check",
-                                 decision="allowed" if within_grace else "blocked")
-                if not within_grace:
-                    self.status = "Outage"
-                    self.active = False
-                    return {"status": "Outage", "active": False, "stopped": False, "category": "validation_outage",
-                            "locked_to": self.locked_to, "expires_at": self.expires_at,
-                            "message": "The check could not be reached."}
+                                 decision="blocked")
+                self.status = "Outage"
+                self.active = False
+                self.message = "The check could not be reached."
+                return self.verdict()
 
-        if self.active:
-            self.ensure_policy()
+        if self.active and self.expires_at is not None:
+            try:
+                if not isinstance(self.expires_at, str):
+                    raise ValueError("Invalid expiration")
+                expiry = datetime.datetime.fromisoformat(str(self.expires_at).replace("Z", "+00:00"))
+                if expiry.tzinfo is None or expiry.timestamp() <= now:
+                    self.status, self.active = "Expired", False
+            except (ValueError, OverflowError, OSError):
+                self.status, self.active = "Invalid", False
+        if self.active and not self.ensure_policy():
+            self.status = "PolicyUnavailable"
+            self.active = False
+            self.cached_at = 0.0
+            self.message = "The guard policy could not be verified."
         return self.verdict()
 
     # ---------------------------------------------------------------- the gate
@@ -398,8 +452,7 @@ class SiftGuard:
     # -------------------------------------------------------------- the calls
 
     def ready(self):
-        """Once, at start-up. Never raises: a key that is not active and locked
-        simply leaves the guardrails off."""
+        """Check readiness; inactive or unverifiable protection blocks actions."""
         return self.refresh()
 
     def state(self):
@@ -416,11 +469,11 @@ class SiftGuard:
         if now["stopped"]:
             return {"allowed": False, "guarded": False, "reply": STOP_REPLY, "category": now["category"]}
         if not now["active"]:
-            return {"allowed": True, "guarded": False, "reply": None,
+            return {"allowed": False, "guarded": False, "reply": STOP_REPLY,
                     "category": "validation_outage" if now["status"] == "Outage" else "not_active",
                     "message": now["message"]}
         if not self.input_rules:
-            return {"allowed": True, "guarded": False, "reply": None, "category": "policy_unavailable"}
+            return {"allowed": False, "guarded": False, "reply": STOP_REPLY, "category": "policy_unavailable"}
 
         hit = self._scan_input("" if text is None else str(text))
         written = self.write_audit(category=hit or "none", gate="input_filter",
@@ -439,8 +492,7 @@ class SiftGuard:
             self.write_audit(category=now["category"], gate="kill_switch", decision="blocked", tool=name)
             return {"ran": False, "blocked": True, "guarded": False, "reply": STOP_REPLY, "category": now["category"]}
         if not now["active"]:
-            loose = handler(args or {}) if handler else None
-            return {"ran": True, "blocked": False, "guarded": False, "result": loose, "reply": None, "category": "not_active"}
+            return {"ran": False, "blocked": True, "guarded": False, "reply": STOP_REPLY, "category": "not_active"}
 
         gate = self.check_tool(name, args or {})
         if not gate["allowed"]:
@@ -475,11 +527,13 @@ class SiftGuard:
         if now["stopped"]:
             return {"clean": False, "guarded": False, "reply": STOP_REPLY, "category": now["category"]}
         if not now["active"]:
-            return {"clean": True, "guarded": False, "reply": None, "category": "not_active"}
+            return {"clean": False, "guarded": False, "reply": STOP_REPLY, "category": "not_active"}
 
         held = self._scan_reply("" if text is None else str(text))
-        self.write_audit(category="none" if held["clean"] else held["category"], gate="reply_filter",
-                         decision="allowed" if held["clean"] else "held")
+        if not self.write_audit(category="none" if held["clean"] else held["category"], gate="reply_filter",
+                                decision="allowed" if held["clean"] else "held"):
+            self._latch("audit_unavailable")
+            return {"clean": False, "guarded": False, "reply": STOP_REPLY, "category": "audit_unavailable"}
         if held["clean"]:
             return {"clean": True, "guarded": True, "reply": None, "category": "none"}
         return {"clean": False, "guarded": True, "reply": HELD_REPLY, "category": held["category"]}

@@ -22,6 +22,9 @@
  *   SIFT_AUDIT_LOG       optional: where the audit entries are written.
  *   SIFT_VALIDATE_URL    optional: the SIFT AI check endpoint.
  *
+ * Grace-period settings are ignored: a failed validation blocks actions.
+ * Custom audit sinks must synchronously persist the entry and return true.
+ *
  * One key, one model, one use. The first model to activate the key is the only
  * one it works with. Any other model is refused with:
  *   "This key is already locked to another model."
@@ -68,7 +71,6 @@
 var DEFAULTS = {
   endpoint: 'https://siftai.base44.app/functions/validateLicense',
   cacheSeconds: 600, // a good answer stands this long before it is checked again
-  graceHours: 12, // a check that cannot get through keeps guardrails on this long
   timeoutMs: 5000,
   maxSteps: 12,
   auditLog: './sift-guard-audit.log'
@@ -93,19 +95,24 @@ function safeEnv(name) {
 // The kill switch is read before anything else. A switch that cannot be read is
 // a stop, not a pass.
 function readSwitch(config) {
-  if (config && Object.prototype.hasOwnProperty.call(config, 'killSwitch')) {
-    var set = config.killSwitch;
-    return { on: set === true || set === 1 || String(set).toLowerCase() === 'true', unreadable: false };
-  }
-  var raw;
   try {
-    raw = safeEnv('SIFT_KILL_SWITCH');
+    var values = [];
+    if (config && Object.prototype.hasOwnProperty.call(config, 'killSwitch')) {
+      values.push(config.killSwitch);
+    }
+    if (typeof process !== 'undefined' && process.env) values.push(process.env.SIFT_KILL_SWITCH);
+    for (var i = 0; i < values.length; i += 1) {
+      var raw = values[i];
+      if (raw === undefined || raw === null || String(raw).trim() === '') continue;
+      var value = String(raw).trim().toLowerCase();
+      if (['0', 'false', 'off', 'no'].indexOf(value) !== -1) continue;
+      if (['1', 'true', 'on', 'yes', 'stop', 'stopped'].indexOf(value) !== -1) return { on: true, unreadable: false };
+      return { on: true, unreadable: true };
+    }
   } catch (error) {
     return { on: true, unreadable: true };
   }
-  if (raw === undefined || raw === null || String(raw).trim() === '') return { on: false, unreadable: false };
-  var value = String(raw).trim().toLowerCase();
-  return { on: ['1', 'true', 'on', 'yes', 'stop', 'stopped'].indexOf(value) !== -1, unreadable: false };
+  return { on: false, unreadable: false };
 }
 
 // Whatever was pasted into SIFT_LICENSE_KEY, in the one shape SIFT AI matches:
@@ -136,10 +143,15 @@ async function postJson(url, payload, timeoutMs) {
   var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
   var timer = controller ? setTimeout(function () { controller.abort(); }, timeoutMs) : null;
   try {
+    var target = new URL(url);
+    if (target.protocol !== 'https:' || !target.hostname || target.username || target.password || target.hash) {
+      return { kind: 'unavailable', body: {} };
+    }
     var response = await fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(payload),
+      redirect: 'error',
       signal: controller ? controller.signal : undefined
     });
     var text = await response.text();
@@ -165,10 +177,7 @@ function createSink(path) {
     fs = null;
   }
   if (!fs) {
-    return function (line) {
-      if (typeof console !== 'undefined' && console.info) console.info(line);
-      return true;
-    };
+    return function () { return false; };
   }
   return function (line) {
     fs.appendFileSync(path, line + '\n', { encoding: 'utf8' });
@@ -180,12 +189,14 @@ function createSink(path) {
 // in this file decides what a bad instruction looks like.
 function compileRules(list) {
   var rules = [];
-  var source = list || [];
+  if (!Array.isArray(list) || !list.length) return [];
+  var source = list;
   for (var i = 0; i < source.length; i += 1) {
+    if (!source[i] || typeof source[i].signature !== 'string' || !source[i].signature) return [];
     try {
-      rules.push({ category: String(source[i].category || 'none'), test: new RegExp(String(source[i].signature || ''), 'i') });
+      rules.push({ category: String(source[i].category || 'none'), test: new RegExp(source[i].signature, 'i') });
     } catch (error) {
-      // A rule this runtime cannot compile is skipped, never guessed at.
+      return [];
     }
   }
   return rules;
@@ -216,8 +227,12 @@ function createGuard(options) {
   var config = options || {};
   var endpoint = config.endpoint || safeEnv('SIFT_VALIDATE_URL') || DEFAULTS.endpoint;
   var auditPath = config.auditLog || safeEnv('SIFT_AUDIT_LOG') || DEFAULTS.auditLog;
-  var cacheMs = Number(config.cacheSeconds || safeEnv('SIFT_CACHE_SECONDS') || DEFAULTS.cacheSeconds) * 1000;
-  var graceMs = Number(config.graceHours || safeEnv('SIFT_GRACE_HOURS') || DEFAULTS.graceHours) * 3600 * 1000;
+  var cacheValue = config.cacheSeconds !== undefined ? config.cacheSeconds : (safeEnv('SIFT_CACHE_SECONDS') || DEFAULTS.cacheSeconds);
+  var cacheSeconds = Number(cacheValue);
+  if (cacheValue === null || !Number.isFinite(cacheSeconds) || cacheSeconds < 0 || cacheSeconds > 600) {
+    throw new RangeError('SIFT_CACHE_SECONDS must be between 0 and 600');
+  }
+  var cacheMs = cacheSeconds * 1000;
   var timeoutMs = Number(config.timeoutMs || DEFAULTS.timeoutMs);
   var maxSteps = Number(config.maxSteps || safeEnv('SIFT_MAX_STEPS') || DEFAULTS.maxSteps);
   var sink = config.sink || createSink(auditPath);
@@ -245,6 +260,7 @@ function createGuard(options) {
     replyRules: [],
     deniedTools: []
   };
+  var pendingRefresh = null;
 
   function writeAudit(fields) {
     var entry = {
@@ -256,7 +272,7 @@ function createGuard(options) {
     if (fields.tool) entry.tool = String(fields.tool);
     if (fields.step !== undefined) entry.step = Number(fields.step);
     try {
-      return sink(JSON.stringify(entry)) !== false;
+      return sink(JSON.stringify(entry)) === true;
     } catch (error) {
       return false;
     }
@@ -302,12 +318,18 @@ function createGuard(options) {
     if (answer.kind !== 'ok') return { fresh: false };
 
     var body = answer.body || {};
+    if (body.kill_switch === true) return { fresh: true, status: 'Stopped', active: false };
+    if (body.active === true &&
+        (body.status !== 'Active' || typeof body.locked_to !== 'string' ||
+         body.locked_to.trim().toLowerCase() !== model.toLowerCase())) {
+      return { fresh: true, status: 'Invalid', active: false, message: 'Invalid validation response.' };
+    }
     return {
       fresh: true,
       status: String(body.status || 'Invalid'),
       active: body.active === true,
       lockedTo: String(body.locked_to || ''),
-      expiresAt: body.expires_at || null,
+      expiresAt: body.expires_at === undefined || body.expires_at === null ? null : body.expires_at,
       message: String(body.message || '')
     };
   }
@@ -323,24 +345,28 @@ function createGuard(options) {
     );
     if (answer.kind !== 'ok') return false;
     var body = answer.body || {};
-    state.inputRules = compileRules(body.input);
-    state.replyRules = compileRules(body.reply);
-    state.deniedTools = (body.denied_tools || []).map(String);
-    return state.inputRules.length > 0 || state.replyRules.length > 0;
+    if (body.kill_switch === true || typeof body.locked_to !== 'string' ||
+        body.locked_to.trim().toLowerCase() !== model.toLowerCase() ||
+        !Array.isArray(body.denied_tools) || !body.denied_tools.length ||
+        !body.denied_tools.every(function (name) { return typeof name === 'string' && name.length > 0; })) return false;
+    var inputRules = compileRules(body.input);
+    var replyRules = compileRules(body.reply);
+    if (!inputRules.length || !replyRules.length) return false;
+    state.inputRules = inputRules;
+    state.replyRules = replyRules;
+    state.deniedTools = body.denied_tools.slice();
+    return true;
   }
 
   // Steps the key, the kill switch, the cache and the rules, in that order, on
   // every call.
-  async function refresh() {
+  async function refreshOnce() {
     if (state.stopped) return verdict();
 
     var local = readSwitch(config);
     if (local.on) return latch(local.unreadable ? 'kill_switch_unreadable' : 'kill_switch_local');
     state.category = 'none';
 
-    // No key at all: nothing to hash and nothing to send. The guardrails stay
-    // off, and your product carries on running as it normally would — this is
-    // not a stop, only an absence of protection.
     if (!state.hash && key) state.hash = await sha256Hex(key);
     if (!state.hash) {
       state.status = 'Invalid';
@@ -350,7 +376,7 @@ function createGuard(options) {
     }
 
     var now = Date.now();
-    if (!state.cachedAt || now - state.cachedAt >= cacheMs) {
+    if (!state.cachedAt || now < state.cachedAt || now - state.cachedAt >= cacheMs) {
       var answer = await ask();
       if (answer.fresh) {
         // A Stopped answer is never cached and never softened.
@@ -359,23 +385,51 @@ function createGuard(options) {
         state.status = answer.status;
         state.active = answer.active;
         state.lockedTo = answer.lockedTo || '';
-        state.expiresAt = answer.expiresAt || null;
+        state.expiresAt = answer.expiresAt === undefined ? null : answer.expiresAt;
         state.message = answer.message || '';
+        state.inputRules = [];
+        state.replyRules = [];
+        state.deniedTools = [];
       } else {
-        // The check could not get through. The last good answer stands for the
-        // grace window, so a brief outage does not turn the guardrails off
-        // mid-day.
-        var withinGrace = state.active === true && state.cachedAt > 0 && now - state.cachedAt < graceMs;
-        writeAudit({ category: 'validation_outage', gate: 'license_check', decision: withinGrace ? 'allowed' : 'blocked' });
-        if (!withinGrace) {
-          state.status = 'Outage';
-          state.active = false;
-          return { status: 'Outage', active: false, stopped: false, category: 'validation_outage', lockedTo: state.lockedTo, expiresAt: state.expiresAt, message: 'The check could not be reached.' };
-        }
+        writeAudit({ category: 'validation_outage', gate: 'license_check', decision: 'blocked' });
+        state.status = 'Outage';
+        state.active = false;
+        state.message = 'The check could not be reached.';
+        return verdict();
       }
     }
 
-    if (state.active) await ensurePolicy();
+    if (state.active && state.expiresAt !== null) {
+      var expiry = typeof state.expiresAt === 'string' ? Date.parse(state.expiresAt) : NaN;
+      if (!Number.isFinite(expiry)) {
+        state.status = 'Invalid';
+        state.active = false;
+      } else if (expiry <= now) {
+        state.status = 'Expired';
+        state.active = false;
+      }
+    }
+    if (state.active && !(await ensurePolicy())) {
+      state.status = 'PolicyUnavailable';
+      state.active = false;
+      state.cachedAt = 0;
+      state.message = 'The guard policy could not be verified.';
+    }
+    return verdict();
+  }
+
+  async function refresh() {
+    var local = readSwitch(config);
+    if (local.on) return latch(local.unreadable ? 'kill_switch_unreadable' : 'kill_switch_local');
+    if (!pendingRefresh) pendingRefresh = refreshOnce();
+    var currentRefresh = pendingRefresh;
+    try {
+      await currentRefresh;
+    } finally {
+      if (pendingRefresh === currentRefresh) pendingRefresh = null;
+    }
+    local = readSwitch(config);
+    if (local.on) return latch(local.unreadable ? 'kill_switch_unreadable' : 'kill_switch_local');
     return verdict();
   }
 
@@ -438,8 +492,7 @@ function createGuard(options) {
   }
 
   var guard = {
-    // Once, at start-up. Never throws: a key that is not active and locked
-    // simply leaves the guardrails off.
+    // Check readiness; inactive or unverifiable protection blocks actions.
     async ready() {
       return refresh();
     },
@@ -454,14 +507,14 @@ function createGuard(options) {
       if (now.stopped) return { allowed: false, guarded: false, reply: STOP_REPLY, category: now.category };
       if (!now.active) {
         return {
-          allowed: true,
+          allowed: false,
           guarded: false,
-          reply: null,
+          reply: STOP_REPLY,
           category: now.status === 'Outage' ? 'validation_outage' : 'not_active',
           message: now.message
         };
       }
-      if (!state.inputRules.length) return { allowed: true, guarded: false, reply: null, category: 'policy_unavailable' };
+      if (!state.inputRules.length) return { allowed: false, guarded: false, reply: STOP_REPLY, category: 'policy_unavailable' };
 
       var hit = scanInput(String(text === undefined || text === null ? '' : text));
       var written = writeAudit({ category: hit ? hit.category : 'none', gate: 'input_filter', decision: hit ? 'refused' : 'allowed' });
@@ -486,8 +539,7 @@ function createGuard(options) {
         return { ran: false, blocked: true, guarded: false, reply: STOP_REPLY, category: now.category };
       }
       if (!now.active) {
-        var loose = handler ? await handler(args) : null;
-        return { ran: true, blocked: false, guarded: false, result: loose, reply: null, category: 'not_active' };
+        return { ran: false, blocked: true, guarded: false, reply: STOP_REPLY, category: 'not_active' };
       }
 
       var gate = checkTool(name, args);
@@ -525,10 +577,13 @@ function createGuard(options) {
     async filterReply(text) {
       var now = await refresh();
       if (now.stopped) return { clean: false, guarded: false, reply: STOP_REPLY, category: now.category };
-      if (!now.active) return { clean: true, guarded: false, reply: null, category: 'not_active' };
+      if (!now.active) return { clean: false, guarded: false, reply: STOP_REPLY, category: 'not_active' };
 
       var held = scanReply(String(text === undefined || text === null ? '' : text));
-      writeAudit({ category: held.clean ? 'none' : held.category, gate: 'reply_filter', decision: held.clean ? 'allowed' : 'held' });
+      if (!writeAudit({ category: held.clean ? 'none' : held.category, gate: 'reply_filter', decision: held.clean ? 'allowed' : 'held' })) {
+        latch('audit_unavailable');
+        return { clean: false, guarded: false, reply: STOP_REPLY, category: 'audit_unavailable' };
+      }
       if (held.clean) return { clean: true, guarded: true, reply: null, category: 'none' };
       return { clean: false, guarded: true, reply: HELD_REPLY, category: held.category };
     },

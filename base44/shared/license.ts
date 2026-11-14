@@ -49,7 +49,7 @@ export const LICENSE_INSTRUCTIONS = [
   'In your own product, set SIFT_LICENSE_KEY to the key, SIFT_MODEL_NAME to the one model it is for, and SIFT_DEPLOYMENT_ID to the deployment or domain it runs on.',
   'Call the SIFT AI plug-in before your model sees a message, and around every tool your model asks for. It hands SIFT AI the key hash and the binding, and gets back one word: active, expired, revoked or invalid.',
   'The first binding to arrive is the one that sticks. Any other binding for the same key is refused, and the key is flagged for the SIFT AI team.',
-  'An active answer turns the guardrails on, and anything else leaves them off. Your own product carries on running either way.',
+  'An active answer enables the guardrails. Guarded actions are blocked when validation or policy cannot be trusted.',
   'Keep the key out of shared logs, screenshots and public repositories. It stays on the one model it locked to and is never moved: a different model needs a new key from a new purchase.'
 ];
 

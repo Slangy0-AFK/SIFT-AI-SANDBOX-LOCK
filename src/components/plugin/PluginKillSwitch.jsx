@@ -41,7 +41,7 @@ export default function PluginKillSwitch() {
     try {
       if (record) await base44.entities.PluginControl.update(record.id, data);
       else await base44.entities.PluginControl.create(data);
-      toast.success(on ? 'The plug-in is stopped everywhere.' : 'The plug-in is running again.');
+      toast.success(on ? 'Stop switch saved; plug-ins stop on their next validation.' : 'Stop switch cleared.');
     } catch (error) {
       toast.error('That did not save. Try again.');
     } finally {
@@ -63,8 +63,8 @@ export default function PluginKillSwitch() {
       ) : (
         <>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            While this is on, every plug-in answers Stopped and nothing runs, everywhere, on the next check. The switch is read
-            before a key is even looked at, and it is never cached.
+            While this is on, plug-ins stop on their next validation. Validation results may be cached for up to 10 minutes;
+            the local stop switch is checked before each guarded action.
           </p>
 
           <div className="mt-4 flex items-center gap-3">

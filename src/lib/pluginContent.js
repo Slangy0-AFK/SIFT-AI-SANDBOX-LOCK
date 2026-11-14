@@ -6,6 +6,7 @@ export const PLUGIN_SETUP_STEPS = [
   'Set SIFT_LICENSE_KEY to your SIFT AI license key. Your own copy of it is on your license page.',
   'Call the guard before your model sees a message, and around every tool your model asks for. Both files show this at the top.',
   'Tell it which tools your product is allowed to run, and with which arguments, so the tool gate has something to check against.',
+  'When filesystem access is unavailable, supply a synchronous JavaScript sink that persists each audit entry and returns true only after success.',
   'Test it in a test environment first, with the checklist below, before it goes anywhere near real traffic.'
 ];
 
@@ -13,8 +14,10 @@ export const PLUGIN_ENV_READS = [
   ['SIFT_LICENSE_KEY', 'Your SIFT AI license key.'],
   ['SIFT_MODEL_NAME', 'The ONE model or product this key is for. The key locks to it on first use.'],
   ['SIFT_DEPLOYMENT_ID', 'The deployment or domain it runs on. Not a person\u2019s details, just where the model lives.'],
+  ['SIFT_VALIDATE_URL', 'Optional HTTPS validation endpoint. Failed validation blocks guarded actions.'],
+  ['SIFT_CACHE_SECONDS', 'Optional validation cache duration from 0 to 600 seconds.'],
   ['SIFT_KILL_SWITCH', 'Optional. On, or unreadable, stops everything before anything else runs.'],
-  ['SIFT_AUDIT_LOG', 'Optional. Where the audit entries are written. Defaults to ./sift-guard-audit.log.']
+  ['SIFT_AUDIT_LOG', 'Optional. Audit file path when filesystem access is available. Defaults to ./sift-guard-audit.log.']
 ];
 
 export const PLUGIN_TESTS = [
@@ -32,7 +35,7 @@ export const PLUGIN_TESTS = [
   },
   {
     title: 'The same key on a second model',
-    text: 'It is refused with one plain line, "This key is already locked to another model.", the guardrails stay off on that model, and the first model keeps working. The key is flagged for the SIFT AI team.'
+    text: 'It is refused with one plain line, "This key is already locked to another model." Guarded actions on the second model are blocked and the key is flagged for the SIFT AI team.'
   },
   {
     title: 'The switches and the ceiling',
