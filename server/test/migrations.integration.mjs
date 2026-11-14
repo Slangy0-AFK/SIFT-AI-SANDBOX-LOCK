@@ -27,15 +27,15 @@ test('migrations are repeatable and reject altered or missing history', async ()
     const client = new pg.Client({ connectionString: databaseUrl });
     await client.connect();
     try {
-      const applied = await client.query('SELECT name, checksum FROM schema_migrations');
-      assert.equal(applied.rowCount, 1);
+      const applied = await client.query('SELECT name, checksum FROM schema_migrations ORDER BY name');
+      assert.equal(applied.rowCount, 2);
       assert.equal(applied.rows[0].name, '0001_audit_log.sql');
-      await client.query("UPDATE schema_migrations SET checksum = 'changed'");
+      await client.query("UPDATE schema_migrations SET checksum = 'changed' WHERE name = $1", [applied.rows[0].name]);
       const changed = run();
       assert.notEqual(changed.status, 0);
       assert.match(changed.stderr, /Applied migration has changed/);
-      await client.query('UPDATE schema_migrations SET checksum = $1', [applied.rows[0].checksum]);
-      await client.query("UPDATE schema_migrations SET name = '0000_missing.sql'");
+      await client.query('UPDATE schema_migrations SET checksum = $1 WHERE name = $2', [applied.rows[0].checksum, applied.rows[0].name]);
+      await client.query("UPDATE schema_migrations SET name = '0000_missing.sql' WHERE name = $1", [applied.rows[0].name]);
       const missing = run();
       assert.notEqual(missing.status, 0);
       assert.match(missing.stderr, /Migration history differs/);

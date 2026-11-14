@@ -2,13 +2,12 @@ import { createHash } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
-import { readConfig } from '../config.js';
+import { readDatabaseUrl } from '../config.js';
 
 const migrationDir = fileURLToPath(new URL('../../migrations/', import.meta.url));
 
 async function migrate() {
-  const config = readConfig(process.env);
-  const client = new pg.Client({ connectionString: config.databaseUrl });
+  const client = new pg.Client({ connectionString: readDatabaseUrl(process.env) });
   await client.connect();
   try {
     await client.query("SELECT pg_advisory_lock(hashtext('siftai_schema_migrations'))");

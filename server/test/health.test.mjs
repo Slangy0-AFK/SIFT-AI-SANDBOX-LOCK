@@ -7,7 +7,11 @@ import { readConfig } from '../dist/config.js';
 test('configuration requires a database URL and valid port', () => {
   assert.throws(() => readConfig({}), /DATABASE_URL/);
   assert.throws(() => readConfig({ DATABASE_URL: 'postgres://example', PORT: '0' }), /PORT/);
-  assert.equal(readConfig({ DATABASE_URL: 'postgres://example' }).port, 3000);
+  assert.throws(() => readConfig({ DATABASE_URL: 'postgres://example' }), /FRONTEND_ORIGIN/);
+  assert.equal(readConfig({
+    DATABASE_URL: 'postgres://example', FRONTEND_ORIGIN: 'http://localhost:5173',
+    SESSION_SECRET: 'example-test-secret-0123456789012345'
+  }).port, 3000);
 });
 
 test('health reports database availability without leaking errors', async () => {
@@ -17,6 +21,9 @@ test('health reports database availability without leaking errors', async () => 
       assert.equal(sql, 'SELECT 1');
       if (!available) throw new Error('private database detail');
     }
+  }, {
+    origin: 'http://localhost:5173', sessionSecret: 'example-test-secret-0123456789012345',
+    production: false
   }).listen(0);
   await once(server, 'listening');
   try {

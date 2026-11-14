@@ -4,7 +4,7 @@ import { readConfig } from './config.js';
 
 const config = readConfig(process.env);
 const database = new pg.Pool({ connectionString: config.databaseUrl });
-const server = createApp(database).listen(config.port, () => {
+const server = createApp(database, config).listen(config.port, () => {
   console.log(`Server listening on port ${config.port}`);
 });
 
